@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1007011063587",
+    "firebase_url": "https://loystarandroid.firebaseio.com",
+    "project_id": "loystarandroid",
+    "storage_bucket": "loystarandroid.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007011063587:android:86dd84c431db90ea",
+        "android_client_info": {
+          "package_name": "co.loystar.loystarbusiness.develop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1007011063587-ce640tbd2u120s8ojv95iunmmrgcuu6u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.loystar.loystarbusiness.develop",
+            "certificate_hash": "ea960b7f434285589aa853015ab260c0ed41753e"
+          }
+        },
+        {
+          "client_id": "1007011063587-5kk98uhrumr4kalqubr0rpos21vveml6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChKaCrluLh4YT_PX8kK88g2jRgWtmXdYg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1007011063587-5kk98uhrumr4kalqubr0rpos21vveml6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

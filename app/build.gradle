@@ -1,6 +1,13 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
+Properties props = new Properties()
+try {
+    props.load(file('loystar.properties').newDataInputStream())
+} catch (Exception ignored) {
+    throw new GradleException("Missing loystar.properties, check the loystar.properties file.");
+}
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"
@@ -12,16 +19,41 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    productFlavors {
+        develop {
+            applicationId "co.loystar.loystarbusiness.develop"
+            buildConfigField "String", "HOST", '"https://loystarapi.herokuapp.com/"'
+            buildConfigField "String", "URL_PREFIX", '"api/v2/"'
+            buildConfigField "String", "DEFAULT_TIMEZONE", '"GMT"'
+            minSdkVersion 16
+        }
+        production {
+            buildConfigField "String", "HOST", '"http://app.loystar.co/"'
+            buildConfigField "String", "URL_PREFIX", '"api/v2/"'
+            buildConfigField "String", "DEFAULT_TIMEZONE", '"GMT"'
+            minSdkVersion 16
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "TWITTER_CONSUMER_KEY", "\"${props.getProperty("twitterConsumerKey")}\""
+            buildConfigField "String", "TWITTER_CONSUMER_SECRET", "\"${props.getProperty("twitterConsumerSecret")}\""
+            buildConfigField "String", "SMOOCH_TOKEN", "\"${props.getProperty("smoochToken")}\""
+            buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
+            buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
         }
         debug {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "TWITTER_CONSUMER_KEY", "\"${props.getProperty("twitterConsumerKey")}\""
+            buildConfigField "String", "TWITTER_CONSUMER_SECRET", "\"${props.getProperty("twitterConsumerSecret")}\""
+            buildConfigField "String", "SMOOCH_TOKEN", "\"${props.getProperty("smoochToken")}\""
+            buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
+            buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
         }
     }
     packagingOptions {
@@ -47,13 +79,26 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:design:26.+'
     compile 'com.android.support:cardview-v7:26.+'
+    compile 'com.android.support:percent:26.+'
+    compile 'com.robertlevonyan.view:MaterialChipView:1.0.1'
+    compile 'io.smooch:core:latest.release'
+    compile 'io.smooch:ui:latest.release'
     compile 'com.roughike:bottom-bar:2.3.1'
     compile 'com.github.clans:fab:1.6.4'
     compile 'org.greenrobot:greendao:3.2.2'
+    compile 'com.google.firebase:firebase-auth:11.0.2'
+    compile 'com.firebaseui:firebase-ui:2.0.1'
+    compile 'net.danlew:android.joda:2.9.9'
+    compile group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.5.2'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.fasterxml.jackson.core:jackson-core:2.8.8'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.8'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    compile 'com.squareup:otto:1.3.8'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.retrofit2:converter-jackson:2.2.0'
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.google.firebase:firebase-crash:10.0.1'
     testCompile 'junit:junit:4.12'
 }
 
@@ -61,3 +106,4 @@ greendao {
     schemaVersion 92
     targetGenDir 'src/main/java'
 }
+apply plugin: 'com.google.gms.google-services'

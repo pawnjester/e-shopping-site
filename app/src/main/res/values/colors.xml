@@ -32,5 +32,6 @@
     <color name="brown">#8D6E63</color>
     <color name="program_title">#4c4c4c</color>
     <color name="iconColor">#757575</color>
+    <color name="wallet_hint_foreground_holo_dark">#808080</color>
 
 </resources>

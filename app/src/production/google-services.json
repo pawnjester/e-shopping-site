@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "165146598570",
+    "firebase_url": "https://loystar-business.firebaseio.com",
+    "project_id": "loystar-business",
+    "storage_bucket": "loystar-business.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165146598570:android:86dd84c431db90ea",
+        "android_client_info": {
+          "package_name": "co.loystar.loystarbusiness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "165146598570-tolees052in5ldl8k0bvhvlh00metmbl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA892LHrsEl41bGNDm35fwmlASW-URSqZ0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165146598570:android:bfe1201180338977",
+        "android_client_info": {
+          "package_name": "co.loystar.loystarbusiness.develop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "165146598570-tolees052in5ldl8k0bvhvlh00metmbl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA892LHrsEl41bGNDm35fwmlASW-URSqZ0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
