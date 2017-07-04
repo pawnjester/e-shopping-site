@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="form_margin">40dp</dimen>
+    <dimen name="form_element_width">300dp</dimen>
+    <dimen name="card_list_padding">16dp</dimen>
+    <dimen name="card_list_title_text_size">20sp</dimen>
+    <dimen name="cardview_radius">4dp</dimen>
+    <dimen name="card_elevation">3dp</dimen>
+    <dimen name="card_view_primary_text_size">24sp</dimen>
+    <dimen name="transactions_tool_bar_header">24sp</dimen>
+    <dimen name="transactions_tool_bar_sub_header">40sp</dimen>
+    <dimen name="button_padding">24dp</dimen>
+    <dimen name="button_margin">34dp</dimen>
+    <dimen name="card_margin_horizontal">0dp</dimen>
+</resources>
+

@@ -1,0 +1,21 @@
+<resources>>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="brandButtonStyle" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:colorButtonNormal">@color/colorAccent</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:padding">@dimen/custom_button_padding</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+    </style>
+
+    <style name="Theme.ActionBar.HigherElevation" parent="style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:elevation">10dp</item>
+    </style>
+
+</resources>

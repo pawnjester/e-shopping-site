@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <co.loystar.loystarbusiness.utils.ui.SquaredImageView
+        android:contentDescription="@string/icon"
+        android:id="@+id/productImg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="8dp" />
+
+    <co.loystar.loystarbusiness.utils.ui.CircularImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add"
+        android:layout_centerInParent="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:id="@+id/productInfo"
+        android:layout_alignBottom="@+id/productImg"
+        android:background="@color/translucent"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/white"
+            android:padding="1dp"/>
+
+        <TextView
+            android:id="@+id/productPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:layout_weight="1"
+            android:padding="1dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/count_actions"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:layout_below="@+id/productInfo"
+        android:orientation="horizontal"
+        android:background="@color/white">
+
+        <TextView
+            android:id="@+id/count_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:layout_gravity="end"
+            android:textColor="@android:color/holo_red_dark"/>
+
+        <ImageView
+            android:contentDescription="@string/icon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/decrement"
+            android:layout_weight="1"
+            android:layout_gravity="start"
+            android:clickable="true"
+            app:srcCompat="@drawable/ic_remove_circle_outline_white_24px"
+            android:tint="@android:color/holo_red_dark"/>
+    </LinearLayout>
+
+</RelativeLayout>

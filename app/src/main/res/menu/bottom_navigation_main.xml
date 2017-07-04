@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/home"
+        android:enabled="true"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/home_menu"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/recordSale"
+        android:enabled="true"
+        android:icon="@drawable/ic_sale"
+        android:title="@string/record_sale"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/customers"
+        android:enabled="true"
+        android:icon="@drawable/ic_people_black_24dp"
+        android:title="@string/customers_title"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/campaigns"
+        android:enabled="true"
+        android:icon="@drawable/ic_loyalty_program"
+        android:title="@string/campaigns"
+        app:showAsAction="ifRoom" />
+</menu>

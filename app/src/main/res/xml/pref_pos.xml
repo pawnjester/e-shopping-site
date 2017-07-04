@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="@string/pref_turn_on_pos_key"
+        android:title="@string/pref_turn_on_pos_title"
+        android:defaultValue="false"
+        android:summary="" />
+    <Preference
+        android:key="@string/pref_my_products_key"
+        android:title="@string/pref_my_products_title">
+    </Preference>
+    <Preference
+        android:key="@string/pref_product_categories_key"
+        android:title="@string/pref_product_categories_title">
+    </Preference>
+</PreferenceScreen>

@@ -1,3 +1,895 @@
 <resources>
-    <string name="app_name">LoystarAndroid</string>
+    <string name="app_name">Loystar</string>
+
+    <!-- Endpoints -->
+    <string name="merchant_sign_in">auth/sign_in</string>
+    <string name="get_pricing_plans_url">pricing_plans</string>
+    <string name="confirm_mobile_money_payment_url">subscriptions/confirm_mobile_money_payment</string>
+    <string name="pay_sub_with_mobile_money">subscriptions/pay_with_mobile_money</string>
+    <string name="create_sms_campaign">short_message_service_campaigns</string>
+    <string name="create_user_at_merchant_level">merchants/mCustomers</string>
+    <string name="create_merchant_loyalty_program">merchant_loyalty_programs</string>
+    <string name="get_all_merchant_programs">get_all_merchant_programs/</string>
+    <string name="get_all_merchant_users">merchant/mCustomers/</string>
+    <string name="get_sms_balance">merchants/get_sms_balance/</string>
+    <string name="update_merchant_program">merchant_loyalty_programs/</string>
+    <string name="merchant_base_path">auth</string>
+    <string name="check_special_fields">check_phone_and_email</string>
+    <string name="send_feedback_url">send_feedback</string>
+    <string name="get_transaction">transactions/</string>
+    <string name="add_points_at_merchant_level">transactions/add_points_at_merchant_level</string>
+    <string name="add_stamps_at_merchant_level">transactions/add_stamps_at_merchant_level</string>
+    <string name="get_latest_merchant_users">get_latest_merchant_users</string>
+    <string name="get_latest_merchant_users_via_digits">get_latest_merchant_users_via_digits</string>
+    <string name="get_latest_transaction_records">get_latest_transaction_records</string>
+    <string name="send_password_reset_email">auth/password</string>
+    <string name="get_latest_merchant_programs">get_latest_merchant_programs</string>
+    <string name="update_user">mCustomers/</string>
+    <string name="get_latest_user_profiles">get_latest_updated_user_profiles</string>
+    <string name="delete_merchant_user">delete_merchant_user/</string>
+    <string name="get_latest_deleted_users">get_latest_deleted_users</string>
+    <string name="get_pricing_plan_price">get_pricing_plan_price</string>
+    <string name="send_sms">short_message_services</string>
+    <string name="get_merchant_subscription_info">get_merchant_subscription_info/</string>
+    <string name="create_user_without_loyalty_program">create_user_without_loyalty_program</string>
+    <string name="create_transaction_without_loyalty_program">create_transaction_without_loyalty_program/</string>
+    <string name="update_merchant">merchants/</string>
+    <string name="search_product_categories">search_product_categories/</string>
+
+
+    <string name="start_transaction">Start a transaction </string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Serve Customer</string>
+    <string name="action_example">Example action</string>
+    <string name="action_settings">Settings</string>
+    <string name="fname">First name</string>
+    <string name="lname">Last name</string>
+    <string name="email">Email </string>
+    <string name="phone">Phone</string>
+    <string name="amount_spent">Amount spent by customer</string>
+    <string name="register_btn">Register</string>
+    <string name="title_activity_merchant_signup"> Create an Account </string>
+    <string name="title_activity_register_user">Register User</string>
+    <string name="business_name">Business name</string>
+    <string name="next_btn">Continue</string>
+    <string name="login_link">Have an account? Login here</string>
+    <string name="set_password">Set a password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="complete_signup_btn">Finish</string>
+
+    <string name="select_biz_category">Select Business Category</string>
+    <string name="business_category">Business Category</string>
+    <string name="food_and_drinks">Food and Drinks</string>
+    <string name="hair_and_beauty">Hair and Beauty</string>
+    <string name="fashion_and_accessories">Fashion and Accessories</string>
+    <string name="gym_and_fitness">Gym and Fitness</string>
+    <string name="beverages_and_deserts">Beverages and Desserts</string>
+
+
+    <string name="salon_and_beauty_reward_eg">E.g. Free hairdo.</string>
+    <string name="fashion_and_accessories_reward_points">E.g. 20% discount on your next purchase.</string>
+    <string name="fashion_and_accessories_reward_stamps">E.g. 1 free fashion item.</string>
+    <string name="gym_and_fitness_reward_stamps">E.g. 1 free session.</string>
+    <string name="gym_and_fitness_reward_points">E.g. 20% discount on your next subscription.</string>
+    <string name="discount_on_next_purchase">E.g. 20% discount on your next purchase.</string>
+    <string name="bakery_and_pastry">Bakery and Pastry</string>
+    <string name="travel_and_hotel">Travel and Hotel</string>
+    <string name="other">Other</string>
+    <string name="beverages_and_deserts_reward">eg. Free bottle of wine</string>
+    <string name="next_purchase_free">E.g. Next purchase free</string>
+    <string name="travel_and_hotel_reward">E.g. 20% discount on your next travel</string>
+
+    <string name="one_month">1-month</string>
+    <string name="three_months">3-months</string>
+    <string name="six_months">6-months</string>
+    <string name="twelve_months">12-months</string>
+
+
+    <string-array name="subs_duration">
+        <item>@string/one_month</item>
+        <item>@string/three_months</item>
+        <item>@string/six_months</item>
+        <item>@string/twelve_months</item>
+    </string-array>
+
+    <string name="title_activity_merchant_login">Welcome to Loystar</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign In</string>
+    <string name="error_invalid_email">Email is invalid</string>
+    <string name="error_invalid_password">Password is too short</string>
+    <string name="error_incorrect_password">Password is incorrect. Please try again.</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed"
+    </string>
+    <string name="register_link">No account yet?</string>
+    <string name="title_activity_merchant_back_office">Merchant Back Office</string>
+    <string name="home_menu">Home</string>
+    <string name="business_profile_menu">Business Profile</string>
+    <string name="loyalty_program_menu">Loyalty Programs</string>
+    <string name="communications_menu">Communications</string>
+    <string name="staff_mgmt_menu">Manage Staff</string>
+    <string name="outlet_mgmt_menu">Manage Outlets</string>
+    <string name="license_menu">License</string>
+    <string name="help_menu">Help and Feedback</string>
+    <string name="staff_outlet_mgmt_menu"><![CDATA[Staff & Outlet]]></string>
+    <string name="referral_copy"> Got a promo code and looking for a place to enter it? Here:Enter your promocode here Want to reduce your payments? You can cut down on your Pipedrive subscription payments by recommending Pipedrive to your friends. You earn their first month\'s payment as credit on your account.</string>
+    <string name="title_activity_loyalty_programs">LoyaltyPrograms</string>
+    <string name="simple_points_program_description">For every transaction, customers get the equivalent points value you set.</string>
+    <string name="stamp_program_description">Customers buy a specific item for a number of times you set, before they get their next purchase free.</string>
+    <string name="raffle_program_description">Customers spend to increase their chances in the draw. For every spend, customers get communicated via SMS their total spend.</string>
+    <string name="simple_points_program">Simple Points Program</string>
+    <string name="stamp_loyalty_program">Stamps Loyalty Program</string>
+    <string name="raffle_draw_program">Raffle Draw Program</string>
+    <string name="title_merchantloyaltyprogram_list">MerchantLoyaltyPrograms</string>
+    <string name="title_merchantloyaltyprogram_detail">Setup your program</string>
+    <string name="merchant_business_name">Business name</string>
+    <string name="address_line1">Address line 1</string>
+    <string name="upload_logo">Upload your logo</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="address_line2">Address line 2</string>
+
+    <string-array name="merchant_currency">
+        <item>Select a Currency</item>
+        <item>₵ Ghanaian Cedi</item>
+        <item>$ Dollars</item>
+        <item>₦ Naira</item>
+
+    </string-array>
+
+    <string-array name="message_send_options">
+        <item>Send now</item>
+        <item>Schedule for later</item>
+
+    </string-array>
+
+    <string-array name="merchant_city">
+        <item>Select a City</item>
+        <item>Accra</item>
+        <item>Cape-town</item>
+        <item>Lagos</item>
+        <item>Nairobi</item>
+
+    </string-array>
+    <string name="title_activity_employee_login">EmployeeLogin</string>
+    <string name="user_id">User ID</string>
+    <string name="title_activity_employee_home">EmployeeHome</string>
+    <string name="customer_phone">phone no (eg. 0244056101)</string>
+    <string name="action_add_points">Add Points</string>
+    <string name="logout">Sign Out</string>
+    <string name="customer_reward_text">What is the Reward?</string>
+    <string name="customer_reward_text_hint">eg. Free drink</string>
+    <string name="submit">Submit</string>
+    <string name="customer_stamps_threshold_text">How many must the customer buy to get 1 item for free?</string>
+    <string name="set_program_details_text">Set program details here.</string>
+    <string name="stamps_program_product_type">Please state product item</string>
+    <string name="stamps_program_product_type_hint">e.g Pizza</string>
+    <string name="stamp_loyalty_program_product_item_help_text">Stamp programs are ideal for items you can give away for free after a customer buys the item a number of times.</string>
+    <string name="customer_stamps_threshold_text_hint">e.g 10</string>
+    <string name="customer_reward_text_value_explanation">After reaching the spending goal, the customer is rewarded with the item.</string>
+    <string name="customer_spend_threshold_value_hint">e.g GH¢1000</string>
+    <string name="title_activity_program_details_success">ProgramDetailsSuccess</string>
+    <string name="program_is_active">Active</string>
+    <string name="cash_threshold">Spending goal</string>
+    <string name="cash_threshold_value">GH¢ 1000</string>
+    <string name="reward_text">What is the Reward?</string>
+    <string name="reward_value_example">Free drink</string>
+    <string name="edit">Edit</string>
+    <string name="stamps_threshold">Stamps threshold</string>
+    <string name="stamps_threshold_value_example">10</string>
+    <string name="stamps_reward_value_example">1 Free Pizza</string>
+    <string name="loyalty_programs">Loyalty Programs</string>
+    <string name="title_activity_transactions">TransactionsActivity</string>
+    <string name="total_points">TOTAL POINTS</string>
+    <string name="enter_amount_spent">Enter amount spent</string>
+    <string name="add">Add</string>
+    <string name="redeem_reward_text">Redeem Reward</string>
+    <string name="transactions">Record Sales</string>
+    <string name="icon">icon</string>
+    <string name="business_profile_page">Business Profile Page</string>
+    <string name="loyalty_programs_list_page">Loyalty Programs List page</string>
+    <string name="transactions_home_page">Transactions Home Page</string>
+    <string name="enter_customer_phone">Enter customer phone number</string>
+    <string name="add_new_customer">Add new customer</string>
+    <string name="points_transactions_home_page">Points Transactions Home Page</string>
+    <string name="register_user_page">Register User Page</string>
+    <string name="err_msg_empty">Field cannot be empty</string>
+    <string name="go">GO</string>
+    <string name="success_result">success</string>
+    <string name="unexpected_error">Oops! An unexpected error occurred. Please try again.</string>
+    <string name="welcome_to_loystar">Welcome to Loystar Business</string>
+    <string name="take_transaction">Take a transaction</string>
+    <string name="customer_name">Customer Name</string>
+    <string name="title_activity_navigation_drawer_class">NavigationDrawerClass</string>
+    <string name="transaction_confirmation">Transaction confirmation</string>
+    <string name="insights">Insights</string>
+    <string name="insights_home_page">Insights Home Page</string>
+    <string name="mCustomers">Users</string>
+    <string name="charts">Charts</string>
+    <string name="phone_number">Customer Phone</string>
+    <string name="users_table_page">Users Table Page</string>
+    <string name="charts_home_page">Charts Home Page</string>
+    <string name="customer_details">Customer details</string>
+    <string name="fragment_insights_title">Program insights</string>
+    <string name="continue_text">Continue</string>
+    <string name="points">Points</string>
+    <string name="enter_amount_spent_full">Enter amount spent</string>
+    <string name="send_msg">Send Message</string>
+    <string name="send_broadcast">Send Broadcast</string>
+    <string name="sent_msgs">Sent Messages</string>
+    <string name="schedule_msgs">Schedule Messages</string>
+    <string name="topup_sms">Top-up SMS</string>
+    <string name="msg_report">Message Report</string>
+    <string name="write_msg">Write your message…</string>
+    <string name="title_activity_layout_tester">LayoutTester</string>
+    <string name="sms_size_units">unit(s)</string>
+    <string name="title_activity_subscription_selection">Select Subscription</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="lite_plan">LITE</string>
+    <string name="basic_plan">BASIC</string>
+    <string name="pro_plan">PRO</string>
+    <string name="make_payments">Make payment</string>
+    <string name="feature_1">Simple Points Program</string>
+    <string name="feature_6">Account Manager</string>
+    <string name="feature_5">Feedback Survey</string>
+    <string name="feature_4">Customer Smart Alerts</string>
+    <string name="feature_3">Customer Reports</string>
+    <string name="feature_2">Stamp Program</string>
+    <string name="ok">OK</string>
+    <string name="how_to_pay">Select How to pay:</string>
+    <string name="enter_mob_money_no">Enter mobile money number</string>
+    <string name="saving_msg_12">1200 bonus sms when you pay for a year</string>
+    <string name="saving_msg_6">450 bonus sms when you pay for 6 months</string>
+    <string name="saving_msg_3">200 bonus sms when you pay for 3 months</string>
+    <string name="subs_sel_title">Choose a plan</string>
+    <string name="error_phone_required">Please enter a phone number</string>
+    <string name="error_phone_taken">Sorry! phone number is already taken</string>
+    <string name="error_email_taken">Sorry! Email is taken</string>
+    <string name="have_account"><u>HAVE AN ACCOUNT? LOGIN HERE</u></string>
+    <string name="something_went_wrong_error_extra">Oops! Pls check your details and try again</string>
+    <string name="something_went_wrong">Oops! something went wrong. Please try again</string>
+    <string name="tigo">Tigo</string>
+    <string name="mtn">MTN</string>
+    <string name="airtel">Airtel</string>
+    <string name="pay_with_momoney">Pay with Mobile Money</string>
+    <string name="error_mobile_money_number_required">Mobile money number is required</string>
+    <string name="mobile_money_transaction_guide">When you are done click on \'Confirm Payments\' from the accounts section of the settings page to complete the payment. Thank You.</string>
+    <string name="confirm_mobile_money_payment">Confirm mobile money payment</string>
+    <string name="transaction_success">Payment successfully completed!</string>
+    <string name="transaction_already_processed">This payment has already been processed!</string>
+    <string name="transaction_failed">Sorry! We couldn\'t confirm your payment.</string>
+    <string name="invalid_login_details">Wrong password or Email. Please try again.</string>
+    <string name="campaign_name">e.g New Product</string>
+    <string name="title_activity_communications_home">Communications Home</string>
+    <string name="title_activity_send_sms_broadcast">SMS Blast</string>
+    <string name="error_internet_connection">Error connection timed out. Please check your connection and try again.</string>
+    <string name="update">Update</string>
+    <string name="customers">My Customers</string>
+    <string name="messaging">Messaging</string>
+    <string name="my_account">My Account</string>
+    <string name="title_activity_pay_subscription">Pay Subscription</string>
+    <string name="sms_bundle_lite">Get %1$s SMS credits each month</string>
+    <string name="sms_bundle_lite_ngn">Get 500 SMS credits each month</string>
+    <string name="simple_points_program_plan_desc">Run a points based loyalty program for your customers</string>
+    <string name="lite_plan_amount_text">157</string>
+    <string name="loystar_lite_header_text">Loystar Lite</string>
+    <string name="title_activity_my_account">My Account</string>
+    <string name="pay_subscription">Pay subscription</string>
+    <string name="check_sms_balance">Check sms balance</string>
+    <string name="confirm_mm_payment">Confirm mobile\nmoney payment</string>
+    <string name="my_account_page">My Account Page</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="write_feedback">Type suggestions and feedback</string>
+    <string name="send_annoucement">Send Announcement</string>
+    <string name="error_incorrect_password_extra">Password must be at least 6 characters long.</string>
+    <string name="create_program_text">CREATE LOYALTY PROGRAM</string>
+    <string name="select_program_text">Select program type</string>
+    <string name="send">Send</string>
+    <string name="cancel">Cancel</string>
+    <string name="title_activity_stamps_transactions">StampsTransactions</string>
+    <string name="simple_points">SimplePoints</string>
+    <string name="raffle_program">RaffleProgram</string>
+    <string name="stamps_program">StampsProgram</string>
+    <string name="add_stamps">Add stamps</string>
+    <string name="confirm_transaction">Confirm Transaction</string>
+    <string name="start">Start</string>
+    <string name="no_loyalty_programs">No loyalty programs found!</string>
+    <string name="no_loyalty_program_extra">No loyalty program found. Start rewarding your loyal customers.</string>
+    <string name="create">Create</string>
+    <string name="choose_program_type">Choose Program Type</string>
+    <string name="program_name">Name of program</string>
+    <string name="program_threshold">Spending Goal:</string>
+    <string name="spending_goal">Spending Goal</string>
+    <string name="your_programs">Your loyalty programs</string>
+    <string name="create_new">Create new</string>
+    <string name="program_type">Program Type:</string>
+    <string name="choose_loyalty_program">Choose loyalty program</string>
+    <string name="register_customer">Register new customer</string>
+    <string name="stamps">Stamps</string>
+    <string name="redeem_action_text">Redeem</string>
+    <string name="error_stamps_threshold">Stamps threshold should be between 1 and 10</string>
+    <string name="already_have_account">Already have an account</string>
+    <string name="error_signup">Sorry! we couldn\'t sign you up at this time. Please check your details and try again.</string>
+    <string name="error_login">Oops! we couldn\'t log you in. Please check that your email and password is correct.</string>
+    <string name="menuitem_sync">Sync now</string>
+    <string name="title_customer_list">Customers</string>
+    <string name="title_customer_detail">Customer Info</string>
+    <string name="total_stamps">Total stamps</string>
+    <string name="customer_phone_info">Phone Number</string>
+    <string name="total_stamps_info">Total Stamps</string>
+    <string name="total_points_info">Total Points</string>
+    <string name="last_visit">Last Visit: </string>
+    <string name="total_amount_spent">Total Amount Spent</string>
+    <string name="forgot_password">Forgot password?</string>
+
+    <string name="title_activity_forgot_password">ForgotPasswordActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="reset_password">Reset Your Password</string>
+    <string name="reset_pass_header_text">Submit your email address and we\'ll send you a link to reset your password.</string>
+    <string name="error_timeout">Oops! Connection timed out. Please ensure you have good connection.</string>
+    <string name="title_activity_edit_customer_details">Edit Profile</string>
+    <string name="signing_up_msg">Signing up… Please wait.</string>
+    <string name="signing_in_msg">Signing in… Please wait.</string>
+    <string name="pwd_reset_msg">Sending password reset instructions&#8230; Please wait.</string>
+    <string name="title_invalid_email">Invalid email</string>
+    <string name="feedback_pwdreset_noemail">No account registered with email:  </string>
+    <string name="start_new_transaction">Start new transaction</string>
+    <string name="confirm_redeem_yes">Yes redeem</string>
+    <string name="confirm_redeem_no">No don\'t redeem</string>
+    <string name="announcments">Announcements</string>
+    <string name="reward_customers">Reward Customers</string>
+    <string name="reward_customers_drawer">Reward Customers</string>
+    <string name="title_activity_reward_customers">Redeem Reward</string>
+    <string name="find_customer">Find Customer</string>
+    <string name="enter_redeem">Enter Redeem Code</string>
+    <string name="rewards_page">Rerwards Page</string>
+    <string name="title_activity_select_loyalty_program_for_transaction">
+        Choose program
+    </string>
+    <string name="title_activity_redeem_reward">Redeem Reward</string>
+    <string name="title_activity_reward_customer_transaction_confirmation">
+        Transaction Confirmation
+    </string>
+    <string name="com.appsee.apikey" translatable="false">f8c8a43d56b7447099a16af448466a55</string>
+    <string name="confirm_delete_positive">Delete</string>
+    <string name="confirm_delete_negative">No don\'t delete!</string>
+    <string name="search_hint">Search customer</string>
+    <string name="title_activity_searchable">Search Results</string>
+    <string name="action_search">Search</string>
+    <string name="record_sale">Sell</string>
+    <string name="no_search_results">No search results found! Please modify your search and try again.</string>
+    <string name="currency_select">Choose Preferred Currency</string>
+    <string name="ghana_currency_code">GHS</string>
+    <string name="ghana_currency_symbol">GH₵</string>
+    <string name="usa_currency_symbol">$</string>
+    <string name="usa_currency_code">USD</string>
+    <string name="kenya_currency_code">KES</string>
+    <string name="nigeria_currency_code">NGN</string>
+    <string name="uk_currency_code">GBP</string>
+    <string name="south_african_currency_code">ZAR</string>
+    <string name="kenya_currency_symbol">KSh</string>
+    <string name="nigeria_currency_symbol">₦</string>
+    <string name="uk_currency_symbol">£</string>
+    <string name="south_african_currency_symbol">R</string>
+    <string name="loystar_feature_one">Design and run unlimited loyalty programs.</string>
+    <string name="fetch_pricing_data_network_error">Sorry, an error occurred. Please check your connection and try again.</string>
+    <string name="message">Message</string>
+    <string name="title_activity_send_sms">SendSMS</string>
+    <string name="err_msg_send">Sorry We couldn\'t send your message.</string>
+    <string name="business_email">Business email</string>
+    <string name="business_phone">Business phone</string>
+    <string name="first_name">First name</string>
+    <string name="register_text"><u>NEW TO LOYSTAR? REGISTER</u></string>
+    <string name="login">Login here</string>
+    <string name="my_customers">My Customers</string>
+    <string name="record_new_sale">Record new sales</string>
+    <string name="cost_of_item_text">What\'s the cost of the item?</string>
+    <string name="cost_of_item_text_card">Cost of Stamp Item:</string>
+    <string name="facebook_app_id">1406635922973425</string>
+    <string name="smooch_token">0cq8w66t55exh4595d8z28k0p</string>
+    <string name="check_subscription_status">Check\nsubscription status</string>
+    <string name="loyalty_program_not_created">Ooops! You have no active Loyalty Program. Create one to proceed.</string>
+    <string name="create_program">Create Program</string>
+    <string name="eg">e.g</string>
+    <string name="name_stamp_item">Name the item</string>
+    <string name="creating_loyalty_wait">Please wait while we setup your loyalty program.</string>
+    <string name="updating_loyalty_wait">Please wait while we update your loyalty program.</string>
+    <string name="success">Success!</string>
+    <string name="program_updated">Your loyalty program has been updated.</string>
+    <string name="program_created_success">Program successfully created!.</string>
+    <string name="check_account_status">Check\naccount status</string>
+    <string name="communications">Communications</string>
+    <string name="create_sms_template">Create SMS Template</string>
+    <string name="title_smstemplate_list">SMSTemplates</string>
+    <string name="title_smstemplate_detail">SMSTemplate Detail</string>
+    <string name="toast_twitter_digits_fail">Sign In failed. Please check connection and try again.</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="edit_info">Edit Info</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="export_customer_list">Export customer list</string>
+    <string name="open_file">Open file</string>
+    <string name="item_image_contentDescription">Country flag</string>
+    <string name="item_preview_country">Ghana</string>
+    <string name="item_preview_dialCode">+233</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="gender">Gender:</string>
+    <string name="eu_currency_code">EUR</string>
+    <string name="eu_currency_symbol">‎€</string>
+    <string name="privacy_policy_txt">By tapping \'Finish\', you agree to our Privacy Policy.</string>
+    <string name="privacy_policy_link"><u>PRIVACY POLICY</u></string>
+    <string name="title_activity_add_contact">Add Customer</string>
+    <string name="find_contact">Browse contacts</string>
+    <string name="or">or</string>
+    <string name="or_caps">OR</string>
+    <string name="done">Done</string>
+    <string name="email_optional">Customer Email (optional)</string>
+    <string name="about">About</string>
+    <string name="title_activity_about">About</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General Information</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="drawer_settings">Settings</string>
+    <string name="pref_account_title">Account Information</string>
+    <string name="pref_account_status_title">Status</string>
+    <string name="pref_account_status_key">account_status</string>
+    <string name="pref_pay_subscription_title">Pay Subscription</string>
+    <string name="pref_edit_account_title">Edit Profile</string>
+    <string name="pref_pay_subscription_key">pay_subscription</string>
+    <string name="pref_edit_account_key">edit_account</string>
+    <string name="pref_check_sms_bal_title">Check SMS Balance</string>
+    <string name="pref_check_sms_bal_key">check_sms_balance</string>
+    <string name="pref_confirm_mm_payment_key">confirm_mm_payment</string>
+    <string name="pref_confirm_mm_payment_title">Confirm Payments</string>
+    <string name="pref_sign_out_key">sign_out</string>
+    <string name="pref_support_key">account_support</string>
+    <string name="pref_support_title">Customer Support</string>
+    <string name="pref_sign_out_title">Sign out</string>
+    <string name="pref_app_version_key">app_version</string>
+    <string name="pref_app_version_title">App version</string>
+    <string name="pref_privacy_policy_key">privacy_policy</string>
+    <string name="pref_privacy_policy_title">Privacy Policy</string>
+    <string name="download_customer_list">Download customer list</string>
+    <string name="permission_available_external_storage">External Storage Permission has been granted. </string>
+    <string name="permission_granted_accounts">Accounts permission has been granted</string>
+    <string name="permission_available_contacts">Contacts Permissions have been granted.</string>
+    <string name="permissions_not_granted">Permissions were not granted.</string>
+    <string name="permission_write_external_storage_rationale">Storage permission is needed to store this file.</string>
+    <string name="permission_read_external_storage_rationale">Storage permission is needed to open this file.</string>
+    <string name="permission_get_accounts_rationale">Accounts permission is needed to sync your records with our servers.</string>
+    <string name="permission_contacts_rationale">Contacts permission is needed to pick contacts.</string>
+    <string name="permission_contacts_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable contacts permission.</string>
+    <string name="permission_external_storage_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable storage permission.</string>
+    <string name="permission_get_accounts_rationale_extra">>Click on \'OK\' and then \'Permissions\' to enable accounts permission.</string>
+    <string name="wait_validating_email_phone">Just a moment…</string>
+    <string name="a_moment">Just a moment…</string>
+    <string name="title_activity_start_to_record_non_loyalty_sales">Record Sale</string>
+    <string name="no_program_info_text">You have not created a loyalty program. To reward your loyal customers, create a loyalty program below.</string>
+    <string name="pref_turn_on_loyalty_programs_key">turn_on_loyalty_programs</string>
+    <string name="pref_turn_on_loyalty_programs_title">Turn On Loyalty Programs</string>
+    <string name="records_to_be_updated_notice">Your records would be updated shortly.</string>
+    <string name="records_updated_notice">Records successfully updated.</string>
+    <string name="error_phone_invalid">Phone number is invalid</string>
+    <string name="title_activity_register_customer">Register Customer</string>
+    <string name="error_first_name_required">First name is required</string>
+    <string name="error_email_required">Email is required</string>
+
+    <style name="pref_loyalty_programs_rewards_title">Rewards</style>
+
+    <style name="pref_loyalty_programs_rewards_key">pref_rewards</style>
+    <string name="title_activity_non_loyalty_transaction_confirmation">
+        Transaction Confirmation
+    </string>
+    <string name="fragment_update_program_title">Edit program</string>
+    <string name="sales_overview">Sales History</string>
+    <string name="add_sales">Add sales</string>
+    <string name="customers_title">Customers</string>
+    <string name="rewards">Rewards</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="pref_setup_loyalty_programs_key">pref_set_up_loyalty_programs</string>
+    <string name="pref_setup_loyalty_programs_title">Setup Loyalty Programs</string>
+    <string name="pref_loyalty_programs_header_title">Loyalty Programs Settings</string>
+    <string name="pref_comms_header_title">Communications</string>
+    <string name="sms_blast_success">Messages have been successfully sent. Thank You.</string>
+    <string name="sms">SMS</string>
+    <string name="record_sale_nav_button">Record\nSale</string>
+    <string name="pref_send_feed_back_key">pref_send_feed_back</string>
+    <string name="pref_send_feed_back_title">Loystar Care</string>
+    <string name="title_activity_feedback">Loystar Care</string>
+    <string name="welcome_text">You are all set! One last thing to do is to create your Loyalty Program. It\'s quick and easy!</string>
+    <string name="title_activity_base">BaseActivity</string>
+    <string name="title_activity_transactions_confirmation">Transaction Successful</string>
+    <string name="programs_turned_off_explanation">Loyalty programs are disabled. Your customers will not earn points or stamps after purchase.</string>
+    <string name="programs_turned_on_explanation">Loyalty programs are enabled. Your customers will earn points or stamps after purchase.</string>
+    <string name="sms_would_be_sent_notice">SMS would be sent shortly.</string>
+    <string name="sms_sent_notice">SMS has been successfully sent.</string>
+    <string name="error_gender_required">Please set gender</string>
+    <string name="error_amount_required">Please enter amount spent</string>
+    <string name="error_no_customer_found_with_phone">Sorry! we couldn\'t find a customer with that phone number</string>
+    <string name="save">SAVE</string>
+    <string name="error_export_failed">Export failed! Please try again.</string>
+    <string name="first_name_input">FIRST NAME</string>
+    <string name="last_name_input">LAST NAME</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="stamps_txt">stamps</string>
+    <string name="points_txt">points</string>
+    <string name="spent_txt">spent</string>
+    <string name="mobile_input">MOBILE</string>
+    <string name="turn_off">Yes, turn off</string>
+    <string name="programs_turn_off_notice">Loyalty programs have been disabled</string>
+    <string name="programs_turn_on_notice">Loyalty programs are now enabled.</string>
+    <string name="select_new_contact">Select New Contact</string>
+    <string name="error_failed_contact_pick">Contact selection failed, please try again</string>
+    <string name="redeem">Redeem</string>
+    <string name="monthly">Monthly</string>
+    <string name="pick_a_date">Pick a date</string>
+    <string name="date_of_birth">Date of Birth (optional)</string>
+    <string name="birth_date_field_reason">Birthday messages would be sent to your customers.</string>
+    <string name="error_invalid_date">this date is invalid</string>
+    <string name="pref_setup_birthday_offer_key">pref_setup_birthday_offer</string>
+    <string name="pref_setup_birthday_offer_title">Setup Birthday Messages &amp; Offers</string>
+    <string name="title_activity_birthday_offer_view">Birthday Offer</string>
+    <string name="no_birthday_offer">No Birthday Offer Set</string>
+    <string name="birthday_offer_title">Birthday Messages and Offers</string>
+    <string name="title_activity_set_birthday_offer">SetBirthdayOffer</string>
+    <string name="create_offer_title">Create Offer</string>
+    <string name="edit_offer_title">Edit Offer</string>
+    <string name="birthday_offer_field_label">What\'s the offer?</string>
+    <string name="birthday_offer_hint">Birthday Cake, Discount or Gift </string>
+    <string name="save_btn_label">Save</string>
+    <string name="create_btn_label">Create</string>
+    <string name="error_offer_required">Please enter description of offer</string>
+    <string name="current_offer">Current Offer</string>
+    <string name="get_merchant_birthday_offer">get_merchant_birthday_offer/</string>
+    <string name="birthday_offer_create_success">Birthday offer created successfully.</string>
+    <string name="birthday_offer_update_success">Birthday offer updated successfully.</string>
+    <string name="birthday_offers_base_url">birthday_offers/</string>
+    <string name="birthday_offer_delete_success">Birthday offer deleted successfully.</string>
+    <string name="birthday_offer_preset_sms_base_url">birthday_offer_preset_sms/</string>
+    <string name="preset_sms_title">Birthday SMS Template</string>
+    <string name="title_activity_edit_birthday_offer_preset_sms">Edit SMS Template</string>
+    <string name="birthday_offer_preset_text">Enter your birthday SMS template</string>
+    <string name="raffle_draw_program_sms_template">Customise SMS message </string>
+    <string name="help_guide_title_text">Please note</string>
+    <string name="customer_name_placeholder_label">[CUSTOMER_NAME] - </string>
+    <string name="customer_name_placeholder_value">This will be replaced with the customer\'s name. \n*Required</string>
+    <string name="insert_b_offer_placeholder_label">[BIRTHDAY_OFFER] -</string>
+    <string name="insert_customer_spend_placeholder_label">[TOTAL_SPEND] -</string>
+    <string name="insert_b_offer_placeholder_value">This will be replaced with the birthday offer you set.</string>
+    <string name="insert_customer_spend_placeholder_value">This will be replaced with the total customer spend.</string>
+    <string name="reset">Reset</string>
+    <string name="error_preset_sms_special_strings_not_found">Please include [CUSTOMER_NAME] or [BIRTHDAY_OFFER]</string>
+    <string name="error_raffle_sms_special_strings_not_found">Please include [CUSTOMER_NAME] and [TOTAL_SPEND]</string>
+    <string name="error_preset_sms_special_strings_more_found">Please include only one of [CUSTOMER_NAME] or [BIRTHDAY_OFFER]</string>
+    <string name="error_raffle_sms_special_strings_more_found">Please include only one of [CUSTOMER_NAME] and [TOTAL_SPEND]</string>
+    <string name="error_preset_sms_special_strings_offer_not_found">Please include [BIRTHDAY_OFFER]</string>
+    <string name="error_preset_sms_special_strings_cname_not_found">Please include [CUSTOMER_NAME]</string>
+    <string name="error_raffle_sms_special_strings_total_spend_not_found">Please include [TOTAL_SPEND]</string>
+    <string name="error_preset_sms_required">Please enter SMS template</string>
+    <string name="birthday_offer_preset_sms_update_success">Birthday message text updated successfully</string>
+    <string name="customer_name_placeholder_explanation">By clicking on \'INSERT CUSTOMER NAME\', [CUSTOMER_NAME] will be inserted. This will be replaced with customers\' name.</string>
+    <string name="Smooch_activityConversation">Loystar Care</string>
+    <string name="Smooch_startOfConversation">This is the start of your conversation with a Loystar Care Agent.</string>
+    <string name="reward_label">Reward</string>
+    <string name="merchant_loyalty_programs_base_url">merchant_loyalty_programs/</string>
+    <string name="program_deleted_notice">Program successfully deleted</string>
+    <string name="welcome">Welcome</string>
+    <string name="get_started">GET STARTED</string>
+    <string name="no_customers_added_explain">Your list of Customers will appear here. If you already have a list, tap the refresh button to display it. Otherwise start adding customers.</string>
+    <string name="stamp_label_text">stamp</string>
+    <string name="phone_number_hint">Enter phone number</string>
+    <string name="no_preset_birthday_sms">No Birthday SMS Template</string>
+    <string name="add_birthday_offer">Add birthday offer</string>
+    <string name="add_birthday_preset_sms">Add SMS Template</string>
+    <string name="title_activity_create_birthday_preset_sms">Add Birthday SMS Template</string>
+    <string name="default_birthday_preset_sms_with_no_offer">Happy Birthday [CUSTOMER_NAME]. Thank you for being a loyal customer. We appreciate you. From all of us here at %1$s.</string>
+    <string name="default_raffle_sms_text">Dear [CUSTOMER_NAME], you have now spent [TOTAL_SPEND]. Spend more to increase your chances of winning.</string>
+    <string name="default_birthday_preset_sms_with_offer">Happy Birthday [CUSTOMER_NAME]. Please visit %1$s today and redeem [BIRTHDAY_OFFER]. Thank you :)</string>
+    <string name="birthday_offer_preset_sms_create_success">SMS template created successfully</string>
+    <string name="get_merchant_birthday_preset_sms">get_merchant_birthday_preset_sms/</string>
+    <string name="birthday_offer_preset_sms_delete_success">SMS template deleted successfully</string>
+    <string name="error_message_required">Please enter message</string>
+    <string name="enter_sms_text">Enter SMS Text</string>
+    <string name="day_title_today">Today</string>
+    <string name="day_title_yesterday">Yesterday</string>
+    <string name="day_title_tomorrow">Tomorrow</string>
+    <string name="error_currency_required">Please select currency</string>
+    <string name="title_activity_auth">AuthActivity</string>
+    <string name="sign_in_with_email">Sign in with Email</string>
+    <string name="sign_in_with_phone"><u>Sign in with your phone number</u></string>
+    <string name="logo">logo</string>
+    <string name="error_phone_not_verified">Phone number is not verified. Re-enter number to verify.</string>
+    <string name="error_failed_to_login">Login Failed. Please try again.</string>
+    <string name="error_business_category_required">Please select a business category</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="new_sale">New Sale</string>
+    <string name="phone_rationale_text">Please use a number you can access to receive important notifications.</string>
+    <string name="email_rationale_text">Please use an email you can access to receive reports.</string>
+    <string name="title_activity_edit_account">Edit Account</string>
+    <string name="currency">Currency</string>
+    <string name="error_business_name_required">Business name is required</string>
+    <string name="error_merchant_update">Sorry! we couldn\'t update your account. Please try again later.</string>
+    <string name="error_customer_update">Sorry! customer update failed. Please try again later.</string>
+    <string name="merchant_update_success">Account updated successfully</string>
+    <string name="reward">Reward:</string>
+    <string name="points_target">Points Target</string>
+    <string name="stamps_target">Stamps Target</string>
+    <string name="name">Name</string>
+    <string name="target">Target</string>
+    <string name="sign_up_btn_text">New to Loystar? Sign Up</string>
+    <string name="customer">Customer</string>
+    <string name="auth_failure_text">Please login to re-authenticate your account.</string>
+    <string name="name_of_raffle_draw">Name of raffle draw</string>
+    <string name="error_raffle_name_required">Please enter name for the raffle</string>
+    <string name="error_raffle_sms_required">Please enter SMS text</string>
+    <string name="action_add_amount">Add Spend</string>
+    <string name="add_notes">Add notes (Optional)</string>
+    <string name="add_transaction_for_digits_merchant">transactions/add_transaction_for_digits_merchant/</string>
+    <string name="add_transaction">transactions/add_transaction/</string>
+    <string name="sms_template_label">SMS Template:</string>
+    <string name="title_activity_download_report">Download Reports</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="download">Download</string>
+    <string name="error_date_required">Please select date</string>
+    <string name="reports">Reports</string>
+    <string name="error_from_date_range">Please select starting date</string>
+    <string name="error_to_date_range">Please select ending date</string>
+    <string name="pref_my_products_key">pref_my_products</string>
+    <string name="pref_my_products_title">My Products / Services</string>
+    <string name="title_activity_products_view">Products / Services</string>
+    <string name="add_product">Add Product / Service</string>
+    <string name="add_category">Add Category</string>
+    <string name="add_category_action_text">ADD CATEGORY</string>
+    <string name="title_activity_add_products">Add Product</string>
+    <string name="title_activity_add_category">Add Category</string>
+    <string name="add_category_hint">Type Category name here</string>
+    <string name="error_category_name_required">Please enter category name</string>
+    <string name="get_latest_merchant_programs_via_digits">get_latest_merchant_programs_for_digits_merchant</string>
+    <string name="password_form_header_text">Please enter account password</string>
+    <string name="error_password_required">Please enter password</string>
+    <string name="spending_target_explanation">Spending target is how much a customer must spend to earn the reward. 1 %1$s = 1 point.</string>
+    <string name="customer_spend_threshold">ddd</string>
+    <string name="stamps_goal">Stamps Goal</string>
+    <string name="stamps_target_explanation">Stamps target is how many stamps a customer must collect to earn the reward.</string>
+    <string name="merchant_database_migrated_to_single_db">key_merchant_database_migrated_to_single_db</string>
+    <string name="add_category_url">add_product_category</string>
+    <string name="add_category_url_for_digits_merchant">add_product_category_for_digits_merchant</string>
+    <string name="new_product_category_added">New Product Category  Added</string>
+    <string name="remove">Remove</string>
+    <string name="gallery">Gallery</string>
+    <string name="picture">Picture</string>
+    <string name="thumbnail">thumbnail</string>
+    <string name="price">Price</string>
+    <string name="select_product_category">Select Product Category</string>
+    <string name="product_category">Product Category</string>
+    <string name="discard_changes">Discard Changes</string>
+    <string name="discard">Discard</string>
+    <string name="discard_changes_explain">Are you sure you want to discard all changes?</string>
+    <string name="error_name_required">Please enter a name</string>
+    <string name="error_product_category_required">Please select a product category</string>
+    <string name="error_price_cant_be_zero">Price cannot be zero</string>
+    <string name="error_no_categories_found">No Categories Found!</string>
+    <string name="campaigns">Campaigns</string>
+    <string name="more">More</string>
+    <string name="settings_account">account_settings</string>
+    <string name="settings_sync">sync_settings</string>
+    <string name="account">Account</string>
+    <string name="general">General</string>
+    <string name="settings_general">general_settings</string>
+    <string name="settings_loyalty_programs">loyalty_settings</string>
+    <string name="birthday_messages_and_offers">Birthday Messages &amp; Offers</string>
+    <string name="settings_birthday_messages_and_offers">settings_birthday_messages_and_offers</string>
+    <string name="pref_turn_on_pos_key">turn_on_point_of_sale</string>
+    <string name="pref_turn_on_pos_title">Turn on POS</string>
+    <string name="pos">Point of Sale (POS)</string>
+    <string name="settings_pos">settings_pos</string>
+    <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
+    <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
+    <string name="pos_turn_off_notice">POS  has been disabled.</string>
+    <string name="pos_turn_on_notice">POS has been enabled.</string>
+    <string name="add_product_url">add_product</string>
+    <string name="error_upload_failed">Upload Failed! Please check your internet and try again.</string>
+    <string name="product_add_success">New Product Added</string>
+    <string name="add_product_for_digits_merchant_url">add_product_for_digits_merchant</string>
+    <string name="get_latest_product_categories">get_latest_merchant_product_categories</string>
+    <string name="get_latest_merchant_product_categories_via_digits">get_latest_merchant_product_categories_via_digits</string>
+    <string name="get_latest_merchant_products">get_latest_merchant_products</string>
+    <string name="get_latest_merchant_products_via_digits">get_latest_merchant_products_via_digits</string>
+    <string name="title_activity_edit_product">Edit Product</string>
+    <string name="update_product">products/</string>
+    <string name="update_product_for_digits_merchant_url">digits/update_product/</string>
+    <string name="product_edit_success">Product has been successfully updated.</string>
+    <string name="update_in_progress">Update in progress</string>
+    <string name="uploading">Uploading…</string>
+    <string name="creating_product">Creating your product</string>
+    <string name="delete">Delete</string>
+    <string name="product_delete_success">Product was successfully deleted.</string>
+    <string name="product_category_delete_success">Category has been successfully deleted</string>
+    <string name="digits_destroy_product_category">digits/destroy_merchant_product_category/</string>
+    <string name="delete_product_category">merchant_product_categories/</string>
+    <string name="error_product_category_exists">This category already exists. Please enter a new category.</string>
+    <string name="digits_create_transaction_without_loyalty_program">digits/create_transaction_without_loyalty_program/</string>
+    <string name="digits_create_user_without_loyalty_program">digits/create_user_without_loyalty_program</string>
+    <string name="create_user_with_loyalty_program">create_user_with_loyalty_program</string>
+    <string name="digits_create_user_with_loyalty_program">digits/create_user_with_loyalty_program</string>
+    <string name="add_user_direct">add_user_direct</string>
+    <string name="digits_add_user_direct">digits/add_user_direct</string>
+    <string name="title_activity_product_categories">Categories</string>
+    <string name="pref_product_categories_key">pref_product_categories</string>
+    <string name="pref_product_categories_title">Categories</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_select_product_and_program">Sell</string>
+    <string name="loyalty_program">Loyalty program</string>
+    <string name="ipsum">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</string>
+    <string name="clear">Clear</string>
+    <string name="order_owner">This order belongs to</string>
+    <string name="title_activity_order_summary">Order Summary</string>
+    <string name="collect_payment">COLLECT PAYMENT</string>
+    <string name="add_customer">Add Customer</string>
+    <string name="remove_customer">Remove\nCustomer</string>
+    <string name="error_loyalty_program_required">Please select a loyalty program</string>
+    <string name="customer_autocomplete_hint">Enter customer name or number</string>
+    <string name="checkout">CHECKOUT</string>
+    <string name="cart_is_empty">Your cart is empty</string>
+    <string name="add_to_cart">Add to cart</string>
+    <string name="add_customer_from_contacts">Add from contacts</string>
+    <string name="finish">Finish</string>
+    <string name="select_date">Select date&#8230;</string>
+    <string name="title_activity_add_new_customer">Add new customer</string>
+    <string name="add_caps">ADD</string>
+    <string name="stamp">Stamp</string>
+    <string name="title_loyaltyprogramtype_list">Choose Loyalty Program</string>
+    <string name="title_loyaltyprogramtype_detail">Create Loyalty Program</string>
+    <string name="pref_loyalty_programs_rewards_key">pref_rewards</string>
+    <string name="pref_loyalty_programs_rewards_title">Rewards</string>
+    <string name="create_loyalty_program">Create Loyalty Program</string>
+    <string name="create_stamps_program">Create Stamps Program</string>
+    <string name="create_points_program">Create Points Program</string>
+    <string name="try_again">Try again</string>
+    <string name="buttonc_allow">Allow</string>
+    <string name="button_deny">Deny</string>
+    <string name="permission_accounts_denied">Accounts permission is denied. Your records will not sync with our servers.</string>
+    <string name="permission_read_contacts_neverask">Contacts permission was denied with never ask again.</string>
+    <string name="permission_read_contacts_denied">Contacts permission is denied.</string>
+    <string name="permission_accounts_neverask">Accounts permission was denied with never ask again.</string>
+    <string name="error_picture_required">Please add picture</string>
+    <string name="permission_external_storage_neverask">Storage permission was denied with never ask again.</string>
+    <string name="permission_read_external_storage_denied">Storage permission is denied. This file will not be opened.</string>
+    <string name="error_image_crop">There was an error cropping the image. Please try again!</string>
+    <string name="title_loyaltyprogram_list">My Loyalty Programs</string>
+    <string name="title_loyaltyprogram_detail">LoyaltyProgram Detail</string>
+    <string name="spending_target">Spending Target</string>
+    <string name="what_is_the_reward">What is the reward?</string>
+    <string name="error_spend_target_cant_be_zero">Spending target can\'t be zero</string>
+    <string name="error_program_name_required">Please enter program name</string>
+    <string name="error_reward_required">Please enter reward</string>
+    <string name="error_program_update_connection">Sorry we couldn\'t update your program. Please check your network and try again.</string>
+    <string name="error_program_update">Sorry we couldn\'t update your program. Please try again.</string>
+    <string name="program_update_success">Program successfully updated!</string>
+    <string name="error_program_create_connection">Sorry we couldn\'t create your program. Please check your connection and try again.</string>
+    <string name="error_program_create">Sorry we couldn\'t create your program. Please try again.</string>
+    <string name="birthday_offer_reason">Setting a birthday offer allows customers to receive this offer via SMS on their birthday.</string>
+    <string name="create_offer">Create Offer</string>
+    <string name="title_birthday_offers_and_messaging_activity">Birthday Offers And Messaging</string>
+    <string name="error_add_user">Sorry we couldn\'t add customer. Please try again.</string>
+    <string name="title_activity_record_direct_sales">Record Sales</string>
+    <string name="no_products_found">No products or services found!</string>
+    <string name="add_products">Add products</string>
+    <string name="record_sale_without_pos">Record sale without POS</string>
+    <string name="error_add_category">Sorry! we couldn\'t add your category. Please try again.</string>
+    <string name="permission_write_external_storage__denied">External storage permission is denied.</string>
+    <string name="permission_write_external_storage_neverask">External Storage permission was denied with never ask again.</string>
+    <string name="customer_add_success">Customer was successfully added</string>
+    <string name="error_product_update">Sorry! we couldn\'t update your product at this time. Please try again later.</string>
+    <string name="sales_belongs_to">This sale belongs to</string>
+    <string name="choose_product_or_service">Choose product or service</string>
+    <string name="choose_products_or_services">Choose products or services</string>
+    <string name="title_activity_order_belongs_to">Record Sale</string>
+    <string name="error_birthday_offer_delete">Sorry! we couldn\'t delete your birthday offer. Please try again.</string>
+    <string name="error_birthday_offer_text_required">Please enter birthday offer</string>
+    <string name="error_birthday_offer_update">Sorry! we couldn\'t update your birthday offer. Please try again.</string>
+    <string name="update_offer">Update Offer</string>
+    <string name="error_birthday_offer_create">Sorry! we couldn\'t create your birthday offer. Please try again.</string>
+    <string name="error_birthday_offer_preset_sms_update">Sorry! we couldn\'t update your birthday message text. Please try again.</string>
+    <string name="error_birthday_offer_preset_sms_create"><![CDATA[Sorry! we couldn\'t create your birthday message text. Please try again.</string> </resources>]]></string>
+    <string name="error_sending_sms_blast">Sorry! we couldn\'t send your messages. Please try again.</string>
+    <string name="error_sending_sms">Sorry! we coudn\'t send your message. Please try again.</string>
+    <string name="sms_messages_queued">Your Messages have been queued for immediate delivery. Thank You.</string>
+    <string name="no_customers_found">No customers found!</string>
+    <string name="error_amount_required_zero">Sorry! amount spend cannot be zero.</string>
+    <string name="ic_person_add_white_24px">ic_person_add_white_24px</string>
+    <string name="ic_chevron_right_white_48px">ic_chevron_right_white_48px</string>
+    <string name="error_select_customer">Please select customer</string>
+    <string name="update_success">Update was successful</string>
+    <string name="select_loyalty_program">Select loyalty program</string>
+    <string name="select_customer">Select customer</string>
+    <string name="total_customer_points">Total Customer Points:</string>
+    <string name="program_target">Program Target</string>
+    <string name="total_customer_stamps">Total Customer Stamps</string>
+    <string name="customer_update_success">Customer was updated successfully</string>
+    <string name="redemption_code">Six digit code</string>
+    <string name="enter_code">Enter code</string>
+    <string name="error_redemption_code_required">Please enter six digit code</string>
+    <string name="error_redemption_code_incorrect">Code is incorrect</string>
+    <string name="error_redemption_code_length">Code must be six digits</string>
+    <string name="title_activity_app_intro">AppIntro</string>
+    <string name="intro1_title">Welcome to Loystar</string>
+    <string name="intro2_title">Every sale brings your customer back</string>
+    <string name="intro3_title">Make your customers feel loved</string>
+    <string name="intro4_title">Marketing made simple</string>
+    <string name="intro5_title">Small efforts, Big gains</string>
+    <string name="intro1_body">The simplest way to sell your products/services and market to your customers to keep them coming back.</string>
+    <string name="intro2_body">Motivate your customers to come back using loyalty programs that gives them reward points every time you sell. You do the selling, we bring  the customers back.</string>
+    <string name="intro3_body"><![CDATA[Celebrate their birthdays with a message from you & an offer if you choose. Best of all, you don’t have to track the dates. Loystar takes care of it.]]></string>
+    <string name="intro4_body"><![CDATA[It’s never been easier to boost sales on slow days, announce new products & services or invite your customers back with a discount for a festive season.]]></string>
+    <string name="intro5_body">Designed to be simple, Loystar puts all these powerful features at your fingertips and you can see the effect of your efforts in weekly and monthly reports.</string>
 </resources>

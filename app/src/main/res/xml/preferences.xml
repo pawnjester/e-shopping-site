@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/pref_loyalty_programs_header_title">
+        <SwitchPreference
+            android:key="@string/pref_turn_on_loyalty_programs_key"
+            android:title="@string/pref_turn_on_loyalty_programs_title"
+            android:defaultValue="true"
+            android:summary="" />
+        <Preference
+            android:key="@string/pref_setup_loyalty_programs_key"
+            android:title="@string/pref_setup_loyalty_programs_title" />
+        <Preference
+            android:key="@string/pref_setup_birthday_offer_key"
+            android:title="@string/pref_setup_birthday_offer_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_account_title">
+        <Preference
+            android:key="@string/pref_account_status_key"
+            android:summary=""
+            android:title="@string/pref_account_status_title"/>
+        <Preference
+            android:key="@string/pref_edit_account_key"
+            android:title="@string/pref_edit_account_title" >
+        </Preference>
+        <Preference
+            android:key="@string/pref_check_sms_bal_key"
+            android:title="@string/pref_check_sms_bal_title" >
+        </Preference>
+        <Preference
+            android:key="@string/pref_send_feed_back_key"
+            android:title="@string/pref_send_feed_back_title" >
+        </Preference>
+        <Preference
+            android:key="@string/pref_pay_subscription_key"
+            android:title="@string/pref_pay_subscription_title" >
+        </Preference>
+
+        <Preference
+            android:key="@string/pref_confirm_mm_payment_key"
+            android:title="@string/pref_confirm_mm_payment_title" >
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_header_general">
+        <Preference
+            android:key="@string/pref_privacy_policy_key"
+            android:title="@string/pref_privacy_policy_title" >
+        </Preference>
+
+        <Preference
+            android:key="@string/pref_sign_out_key"
+            android:title="@string/pref_sign_out_title" >
+        </Preference>
+        <Preference
+            android:key="@string/pref_app_version_key"
+            android:summary=""
+            android:title="@string/pref_app_version_title" >
+        </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

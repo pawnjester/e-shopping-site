@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:mContext="co.loystar.loystarbusiness.activities.PaySubscription"
+    tools:showIn="@layout/activity_pay_subscription">
+
+    <ProgressBar
+        android:id="@+id/fetch_price_progress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/error_view"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/pricing_data_err"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/fetch_pricing_data_network_error"
+            android:textSize="18sp"
+            android:padding="16dp" />
+
+        <co.loystar.loystarbusiness.utils.ui.Buttons.BrandButtonNormal
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/try_again"
+            android:text="@string/try_again"/>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/pay_subscription_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_marginTop="10dp"
+                android:id="@+id/currency_symbol"
+                android:layout_toLeftOf="@+id/lite_plan_amount"
+                android:layout_toStartOf="@+id/lite_plan_amount" />
+
+            <TextView
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/lite_plan_amount" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/monthly"
+                android:layout_alignRight="@+id/lite_plan_amount"
+                android:layout_alignEnd="@+id/lite_plan_amount"
+                android:gravity="center"
+                android:id="@+id/monthly_text"
+                android:layout_below="@+id/lite_plan_amount" />
+
+            <ImageView
+                android:contentDescription="@string/icon"
+                android:src="@drawable/ic_greentick_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/loyalty_programs_feature_img"
+                android:layout_alignTop="@+id/loyalty_programs_feature_text"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_large"
+                android:text="@string/loystar_feature_one"
+                android:id="@+id/loyalty_programs_feature_text"
+                android:layout_below="@+id/monthly_text"
+                android:layout_toRightOf="@+id/sms_bundle_lite_img"
+                android:layout_toEndOf="@+id/sms_bundle_lite_img"
+                android:layout_marginTop="20dp" />
+
+            <ImageView
+                android:contentDescription="@string/icon"
+                android:src="@drawable/ic_greentick_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sms_bundle_lite_img"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_below="@+id/loyalty_programs_feature_text"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/sms_bundle_lite"
+                android:id="@+id/sms_bundle_lite_text"
+                android:layout_alignTop="@+id/sms_bundle_lite_img"
+                android:layout_toRightOf="@+id/sms_bundle_lite_img"
+                android:layout_toEndOf="@+id/sms_bundle_lite_img" />
+
+            <android.support.percent.PercentRelativeLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/sms_bundle_lite_img"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="44dp"
+                android:id="@+id/select_options_wrapper">
+
+                <Spinner
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/subs_duration"
+                    android:gravity="center"
+                    app:layout_widthPercent="50%"
+                    android:layout_gravity="center_horizontal" />
+
+
+                <TextView
+                    android:id="@+id/total_price"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/subs_duration"
+                    android:layout_toEndOf="@+id/subs_duration"
+                    android:background="@color/green"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:padding="@dimen/content_padding_normal"
+                    android:textSize="@dimen/text_size_large"
+                    app:layout_widthPercent="50%"
+                    />
+
+
+            </android.support.percent.PercentRelativeLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_marginTop="25dp"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:background="@color/orange"
+                android:padding="@dimen/cardview_compat_inset_shadow"
+                android:id="@+id/save_msg"
+                android:layout_below="@+id/sms_bundle_lite_img"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <co.loystar.loystarbusiness.utils.ui.Buttons.BrandButtonNormal
+                android:id="@+id/pay_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/make_payments"
+                android:layout_marginTop="25dp"
+                android:layout_below="@+id/select_options_wrapper"
+                android:layout_alignParentBottom="true"
+                android:textSize="@dimen/login_button_text_size" />
+        </RelativeLayout>
+
+    </ScrollView>
+
+
+</RelativeLayout>

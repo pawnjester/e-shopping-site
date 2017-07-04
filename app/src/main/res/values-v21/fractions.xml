@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <fraction name="half_page">70%</fraction>
+    <fraction name="quarter_page">75%</fraction>
+</resources>

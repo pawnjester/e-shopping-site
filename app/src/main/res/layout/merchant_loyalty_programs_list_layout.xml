@@ -1,0 +1,66 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/card_margin"
+        card_view:cardCornerRadius="@dimen/card_corner_radius">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:contentDescription="@string/icon"
+                android:id="@+id/thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/title_bloc"
+                android:layout_below="@id/thumbnail">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/program_title_padding"
+                    android:paddingRight="@dimen/program_title_padding"
+                    android:paddingTop="@dimen/program_title_padding"
+                    android:textColor="@color/program_title"
+                    android:textSize="@dimen/card_list_title_text_size" />
+
+                <ImageView
+                    android:contentDescription="@string/icon"
+                    android:id="@+id/overflow"
+                    android:layout_width="@dimen/ic_card_overflow_width"
+                    android:layout_height="@dimen/ic_card_overflow_height"
+                    android:layout_marginTop="@dimen/ic_card_overflow_margin_top"
+                    android:scaleType="centerCrop"
+                    android:tint="@color/colorPrimary"
+                    card_view:srcCompat="@drawable/ic_more_vert_black_24px" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/sub_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/title_bloc"
+                android:padding="@dimen/program_sub_title_padding"
+                android:textSize="@dimen/program_sub_title" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

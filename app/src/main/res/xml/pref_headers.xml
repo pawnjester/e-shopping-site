@@ -1,0 +1,45 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_account_circle_24dp"
+        android:title="@string/account">
+        <extra android:name="settings" android:value="@string/settings_account" />
+    </header>
+    <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_pos"
+        android:title="@string/pos">
+        <extra android:name="settings" android:value="@string/settings_pos" />
+    </header>
+    <header
+        android:id="@+id/pref_loyalty_programs"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_loyalty_24dp_primary_color"
+        android:title="@string/title_loyaltyprogram_list">
+        <intent android:targetPackage="co.loystar.loystarbusiness"
+            android:targetClass="co.loystar.loystarbusiness.activities.UpdateLoyaltyProgramListActivity" />
+        <extra android:name="settings" android:value="@string/settings_loyalty_programs" />
+    </header>
+    <header
+        android:id="@+id/birthday_messages_and_offers"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_birthday_cake_24"
+        android:title="@string/birthday_messages_and_offers">
+        <intent android:targetPackage="co.loystar.loystarbusiness"
+            android:targetClass="co.loystar.loystarbusiness.activities.BirthdayOffersAndMessagingActivity" />
+        <extra android:name="settings" android:value="@string/settings_birthday_messages_and_offers" />
+    </header>
+    <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_info_outline_white_24px"
+        android:title="@string/general">
+        <extra android:name="settings" android:value="@string/settings_general" />
+    </header>
+    <header
+        android:id="@+id/loystar_support_pref_header"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_supportmale"
+        android:title="@string/pref_support_title">
+        <extra android:name="settings" android:value="@string/pref_support_key" />
+    </header>
+</preference-headers>

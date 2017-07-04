@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:id="@+id/toolbars"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="horizontal" android:layout_width="match_parent"
+            android:id="@+id/order_summary_collapsed_toolbar"
+            android:weightSum="2"
+            android:layout_height="?attr/actionBarSize">
+
+            <co.loystar.loystarbusiness.utils.ui.Buttons.FullRectangleImageButton
+                android:id="@+id/clear_btn"
+                android:contentDescription="@string/icon"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="match_parent"
+                app:backGroundColor="@android:color/holo_red_dark" />
+
+            <co.loystar.loystarbusiness.utils.ui.Buttons.FullRectangleButton
+                android:id="@+id/checkout_btn"
+                android:layout_weight="1.5"
+                android:layout_width="0dp"
+                app:backGroundColor="@color/green"
+                android:drawablePadding="-20dp"
+                android:textSize="@dimen/text_size_medium"
+                android:textStyle="bold"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/order_summary_expanded_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            app:title="@string/title_activity_order_summary"
+            android:minHeight="?attr/actionBarSize"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:background="@color/white"
+        android:layout_below="@+id/toolbars"
+        android:id="@+id/customerDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:baselineAligned="false"
+            android:layout_width="match_parent"
+            android:id="@+id/customerExistsBlock"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:id="@+id/customerInfoBloc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/name"
+                    android:textColor="@color/colorPrimary"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    />
+
+                <TextView
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:layout_below="@+id/name"
+                    android:id="@+id/number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:orientation="vertical"
+                android:id="@+id/remove_customer"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_gravity="end"
+                    android:gravity="end"
+                    android:textColor="@color/colorPrimary"
+                    android:textAppearance="?android:textAppearanceSmall"
+                    android:text="@string/remove"
+                    android:paddingRight="10dp"
+                    android:paddingEnd="10dp"
+                    android:layout_height="wrap_content"
+                    tools:ignore="RtlSymmetry" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_gravity="end"
+                    android:gravity="end"
+                    android:textColor="@color/colorPrimary"
+                    android:textAppearance="?android:textAppearanceSmall"
+                    android:text="@string/customer"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <co.loystar.loystarbusiness.utils.ui.Buttons.AddCustomerButton
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/add_customer"
+                android:text="@string/add_customer"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View style="@style/Divider"
+        android:id="@+id/top_divider"
+        android:layout_below="@+id/customerDetails"/>
+
+    <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView
+        android:id="@+id/order_items_list"
+        android:background="@color/white"
+        android:layout_below="@+id/top_divider"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:scrollbars="vertical"/>
+
+    <LinearLayout
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_below="@+id/top_divider"
+        android:visibility="gone"
+        android:id="@+id/empty_cart"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:text="@string/cart_is_empty"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:layout_height="wrap_content" />
+
+        <co.loystar.loystarbusiness.utils.ui.Buttons.BrandButtonNormal
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/add_to_cart"
+            android:text="@string/add_to_cart"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/collect_payment_bar"
+        android:layout_height="?attr/actionBarSize">
+
+        <co.loystar.loystarbusiness.utils.ui.Buttons.FullRectangleButton
+            android:id="@+id/collect_payment"
+            android:layout_width="match_parent"
+            android:drawablePadding="-20dp"
+            android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
+            app:backGroundColor="@color/green"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    style="?android:attr/spinnerDropDownItemStyle"
+    android:maxLines="1"
+    android:layout_width="match_parent"
+    android:ellipsize="marquee">
+
+    <TextView
+        android:layout_width="25.5dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/intl_currency_symbol"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:textSize="15sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/intl_currency_name"
+        android:textColor="?android:textColorPrimary"
+        android:gravity="center_horizontal"
+        android:textSize="15sp"
+        android:layout_toLeftOf="@+id/intl_currency_iso_code"
+        android:layout_toStartOf="@+id/intl_currency_iso_code"
+        android:layout_toRightOf="@+id/intl_currency_symbol"
+        android:layout_toEndOf="@+id/intl_currency_symbol" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:id="@+id/intl_currency_iso_code"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true" />
+</RelativeLayout>
