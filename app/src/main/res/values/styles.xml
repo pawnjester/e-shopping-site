@@ -154,7 +154,4 @@
         <item name="fab_colorPressed">#2272CD</item>
         <item name="fab_colorRipple">#62B2FF</item>
     </style>
-
-    <style name="CustomVerticalIntroStyle" parent="Theme.AppCompat.Light.NoActionBar"/>
-
 </resources>

@@ -4,12 +4,18 @@ import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 
+import com.onesignal.OneSignal;
+
+import net.gotev.uploadservice.UploadService;
+import net.gotev.uploadservice.okhttp.OkHttpStack;
+
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseHelper;
 import co.loystar.loystarbusiness.models.db.DaoMaster;
 import co.loystar.loystarbusiness.models.db.DaoSession;
 import io.smooch.core.Smooch;
+import okhttp3.OkHttpClient;
 
 /**
  * Created by ordgen on 7/3/17.
@@ -39,10 +45,16 @@ public class LoystarApplication extends Application {
 
         singleton.initializeInstance();
 
-        /*initialize libraries*/
-
-        /*Smooch*/
         Smooch.init(this, BuildConfig.SMOOCH_TOKEN);
+
+        OneSignal.startInit(this)
+                .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
+                .unsubscribeWhenNotificationsAreDisabled(true)
+                .init();
+
+        UploadService.NAMESPACE = BuildConfig.APPLICATION_ID;
+        OkHttpClient client = new OkHttpClient();
+        UploadService.HTTP_STACK = new OkHttpStack(client);
     }
 
     private void extractLato() {

@@ -21,7 +21,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import co.loystar.loystarbusiness.activities.MerchantLoginActivity;
 import co.loystar.loystarbusiness.activities.SplashActivity;
 import co.loystar.loystarbusiness.sync.AccountGeneral;
 import io.smooch.core.Smooch;
