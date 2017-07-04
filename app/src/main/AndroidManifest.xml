@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="co.loystar.loystarbusiness">
 
     <uses-permission
@@ -24,11 +25,13 @@
         android:required="false" />
 
     <application
+        android:name=".utils.LoystarApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        tools:replace="android:icon"
         android:theme="@style/AppTheme">
         <provider
             android:name=".sync.StubProvider"
@@ -192,11 +195,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
         </activity>
-
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="2f2698a2a7e6d394ad1066bd158b71c7b01612c1" />
-
         <activity
             android:name=".activities.CustomerListActivity"
             android:label="@string/title_customer_list"
@@ -273,6 +271,7 @@
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
+            tools:replace="android:value"
             android:value="@string/facebook_app_id" />
 
         <activity
@@ -321,10 +320,6 @@
         <meta-data
             android:name="com.mixpanel.android.MPConfig.AutoShowMixpanelUpdates"
             android:value="false" />
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="2f2698a2a7e6d394ad1066bd158b71c7b01612c1" />
-
         <activity
             android:name=".activities.MerchantSignUpActivity"
             android:theme="@style/AppTheme.NoActionBar" />
