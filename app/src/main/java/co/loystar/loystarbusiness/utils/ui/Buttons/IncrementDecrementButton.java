@@ -7,6 +7,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
 import android.view.View;
@@ -58,7 +59,7 @@ public class IncrementDecrementButton extends RelativeLayout{
         inflate(context, R.layout.elegant_number_button_layout,this);
         int defaultColor = ContextCompat.getColor(context, R.color.colorPrimary);
         final int defaultTextColor = ContextCompat.getColor(context, R.color.white);
-        final Drawable defaultDrawable = AppCompatDrawableManager.get().getDrawable(context, R.drawable.default_button_background);
+        final Drawable defaultDrawable = AppCompatResources.getDrawable(context, R.drawable.default_button_background);
 
         TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.IncrementDecrementButton,styleAttr, 0);
 

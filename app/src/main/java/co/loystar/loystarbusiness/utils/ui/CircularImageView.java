@@ -12,14 +12,14 @@ import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 /**
  * Created by laudbruce-tagoe on 3/20/17.
  */
 
-public class CircularImageView extends ImageView {
+public class CircularImageView extends AppCompatImageView {
     private static float circularImageBorder = 1f;
 
     private final Matrix matrix;

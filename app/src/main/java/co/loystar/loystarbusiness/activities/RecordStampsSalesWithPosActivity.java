@@ -100,7 +100,7 @@ public class RecordStampsSalesWithPosActivity extends AppCompatActivity  impleme
         recordSaleWithoutPos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle data = new Bundle();;
+                Bundle data = new Bundle();
                 data.putLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, mSelectedProgramId);
                 data.putString(RecordDirectSalesActivity.LOYALTY_PROGRAM_TYPE, getString(R.string.stamps_program));
 

@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
@@ -42,7 +43,7 @@ public class FullRectangleImageButton extends AppCompatImageButton {
     }
 
     private void init() {
-        final Drawable drawable = AppCompatDrawableManager.get().getDrawable(context, R.drawable.full_rectangle_button);
+        final Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.full_rectangle_button);
         int defaultColor = ContextCompat.getColor(context, R.color.colorPrimary);
         TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.FullRectangleImageButton,styleAttr,0);
         int color = a.getColor(R.styleable.FullRectangleImageButton_backGroundColor, defaultColor);

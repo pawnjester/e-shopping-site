@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
 
@@ -35,11 +36,13 @@ public class AddCustomerButton extends android.support.v7.widget.AppCompatButton
             return;
         }
 
-        Drawable drawableToUse = AppCompatDrawableManager.get().getDrawable(context, R.drawable.ic_person_add_white_24px);
+        Drawable drawableToUse = AppCompatResources.getDrawable(context, R.drawable.ic_person_add_white_24px);
 
-        drawableToUse.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
-        setCompoundDrawablesWithIntrinsicBounds(drawableToUse, null, null, null);
-        setCompoundDrawablePadding(8);
+        if (drawableToUse != null) {
+            drawableToUse.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
+            setCompoundDrawablesWithIntrinsicBounds(drawableToUse, null, null, null);
+            setCompoundDrawablePadding(8);
+        }
 
         setTextAppearance(context, android.R.style.TextAppearance_Medium);
         setBackgroundResource(R.drawable.digits_button);

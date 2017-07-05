@@ -5,11 +5,11 @@ package co.loystar.loystarbusiness.utils.ui;
  */
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 /** An image view which always remains square with respect to its width. */
-public final class SquaredImageView extends android.support.v7.widget.AppCompatImageView {
+public final class SquaredImageView extends AppCompatImageView {
     public SquaredImageView(Context context) {
         super(context);
     }

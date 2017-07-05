@@ -15,7 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -107,7 +107,7 @@ public class ProductCategoriesActivity extends AppCompatActivity implements Chip
         mRecyclerView.setEmptyView(emptyView);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_category_fab);
-        fab.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_add_white_24px));
+        fab.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_add_white_24px));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

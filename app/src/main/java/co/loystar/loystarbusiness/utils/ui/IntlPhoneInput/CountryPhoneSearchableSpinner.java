@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatSpinner;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -18,7 +19,7 @@ import co.loystar.loystarbusiness.utils.SessionManager;
  * Created by laudbruce-tagoe on 1/3/17.
  */
 
-public class CountryPhoneSearchableSpinner extends Spinner implements View.OnTouchListener,
+public class CountryPhoneSearchableSpinner extends AppCompatSpinner implements View.OnTouchListener,
         CountryPhoneSearchableListDialog.SearchableItem {
 
     private Context mContext;

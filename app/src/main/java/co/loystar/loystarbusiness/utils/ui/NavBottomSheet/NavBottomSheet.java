@@ -26,6 +26,7 @@ public class NavBottomSheet extends BottomSheetDialogFragment {
     @SuppressWarnings("unchecked")
     @Override
     public void setupDialog(final Dialog dialog, int style) {
+        //noinspection RestrictedApi
         super.setupDialog(dialog, style);
         View contentView = View.inflate(getContext(), R.layout.nav_bottom_sheet, null);
         dialog.setContentView(contentView);

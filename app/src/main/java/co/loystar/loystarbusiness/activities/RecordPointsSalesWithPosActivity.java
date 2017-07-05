@@ -20,7 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -297,7 +297,7 @@ public class RecordPointsSalesWithPosActivity extends AppCompatActivity implemen
         collectPayment = (FullRectangleButton) findViewById(R.id.collect_payment);
         collapsedToolbar = (LinearLayout) findViewById(R.id.order_summary_collapsed_toolbar);
         FullRectangleImageButton clearCartButton = (FullRectangleImageButton) findViewById(R.id.clear_btn);
-        clearCartButton.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_remove_shopping_cart_white_24px));
+        clearCartButton.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_remove_shopping_cart_white_24px));
         checkOutButton = (FullRectangleButton) findViewById(R.id.checkout_btn);
         expandedToolbar = (Toolbar) findViewById(R.id.order_summary_expanded_toolbar);
         orderSummaryRecyclerView = (EmptyRecyclerView) findViewById(R.id.order_items_list);
@@ -324,8 +324,8 @@ public class RecordPointsSalesWithPosActivity extends AppCompatActivity implemen
 
 
         /*set background drawable to collapsedToolbar and collectPaymentBar*/
-        Drawable collapsedToolbarDrawable =  AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.default_button_background);;
-        Drawable collectPaymentBarDrawable = AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.rectangle);
+        Drawable collapsedToolbarDrawable =  AppCompatResources.getDrawable(mContext, R.drawable.default_button_background);;
+        Drawable collectPaymentBarDrawable = AppCompatResources.getDrawable(mContext, R.drawable.rectangle);
         assert collapsedToolbarDrawable != null;
         collapsedToolbarDrawable.setColorFilter(new PorterDuffColorFilter(ContextCompat.getColor(RecordPointsSalesWithPosActivity.this, android.R.color.transparent), PorterDuff.Mode.SRC));
         assert collectPaymentBarDrawable != null;

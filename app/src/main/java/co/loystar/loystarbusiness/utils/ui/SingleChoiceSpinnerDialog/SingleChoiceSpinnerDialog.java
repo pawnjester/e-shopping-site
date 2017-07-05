@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 import java.util.ArrayList;
 
@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Created by laudbruce-tagoe on 3/23/17.
  */
 
-public class SingleChoiceSpinnerDialog extends Spinner implements SingleChoiceSpinnerAlertBuilder.SelectEntityListener {
+public class SingleChoiceSpinnerDialog extends AppCompatSpinner implements SingleChoiceSpinnerAlertBuilder.SelectEntityListener {
     private Context mContext;
     private SingleChoiceSpinnerDialogOnItemSelectedListener mListener;
     private SingleChoiceSpinnerAlertBuilder singleChoiceSpinnerAlertBuilder;

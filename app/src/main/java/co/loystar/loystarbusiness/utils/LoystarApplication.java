@@ -83,7 +83,7 @@ public class LoystarApplication extends Application {
         daoSession = daoMaster.newSession();
         sessionManager = new SessionManager(this);
         mApiClient = new ApiClient(this);
-        //CustomerContentProvider.daoSession = daoSession;
+        CustomerContentProvider.daoSession = daoSession;
     }
 
     public DatabaseHelper getDatabaseHelper() {

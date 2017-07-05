@@ -141,15 +141,6 @@ public class SessionManager {
         return pref.getString(KEY_CLIENT_KEY, "").replace("\"", "");
     }
 
-    public void setContactsPermissionDenied(boolean isDenied) {
-        editor.putBoolean(CONTACTS_PERMISSION_DENIED, isDenied);
-        editor.apply();
-    }
-
-    public boolean isContactsPermissionDenied() {
-        return pref.getBoolean(CONTACTS_PERMISSION_DENIED, false);
-    }
-
     public boolean isTokenValid() {
         if (!pref.getString(KEY_TOKEN_EXPIRY, "").isEmpty()) {
             /*the value from the server is already in Epoch seconds so convert to millis*/

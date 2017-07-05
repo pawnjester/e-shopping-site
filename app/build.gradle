@@ -25,6 +25,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id: "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
                                 onesignal_google_project_number: "REMOTE"]
+        vectorDrawables.useSupportLibrary = true
     }
     productFlavors {
         develop {
@@ -97,6 +98,7 @@ dependencies {
     compile 'io.smooch:core:latest.release'
     compile 'io.smooch:ui:latest.release'
     compile 'com.github.armcha:Vertical-Intro:2.0.0'
+    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
     compile 'com.roughike:bottom-bar:2.3.1'
     compile 'com.github.clans:fab:1.6.4'
     compile 'net.gotev:uploadservice:3.2.4'

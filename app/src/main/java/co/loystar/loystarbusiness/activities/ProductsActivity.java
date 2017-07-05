@@ -14,7 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -100,7 +100,7 @@ public class ProductsActivity extends AppCompatActivity implements SearchView.On
 
 
         FloatingActionButton addProduct = (FloatingActionButton) findViewById(R.id.add_products_fab);
-        addProduct.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_add_white_24px));
+        addProduct.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_add_white_24px));
         addProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

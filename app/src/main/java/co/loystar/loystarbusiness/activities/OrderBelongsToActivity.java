@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,14 +20,10 @@ import co.loystar.loystarbusiness.fragments.OrderBelongsToFragment;
 import co.loystar.loystarbusiness.models.DatabaseHelper;
 import co.loystar.loystarbusiness.models.db.DBCustomer;
 import co.loystar.loystarbusiness.models.db.DBMerchantLoyaltyProgram;
-import co.loystar.loystarbusiness.models.db.DBTransaction;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.SessionManager;
-import co.loystar.loystarbusiness.utils.TextUtilsHelper;
-import co.loystar.loystarbusiness.utils.TimeUtils;
 
 import static co.loystar.loystarbusiness.activities.MerchantBackOffice.CUSTOMER_ID;
-import static co.loystar.loystarbusiness.activities.MerchantBackOffice.CUSTOMER_PHONE_NUMBER;
 import static co.loystar.loystarbusiness.activities.MerchantBackOffice.LOYALTY_PROGRAM_ID;
 import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.ADD_NEW_CUSTOMER_REQUEST;
 

@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
@@ -61,7 +62,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import co.loystar.loystarbusiness.BuildConfig;
-import android.Manifest;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.events.BusProvider;
 import co.loystar.loystarbusiness.models.DatabaseHelper;

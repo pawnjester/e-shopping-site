@@ -42,8 +42,12 @@ import static android.accounts.AccountManager.KEY_ERROR_MESSAGE;
 import static co.loystar.loystarbusiness.sync.AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS;
 
 /**
- * A login screen that offers login via email/password.
- */
+ * Account Authenticator Activity
+ * we cannot extend AccountAuthenticatorActivity on this activity because
+ * AccountAuthenticatorActivity extends Activity and not AppCompatActivity
+ * We want to use the support library hence AppCompatActivity
+ * We use setAccountAuthenticatorResult() to set the result of adding an account
+ * */
 public class MerchantLoginActivity extends AppCompatActivity {
 
     /*Constants*/
@@ -361,7 +365,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
         }
     }
 
-    //we cannot extend AccountAuthenticatorActivity on this activity because AccountAuthenticatorActivity extends Activity and not AppCompatActivity
+
     public final void setAccountAuthenticatorResult( Bundle result ) {
         mResultBundle = result;
     }

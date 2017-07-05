@@ -6,7 +6,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,7 +53,7 @@ public class CustomerDetailActivity extends AppCompatActivity implements Custome
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (fab != null) {
-            fab.setImageDrawable(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_create_white_48px));
+            fab.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_create_white_48px));
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

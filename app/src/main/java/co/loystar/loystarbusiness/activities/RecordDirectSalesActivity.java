@@ -55,12 +55,13 @@ import permissions.dispatcher.RuntimePermissions;
  */
 
 /*Intent Extras*/
+
 /**
  * String mLoyaltyProgramType => loyalty program type
  * Long mLoyaltyProgramId => loyalty program ID
  * Long mCustomerId => customer ID for direct points transaction (required for startPointsTransaction)
  * boolean startPointsTransaction => boolean flag to start AddPointsFragment fragment;
- * */
+ */
 
 @RuntimePermissions
 public class RecordDirectSalesActivity extends AppCompatActivity {
@@ -121,8 +122,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
 
         if (mLoyaltyProgramType.equals(getString(R.string.simple_points))) {
             isSimplePoints = true;
-        }
-        else if (mLoyaltyProgramType.equals(getString(R.string.stamps_program))) {
+        } else if (mLoyaltyProgramType.equals(getString(R.string.stamps_program))) {
             isStamps = true;
         }
 
@@ -138,8 +138,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
                 mFragment = new AddPointsFragment();
                 mFragment.setArguments(data);
                 mFragmentManager.beginTransaction().add(R.id.activity_record_direct_sales_container, mFragment, ADD_POINTS_FRAGMENT).commit();
-            }
-            else {
+            } else {
                 Bundle bundle = new Bundle();
                 bundle.putString(LOYALTY_PROGRAM_TYPE, mLoyaltyProgramType);
                 mFragment = new RecordDirectSalesActivityFragment();
@@ -266,8 +265,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
                 mFragment.setArguments(bundle);
                 mFragmentManager.beginTransaction().add(R.id.activity_record_direct_sales_container, mFragment, RECORD_DIRECT_SALES_ACTIVITY_FRAGMENT).commit();
             }
-        }
-        else if (requestCode == REQUEST_PERMISSION_SETTING) {
+        } else if (requestCode == REQUEST_PERMISSION_SETTING) {
             if (resultCode == RESULT_OK) {
                 RecordDirectSalesActivityPermissionsDispatcher.syncDataWithCheck(RecordDirectSalesActivity.this);
             }
@@ -289,8 +287,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
             mFragment = new AddPointsFragment();
             mFragment.setArguments(data);
             mFragmentManager.beginTransaction().replace(R.id.activity_record_direct_sales_container, mFragment, ADD_POINTS_FRAGMENT).addToBackStack(null).commit();
-        }
-        else if (isStamps) {
+        } else if (isStamps) {
             Intent addStampsIntent = new Intent(mContext, AddStampsActivity.class);
             addStampsIntent.putExtra(LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
             addStampsIntent.putExtra(CUSTOMER_ID, customer.getId());
@@ -306,7 +303,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
         AccountManager accountManager = AccountManager.get(RecordDirectSalesActivity.this);
         Account[] accounts = accountManager.getAccountsByType(AccountGeneral.ACCOUNT_TYPE);
         String merchantEmail = sessionManager.getMerchantEmail().replace("\"", "");
-        for (Account acc: accounts) {
+        for (Account acc : accounts) {
             if (acc.name.equals(merchantEmail)) {
                 account = acc;
             }
@@ -372,8 +369,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
         if (id == android.R.id.home) {
             onBackPressed();
             return true;
-        }
-        else if (id == R.id.add_customer_from_menu) {
+        } else if (id == R.id.add_customer_from_menu) {
             Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
             startActivityForResult(addCustomerIntent, ADD_NEW_CUSTOMER_REQUEST);
         }

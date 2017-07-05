@@ -25,9 +25,6 @@ import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.SessionManager;
 import co.loystar.loystarbusiness.utils.ui.Buttons.BrandButtonNormal;
 
-import static co.loystar.loystarbusiness.activities.MerchantBackOffice.CUSTOMER_ID;
-import static co.loystar.loystarbusiness.activities.MerchantBackOffice.LOYALTY_PROGRAM_ID;
-import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.CUSTOMER_AMOUNT_SPENT;
 import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.LOYALTY_PROGRAM_TYPE;
 
 /*Required Intent Extras*/

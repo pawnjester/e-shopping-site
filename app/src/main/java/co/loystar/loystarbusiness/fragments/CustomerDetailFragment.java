@@ -47,13 +47,6 @@ import static android.app.Activity.RESULT_OK;
  * Created by ordgen on 7/4/17.
  */
 
-
-/**
- * A fragment representing a single Customer detail screen.
- * This fragment is either contained in a {@link CustomerListActivity}
- * in two-pane mode (on tablets) or a {@link CustomerDetailActivity}
- * on handsets.
- */
 public class CustomerDetailFragment extends Fragment {
 
     /*constants*/

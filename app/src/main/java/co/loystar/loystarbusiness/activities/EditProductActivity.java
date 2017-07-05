@@ -18,6 +18,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -140,7 +141,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setHomeAsUpIndicator(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_close_white_24px));
+            getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -167,10 +168,10 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
         charCounterView = (TextView) findViewById(R.id.program_name_char_counter);
         (findViewById(R.id.add_products_fab_layout)).bringToFront();
 
-        baseFloatBtn.setImageDrawable(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_add_a_photo_white_24px));
-        addFromGalleryBtn.setImageDrawable(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_collections_white_24px));
-        takePictureBtn.setImageDrawable(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_camera_alt_white_24px));
-        removePictureBtn.setImageDrawable(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_cancel_white_24px));
+        baseFloatBtn.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_add_a_photo_white_24px));
+        addFromGalleryBtn.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_collections_white_24px));
+        takePictureBtn.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_camera_alt_white_24px));
+        removePictureBtn.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_cancel_white_24px));
 
         TextWatcher textWatcher = new TextWatcher() {
             @Override
@@ -214,7 +215,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
             }
         }
 
-        Drawable cancelDrawable = AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_cancel_white_24px);
+        Drawable cancelDrawable = AppCompatResources.getDrawable(mContext, R.drawable.ic_cancel_white_24px);
         if (cancelDrawable != null && cancelDrawable.getConstantState() != null) {
             Drawable willBeWhite = cancelDrawable.getConstantState().newDrawable();
             willBeWhite.mutate().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);

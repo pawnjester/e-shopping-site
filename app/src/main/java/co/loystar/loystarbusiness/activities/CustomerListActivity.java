@@ -7,9 +7,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.Settings;
@@ -20,7 +23,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -32,15 +35,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
@@ -50,11 +60,19 @@ import co.loystar.loystarbusiness.sync.AccountGeneral;
 import co.loystar.loystarbusiness.sync.SyncAdapter;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.SessionManager;
+import co.loystar.loystarbusiness.utils.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.Buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.ItemClickSupport;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SimpleDividerItemDecoration;
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
 import permissions.dispatcher.OnPermissionDenied;
@@ -125,9 +143,9 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
         FloatingActionButton sendAnnouncement = (FloatingActionButton) findViewById(R.id.activity_customer_list_fab_send_blast);
 
 
-        addCustomer.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_person_add_white_24px));
-        rewardCustomer.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_loyalty_white_24px));
-        sendAnnouncement.setImageDrawable(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_megaphone));
+        addCustomer.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_person_add_white_24px));
+        rewardCustomer.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_loyalty_white_24px));
+        sendAnnouncement.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_megaphone));
 
         addCustomer.setOnClickListener(clickListener);
         rewardCustomer.setOnClickListener(clickListener);
@@ -374,7 +392,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
                     myAlertDialog.setMessage("All sales records for " + mSelectedCustomer.getFirst_name() + " will be deleted as well.");
                     myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), CustomerListActivity.this);
                     myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
-                    myAlertDialog.setDialogIcon(AppCompatDrawableManager.get().getDrawable(mContext, android.R.drawable.ic_dialog_alert));
+                    myAlertDialog.setDialogIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert));
                     myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
                 }
                 return false;
@@ -657,7 +675,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
         @Override
         protected Boolean doInBackground(String... params) {
 
-            /*String fileName = "MyLoystarCustomerList.xls";
+            String fileName = "MyLoystarCustomerList.xls";
             File sdCard = Environment.getExternalStorageDirectory();
             File directory = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
 
@@ -728,8 +746,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
             catch (IOException e) {
                 e.printStackTrace();
                 return false;
-            }*/
-            return true;
+            }
         }
 
         @Override
@@ -739,7 +756,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
                 this.dialog.dismiss();
             }
             if (success){
-                /*String fileName = "MyLoystarCustomerList.xls";
+                String fileName = "MyLoystarCustomerList.xls";
                 File sdCard = Environment.getExternalStorageDirectory();
                 File filePath = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
                 final File file = new File(filePath, fileName);
@@ -774,7 +791,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
                         }
                         }
                     })
-                    .show();*/
+                    .show();
             }
             else {
                 Snackbar.make(mLayout, getString(R.string.error_export_failed), Snackbar.LENGTH_LONG).show();
