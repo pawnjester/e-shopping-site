@@ -169,9 +169,12 @@ public class SendSMSBroadcast extends AppCompatActivity {
                             JSONObject requestData = new JSONObject();
                             requestData.put("data", req);
 
-                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                            RequestBody requestBody = RequestBody.create(
+                                    MediaType.parse("application/json; charset=utf-8"),
+                                    requestData.toString()
+                            );
 
-                            ApiClient apiClient = new ApiClient(mContext);
+                            ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
 
                             apiClient.getLoystarApi().sendSmsBlast(requestBody).enqueue(new Callback<ResponseBody>() {
                                 @Override

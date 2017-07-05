@@ -106,7 +106,7 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
     private Context mContext;
     private ArrayList<DBCustomer> mCustomerList;
     private SimpleItemRecyclerViewAdapter mAdapter;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private View mLayout;
     private MyAlertDialog myAlertDialog;
     private DBCustomer mSelectedCustomer;
@@ -120,7 +120,6 @@ public class CustomerListActivity extends AppCompatActivity implements SearchVie
         mLayout = findViewById(R.id.customer_list_layout);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        sessionManager = new SessionManager(this);
         mContext = this;
         myAlertDialog = new MyAlertDialog();
         mCustomerList = databaseHelper.listMerchantCustomers(sessionManager.getMerchantId());

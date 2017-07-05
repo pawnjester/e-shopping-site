@@ -96,7 +96,7 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
 
     /*shared variables*/
     private boolean isFabMenuOpen = false;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private String mSelectedCategory = "";
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private Uri imageUri;
@@ -134,7 +134,6 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        sessionManager = new SessionManager(this);
         mContext = this;
         getActivityInitiator = getIntent().getStringExtra(ACTIVITY_INITIATOR);
 

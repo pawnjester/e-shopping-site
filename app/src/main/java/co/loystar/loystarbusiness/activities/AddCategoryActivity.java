@@ -45,7 +45,7 @@ public class AddCategoryActivity extends AppCompatActivity {
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private EditText addCategoryTextBox;
     private MenuItem done;
-    private ApiClient mApiClient;
+    private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
     private TextView charCounterView;
 
     @Override
@@ -61,7 +61,6 @@ public class AddCategoryActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        mApiClient = new ApiClient(this);
         charCounterView = (TextView) findViewById(R.id.category_name_char_counter);
         addCategoryTextBox = (EditText) findViewById(R.id.add_category_text_box);
         addCategoryTextBox.addTextChangedListener(new TextWatcher() {

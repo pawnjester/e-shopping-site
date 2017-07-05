@@ -54,7 +54,7 @@ public class LoyaltyProgramsListActivity extends AppCompatActivity {
     private ArrayList<DBMerchantLoyaltyProgram> loyaltyPrograms;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private Context mContext;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private View mLayout;
     private EmptyRecyclerView mRecyclerView;
 
@@ -69,7 +69,6 @@ public class LoyaltyProgramsListActivity extends AppCompatActivity {
         toolbar.setTitle(getTitle());
 
         mContext = this;
-        sessionManager = new SessionManager(this);
         loyaltyPrograms = databaseHelper.listMerchantPrograms(sessionManager.getMerchantId());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);

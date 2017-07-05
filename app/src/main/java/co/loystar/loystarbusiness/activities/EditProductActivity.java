@@ -121,7 +121,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
 
     /*shared variables*/
     private boolean isFabMenuOpen = false;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private Uri imageUri;
     private boolean formIsDirty = false;
@@ -129,7 +129,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
     private DBProductCategory category;
     private String mSelectedCategory = "";
     private Context mContext;
-    private ApiClient mApiClient;
+    private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
     private String originalPrice;
     private TextView charCounterView;
 
@@ -150,9 +150,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
             product = databaseHelper.getProductById(getIntent().getLongExtra(AddProductActivity.PRODUCT_ID, 0L));
         }
 
-        sessionManager = new SessionManager(this);
         mContext = this;
-        mApiClient = new ApiClient(this);
 
         /*initialize views*/
         baseFloatBtn = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.baseFloatingActionButton);

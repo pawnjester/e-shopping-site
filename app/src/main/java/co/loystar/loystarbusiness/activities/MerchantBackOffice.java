@@ -112,7 +112,7 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
 
     private ProgressDialog progressDialog;
     private View mLayout;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private MixpanelAPI mixPanel;
     private BarChart barChart;
@@ -128,7 +128,6 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
         setSupportActionBar(toolbar);
 
         mLayout = findViewById(R.id.mb_coordinatorLayout);
-        sessionManager = new SessionManager(this);
         merchant = databaseHelper.getMerchantById(sessionManager.getMerchantId());
         loyaltyPrograms = databaseHelper.listMerchantPrograms(sessionManager.getMerchantId());
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(sessionManager.getMerchantCurrency()).getSymbol();

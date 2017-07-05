@@ -60,14 +60,15 @@ import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.LO
  * Long mSelectedCustomerId = Preselected customer Id (optional)
  * */
 
-public class RewardCustomersActivity extends AppCompatActivity implements SingleChoiceSpinnerDialogOnItemSelectedListener {
+public class RewardCustomersActivity extends AppCompatActivity implements
+        SingleChoiceSpinnerDialogOnItemSelectedListener {
 
     /*constants*/
     public static final String CUSTOMER_ID = "customerId";
 
     private Context mContext;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private View mLayout;
     private Long mSelectedProgramId;
     private Long mSelectedCustomerId;
@@ -87,7 +88,6 @@ public class RewardCustomersActivity extends AppCompatActivity implements Single
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         mContext = this;
-        sessionManager = new SessionManager(mContext);
 
         final EditText redemptionCodeView = (EditText) findViewById(R.id.redemption_code);
         ArrayList<InputFilter> curInputFilters = new ArrayList<>(Arrays.asList(redemptionCodeView.getFilters()));
@@ -173,7 +173,7 @@ public class RewardCustomersActivity extends AppCompatActivity implements Single
                 progressDialog.setMessage(getString(R.string.a_moment));
                 progressDialog.show();
 
-                ApiClient apiClient = new ApiClient(mContext);
+                ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
                 apiClient.getLoystarApi().redeemReward(
                         redemptionCodeView.getText().toString(),
                         mSelectedCustomerId.toString(),

@@ -72,16 +72,13 @@ public class MerchantLoginActivity extends AppCompatActivity {
     private View mLayout;
     private String password;
     private String email;
-    private ApiClient mApiClient;
-    private SessionManager session;
-
+    private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        session = new SessionManager(this);
 
         mAccountAuthenticatorResponse = getIntent().getParcelableExtra( AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE );
         if( mAccountAuthenticatorResponse != null ) {
@@ -91,12 +88,10 @@ public class MerchantLoginActivity extends AppCompatActivity {
         mLayout = findViewById(R.id.login_root_layout);
         mAccountManager = AccountManager.get(mContext);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        mApiClient = new ApiClient(this);
-
         /*final AuthConfig.Builder authConfigBuilder = new AuthConfig.Builder()
                 .withAuthCallBack(new com.digits.sdk.android.AuthCallback() {
                     @Override
-                    public void success(DigitsSession session, String phoneNumber) {
+                    public void success(DigitsSession sessionManager, String phoneNumber) {
                         startLoginSessionFromPhone();
                     }
                     @Override
@@ -423,7 +418,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
         editor.putBoolean(getString(R.string.pref_turn_on_pos_key), merchant.getTurn_on_point_of_sale() != null ? merchant.getTurn_on_point_of_sale() : false);
         editor.apply();
 
-        session.setMerchantSessionData(
+        sessionManager.setMerchantSessionData(
             merchant.getBusiness_name(),
             merchant.getEmail(),
             merchant.getId().toString(),

@@ -45,7 +45,7 @@ import retrofit2.Response;
 
 public class EditAccount extends AppCompatActivity implements SingleChoiceSpinnerDialogOnItemSelectedListener {
 
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private EditText fNameView;
     private EditText lNameView;
@@ -56,7 +56,7 @@ public class EditAccount extends AppCompatActivity implements SingleChoiceSpinne
     private View mLayout;
     private String businessTypeSelectedItem;
     private ProgressDialog progressDialog;
-    private ApiClient mApiClient;
+    private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +70,6 @@ public class EditAccount extends AppCompatActivity implements SingleChoiceSpinne
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        sessionManager = new SessionManager(EditAccount.this);
-        mApiClient  = new ApiClient(this);
         DBMerchant merchant = databaseHelper.getMerchantById(sessionManager.getMerchantId());
 
         fNameView = (EditText) findViewById(R.id.firstName);

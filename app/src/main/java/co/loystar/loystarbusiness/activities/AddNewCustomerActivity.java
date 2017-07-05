@@ -18,6 +18,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -102,7 +103,7 @@ public class AddNewCustomerActivity extends AppCompatActivity implements DialogI
 
     private Date dateOfBirth;
     private Context mContext;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private String genderSelected = "";
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private MyAlertDialog myAlertDialog;
@@ -115,12 +116,11 @@ public class AddNewCustomerActivity extends AppCompatActivity implements DialogI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setHomeAsUpIndicator(AppCompatDrawableManager.get().getDrawable(this, R.drawable.ic_close_white_24px));
+            getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         mContext = this;
-        sessionManager = new SessionManager(mContext);
         myAlertDialog = new MyAlertDialog();
 
         /*Initialize views*/
@@ -574,7 +574,7 @@ public class AddNewCustomerActivity extends AppCompatActivity implements DialogI
             progressDialog.setIndeterminate(true);
             progressDialog.show();
 
-            ApiClient mAPiClient = new ApiClient(mContext);
+            ApiClient mAPiClient = LoystarApplication.getInstance().getApiClient();
 
             try {
                 JSONObject jsonObject = new JSONObject();

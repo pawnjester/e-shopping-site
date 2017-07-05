@@ -59,7 +59,7 @@ public class CustomerDetailFragment extends Fragment {
     private OnCustomerDetailInteractionListener mListener;
     private String last_visit;
     private DBMerchant merchant;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private boolean mTwoPane;
     public static DBCustomer mItem;
 
@@ -76,7 +76,6 @@ public class CustomerDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sessionManager = new SessionManager(getActivity());
         merchant = databaseHelper.getMerchantById(sessionManager.getMerchantId());
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItem = databaseHelper.getCustomerById(getArguments().getLong(ARG_ITEM_ID, 0L));

@@ -233,7 +233,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             progressDialog.setMessage(getString(R.string.a_moment));
             progressDialog.show();
 
-            ApiClient apiClient = new ApiClient(mContext);
+            ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
             apiClient.getLoystarApi().updateCustomer(customer.getId().toString(), requestBody).enqueue(new Callback<DBCustomer>() {
                 @Override
                 public void onResponse(Call<DBCustomer> call, Response<DBCustomer> response) {

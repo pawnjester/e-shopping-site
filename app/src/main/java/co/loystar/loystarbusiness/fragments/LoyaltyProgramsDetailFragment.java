@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -58,7 +59,7 @@ public class LoyaltyProgramsDetailFragment extends Fragment {
     /*shared variables*/
     private DBMerchantLoyaltyProgram mItem;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private ApiClient mApiClient;
 
     /*views*/
@@ -79,7 +80,6 @@ public class LoyaltyProgramsDetailFragment extends Fragment {
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mApiClient = new ApiClient(getContext());
-            sessionManager = new SessionManager(getContext());
             mItem = databaseHelper.getProgramById(getArguments().getLong(ARG_ITEM_ID, 0L), sessionManager.getMerchantId());
 
             Activity activity = this.getActivity();
@@ -88,7 +88,7 @@ public class LoyaltyProgramsDetailFragment extends Fragment {
                 if (mItem != null) {
                     actionBar.setTitle(mItem.getName());
                 }
-                actionBar.setHomeAsUpIndicator(AppCompatDrawableManager.get().getDrawable(activity, R.drawable.ic_close_white_24px));
+                actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(activity, R.drawable.ic_close_white_24px));
                 actionBar.setDisplayHomeAsUpEnabled(true);
             }
         }

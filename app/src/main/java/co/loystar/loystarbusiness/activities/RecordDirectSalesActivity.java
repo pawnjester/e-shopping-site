@@ -90,7 +90,7 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
     private Fragment mFragment = null;
     private FragmentManager mFragmentManager = getSupportFragmentManager();
     private Context mContext;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private boolean isSimplePoints = false;
     private boolean isStamps = false;
     private String mCustomerAmountSpent;
@@ -106,7 +106,6 @@ public class RecordDirectSalesActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mLayout = findViewById(R.id.activity_record_direct_sales_coordinator_layout);
         mContext = this;
-        sessionManager = new SessionManager(this);
         mixPanel = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
 
         if (getSupportActionBar() != null) {

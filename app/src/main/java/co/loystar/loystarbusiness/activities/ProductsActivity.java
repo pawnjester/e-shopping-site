@@ -55,8 +55,10 @@ import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.RE
  */
 
 @RuntimePermissions
-public class ProductsActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, RecyclerViewOnItemClickListener {
-    private SessionManager sessionManager;
+public class ProductsActivity extends AppCompatActivity implements
+        SearchView.OnQueryTextListener,
+        RecyclerViewOnItemClickListener {
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private EmptyRecyclerView mRecyclerView;
     private ArrayList<DBProduct> products;
@@ -77,7 +79,6 @@ public class ProductsActivity extends AppCompatActivity implements SearchView.On
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        sessionManager = new SessionManager(mContext);
         products = databaseHelper.listMerchantProducts(sessionManager.getMerchantId());
 
         boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_add_success), false);

@@ -58,7 +58,7 @@ public class CreateLoyaltyProgramDetailFragment extends Fragment {
 
     /*shared variables*/
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private ApiClient mApiClient;
     private LoyaltyProgram mItem;
 
@@ -81,7 +81,6 @@ public class CreateLoyaltyProgramDetailFragment extends Fragment {
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mApiClient = new ApiClient(getContext());
-            sessionManager = new SessionManager(getContext());
             mItem = LoyaltyProgramsFetcher.getLoyaltyPrograms(getActivity()).getLoyaltyProgram(getArguments().getString(ARG_ITEM_ID));
         }
 

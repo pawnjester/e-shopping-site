@@ -47,7 +47,7 @@ public class BirthdayMessageTextFragment extends Fragment {
     /*constants*/
     private static final String TAG = BirthdayMessageTextFragment.class.getSimpleName();
 
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private DBBirthdayOffer mBirthdayOffer;
     private ApiClient mApiClient;
@@ -89,7 +89,6 @@ public class BirthdayMessageTextFragment extends Fragment {
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage(getString(R.string.a_moment));
 
-        sessionManager = new SessionManager(getContext());
         mPresetTemplate = databaseHelper.getBirthdayPresetSMSByMerchantId(sessionManager.getMerchantId());
         mBirthdayOffer = databaseHelper.getBirthdayOfferByMerchantId(sessionManager.getMerchantId());
 

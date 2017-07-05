@@ -38,7 +38,7 @@ import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
 public class AddPointsFragment extends Fragment {
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private CurrencyEditText amountSpentView;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private Long mCustomerId;
     private Long mProgramId;
 
@@ -59,7 +59,6 @@ public class AddPointsFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_add_points, container, false);
 
-        sessionManager = new SessionManager(getActivity());
         Bundle extras = getArguments();
         mProgramId = extras.getLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID);
         mCustomerId = extras.getLong(RecordDirectSalesActivity.CUSTOMER_ID);

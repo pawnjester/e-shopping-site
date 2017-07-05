@@ -71,7 +71,7 @@ public class AddStampsActivity extends AppCompatActivity {
     int amountSpent;
     private Long mProgramId;
     private Long mProductId;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private Context mContext;
 
@@ -95,7 +95,6 @@ public class AddStampsActivity extends AppCompatActivity {
         mLayout = findViewById(R.id.stamps_transactions_container);
         mContext = this;
         final Bundle bundle = getIntent().getExtras();
-        sessionManager = new SessionManager(mContext);
         mProgramId = bundle.getLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID);
         mProductId = bundle.getLong(RecordStampsSalesWithPosActivity.PRODUCT_ID, 0L);
         amountSpent = bundle.getInt(RecordDirectSalesActivity.CUSTOMER_AMOUNT_SPENT, 0);

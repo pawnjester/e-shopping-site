@@ -40,7 +40,8 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerViewOnI
  * Long mSelectedProgramId = selected programId
  * Long mCustomerId = preselected Customer id
  * */
-public class RecordStampsSalesWithPosActivity extends AppCompatActivity  implements SearchView.OnQueryTextListener,
+public class RecordStampsSalesWithPosActivity extends AppCompatActivity  implements
+        SearchView.OnQueryTextListener,
         CustomerAutoCompleteDialog.SelectedCustomerListener,
         RecyclerViewOnItemClickListener {
     /*constants*/
@@ -50,7 +51,7 @@ public class RecordStampsSalesWithPosActivity extends AppCompatActivity  impleme
     private ArrayList<DBProduct> products;
     private Long mSelectedProgramId;
     private Long mCustomerId;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private Context mContext;
     private CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private int selectedItemPosition;
@@ -74,7 +75,6 @@ public class RecordStampsSalesWithPosActivity extends AppCompatActivity  impleme
         }
 
         mContext = this;
-        sessionManager = new SessionManager(this);
         Bundle extras = getIntent().getExtras();
         mSelectedProgramId = extras.getLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, 0L);
         mCustomerId = extras.getLong(RecordDirectSalesActivity.CUSTOMER_ID, 0L);

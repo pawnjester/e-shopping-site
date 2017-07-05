@@ -57,9 +57,9 @@ public class PaySubscription extends AppCompatActivity {
     private static String selectedPlan = "Lite";
     private static int litePlanPrice;
 
-    private Context context;
-    private SessionManager sessionManager;
-    private ApiClient mApiClient;
+    private Context mContext;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
+    private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
 
     /*Views*/
     private Dialog enterMoMoneyDialog,payChoiceDialog;
@@ -91,11 +91,10 @@ public class PaySubscription extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        context = this;
-        sessionManager = new SessionManager(getApplicationContext());
-        mApiClient = new ApiClient(this);
-
-        currencySymbol = CurrenciesFetcher.getCurrencies(context).getCurrency(sessionManager.getMerchantCurrency()).getSymbol();
+        mContext = this;
+        currencySymbol = CurrenciesFetcher.getCurrencies(mContext)
+                .getCurrency(sessionManager.getMerchantCurrency())
+                .getSymbol();
 
         /*Initialize Views*/
         Button payBtn = (Button) findViewById(R.id.pay_btn);
@@ -168,7 +167,7 @@ public class PaySubscription extends AppCompatActivity {
 
                         String tmt = "%s%s";
                         String currencyTxt = String.format(tmt,
-                                CurrenciesFetcher.getCurrencies(context).getCurrency(planPriceResponse.getCurrency()).getSymbol(),
+                                CurrenciesFetcher.getCurrencies(mContext).getCurrency(planPriceResponse.getCurrency()).getSymbol(),
                                 "<sup></sup>");
                         currencySymbolView.setText(GeneralUtils.fromHtml(currencyTxt));
                         litePlanPrice = Integer.parseInt(planPriceResponse.getPrice());
@@ -245,7 +244,7 @@ public class PaySubscription extends AppCompatActivity {
 
     private void setupPayChoiceDialog() {
 
-        payChoiceDialog = new Dialog(context);
+        payChoiceDialog = new Dialog(mContext);
         payChoiceDialog.setContentView(R.layout.payment_choice_dialog);
         payChoiceDialog.setTitle(getResources().getString(R.string.how_to_pay));
 
@@ -285,7 +284,7 @@ public class PaySubscription extends AppCompatActivity {
 
     private void setupEnterMobileMoneyNumberDialog() {
 
-        enterMoMoneyDialog = new Dialog(context);
+        enterMoMoneyDialog = new Dialog(mContext);
         enterMoMoneyDialog.setContentView(R.layout.enter_mobile_money_number);
         enterMoMoneyDialog.setTitle(getResources().getString(R.string.pay_with_momoney));
 
@@ -348,7 +347,7 @@ public class PaySubscription extends AppCompatActivity {
                                 PaySubscriptionWithMobileMoneyResponse mobileMoneyResponse = response.body();
 
                                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                                        context);
+                                        mContext);
 
                                 String guide_text = getString(R.string.mobile_money_transaction_guide);
                                 String tmt = "%s %s ";

@@ -36,7 +36,7 @@ public class RecordDirectSalesActivityFragment extends Fragment {
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private Long mCustomerId;
     private ArrayList<DBCustomer> mCustomers;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
 
     public RecordDirectSalesActivityFragment() {}
 
@@ -51,8 +51,6 @@ public class RecordDirectSalesActivityFragment extends Fragment {
 
         Bundle extras = getArguments();
         mCustomerId = extras.getLong(RecordDirectSalesActivity.CUSTOMER_ID, 0L);
-        sessionManager = new SessionManager(getActivity());
-
         final CurrencyEditText amountSpentView = (CurrencyEditText) rootView.findViewById(R.id.record_direct_sales_amount_spent);
         BrandButtonNormal submitBtn = (BrandButtonNormal) rootView.findViewById(R.id.fragment_next_btn);
 

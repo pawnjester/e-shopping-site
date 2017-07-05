@@ -21,6 +21,7 @@ import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
 import co.loystar.loystarbusiness.api.pojos.SendPasswordResetEmailResponse;
+import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.TextUtilsHelper;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -85,7 +86,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
                         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                        ApiClient apiClient = new ApiClient(mContext);
+                        ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
 
                         apiClient.getLoystarApi().sendPasswordResetEmail(requestBody).enqueue(new Callback<SendPasswordResetEmailResponse>() {
                             @Override

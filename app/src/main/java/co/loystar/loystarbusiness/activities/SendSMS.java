@@ -19,12 +19,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
+import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseHelper;
 import co.loystar.loystarbusiness.models.db.DBCustomer;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
@@ -172,7 +172,7 @@ public class SendSMS extends AppCompatActivity {
 
                             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                            ApiClient apiClient = new ApiClient(mContext);
+                            ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
 
                             apiClient.getLoystarApi().sendSms(requestBody).enqueue(new Callback<ResponseBody>() {
                                 @Override

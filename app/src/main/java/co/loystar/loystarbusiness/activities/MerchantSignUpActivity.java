@@ -47,7 +47,7 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
     public static final String KEY_SIGN_UP = "isSignUp";
     private View mLayout;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private Context context;
 
     @Override
@@ -62,7 +62,6 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        sessionManager = new SessionManager(this);
         context = this;
         String digitsPhoneNumber = getIntent().getStringExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER);
         Bundle data = new Bundle();
@@ -111,7 +110,7 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
         String currency = sharedPref.getString("currency", null);
         String firstName = sharedPref.getString("first_name", null);
 
-        ApiClient apiClient = new ApiClient(context);
+        ApiClient apiClient = LoystarApplication.getInstance().getApiClient();
         apiClient.getLoystarApi().signUpMerchant(firstName, businessEmail, businessName, businessPhone, businessType, currency, accountPassword).enqueue(new Callback<MerchantSignInSuccessResponse>() {
             @Override
             public void onResponse(Call<MerchantSignInSuccessResponse> call, Response<MerchantSignInSuccessResponse> response) {

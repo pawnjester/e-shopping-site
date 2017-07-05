@@ -56,7 +56,9 @@ import permissions.dispatcher.RuntimePermissions;
  */
 
 @RuntimePermissions
-public class ProductCategoriesActivity extends AppCompatActivity implements ChipsOnRemoveListener, SearchView.OnQueryTextListener {
+public class ProductCategoriesActivity extends AppCompatActivity implements
+        ChipsOnRemoveListener,
+        SearchView.OnQueryTextListener {
 
     /*constants*/
     private static final int REQUEST_PERMISSION_SETTING = 103;
@@ -64,7 +66,7 @@ public class ProductCategoriesActivity extends AppCompatActivity implements Chip
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private IItemsFactory itemsFactory = new ChipsFactory();
     private ArrayList<ChipsEntity> items;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private Context mContext;
     private RecyclerView.Adapter mAdapter;
     private EmptyRecyclerView mRecyclerView;
@@ -82,8 +84,6 @@ public class ProductCategoriesActivity extends AppCompatActivity implements Chip
         }
 
         mContext = this;
-        sessionManager = new SessionManager(mContext);
-
         View emptyView = findViewById(R.id.activity_product_categories_empty_container);
         BrandButtonNormal addBtn = (BrandButtonNormal) emptyView.findViewById(R.id.activity_product_categories_add_category);
         addBtn.setOnClickListener(new View.OnClickListener() {

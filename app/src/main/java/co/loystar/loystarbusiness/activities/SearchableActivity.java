@@ -38,7 +38,7 @@ public class SearchableActivity extends AppCompatActivity implements RecyclerVie
     private EmptyRecyclerView mRecyclerView;
     private CustomerListRecyclerViewAdapter recyclerViewAdapter;
     private ArrayList<DBCustomer> customerArrayList;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private View emptyView;
     private RecyclerView.LayoutManager mLayoutManager;
 

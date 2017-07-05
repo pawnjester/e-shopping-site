@@ -91,7 +91,8 @@ import static co.loystar.loystarbusiness.activities.RecordDirectSalesActivity.RE
  * */
 
 @RuntimePermissions
-public class RecordPointsSalesWithPosActivity extends AppCompatActivity implements SearchView.OnQueryTextListener,
+public class RecordPointsSalesWithPosActivity extends AppCompatActivity implements
+        SearchView.OnQueryTextListener,
         SingleChoiceSpinnerDialogOnItemSelectedListener,
         PosProductsCountListener,
         CustomerAutoCompleteDialog.SelectedCustomerListener,
@@ -104,7 +105,7 @@ public class RecordPointsSalesWithPosActivity extends AppCompatActivity implemen
     private ArrayList<OrderSummaryItem> orderSummaryItems = new ArrayList<>();
     private DBCustomer mCustomerSelected;
     private String chargeTemplate = "COLLECT PAYMENT %s %.2f";
-    private SessionManager sessionManager;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private Context mContext;
     private Long mCustomerId;
 
@@ -232,7 +233,6 @@ public class RecordPointsSalesWithPosActivity extends AppCompatActivity implemen
             }
         };
 
-        sessionManager = new SessionManager(this);
         merchantCurrency = CurrenciesFetcher.getCurrencies(this).getCurrency(sessionManager.getMerchantCurrency()).getSymbol();
 
         View emptyProductsView = findViewById(R.id.activity_record_sales_with_pos_products_empty_container);
