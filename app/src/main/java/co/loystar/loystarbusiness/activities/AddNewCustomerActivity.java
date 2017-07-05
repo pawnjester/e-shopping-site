@@ -19,7 +19,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -618,7 +617,7 @@ public class AddNewCustomerActivity extends AppCompatActivity implements DialogI
                         if (progressDialog.isShowing()) {
                             progressDialog.dismiss();
                         }
-                        Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
                     }
                 });
             } catch (JSONException e) {

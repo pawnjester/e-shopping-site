@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.MainThread;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.FragmentManager;
@@ -23,6 +25,14 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.ErrorCodes;
+import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ResultCodes;
+import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Collections;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
@@ -58,6 +68,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
     public final static String PARAM_USER_PASS = "USER_PASS";
     public final static String IS_NEW_LOGIN = "isNewLogin";
     public final static String AUTH_TOKEN = "authToken";
+    private static final int REQ_VERIFY_PHONE_NUMBER = 100;
     private static final String TAG = MerchantLoginActivity.class.getSimpleName();
 
     private final Context mContext = MerchantLoginActivity.this;
@@ -88,33 +99,30 @@ public class MerchantLoginActivity extends AppCompatActivity {
         mLayout = findViewById(R.id.login_root_layout);
         mAccountManager = AccountManager.get(mContext);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        /*final AuthConfig.Builder authConfigBuilder = new AuthConfig.Builder()
-                .withAuthCallBack(new com.digits.sdk.android.AuthCallback() {
-                    @Override
-                    public void success(DigitsSession sessionManager, String phoneNumber) {
-                        startLoginSessionFromPhone();
-                    }
-                    @Override
-                    public void failure(DigitsException error) {
-                        Snackbar.make(mLayout, getString(R.string.toast_twitter_digits_fail), Snackbar.LENGTH_LONG).show();
-                        Crashlytics.logException(error);
-                    }
-                });
-        TextView signInWithPhoneNumber = (TextView) findViewById(R.id.phone_button);
-        signInWithPhoneNumber.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Digits.authenticate(authConfigBuilder.build());
-            }
-        });
 
         Button signUp = (Button) findViewById(R.id.sign_up_btn);
         signUp.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Digits.authenticate(authConfigBuilder.build());
+                FirebaseAuth auth = FirebaseAuth.getInstance();
+                if (auth.getCurrentUser() != null) {
+                    Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
+                    signUp.putExtras(getIntent().getExtras());
+                    signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, auth.getCurrentUser().getPhoneNumber());
+                    startActivityForResult(signUp, REQ_SIGN_UP);
+                    finish();
+                } else {
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setAvailableProviders(Collections.singletonList(
+                                            new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()
+                                    ))
+                                    .build(),
+                            REQ_VERIFY_PHONE_NUMBER);
+                }
             }
-        });*/
+        });
 
         TextView forgot_pass = (TextView) findViewById(R.id.forgot_password);
         TextInputLayout passwordLayout = (TextInputLayout) findViewById(R.id.passwordLayout);
@@ -168,62 +176,44 @@ public class MerchantLoginActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // The sign up activity returned that the user has successfully created an account
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_SIGN_UP && resultCode == RESULT_OK) {
             finishLogin(data);
-        } else
-            super.onActivityResult(requestCode, resultCode, data);
+        }
+        if (requestCode == REQ_VERIFY_PHONE_NUMBER) {
+            handlePhoneVerificationResponse(resultCode, data);
+        }
     }
 
-    private void startLoginSessionFromPhone() {
-        /*TwitterAuthConfig authConfig = TwitterCore.getInstance().getAuthConfig();
-        TwitterAuthToken authToken = Digits.getActiveSession().getAuthToken();
-        DigitsOAuthSigning oauthSigning = new DigitsOAuthSigning(authConfig, authToken);
-        final Map<String, String> authHeaders = oauthSigning.getOAuthEchoHeadersForVerifyCredentials();
-
-        progressDialog.setMessage(getString(R.string.a_moment));
-        progressDialog.show();
-
-        mApiClient.getLoystarApi().signInWithDigits(authHeaders.get("X-Auth-Service-Provider"), authHeaders.get("X-Verify-Credentials-Authorization")).enqueue(new Callback<DBMerchant>() {
-            @Override
-            public void onResponse(Call<DBMerchant> call, Response<DBMerchant> response) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
-                }
-
-                if (response.isSuccessful()) {
-                    dispatchSignInSuccess(response, response.body(), false);
-                }
-                else {
-                    int statusCode = response.code();
-                    switch (statusCode) {
-                        case 401:
-                            // Since there can only be one AuthenticatorActivity, we call the sign up activity, get its results,
-                            // and return them in setAccountAuthenticatorResult(). See finishLogin().
-                            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
-                            signUp.putExtras(getIntent().getExtras());
-                            //signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, Digits.getActiveSession().getPhoneNumber());
-                            startActivityForResult(signUp, REQ_SIGN_UP);
-                            break;
-                        default:
-                            Snackbar.make(mLayout, getString(R.string.error_signup), Snackbar.LENGTH_LONG).show();
-                            break;
-                    }
-                }
+    private void handlePhoneVerificationResponse(int resultCode, Intent data) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
+        /*Successfully verified*/
+        if (resultCode == ResultCodes.OK && response != null) {
+            /* Since there can only be one AuthenticatorActivity, we call the sign up activity, get its results,
+             and return them in setAccountAuthenticatorResult(). See finishLogin().*/
+            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
+            signUp.putExtras(getIntent().getExtras());
+            signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, response.getPhoneNumber());
+            startActivityForResult(signUp, REQ_SIGN_UP);
+            finish();
+        } else {
+            /*Verification failed*/
+            if (response == null) {
+                /*User pressed back button*/
+                showSnackbar(R.string.sign_up_cancelled);
+                return;
             }
 
-            @Override
-            public void onFailure(Call<DBMerchant> call, Throwable t) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
-                }
-
-                //Crashlytics.log(2, TAG, t.getMessage());
-                Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+            if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
+                showSnackbar(R.string.no_internet_connection);
+                return;
             }
-        });*/
+
+            if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
+                showSnackbar(R.string.unknown_error);
+            }
+        }
     }
-
 
     private void attemptLogin() {
 
@@ -318,7 +308,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
                     progressDialog.dismiss();
                 }
                 //Crashlytics.log(2, TAG, t.getMessage());
-                Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
             }
         });
 
@@ -450,6 +440,11 @@ public class MerchantLoginActivity extends AppCompatActivity {
         data.putBoolean(IS_NEW_LOGIN, true);
         intent.putExtras(data);
         finishLogin(intent);
+    }
+
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
 
 }

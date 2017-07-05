@@ -232,7 +232,7 @@ public class BirthdayMessageTextFragment extends Fragment {
                                                         mProgressDialog.dismiss();
                                                     }
 
-                                                    Toast.makeText(getContext(), getString(R.string.error_internet_connection), Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(getContext(), getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                                                     //Crashlytics.log(2, TAG, t.getMessage());
                                                 }
                                             });
@@ -386,7 +386,7 @@ public class BirthdayMessageTextFragment extends Fragment {
                                                     if (mProgressDialog.isShowing()) {
                                                         mProgressDialog.dismiss();
                                                     }
-                                                    Toast.makeText(getContext(), getString(R.string.error_internet_connection), Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(getContext(), getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                                                     //Crashlytics.log(2, TAG, t.getMessage());
                                                 }
                                             });

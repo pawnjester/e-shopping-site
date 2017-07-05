@@ -78,23 +78,6 @@
             android:text="@string/action_sign_in_short"
             android:textSize="@dimen/login_button_text_size" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:textSize="14sp"
-            android:layout_marginTop="5dp"
-            android:text="@string/or_caps"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:textSize="14sp"
-            android:text="@string/sign_in_with_phone"
-            android:id="@+id/phone_button" />
-
-
         <RelativeLayout
             android:layout_marginTop="40dp"
             android:layout_width="match_parent"
@@ -114,8 +97,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true" />
-
-
 
         </RelativeLayout>
 

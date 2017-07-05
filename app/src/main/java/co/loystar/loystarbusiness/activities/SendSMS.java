@@ -24,7 +24,6 @@ import org.json.JSONObject;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
-import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseHelper;
 import co.loystar.loystarbusiness.models.db.DBCustomer;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
@@ -210,7 +209,7 @@ public class SendSMS extends AppCompatActivity {
                                         progressDialog.dismiss();
                                     }
                                     //Crashlytics.log(2, TAG, t.getMessage());
-                                    Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                                    Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
                                 }
                             });
 

@@ -20,6 +20,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,7 +81,7 @@ public class MerchantSignUpStepOneFragment extends Fragment {
             actionBar.setTitle(R.string.title_activity_merchant_signup);
         }
 
-        String digitsPhoneNumber = getArguments().getString(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, "");
+        String merchantPhoneNumber = getArguments().getString(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, "");
 
         /*Initialize views*/
         business_name_wrapper = (TextInputLayout) rootView.findViewById(R.id.business_name_wrapper);
@@ -90,8 +93,8 @@ public class MerchantSignUpStepOneFragment extends Fragment {
         business_name = (EditText) rootView.findViewById(R.id.business_name);
         business_phone = (IntlPhoneInput) rootView.findViewById(R.id.business_phone);
         TextView login = (TextView) rootView.findViewById(R.id.login);
-        if (!TextUtils.isEmpty(digitsPhoneNumber)) {
-            business_phone.setNumber(digitsPhoneNumber);
+        if (!TextUtils.isEmpty(merchantPhoneNumber)) {
+            business_phone.setNumber(merchantPhoneNumber);
         }
 
         check_phone_spinner = (ProgressBar) rootView.findViewById(R.id.check_phone_pb);
@@ -147,18 +150,18 @@ public class MerchantSignUpStepOneFragment extends Fragment {
     }
 
     private void validateSpecialFields() {
-        /*if (Digits.getActiveSession() == null) {
+        FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
+        if (u == null) {
             Snackbar.make(mLayout, R.string.error_phone_not_verified,
                     Snackbar.LENGTH_LONG)
                     .show();
             business_phone.requestFocus();
             return;
-        }*/
+        }
 
-        /*get the phone number from the active digits session.
-        this prevents a user from changing the phone number after digits authentication*/
-        /*businessPhoneVal = Digits.getActiveSession().getPhoneNumber();*/
-        businessPhoneVal = "";
+        /*get the phone number from the active firebase session. this prevents a user
+          from changing the phone number after firebase verification*/
+        businessPhoneVal = u.getPhoneNumber();
         emailVal = business_email.getText().toString();
 
         View view = getActivity().getCurrentFocus();
@@ -235,7 +238,7 @@ public class MerchantSignUpStepOneFragment extends Fragment {
                     check_phone_spinner.setVisibility(View.GONE);
                     check_email_spinner.setVisibility(View.GONE);
 
-                    Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
                 }
             });
 

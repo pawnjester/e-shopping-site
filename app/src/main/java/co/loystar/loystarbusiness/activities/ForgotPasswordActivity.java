@@ -130,7 +130,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                                     progressDialog.dismiss();
                                 }
 
-                                Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
                                 //Crashlytics.log(2, TAG, t.getMessage());
                             }
                         });

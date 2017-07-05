@@ -268,7 +268,10 @@
     <string name="campaign_name">e.g New Product</string>
     <string name="title_activity_communications_home">Communications Home</string>
     <string name="title_activity_send_sms_broadcast">SMS Blast</string>
-    <string name="error_internet_connection">Error connection timed out. Please check your connection and try again.</string>
+    <string name="sign_up_cancelled">Sign up cancelled</string>
+    <string name="unknown_error">An unknown error occurred</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="error_internet_connection_timed_out">Error connection timed out. Please check your connection and try again.</string>
     <string name="update">Update</string>
     <string name="customers">My Customers</string>
     <string name="messaging">Messaging</string>

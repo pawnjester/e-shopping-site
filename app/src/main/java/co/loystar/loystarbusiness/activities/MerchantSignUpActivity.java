@@ -48,7 +48,6 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
     private View mLayout;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
-    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +61,10 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        context = this;
-        String digitsPhoneNumber = getIntent().getStringExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER);
+        String merchantPhoneNumber = getIntent().getStringExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER);
         Bundle data = new Bundle();
 
-        data.putString(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, digitsPhoneNumber);
+        data.putString(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, merchantPhoneNumber);
         MerchantSignUpStepOneFragment stepOneFragment = new MerchantSignUpStepOneFragment();
         stepOneFragment.setArguments(data);
         frgManager.beginTransaction().replace(R.id.sign_up_container, stepOneFragment).commit();
@@ -172,7 +170,7 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
                     progressDialog.dismiss();
                 }
                 //Crashlytics.log(2, TAG, t.getMessage());
-                Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
             }
         });
     }

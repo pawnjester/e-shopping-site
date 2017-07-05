@@ -14,6 +14,8 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -51,7 +53,6 @@ public class SessionManager {
     private static final String KEY_ACCESS_TOKEN = "accessToken";
     private static final String KEY_CLIENT_KEY = "clientKey";
     private static final String KEY_TOKEN_EXPIRY = "tokenExpiry";
-    private static final String CONTACTS_PERMISSION_DENIED = "contactsDenied";
     // Constructor
     @SuppressLint("CommitPrefEdits")
     public SessionManager(Context context) {
@@ -221,7 +222,7 @@ public class SessionManager {
             }
             editor.clear();
             editor.apply();
-            /*Digits.clearActiveSession();*/
+            FirebaseAuth.getInstance().signOut();
             Smooch.logout();
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(_context);
             SharedPreferences.Editor defaultSharedPreferencesEditor = defaultSharedPreferences.edit();

@@ -273,7 +273,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
-                    Snackbar.make(mLayout, getString(R.string.error_internet_connection), Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
                 }
             });
 

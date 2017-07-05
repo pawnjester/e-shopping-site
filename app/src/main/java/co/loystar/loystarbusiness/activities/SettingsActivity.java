@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -654,7 +653,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
-                Toast.makeText(mContext, mContext.getString(R.string.error_internet_connection), Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, mContext.getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                 //Crashlytics.log(2, TAG, t.getMessage());
             }
         });
