@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -110,7 +111,6 @@ public class MerchantLoginActivity extends AppCompatActivity {
                     signUp.putExtras(getIntent().getExtras());
                     signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, auth.getCurrentUser().getPhoneNumber());
                     startActivityForResult(signUp, REQ_SIGN_UP);
-                    finish();
                 } else {
                     startActivityForResult(
                             AuthUI.getInstance()
@@ -195,7 +195,6 @@ public class MerchantLoginActivity extends AppCompatActivity {
             signUp.putExtras(getIntent().getExtras());
             signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, response.getPhoneNumber());
             startActivityForResult(signUp, REQ_SIGN_UP);
-            finish();
         } else {
             /*Verification failed*/
             if (response == null) {

@@ -273,7 +273,6 @@
             android:name="com.facebook.sdk.ApplicationId"
             tools:replace="android:value"
             android:value="@string/facebook_app_id" />
-
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings"

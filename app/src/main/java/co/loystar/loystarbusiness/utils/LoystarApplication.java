@@ -22,7 +22,6 @@ import okhttp3.OkHttpClient;
  */
 
 public class LoystarApplication extends Application {
-    public static final String PERMISSIONS_PREFERENCES = "PermissionsPref";
     public static final String DATABASE_NAME = "db_loystar_app";
     private Typeface latoFont;
     private DatabaseHelper databaseHelper;

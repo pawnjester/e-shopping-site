@@ -5,7 +5,7 @@
 #   public *;
 #}
 
--keepattributes *Annotation*,EnclosingMethod,Signature
+-keepattributes *Annotation*, EnclosingMethod, Signature, InnerClasses
 
 # GreenDao rules
 -keepclassmembers class * extends org.greenrobot.greendao.AbstractDao {
@@ -68,3 +68,7 @@ public static java.lang.String TABLENAME;
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
 -dontwarn okhttp3.**
+
+
+-keep public class com.google.android.gms.* { public *; }
+-dontwarn com.google.android.gms.**

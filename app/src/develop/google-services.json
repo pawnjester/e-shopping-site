@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "165146598570-nfu0kd5ajnlbff6pboh7aogd4549q20k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.loystar.loystarbusiness",
+            "certificate_hash": "8c13bf8bca185a862819512a6eec74109bd33b21"
+          }
+        },
+        {
           "client_id": "165146598570-tolees052in5ldl8k0bvhvlh00metmbl.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -45,6 +53,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "165146598570-i06j5kb4ug0t0ei0aovc7hc30i7t5el3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.loystar.loystarbusiness.develop",
+            "certificate_hash": "ea960b7f434285589aa853015ab260c0ed41753e"
+          }
+        },
+        {
+          "client_id": "165146598570-mv4u5i7cus496ld56jp7hkh0fg0d074n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.loystar.loystarbusiness.develop",
+            "certificate_hash": "8c13bf8bca185a862819512a6eec74109bd33b21"
+          }
+        },
         {
           "client_id": "165146598570-tolees052in5ldl8k0bvhvlh00metmbl.apps.googleusercontent.com",
           "client_type": 3
