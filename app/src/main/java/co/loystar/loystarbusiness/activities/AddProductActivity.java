@@ -38,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -504,7 +505,7 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
                 imageUri = result.getUri();
                 Glide.with(AddProductActivity.this)
                         .load(imageUri.getPath())
-                        //.crossFade()
+                        .apply(RequestOptions.placeholderOf(AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)))
                         .into(thumbnailView);
                 collapseFabMenu();
             }

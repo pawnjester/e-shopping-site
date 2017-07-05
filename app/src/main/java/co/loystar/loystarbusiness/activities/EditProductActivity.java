@@ -39,6 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -199,7 +200,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
         if (product != null) {
             Glide.with(this)
                     .load(product.getPicture())
-                    //.crossFade()
+                    .apply(RequestOptions.placeholderOf(AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)))
                     .into(thumbnailView);
 
             productNameView.setText(product.getName());

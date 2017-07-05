@@ -1,7 +1,7 @@
 package co.loystar.loystarbusiness.adapters;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,6 +12,7 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 
@@ -78,9 +79,8 @@ public class ProductsGridViewAdapter extends RecyclerView.Adapter<ProductsGridVi
             productPrice.setText(String.valueOf(product.getPrice()));
             Glide.with(mContext)
                     .load(product.getPicture())
-                    //.centerCrop()
-                    //.placeholder(AppCompatDrawableManager.get().getDrawable(mContext, R.drawable.ic_photo_black_24px))
-                    //.crossFade()
+                    .apply(RequestOptions.centerCropTransform())
+                    .apply(RequestOptions.placeholderOf(AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)))
                     .into(productImage);
         }
 
