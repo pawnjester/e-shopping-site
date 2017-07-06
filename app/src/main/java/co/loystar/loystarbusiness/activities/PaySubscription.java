@@ -37,7 +37,6 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
 import co.loystar.loystarbusiness.api.pojos.GetPricingPlanDataResponse;
 import co.loystar.loystarbusiness.api.pojos.PaySubscriptionWithMobileMoneyResponse;
-import co.loystar.loystarbusiness.models.DatabaseHelper;
 import co.loystar.loystarbusiness.utils.GeneralUtils;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.SessionManager;
@@ -53,9 +52,9 @@ public class PaySubscription extends AppCompatActivity {
     /*Constants*/
     private static final String TAG = PaySubscription.class.getCanonicalName();
     private static Integer selectedDuration = 1;
-    private static int total_amount = 1;
+    private static double total_amount = 1;
     private static String selectedPlan = "Lite";
-    private static int litePlanPrice;
+    private static double litePlanPrice;
 
     private Context mContext;
     private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
@@ -75,7 +74,6 @@ public class PaySubscription extends AppCompatActivity {
     private String   mobileMoneyNo, walletProvider;
     private ProgressDialog progressDialog;
     private View errorView;
-    private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
     private TextView litePlanSmsBundleView;
     private TextView currencySymbolView;
 
@@ -92,9 +90,7 @@ public class PaySubscription extends AppCompatActivity {
         }
 
         mContext = this;
-        currencySymbol = CurrenciesFetcher.getCurrencies(mContext)
-                .getCurrency(sessionManager.getMerchantCurrency())
-                .getSymbol();
+        currencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(sessionManager.getMerchantCurrency()).getSymbol();
 
         /*Initialize Views*/
         Button payBtn = (Button) findViewById(R.id.pay_btn);
@@ -137,9 +133,9 @@ public class PaySubscription extends AppCompatActivity {
 
         /*Track Screen Views*/
         /*Answers.getInstance().logContentView(new ContentViewEvent().putContentName("PaySubscriptionScreen").putContentType("Activity")
-            .putContentId("PaySubscriptionScreen")
-            .putCustomAttribute("Time of the Day ", "Not set")
-            .putCustomAttribute("Screen Orientation", "Not set"));*/
+                .putContentId("PaySubscriptionScreen")
+                .putCustomAttribute("Time of the Day ", "Not set")
+                .putCustomAttribute("Screen Orientation", "Not set"));*/
 
         fetchPricingInfo();
     }
@@ -170,7 +166,7 @@ public class PaySubscription extends AppCompatActivity {
                                 CurrenciesFetcher.getCurrencies(mContext).getCurrency(planPriceResponse.getCurrency()).getSymbol(),
                                 "<sup></sup>");
                         currencySymbolView.setText(GeneralUtils.fromHtml(currencyTxt));
-                        litePlanPrice = Integer.parseInt(planPriceResponse.getPrice());
+                        litePlanPrice = Double.parseDouble(planPriceResponse.getPrice());
 
                         String[] subscriptionDurationList = planPriceResponse.getSubscriptionDurationList();
                         List<String> stringList = new ArrayList<>(Arrays.asList(subscriptionDurationList));
@@ -205,8 +201,8 @@ public class PaySubscription extends AppCompatActivity {
                 if (dr.equals(getString(R.string.six_months))) {
                     selectedDuration = 6;
                     total_amount = litePlanPrice * selectedDuration;
-                    String tmt = "TOTAL: %s %s ";
-                    String total_amount_text = String.format(tmt, currencySymbol, Math.round(total_amount));
+                    String tmt = "TOTAL: %s %.2f ";
+                    String total_amount_text = String.format(Locale.UK, tmt, currencySymbol, total_amount);
                     saveMsgView.setText(R.string.saving_msg_6);
                     saveMsgView.setVisibility(View.INVISIBLE);
                     totalPriceView.setText(total_amount_text);
@@ -214,25 +210,25 @@ public class PaySubscription extends AppCompatActivity {
                 } else if (dr.equals(getString(R.string.twelve_months))) {
                     selectedDuration = 12;
                     total_amount = litePlanPrice * selectedDuration;
-                    String tmt = "TOTAL: %s %s ";
-                    String total_amount_text = String.format(tmt, currencySymbol, Math.round(total_amount));
+                    String tmt = "TOTAL: %s %.2f ";
+                    String total_amount_text = String.format(Locale.UK, tmt, currencySymbol, total_amount);
                     saveMsgView.setText(R.string.saving_msg_12);
                     saveMsgView.setVisibility(View.INVISIBLE);
                     totalPriceView.setText(total_amount_text);
                 } else if (dr.equals(getString(R.string.three_months))) {
                     selectedDuration = 3;
                     total_amount = litePlanPrice * selectedDuration;
-                    String tmt = "TOTAL: %s %s ";
-                    String total_amount_text = String.format(tmt, currencySymbol, Math.round(total_amount));
+                    String tmt = "TOTAL: %s %.2f ";
+                    String total_amount_text = String.format(Locale.UK, tmt, currencySymbol, total_amount);
                     saveMsgView.setText(R.string.saving_msg_3);
                     saveMsgView.setVisibility(View.INVISIBLE);
                     totalPriceView.setText(total_amount_text);
                 } else if (dr.equals(getString(R.string.one_month))) {
                     selectedDuration = 1;
                     total_amount = litePlanPrice * selectedDuration;
-                    String tmt = "TOTAL: %s %s ";
+                    String tmt = "TOTAL: %s %.2f ";
                     saveMsgView.setVisibility(View.INVISIBLE);
-                    String total_amount_text = String.format(tmt, currencySymbol, Math.round(total_amount));
+                    String total_amount_text = String.format(Locale.UK, tmt, currencySymbol, total_amount);
                     totalPriceView.setText(total_amount_text);
                 }
             }
@@ -255,14 +251,14 @@ public class PaySubscription extends AppCompatActivity {
             @Override
             public void onClick(View v) {
             /*set selected index*/
-            walletProviderSelectedIndex = 1;
-            walletProvider = "MTN";
+                walletProviderSelectedIndex = 1;
+                walletProvider = "MTN";
 
-            payChoiceDialog.dismiss();
+                payChoiceDialog.dismiss();
             /*setup second dialog*/
-            setupEnterMobileMoneyNumberDialog();
+                setupEnterMobileMoneyNumberDialog();
             /*then show it*/
-            enterMoMoneyDialog.show();
+                enterMoMoneyDialog.show();
 
             }
         });
@@ -270,14 +266,14 @@ public class PaySubscription extends AppCompatActivity {
         airtelMoney.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            walletProviderSelectedIndex = 2;
-            walletProvider = "AIRTEL";
+                walletProviderSelectedIndex = 2;
+                walletProvider = "AIRTEL";
 
-            payChoiceDialog.dismiss();
+                payChoiceDialog.dismiss();
             /*setup second dialog*/
-            setupEnterMobileMoneyNumberDialog();
+                setupEnterMobileMoneyNumberDialog();
             /*then show it*/
-            enterMoMoneyDialog.show();
+                enterMoMoneyDialog.show();
             }
         });
     }
@@ -327,7 +323,7 @@ public class PaySubscription extends AppCompatActivity {
                     JSONObject jsonObjectRequestData = new JSONObject();
                     jsonObjectRequestData.put("wallet_provider", walletProvider);
                     jsonObjectRequestData.put("customer_phone", mobileMoneyNo);
-                    jsonObjectRequestData.put("amount", Math.round(total_amount));
+                    jsonObjectRequestData.put("amount", total_amount);
                     jsonObjectRequestData.put("duration", selectedDuration);
                     jsonObjectRequestData.put("plan_type", selectedPlan);
 
