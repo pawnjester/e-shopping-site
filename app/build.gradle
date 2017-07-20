@@ -30,7 +30,7 @@ android {
     productFlavors {
         develop {
             applicationId "co.loystar.loystarbusiness.develop"
-            buildConfigField "String", "HOST", '"https://loystarapi.herokuapp.com/"'
+            buildConfigField "String", "HOST", '"https://loystar-api.herokuapp.com/"'
             buildConfigField "String", "URL_PREFIX", '"api/v2/"'
             buildConfigField "String", "DEFAULT_TIMEZONE", '"GMT"'
             minSdkVersion 16
@@ -109,8 +109,6 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:11.0.2'
     compile 'com.firebaseui:firebase-ui-auth:2.0.1'
     compile 'com.google.android.gms:play-services-auth:11.0.2'
-    compile 'com.google.android.gms:play-services-gcm:11.0.2'
-    compile 'com.google.android.gms:play-services-location:11.0.2'
     compile 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
     compile group: 'com.iceteck.silicompressorr', name: 'silicompressor', version: '2.0'
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
