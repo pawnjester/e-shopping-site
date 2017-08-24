@@ -59,6 +59,7 @@ public class SingleChoiceSpinnerAlertBuilder extends DialogFragment {
 
             final CharSequence[] charSequenceItems = itemsArray.toArray(new CharSequence[itemsArray.size()]);
             builder.setTitle(getArguments().getString(ALERT_TITLE));
+
             builder.setSingleChoiceItems(charSequenceItems, getArguments().getInt(PRESELECTED_INDEX), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {

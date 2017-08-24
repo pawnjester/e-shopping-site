@@ -39,7 +39,6 @@ public class CustomerDetailActivity extends AppCompatActivity implements Custome
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-
         }
 
         customerId = getIntent().getLongExtra(CustomerDetailFragment.ARG_ITEM_ID, 0L);

@@ -11,6 +11,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -268,6 +270,20 @@ public class RewardCustomersActivity extends AppCompatActivity implements
                             else if (response.code() == 404) {
                                 redemptionCodeView.setError(getString(R.string.error_redemption_code_incorrect));
                                 redemptionCodeView.requestFocus();
+                            }
+                            else if (response.code() == 422) {
+                                ObjectMapper mapper = JsonUtils.objectMapper;
+                                try {
+                                    JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+                                    JSONObject errorObject = new JSONObject(responseObject.toString());
+                                    JSONObject errors = errorObject.getJSONObject("errors");
+                                    Log.e("EERROR", errors.toString());
+                                    /*JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
+                                    Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();*/
+                                } catch (IOException | JSONException e) {
+                                    //Crashlytics.logException(e);
+                                    e.printStackTrace();
+                                }
                             }
                             else {
                                 Snackbar.make(mLayout, getString(R.string.something_went_wrong), Snackbar.LENGTH_LONG).show();
