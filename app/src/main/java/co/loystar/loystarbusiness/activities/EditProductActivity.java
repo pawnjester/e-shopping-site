@@ -491,7 +491,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
                                 }
 
                                 @Override
-                                public void onError(Context context, UploadInfo uploadInfo, Exception exception) {
+                                public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                                     if (progressDialog.isShowing()) {
                                         progressDialog.dismiss();
                                     }
@@ -522,7 +522,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
                                             startActivity(intent);
 
                                         } catch (IOException e) {
-                                            //Crashlytics.logException(e);
+                                            e.printStackTrace();
                                         }
                                     }
                                     else {
@@ -539,7 +539,7 @@ public class EditProductActivity extends AppCompatActivity implements SingleChoi
                             })
                             .startUpload();
                 } catch (Exception e) {
-                    //Crashlytics.logException(e);
+                    e.printStackTrace();
                 }
             }
             else {

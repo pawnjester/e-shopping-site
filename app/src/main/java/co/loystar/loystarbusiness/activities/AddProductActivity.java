@@ -428,7 +428,7 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
                         }
 
                         @Override
-                        public void onError(Context context, UploadInfo uploadInfo, Exception exception) {
+                        public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                             if (progressDialog.isShowing()) {
                                 progressDialog.dismiss();
                             }
@@ -467,7 +467,6 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
                                     finish();
 
                                 } catch (IOException e) {
-                                    //Crashlytics.logException(e);
                                     e.printStackTrace();
                                 }
                             }
@@ -485,7 +484,7 @@ public class AddProductActivity extends AppCompatActivity implements SingleChoic
                     })
                     .startUpload();
         } catch (Exception e) {
-            //Crashlytics.logException(e);
+            e.printStackTrace();
         }
     }
 
