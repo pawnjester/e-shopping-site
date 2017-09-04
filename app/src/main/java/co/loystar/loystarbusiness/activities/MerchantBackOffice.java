@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import android.view.View;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -40,6 +43,8 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -124,7 +129,7 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_merchant_back_office);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mLayout = findViewById(R.id.mb_coordinatorLayout);
@@ -173,13 +178,16 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
 
     private void setupGraph() {
 
-        barChart = (BarChart) findViewById(R.id.chart);
-
+        barChart = findViewById(R.id.chart);
         barChart.setDrawValueAboveBar(true);
-        barChart.getDescription().setText("");
+        barChart.setDescription(null);
         barChart.setNoDataText("No Sales Recorded");
 
+        // scaling can now only be done on x- and y-axis separately
+        barChart.setPinchZoom(false);
+        barChart.setDrawGridBackground(false);
         barChart.setOnChartValueSelectedListener(this);
+
 
         Paint p = barChart.getPaint(Chart.PAINT_INFO);
         int emptyStateTextSize = getResources().getDimensionPixelSize(R.dimen.empty_state_text_title);
@@ -188,72 +196,70 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
         p.setTypeface(LoystarApplication.getInstance().getTypeface());
         p.setColor(ContextCompat.getColor(mContext, R.color.black_overlay));
 
-        YAxis leftAxis = barChart.getAxisLeft();
-        leftAxis.setValueFormatter(new MyAxisValueFormatter());
-        leftAxis.setTypeface(LoystarApplication.getInstance().getTypeface());
-
-        YAxis rightAxis = barChart.getAxisRight();
-        rightAxis.setTypeface(LoystarApplication.getInstance().getTypeface());
-        rightAxis.setEnabled(false);
-
         barChart.setExtraTopOffset(chartPadding);
         barChart.setExtraBottomOffset(chartPadding);
         addGraphDataset();
     }
 
     private void addGraphDataset() {
-        ArrayList<GraphCoordinates> salesRecords = databaseHelper.getMerchantSalesHistory(
+        ArrayList<GraphCoordinates> graphCoordinates = databaseHelper.getMerchantSalesHistory(
                 sessionManager.getMerchantId(), "daily");
 
-        if (!salesRecords.isEmpty()) {
-
+        if (!graphCoordinates.isEmpty()) {
+            String[] xVals = new String[graphCoordinates.size()];
+            ArrayList<BarEntry> yVals = new ArrayList<>();
             DateFormat outFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
             Calendar todayCalendar = Calendar.getInstance();
-            String todayDate = TextUtilsHelper.getFormattedDateString(todayCalendar);
-
+            Calendar cal = Calendar.getInstance();
             try {
+                String todayDate = TextUtilsHelper.getFormattedDateString(todayCalendar);
                 Date todayDateWithoutTimeStamp = outFormatter.parse(todayDate);
-
-                ArrayList<BarEntry> entries = new ArrayList<>();
-                ArrayList<String> labelsArr = new ArrayList<>();
-                ArrayList<IBarDataSet> dataSets = new ArrayList<>();
-
-                for (int i=0; i < salesRecords.size(); i++) {
-                    GraphCoordinates salesRecord = salesRecords.get(i);
-                    entries.add(new BarEntry(salesRecord.getY(), i));
-
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(salesRecord.getX());
+                for (int i = 0; i < graphCoordinates.size(); i++) {
+                    GraphCoordinates gc = graphCoordinates.get(i);
+                    cal.setTime(gc.getX());
                     String dateString = TextUtilsHelper.getFormattedDateString(cal);
                     Date salesCreatedAt = outFormatter.parse(dateString);
                     if (salesCreatedAt.equals(todayDateWithoutTimeStamp)) {
                         dateString = "today";
                     }
-                    labelsArr.add(dateString);
+                    xVals[i] = dateString;
+                    yVals.add(new BarEntry(i, gc.getY()));
                 }
-
-                String[] labels = new String[labelsArr.size()];
-                labels = labelsArr.toArray(labels);
-                BarDataSet dataset = new BarDataSet(entries, "Total sales for the day");
-                dataset.setStackLabels(labels);
-                dataset.setValueTypeface(LoystarApplication.getInstance().getTypeface());
-                dataset.setValueTextSize(14);
-                dataset.setValueFormatter(new MyAxisValueFormatter());
-                dataset.setColor(ContextCompat.getColor(mContext, R.color.colorAccentLight));
-
-                dataSets.add(dataset);
-
-                BarData barData = new BarData(dataSets);
-                barData.notifyDataChanged();
-
-                barChart.setData(barData);
-                barChart.notifyDataSetChanged();
-                barChart.invalidate();
-
             } catch (ParseException e) {
-                //Crashlytics.logException(e);
                 e.printStackTrace();
             }
+
+            XAxis xAxis = barChart.getXAxis();
+            xAxis.setGranularity(1f);
+            xAxis.setGranularityEnabled(true);
+            xAxis.setDrawGridLines(false);
+            xAxis.setValueFormatter(new IndexAxisValueFormatter(xVals));
+
+            YAxis leftAxis = barChart.getAxisLeft();
+            leftAxis.setValueFormatter(new MyAxisValueFormatter());
+            leftAxis.setTypeface(LoystarApplication.getInstance().getTypeface());
+
+            YAxis rightAxis = barChart.getAxisRight();
+            rightAxis.setEnabled(false);
+
+            BarDataSet barDataSet = new BarDataSet(yVals, "Total Sales");
+            barDataSet.setValueTypeface(LoystarApplication.getInstance().getTypeface());
+            barDataSet.setValueTextSize(14);
+            barDataSet.setValueFormatter(new MyAxisValueFormatter());
+            barDataSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentLight));
+
+            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+            dataSets.add(barDataSet);
+
+            BarData data = new BarData(dataSets);
+            data.setValueTextSize(10f);
+            data.setValueTypeface(LoystarApplication.getInstance().getTypeface());
+            data.setBarWidth(0.9f);
+            data.notifyDataChanged();
+
+            barChart.setData(data);
+            barChart.notifyDataSetChanged();
+            barChart.invalidate();
         }
     }
 
@@ -345,7 +351,7 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
     }
 
     private void setupBottomNavigation() {
-        bottomNavigationBar = (BottomBar) findViewById(R.id.bottom_navigation_bar);
+        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar);
         bottomNavigationBar.setOnTabSelectListener(new OnTabSelectListener() {
             @Override
             public void onTabSelected(@IdRes int tabId) {
@@ -674,11 +680,11 @@ public class MerchantBackOffice extends AppCompatActivity implements OnChartValu
 
     }
 
-    public class MyAxisValueFormatter implements IAxisValueFormatter, IValueFormatter {
+    private class MyAxisValueFormatter implements IAxisValueFormatter, IValueFormatter {
 
         private String mFormat;
 
-        public MyAxisValueFormatter() {
+        private MyAxisValueFormatter() {
             mFormat = "%s %s";
         }
 
