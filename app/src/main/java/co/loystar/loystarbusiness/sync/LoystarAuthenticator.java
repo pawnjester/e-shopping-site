@@ -11,9 +11,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.IOException;
+
 import co.loystar.loystarbusiness.activities.MerchantLoginActivity;
 import co.loystar.loystarbusiness.api.ApiClient;
 import co.loystar.loystarbusiness.api.pojos.MerchantSignInSuccessResponse;
+import co.loystar.loystarbusiness.models.db.DBMerchant;
+import co.loystar.loystarbusiness.utils.LoystarApplication;
+import co.loystar.loystarbusiness.utils.SessionManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -27,6 +32,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
     private final Context mContext;
     private String TAG = "LoystarAuthenticator";
     private ApiClient mApiClient;
+    private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
 
     public LoystarAuthenticator(Context context) {
         super(context);
@@ -66,7 +72,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle getAuthToken(
-            AccountAuthenticatorResponse response,
+            AccountAuthenticatorResponse accountAuthenticatorResponse,
             Account account,
             String authTokenType,
             Bundle options) throws NetworkErrorException {
@@ -80,45 +86,53 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
             return result;
         }
 
-        /*Extract the username and password from the Account Manager, and ask
-        the server for an appropriate AuthToken.*/
         final AccountManager am = AccountManager.get(mContext);
+        String authToken = am.peekAuthToken(account, authTokenType);
 
-        final String[] authToken = {am.peekAuthToken(account, authTokenType)};
-
-        Log.d("loystar", TAG + "> peekAuthToken returned - " + authToken[0]);
-
-        // Lets give another try to authenticate the user
-        if (TextUtils.isEmpty(authToken[0])) {
-            final String password = am.getPassword(account);
+        // authToken will be empty if we invalidate the token
+        // in that case we don't want to show the login screen immediately
+        // we give another try to authenticate the user
+        // by extracting the username and password from the Account Manager, and ask
+        // the server for an appropriate AuthToken.
+        if (TextUtils.isEmpty(authToken)) {
+            String password = am.getPassword(account);
             if (password != null) {
+                Call<MerchantSignInSuccessResponse> call = mApiClient.getLoystarApi().signInMerchant(account.name, password);
                 try {
-                    Log.d("loystar", TAG + "> re-authenticating with the existing password");
-                    mApiClient.getLoystarApi().signInMerchant(account.name, password).enqueue(new Callback<MerchantSignInSuccessResponse>() {
-                        @Override
-                        public void onResponse(Call<MerchantSignInSuccessResponse> call, Response<MerchantSignInSuccessResponse> response) {
-                            if (response.isSuccessful()) {
-                                authToken[0] = response.headers().get("Access-Token");
-                            }
-                        }
+                    Response<MerchantSignInSuccessResponse> response = call.execute();
+                    if (response.isSuccessful()) {
+                        authToken = response.headers().get("Access-Token");
+                        String client = response.headers().get("Client");
+                        String expiry = response.headers().get("Expiry");
+                        DBMerchant merchant = response.body().getData();
 
-                        @Override
-                        public void onFailure(Call<MerchantSignInSuccessResponse> call, Throwable t) {
-                            //Crashlytics.log(2, TAG, t.getMessage());
-                        }
-                    });
-                } catch (Exception e) {
+                        sessionManager.setMerchantSessionData(
+                                merchant.getBusiness_name(),
+                                merchant.getEmail(),
+                                merchant.getId().toString(),
+                                merchant.getCurrency(),
+                                merchant.getFirst_name(),
+                                merchant.getLast_name(),
+                                merchant.getBusiness_type(),
+                                merchant.getContact_number(),
+                                authToken,
+                                client,
+                                expiry
+                        );
+                    }
+
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
 
         // If we get an authToken - we return it
-        if (!TextUtils.isEmpty(authToken[0])) {
+        if (!TextUtils.isEmpty(authToken)) {
             final Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-            result.putString(AccountManager.KEY_AUTHTOKEN, authToken[0]);
+            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
             return result;
         }
 
@@ -126,7 +140,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
          need to re-prompt them for their credentials. We do that by creating
          an intent to display our AuthenticatorActivity.*/
         final Intent intent = new Intent(mContext, MerchantLoginActivity.class);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
         intent.putExtra(MerchantLoginActivity.ARG_ACCOUNT_TYPE, account.type);
         intent.putExtra(MerchantLoginActivity.ARG_AUTH_TYPE, authTokenType);
         intent.putExtra(MerchantLoginActivity.ARG_ACCOUNT_NAME, account.name);

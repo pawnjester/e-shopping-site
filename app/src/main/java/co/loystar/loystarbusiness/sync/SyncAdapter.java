@@ -1,6 +1,9 @@
 package co.loystar.loystarbusiness.sync;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -18,6 +21,7 @@ import org.joda.time.Days;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -79,11 +83,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private DBMerchant merchant;
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
 
+    private final AccountManager mAccountManager;
+    private String mAuthToken;
+
     /**
      * Set up the sync adapter
      */
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
+        mAccountManager = AccountManager.get(context);
     }
 
     /**
@@ -96,6 +104,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean autoInitialize,
             boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
+        mAccountManager = AccountManager.get(context);
     }
 
     /*
@@ -111,20 +120,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient contentProviderClient,
             SyncResult syncResult) {
 
-        Intent intent = new Intent(SYNC_STARTED);
-        getContext().sendBroadcast(intent);
-
-        merchant = databaseHelper.getMerchantById(sessionManager.getMerchantId());
-
-        if (merchant != null && sessionManager.isTokenValid()) {
-            Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT ID ========================> " + sessionManager.getMerchantId());
-            Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT TOKEN ========================> " + sessionManager.getAccessToken());
-            Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT CLIENT ID ========================> " + sessionManager.getClientKey());
-            syncNow();
-        }
-        else {
-            Intent authFailureIntent = new Intent(AUTH_FAILURE);
-            getContext().sendBroadcast(authFailureIntent);
+        try {
+            mAuthToken = mAccountManager.blockingGetAuthToken(account, AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, true);
+            merchant = databaseHelper.getMerchantById(sessionManager.getMerchantId());
+            if (merchant == null) {
+                mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
+            } else {
+                Intent intent = new Intent(SYNC_STARTED);
+                getContext().sendBroadcast(intent);
+                Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT ID ========================> " + sessionManager.getMerchantId());
+                Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT TOKEN ========================> " + sessionManager.getAccessToken());
+                Log.e(TAG, "SYNC HAS STARTED WITH MERCHANT CLIENT ID ========================> " + sessionManager.getClientKey());
+                syncNow();
+            }
+        } catch (OperationCanceledException | AuthenticatorException | IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -165,16 +175,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     databaseHelper.insertOrReplaceProductCategory(category);
                                 }
                             }
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ArrayList<DBProductCategory>> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
             } catch (JSONException e) {
-                //Crashlytics.logException(e);
                 e.printStackTrace();
             }
         }
@@ -199,17 +210,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                                         @Override
                                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                            //Crashlytics.log(2, TAG, t.getMessage());
+                                            t.printStackTrace();
                                         }
                                     });
                                 }
                             }
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
             }
@@ -254,18 +267,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     databaseHelper.insertOrReplaceProduct(product);
                                 }
                             }
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ArrayList<DBProduct>> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
 
 
             } catch (JSONException e) {
-                //Crashlytics.logException(e);
                 e.printStackTrace();
             }
         }
@@ -277,12 +291,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             databaseHelper.deleteProduct(product);
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
             }
@@ -318,17 +334,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             for (DBTransaction transaction: transactionArrayList) {
                                 databaseHelper.insertOrReplaceTransaction(transaction);
                             }
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ArrayList<DBTransaction>> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
 
             } catch (JSONException e) {
-                //Crashlytics.logException(e);
                 e.printStackTrace();
             }
         }
@@ -398,18 +415,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     else if (response.code() == 403) {
                                         dbTransaction.setSynced(true);
                                         databaseHelper.updateTransaction(dbTransaction);
+                                    } else if (response.code() == 401) {
+                                        mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(Call<DBTransaction> call, Throwable t) {
-                                    //Crashlytics.log(2, TAG, t.getMessage());
+                                    t.printStackTrace();
                                 }
                             });
 
                         }
                     } catch (JSONException e) {
-                        //Crashlytics.logException(e);
                         e.printStackTrace();
                     }
                 }
@@ -455,17 +473,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     databaseHelper.insertOrReplaceMerchantLoyaltyProgram(program);
                                 }
                             }
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ArrayList<DBMerchantLoyaltyProgram>> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
 
             } catch (JSONException e) {
-                //Crashlytics.logException(e);
+                e.printStackTrace();
             }
         }
         else {
@@ -476,12 +496,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             databaseHelper.deleteLoyaltyProgram(program);
+                        } else if (response.code() == 401) {
+                            mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        //Crashlytics.log(2, TAG, t.getMessage());
+                        t.printStackTrace();
                     }
                 });
             }
@@ -527,18 +549,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 }
                             }
                         }
+                    } else if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ArrayList<DBCustomer>> call, Throwable t) {
-                    //Crashlytics.log(2, TAG, t.getMessage());
+                    t.printStackTrace();
                 }
             });
 
         } catch (JSONException e) {
             e.printStackTrace();
-            //Crashlytics.logException(e);
         }
 
         /*Delete customers marked for deletion on the server*/
@@ -549,12 +572,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
                         databaseHelper.deleteCustomer(customer);
+                    } else if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    //Crashlytics.log(2, TAG, t.getMessage());
+                    t.printStackTrace();
                 }
             });
         }
@@ -572,12 +597,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     merchant.setSubscription_expires_on(subscription.getExpires_on());
                     merchant.setSubscription_plan(subscription.getPlan_name());
                     databaseHelper.updateMerchant(merchant);
+                } else if (response.code() == 401) {
+                    mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                 }
             }
 
             @Override
             public void onFailure(Call<DBSubscription> call, Throwable t) {
-                //Crashlytics.log(2, TAG, t.getMessage());
+                t.printStackTrace();
             }
         });
 
@@ -593,12 +620,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
                 else if (response.code() == 404) {
                     databaseHelper.deleteBirthdayOffer(response.body());
+                } else if (response.code() == 401) {
+                    mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                 }
             }
 
             @Override
             public void onFailure(Call<DBBirthdayOffer> call, Throwable t) {
-                //Crashlytics.log(2, TAG, t.getMessage());
+                t.printStackTrace();
             }
         });
 
@@ -613,12 +642,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
                 else if (response.code() == 404) {
                     databaseHelper.deleteBirthdayOfferPresetSMS(response.body());
+                } else if (response.code() == 401) {
+                    mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                 }
             }
 
             @Override
             public void onFailure(Call<DBBirthdayOfferPresetSMS> call, Throwable t) {
-                //Crashlytics.log(2, TAG, t.getMessage());
+                t.printStackTrace();
             }
         });
 
@@ -640,12 +671,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     if (response.isSuccessful()) {
                         merchant.setUpdate_required(false);
                         databaseHelper.updateMerchant(merchant);
+                    } else if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS, mAuthToken);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<MerchantUpdateSuccessResponse> call, Throwable t) {
-                    //Crashlytics.log(2, TAG, t.getMessage());
+                    t.printStackTrace();
                 }
             });
         }

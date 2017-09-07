@@ -1,5 +1,8 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.accounts.AccountManager;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +12,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -21,6 +25,7 @@ import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.api.ApiClient;
 import co.loystar.loystarbusiness.api.pojos.SendPasswordResetEmailResponse;
+import co.loystar.loystarbusiness.sync.AccountGeneral;
 import co.loystar.loystarbusiness.utils.LoystarApplication;
 import co.loystar.loystarbusiness.utils.TextUtilsHelper;
 import okhttp3.MediaType;
@@ -37,15 +42,16 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
     private EditText email;
     private Context mContext;
-    private ProgressDialog progressDialog;
     private View mLayout;
+    private View mProgressView;
+    private View mResetPassFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
         mLayout = findViewById(R.id.forgot_password_container);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
             toolbar.setTitle(getString(R.string.reset_password));
         }
@@ -55,10 +61,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        mResetPassFormView = findViewById(R.id.reset_password_email_form);
+        mProgressView = findViewById(R.id.password_reset_email_progress);
+
+        findViewById(R.id.i_have_code).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
+                startActivity(intent);
+            }
+        });
 
         mContext = this;
-        Button submit = (Button) findViewById(R.id.submit);
-        email = (EditText) findViewById(R.id.email);
+        Button submit = findViewById(R.id.submit);
+        email = findViewById(R.id.email);
         if (submit != null) {
             submit.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -74,10 +90,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         return;
                     }
 
-                    progressDialog = new ProgressDialog(mContext);
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.setMessage(getString(R.string.pwd_reset_msg));
-                    progressDialog.show();
+                    showProgress(true);
 
                     try {
                         JSONObject requestData = new JSONObject();
@@ -91,21 +104,18 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         apiClient.getLoystarApi().sendPasswordResetEmail(requestBody).enqueue(new Callback<SendPasswordResetEmailResponse>() {
                             @Override
                             public void onResponse(Call<SendPasswordResetEmailResponse> call, Response<SendPasswordResetEmailResponse> response) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
+                                showProgress(false);
 
                                 if (response.isSuccessful()) {
                                     SendPasswordResetEmailResponse resetEmailResponse = response.body();
 
                                     new AlertDialog.Builder(mContext)
-                                        .setTitle("Email Sent")
-                                        .setMessage(resetEmailResponse.getMessage())
-                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                        .setTitle("Reset Code Sent")
+                                        .setMessage(getString(R.string.reset_code_instructions))
+                                        .setPositiveButton(getString(R.string.enter_code), new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 dialog.dismiss();
-                                                Intent intent = new Intent(mContext, SplashActivity.class);
-                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                                Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
                                                 startActivity(intent);
                                             }
                                         })
@@ -126,12 +136,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(Call<SendPasswordResetEmailResponse> call, Throwable t) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
-
+                                showProgress(false);
                                 Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
-                                //Crashlytics.log(2, TAG, t.getMessage());
                             }
                         });
 
@@ -143,7 +149,6 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         }
 
     }
-
 
     private boolean validateEmail() {
         String emailTxt = email.getText().toString().trim();
@@ -158,6 +163,56 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    private void showProgress(final boolean show) {
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        mResetPassFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mResetPassFormView.animate().setDuration(shortAnimTime).alpha(
+                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mResetPassFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mProgressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AccountManager.get(ForgotPasswordActivity.this).addAccount(
+                AccountGeneral.ACCOUNT_TYPE,
+                AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS,
+                null,
+                null,
+                ForgotPasswordActivity.this,
+                null,
+                null
+        );
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        AccountManager.get(ForgotPasswordActivity.this).addAccount(
+                AccountGeneral.ACCOUNT_TYPE,
+                AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS,
+                null,
+                null,
+                ForgotPasswordActivity.this,
+                null,
+                null
+        );
     }
 
 }

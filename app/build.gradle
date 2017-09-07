@@ -11,7 +11,7 @@ try {
     throw new GradleException("Missing loystar.properties, check the loystar.properties file.");
 }
 repositories {
-    maven{
+    maven {
         url 'http://sdk.uxcam.com/android/'
     }
 }
@@ -26,7 +26,7 @@ android {
         versionCode 75
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders = [onesignal_app_id: "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
+        manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
                                 onesignal_google_project_number: "REMOTE"]
         vectorDrawables.useSupportLibrary = true
     }
@@ -93,6 +93,10 @@ dependencies {
         exclude module: "support-v13"
     }
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
+    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
+    compile group: 'com.iceteck.silicompressorr', name: 'silicompressor', version: '2.0'
+    compile group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.5.2'
+    compile group: 'com.mixpanel.android', name: 'mixpanel-android', version: '5.1.4'
     compile 'com.android.support:appcompat-v7:26.0.2'
     compile 'com.android.support:support-vector-drawable:26.0.2'
     compile 'com.android.support:palette-v7:26.0.2'
@@ -108,7 +112,6 @@ dependencies {
     compile 'io.smooch:core:latest.release'
     compile 'io.smooch:ui:latest.release'
     compile 'com.github.armcha:Vertical-Intro:2.0.0'
-    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
     compile 'com.roughike:bottom-bar:2.3.1'
     compile 'com.github.clans:fab:1.6.4'
     compile 'org.greenrobot:greendao:3.2.2'
@@ -117,12 +120,9 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-auth:2.3.0'
     compile 'com.google.android.gms:play-services-auth:11.2.0'
     compile 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
-    compile group: 'com.iceteck.silicompressorr', name: 'silicompressor', version: '2.0'
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'net.danlew:android.joda:2.9.9'
-    compile group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.5.2'
     compile 'com.onesignal:OneSignal:[3.5.3,4.0.0)'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.uxcam:uxcam:2.5.7@aar'
@@ -133,8 +133,8 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.retrofit2:converter-jackson:2.2.0'
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
-    compile group: 'com.mixpanel.android', name: 'mixpanel-android', version: '5.1.4'
     testCompile 'junit:junit:4.12'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
 }
 
 greendao {

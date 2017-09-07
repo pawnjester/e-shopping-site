@@ -335,12 +335,12 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="reset_password">Reset Your Password</string>
-    <string name="reset_pass_header_text">Submit your email address and we\'ll send you a link to reset your password.</string>
+    <string name="reset_pass_header_text">Submit your email address and we\'ll send you a code to reset your password.</string>
     <string name="error_timeout">Oops! Connection timed out. Please ensure you have good connection.</string>
     <string name="title_activity_edit_customer_details">Edit Profile</string>
     <string name="signing_up_msg">Signing up… Please wait.</string>
     <string name="signing_in_msg">Signing in… Please wait.</string>
-    <string name="pwd_reset_msg">Sending password reset instructions&#8230; Please wait.</string>
+    <string name="pwd_reset_msg">Sending password reset instructions. Please wait&#8230;</string>
     <string name="title_invalid_email">Invalid email</string>
     <string name="feedback_pwdreset_noemail">No account registered with email:  </string>
     <string name="start_new_transaction">Start new transaction</string>
@@ -545,6 +545,7 @@
     <style name="pref_loyalty_programs_rewards_title">Rewards</style>
 
     <style name="pref_loyalty_programs_rewards_key">pref_rewards</style>
+
     <string name="title_activity_non_loyalty_transaction_confirmation">
         Transaction Confirmation
     </string>
@@ -895,4 +896,16 @@
     <string name="intro3_body"><![CDATA[Celebrate their birthdays with a message from you & an offer if you choose. Best of all, you don’t have to track the dates. Loystar takes care of it.]]></string>
     <string name="intro4_body"><![CDATA[It’s never been easier to boost sales on slow days, announce new products & services or invite your customers back with a discount for a festive season.]]></string>
     <string name="intro5_body">Designed to be simple, Loystar puts all these powerful features at your fingertips and you can see the effect of your efforts in weekly and monthly reports.</string>
+    <string name="i_have_code_already">I have a reset code</string>
+    <string name="title_activity_confirm_password_reset">Confirm Password Reset</string>
+    <string name="prompt_password_confirm">Confirm Password</string>
+    <string name="prompt_password_reset_code">Reset Code</string>
+    <string name="prompt_new_password">New Password</string>
+    <string name="error_reset_code_required">Please enter reset code</string>
+    <string name="error_confirm_password_required">Please confirm password</string>
+    <string name="error_reset_password">Sorry we couldn\'t reset your password. Please try again later.</string>
+    <string name="error_reset_password_code_expired">Sorry! The reset password code has expired. Please request for a new code.</string>
+    <string name="password_reset_success">Your password has been successfully reset. Please login to Loystar with your new password.</string>
+    <string name="pwd_reset_in_progress_msg">Just a second. Resetting your password.</string>
+    <string name="reset_code_instructions">We have sent you a password reset code. Please retrieve it and use it on the next screen to reset your password.</string>
 </resources>

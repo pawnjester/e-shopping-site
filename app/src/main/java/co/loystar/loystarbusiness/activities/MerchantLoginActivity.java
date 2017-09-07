@@ -3,6 +3,8 @@ package co.loystar.loystarbusiness.activities;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
@@ -78,15 +81,18 @@ public class MerchantLoginActivity extends AppCompatActivity {
     private AccountManager mAccountManager;
     private String mAuthTokenType;
     private Bundle mResultBundle = null;
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-    private ProgressDialog progressDialog;
-    private View mLayout;
-    private String password;
-    private String email;
     private ApiClient mApiClient = LoystarApplication.getInstance().getApiClient();
     private SessionManager sessionManager = LoystarApplication.getInstance().getSessionManager();
     private DatabaseHelper databaseHelper = LoystarApplication.getInstance().getDatabaseHelper();
+
+    // UI references.
+    private AutoCompleteTextView mEmailView;
+    private EditText mPasswordView;
+    private View mLayout;
+    private String password;
+    private String email;
+    private View mProgressView;
+    private View mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,9 +105,9 @@ public class MerchantLoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_merchant_login);
         mLayout = findViewById(R.id.login_root_layout);
         mAccountManager = AccountManager.get(mContext);
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = findViewById(R.id.email);
 
-        Button signUp = (Button) findViewById(R.id.sign_up_btn);
+        Button signUp = findViewById(R.id.sign_up_btn);
         signUp.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,10 +130,10 @@ public class MerchantLoginActivity extends AppCompatActivity {
             }
         });
 
-        TextView forgot_pass = (TextView) findViewById(R.id.forgot_password);
-        TextInputLayout passwordLayout = (TextInputLayout) findViewById(R.id.passwordLayout);
+        TextView forgot_pass = findViewById(R.id.forgot_password);
+        TextInputLayout passwordLayout = findViewById(R.id.passwordLayout);
         passwordLayout.setPasswordVisibilityToggleEnabled(true);
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -147,9 +153,6 @@ public class MerchantLoginActivity extends AppCompatActivity {
                 }
             });
         }
-        progressDialog = new ProgressDialog(mContext);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage(getString(R.string.signing_in_msg));
 
         //Account authentication section
         String accountName = getIntent().getStringExtra(ARG_ACCOUNT_NAME);
@@ -160,7 +163,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
             mEmailView.setText(accountName);
         }
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        Button mEmailSignInButton = findViewById(R.id.email_sign_in_button);
 
         if (mEmailSignInButton != null) {
             mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -171,7 +174,8 @@ public class MerchantLoginActivity extends AppCompatActivity {
             });
         }
 
-
+        mLoginFormView = findViewById(R.id.email_login_form);
+        mProgressView = findViewById(R.id.login_progress);
     }
 
     @Override
@@ -187,10 +191,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
 
     private void handlePhoneVerificationResponse(int resultCode, Intent data) {
         IdpResponse response = IdpResponse.fromResultIntent(data);
-        /*Successfully verified*/
-        if (resultCode == ResultCodes.OK && response != null) {
-            /* Since there can only be one AuthenticatorActivity, we call the sign up activity, get its results,
-             and return them in setAccountAuthenticatorResult(). See finishLogin().*/
+        if (resultCode == RESULT_OK && response != null) {
             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
             signUp.putExtras(getIntent().getExtras());
             signUp.putExtra(MerchantBackOffice.CUSTOMER_PHONE_NUMBER, response.getPhoneNumber());
@@ -260,7 +261,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
             }
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            progressDialog.show();
+            showProgress(true);
             merchantLogin(email, password);
         }
     }
@@ -278,9 +279,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
         mApiClient.getLoystarApi().signInMerchant(email, password).enqueue(new Callback<MerchantSignInSuccessResponse>() {
             @Override
             public void onResponse(Call<MerchantSignInSuccessResponse> call, Response<MerchantSignInSuccessResponse> response) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
-                }
+                showProgress(false);
 
                 if (response.isSuccessful()) {
                     MerchantSignInSuccessResponse signInSuccessResponse = response.body();
@@ -303,10 +302,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MerchantSignInSuccessResponse> call, Throwable t) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
-                }
-                //Crashlytics.log(2, TAG, t.getMessage());
+                showProgress(false);
                 Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
             }
         });
@@ -316,7 +312,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
     private void finishLogin(Intent intent) {
         if (intent.hasExtra(KEY_ERROR_MESSAGE)) {
             setResult(RESULT_CANCELED);
-            progressDialog.dismiss();
+            showProgress(false);
             Snackbar.make(mLayout, intent.getStringExtra(KEY_ERROR_MESSAGE), Snackbar.LENGTH_LONG).show();
         } else {
             String accountName = intent.getStringExtra(KEY_ACCOUNT_NAME);
@@ -332,7 +328,7 @@ public class MerchantLoginActivity extends AppCompatActivity {
                 SyncAdapter.onAccountLogin(mContext, account);
                 setAccountAuthenticatorResult(intent.getExtras());
                 setResult(RESULT_OK, intent);
-                progressDialog.dismiss();
+                showProgress(false);
                 Intent merchantBackOfficeIntent = new Intent(mContext, MerchantBackOffice.class);
                 merchantBackOfficeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 merchantBackOfficeIntent.putExtra(MerchantBackOffice.NEW_LOGIN, intent.getBooleanExtra(IS_NEW_LOGIN, false));
@@ -429,10 +425,6 @@ public class MerchantLoginActivity extends AppCompatActivity {
             data.putString(KEY_ACCOUNT_NAME, email);
             data.putString(PARAM_USER_PASS, password);
         }
-        /*else {
-            data.putString(KEY_ACCOUNT_NAME, merchant.getEmail());
-            data.putString(PARAM_USER_PASS, Digits.getActiveSession().getAuthToken().secret);
-        }*/
 
         data.putString(KEY_ACCOUNT_TYPE, accountType);
         data.putString(AUTH_TOKEN, token);
@@ -444,6 +436,31 @@ public class MerchantLoginActivity extends AppCompatActivity {
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    private void showProgress(final boolean show) {
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mProgressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
 }

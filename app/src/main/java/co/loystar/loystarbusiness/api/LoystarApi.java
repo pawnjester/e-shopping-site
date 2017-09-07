@@ -22,6 +22,7 @@ import co.loystar.loystarbusiness.models.db.DBTransaction;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.Field;
@@ -176,4 +177,7 @@ public interface LoystarApi {
 
     @POST("customers/update_customer/{id}")
     Call<DBCustomer> updateCustomer(@Path("id") String id, @Body RequestBody requestBody);
+
+    @POST("merchants/reset_password")
+    Call<ResponseBody> resetMerchantPassword(@Body RequestBody requestBody);
 }
