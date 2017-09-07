@@ -23,7 +23,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 75
+        versionCode 77
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -117,6 +117,7 @@ dependencies {
     compile 'org.greenrobot:greendao:3.2.2'
     compile 'com.google.firebase:firebase-auth:11.2.0'
     compile 'com.google.firebase:firebase-crash:11.2.0'
+    compile 'com.google.firebase:firebase-messaging:11.2.0'
     compile 'com.firebaseui:firebase-ui-auth:2.3.0'
     compile 'com.google.android.gms:play-services-auth:11.2.0'
     compile 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'

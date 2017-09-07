@@ -72,3 +72,5 @@ public static java.lang.String TABLENAME;
 
 -keep public class com.google.android.gms.* { public *; }
 -dontwarn com.google.android.gms.**
+-dontwarn org.apache.log4j.**
+-dontwarn com.googlecode.mp4parser.**
