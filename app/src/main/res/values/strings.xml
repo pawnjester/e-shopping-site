@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">Loystar</string>
+    <string name="preference_file_key">co.loystar.loystarbusiness.preference</string>
+    <string name="title_activity_merchant_back_office">Home</string>
+    <string name="intro1_title">Welcome to Loystar</string>
+    <string name="intro2_title">Every sale brings your customer back</string>
+    <string name="intro3_title">Make your customers feel loved</string>
+    <string name="intro4_title">Marketing made simple</string>
+    <string name="intro5_title">Small efforts, Big gains</string>
+    <string name="intro1_body">The simplest way to sell your products/services and market to your customers to keep them coming back.</string>
+    <string name="intro2_body">Motivate your customers to come back using loyalty programs that gives them reward points every time you sell. You do the selling, we bring  the customers back.</string>
+    <string name="intro3_body"><![CDATA[Celebrate their birthdays with a message from you & an offer if you choose. Best of all, you don’t have to track the dates. Loystar takes care of it.]]></string>
+    <string name="intro4_body"><![CDATA[It’s never been easier to boost sales on slow days, announce new products & services or invite your customers back with a discount for a festive season.]]></string>
+    <string name="intro5_body">Designed to be simple, Loystar puts all these powerful features at your fingertips and you can see the effect of your efforts in weekly and monthly reports.</string>
+    <string name="title_activity_authenticator">Loystar</string>
+    <string name="sign_up_cancelled">Sign up cancelled</string>
+    <string name="unknown_error">An unknown error occurred</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="error_internet_connection_timed_out">Error connection timed out. Please check your connection and try again.</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="signing_up_msg">Signing up… Please wait.</string>
+    <string name="signing_in_msg">Signing in… Please wait.</string>
+    <string name="sign_up_btn_text">New to Loystar? Sign Up</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="logo">logo</string>
+    <string name="title_activity_merchant_sign_up">Sign Up</string>
+    <string name="title_activity_forgot_password">Forgot Password</string>
+</resources>

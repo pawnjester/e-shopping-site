@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sync-adapter
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:contentAuthority="co.loystar.loystarbusiness.provider"
+    android:accountType="co.loystar.loystarbusiness"
+    android:userVisible="true"
+    android:supportsUploading="true"
+    android:allowParallelSyncs="false" />

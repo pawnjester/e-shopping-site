@@ -1,0 +1,115 @@
+apply plugin: 'com.android.application'
+def requeryVersion = "1.4.0"
+
+Properties props = new Properties()
+try {
+    props.load(file('loystar.properties').newDataInputStream())
+} catch (Exception ignored) {
+    throw new GradleException("Missing loystar.properties, check the loystar.properties file.");
+}
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+    defaultConfig {
+        applicationId "co.loystar.loystarbusiness"
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
+    }
+    dataBinding {
+        enabled = true
+    }
+    signingConfigs {
+        release {
+            storeFile file('/home/ordgen/Dropbox/Credentials/loystar/loystar-upload-keystore.jks')
+            storePassword 'loystar123$'
+            keyAlias 'loystar-upload'
+            keyPassword 'loystar123$'
+        }
+        debug {
+            storeFile file('/home/ordgen/Dropbox/Credentials/loystar/loystar-upload-keystore.jks')
+            storePassword 'loystar123$'
+            keyAlias 'loystar-upload'
+            keyPassword 'loystar123$'
+        }
+    }
+    productFlavors {
+        develop {
+            applicationId "co.loystar.loystarbusiness.develop"
+            buildConfigField "String", "HOST", '"https://loystar-api.herokuapp.com/"'
+            buildConfigField "String", "URL_PREFIX", '"api/v2/"'
+            minSdkVersion 16
+        }
+        production {
+            buildConfigField "String", "HOST", '"http://app.loystar.co/"'
+            buildConfigField "String", "URL_PREFIX", '"api/v2/"'
+            minSdkVersion 16
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "SMOOCH_TOKEN", "\"${props.getProperty("smoochToken")}\""
+            buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
+            buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
+            signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "SMOOCH_TOKEN", "\"${props.getProperty("smoochToken")}\""
+            buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
+            buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
+            signingConfig signingConfigs.release
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile "io.requery:requery:$requeryVersion"
+    compile "io.requery:requery-android:$requeryVersion"
+    annotationProcessor "io.requery:requery-processor:$requeryVersion"
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:support-vector-drawable:26.1.0'
+    compile 'com.google.firebase:firebase-core:11.4.2'
+    compile 'com.google.firebase:firebase-auth:11.4.2'
+    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+    compile 'com.github.armcha:Vertical-Intro:2.0.0'
+    compile 'com.squareup.retrofit2:converter-jackson:2.2.0'
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.5'
+    testCompile 'junit:junit:4.12'
+}
+
+apply plugin: 'com.google.gms.google-services'

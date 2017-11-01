@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#b54179</color>
+    <color name="colorPrimaryDark">#913461</color>
+    <color name="colorPrimaryDarker">#571f3a</color>
+    <color name="colorAccent">#dc4f93</color>
+    <color name="colorAccentLight">#e57bad</color>
+    <color name="colorAccentLighter">#f3f2f2</color>
+    <color name="colorAccentDark">#494b4d</color>
+    <color name="colorControlHighlight">#c5c5c5</color>
+    <color name="logoDarKText">#9B9B9B</color>
+    <color name="walkthrough_transp_bg">#E6913461</color>
+    <color name="green">#00A79B</color>
+    <color name="translucent">#80000000</color>
+
+    <color name="black_overlay">#66000000</color>
+    <color name="white">#ffffff</color>
+    <color name="light_grey">#d9d9d9</color>
+    <color name="orange">#ff8711</color>
+    <color name="dark_grayish_blue">#455C65</color>
+    <color name="inactive_color">#747474</color>
+    <integer-array name="tab_colors">
+        <item name="tab_1">@color/dark_grayish_blue</item>
+    </integer-array>
+
+    <color name="Smooch_accent">@color/colorPrimary</color>
+    <color name="Smooch_accentDark">@color/colorPrimaryDark</color>
+    <color name="Smooch_accentLight">@color/colorAccentLight</color>
+    <color name="grayish_blue">#8899A6</color>
+    <color name="colorLabelFab">#000000</color>
+    <color name="teal">#00796B</color>
+    <color name="brown">#8D6E63</color>
+    <color name="program_title">#4c4c4c</color>
+    <color name="iconColor">#757575</color>
+    <color name="wallet_hint_foreground_holo_dark">#808080</color>
+</resources>

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "spp",
+    "title": "Simple Points Program",
+    "description": "For every customer spend, customers get the equivalent points value you set."
+  },
+  {
+    "id": "slp",
+    "title": "Stamps Loyalty Program",
+    "description": "Customers buy a specific item for a number of times you set, before they get their next purchase free."
+  }
+]
