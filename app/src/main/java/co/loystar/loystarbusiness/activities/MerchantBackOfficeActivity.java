@@ -5,28 +5,44 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
+import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
+import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity {
+    private static final String TAG = MerchantBackOfficeActivity.class.getCanonicalName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merchant_back_office);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        DatabaseManager databaseManager = DatabaseManager.getInstance(this);
+        SessionManager sessionManager = new SessionManager(this);
+        BirthdayOfferEntity birthdayOfferEntity = databaseManager.getMerchantBirthdayOffer(sessionManager.getMerchantId());
+        BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity = databaseManager.getMerchantBirthdayOfferPresetSms(sessionManager.getMerchantId());
+        SubscriptionEntity subscriptionEntity = databaseManager.getMerchantSubscription(sessionManager.getMerchantId());
+
+        if (birthdayOfferEntity != null) {
+            Log.e(TAG, "birthdayOfferEntity: " + birthdayOfferEntity.getOfferDescription());
+        }
+
+        if (birthdayOfferPresetSmsEntity != null) {
+            Log.e(TAG, "birthdayOfferPresetSmsEntity: " + birthdayOfferPresetSmsEntity.getPresetSmsText());
+        }
+
+        if (subscriptionEntity != null) {
+            Log.e(TAG, "subscriptionEntity: " + subscriptionEntity.getPlanName());
+        }
     }
 
 }

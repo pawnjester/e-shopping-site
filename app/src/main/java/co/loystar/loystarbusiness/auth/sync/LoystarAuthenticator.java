@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import co.loystar.loystarbusiness.activities.AuthenticatorActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -101,6 +103,15 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
         if (TextUtils.isEmpty(authToken)) {
             String password = am.getPassword(account);
             if (password != null && !TextUtils.isEmpty(password)) {
+                Call<Merchant> call = mApiClient.getLoystarApi(true).signInMerchant(account.name, password);
+                try {
+                    Response<Merchant> response = call.execute();
+                    if (response.isSuccessful()) {
+                        Log.e(TAG, "getAuthToken: " + response.body().getContact_number() );
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 //get user by email and password
                 /*JSONObject data = new JSONObject();
                 JSONObject requestData = new JSONObject();

@@ -23,3 +23,19 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# joda time
+-dontwarn org.joda.convert.FromString
+-dontwarn org.joda.convert.ToString
+
+# Jackson 2.x
+-keepnames class com.fasterxml.jackson.** { *; }
+-dontwarn com.fasterxml.jackson.databind.**
+
+-keep class com.fasterxml.jackson.databind.ObjectMapper {
+    public <methods>;
+    protected <methods>;
+}
+-keep class com.fasterxml.jackson.databind.ObjectWriter {
+    public ** writeValueAsString(**);
+}

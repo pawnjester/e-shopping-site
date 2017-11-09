@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.auth.api;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -29,13 +30,12 @@ public class ApiClient {
         sessionManager = new SessionManager(context);
     }
 
-    private Retrofit getRetrofit() {
+    private Retrofit getRetrofit(boolean hasRootValue) {
         if (retrofit == null) {
 
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
-                    .connectTimeout(15, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
                     .addInterceptor(new Interceptor() {
                         @Override
                         public Response intercept(Chain chain) throws IOException {
@@ -55,15 +55,15 @@ public class ApiClient {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL + URL_PREFIX)
                     .client(okHttpClient)
-                    .addConverterFactory(JacksonConverterFactory.create(JsonUtils.objectMapper))
+                    .addConverterFactory(JacksonConverterFactory.create(ApiUtils.getObjectMapper(hasRootValue)))
                     .build();
         }
         return retrofit;
     }
 
-    public LoystarApi getLoystarApi() {
+    public LoystarApi getLoystarApi(boolean hasRootValue) {
         if (mLoystarApi == null) {
-            mLoystarApi = getRetrofit().create(LoystarApi.class);
+            mLoystarApi = getRetrofit(hasRootValue).create(LoystarApi.class);
         }
         return mLoystarApi;
     }

@@ -4,12 +4,14 @@ import android.databinding.Bindable;
 import android.databinding.Observable;
 import android.os.Parcelable;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import io.requery.Column;
 import io.requery.Entity;
+import io.requery.ForeignKey;
 import io.requery.Index;
 import io.requery.Key;
+import io.requery.OneToOne;
 import io.requery.Persistable;
 
 /**
@@ -17,14 +19,13 @@ import io.requery.Persistable;
  */
 
 @Entity
-public interface Merchant extends Observable, Parcelable, Persistable {
+public interface Merchant extends Parcelable, Persistable {
     @Key
     int getId();
 
     @Index(value = "email_index")
     String getEmail();
 
-    @Bindable
     @Index("name_index")
     String getFirstName();
 
@@ -39,7 +40,17 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     String getBusinessType();
     String getBusinessName();
     String getCurrency();
-    Date getCreatedAt();
-    Date getUpdatedAt();
-    Date getSubscriptionExpiresOn();
+    Timestamp getSubscriptionExpiresOn();
+
+    @ForeignKey
+    @OneToOne
+    SubscriptionEntity getSubscription();
+
+    @ForeignKey
+    @OneToOne
+    BirthdayOfferEntity getBirthdayOffer();
+
+    @ForeignKey
+    @OneToOne
+    BirthdayOfferPresetSmsEntity getBirthdayOfferPresetSms();
 }

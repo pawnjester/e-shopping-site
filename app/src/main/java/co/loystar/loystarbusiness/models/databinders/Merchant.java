@@ -24,8 +24,6 @@ import org.joda.time.DateTime;
         "business_name",
         "business_type",
         "currency",
-        "created_at",
-        "updated_at",
         "subscription_expires_on",
         "subscription_plan",
         "turn_on_point_of_sale",
@@ -42,8 +40,6 @@ public class Merchant {
     private String business_name;
     private String business_type;
     private String currency;
-    private DateTime created_at;
-    private DateTime updated_at;
     private DateTime subscription_expires_on;
     private String subscription_plan;
 
@@ -60,8 +56,6 @@ public class Merchant {
             String business_name,
             String business_type,
             String currency,
-            DateTime created_at,
-            DateTime updated_at,
             DateTime subscription_expires_on,
             String subscription_plan
     ) {
@@ -75,10 +69,18 @@ public class Merchant {
         this.business_name = business_name;
         this.business_type = business_type;
         this.currency = currency;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
         this.subscription_expires_on = subscription_expires_on;
         this.subscription_plan = subscription_plan;
+    }
+
+    @JsonProperty("id")
+    public int getId() {
+        return id;
+    }
+
+    @JsonProperty("id")
+    public void setId(int id) {
+        this.id = id;
     }
 
     @JsonProperty("email")
@@ -169,26 +171,6 @@ public class Merchant {
     @JsonProperty("currency")
     public void setCurrency(String currency) {
         this.currency = currency;
-    }
-
-    @JsonProperty("created_at")
-    public DateTime getCreated_at() {
-        return created_at;
-    }
-
-    @JsonProperty("created_at")
-    public void setCreated_at(DateTime created_at) {
-        this.created_at = created_at;
-    }
-
-    @JsonProperty("updated_at")
-    public DateTime getUpdated_at() {
-        return updated_at;
-    }
-
-    @JsonProperty("updated_at")
-    public void setUpdated_at(DateTime updated_at) {
-        this.updated_at = updated_at;
     }
 
     @JsonProperty("subscription_expires_on")

@@ -10,7 +10,7 @@ try {
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
@@ -21,6 +21,7 @@ android {
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
+    flavorDimensions "versionCode"
     dataBinding {
         enabled = true
     }

@@ -69,7 +69,7 @@ public class AccountGeneral {
 
         // Force a sync if the account was just created
         if (created) {
-            //SyncAdapter.performSync(c, account.name);
+            SyncAdapter.performSync(c, account.name);
         }
     }
 }

@@ -7,8 +7,11 @@ import android.support.annotation.Nullable;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import co.loystar.loystarbusiness.BuildConfig;
+import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
+import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
+import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.reactivex.ReactiveEntityStore;
@@ -60,5 +63,47 @@ public class DatabaseManager implements IDatabaseManager{
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()
                 .firstOrNull();
+    }
+
+    @Override
+    public void addMerchant(@NonNull MerchantEntity merchantEntity) {
+        mDataStore.upsert(merchantEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void updateMerchant(@NonNull MerchantEntity merchantEntity) {
+        mDataStore.update(merchantEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Nullable
+    @Override
+    public BirthdayOfferEntity getMerchantBirthdayOffer(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        return merchantEntity != null ? merchantEntity.getBirthdayOffer() : null;
+    }
+
+    @Nullable
+    @Override
+    public BirthdayOfferPresetSmsEntity getMerchantBirthdayOfferPresetSms(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        return merchantEntity != null ? merchantEntity.getBirthdayOfferPresetSms() : null;
+    }
+
+    @Nullable
+    @Override
+    public SubscriptionEntity getMerchantSubscription(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        return merchantEntity != null ? merchantEntity.getSubscription() : null;
     }
 }

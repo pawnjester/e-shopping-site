@@ -25,8 +25,10 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -37,18 +39,27 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.security.auth.login.LoginException;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.ui.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -60,6 +71,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  * We use setAccountAuthenticatorResult() to set the result of adding an account
  * */
 public class AuthenticatorActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+    private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
     public final static String PARAM_USER_PASS = "USER_PASS";
     private static final int RC_SIGN_IN = 100;
@@ -97,11 +109,12 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
         if( mAccountAuthenticatorResponse != null ) {
             mAccountAuthenticatorResponse.onRequestContinued();
         }
-        mAccountManager = AccountManager.get(mContext);
+        mAccountManager = AccountManager.get(this);
         mContext = this;
         mSessionManager = new SessionManager(this);
         mApiClient = new ApiClient(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
+        mAuth = FirebaseAuth.getInstance();
 
         mEmailView = findViewById(R.id.email);
         mLayout = findViewById(R.id.auth_root_layout);
@@ -281,6 +294,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
+            closeKeyBoard();
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
@@ -387,14 +401,73 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
         @Override
         protected Intent doInBackground(Void... params) {
+            Call<Merchant> call = mApiClient.getLoystarApi(true).signInMerchant(mEmail, mPassword);
+            try {
+                Response<Merchant> response = call.execute();
+                if (response.isSuccessful()) {
+                    String authToken = response.headers().get("Access-Token");
+                    String client = response.headers().get("Client");
+                    Merchant merchant = response.body();
+                    MerchantEntity merchantEntity = new MerchantEntity();
+                    merchantEntity.setId(merchant.getId());
+                    merchantEntity.setFirstName(merchant.getFirst_name());
+                    merchantEntity.setLastName(merchant.getLast_name());
+                    merchantEntity.setBusinessName(merchant.getBusiness_name());
+                    merchantEntity.setEmail(merchant.getEmail());
+                    merchantEntity.setBusinessType(merchant.getBusiness_type());
+                    merchantEntity.setContactNumber(merchant.getContact_number());
+                    merchantEntity.setCurrency(merchant.getCurrency());
+                    if (merchant.getSubscription_expires_on() != null) {
+                        merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
+                    }
 
-            return null;
+                    mDatabaseManager.addMerchant(merchantEntity);
+                    mSessionManager.setMerchantSessionData(
+                            merchant.getId(),
+                            merchant.getEmail(),
+                            merchant.getFirst_name(),
+                            merchant.getLast_name(),
+                            merchant.getContact_number(),
+                            authToken,
+                            client
+                    );
+
+                    Bundle bundle = new Bundle();
+                    Intent res = new Intent();
+
+                    bundle.putString(AccountManager.KEY_ACCOUNT_NAME, merchant.getEmail());
+                    bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+                    bundle.putString(PARAM_USER_PASS, mPassword);
+
+                    res.putExtras(bundle);
+                    return res;
+
+                } else {
+                    Intent res = new Intent();
+                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_login_credentials));
+                    return res;
+                }
+            } catch (IOException e) {
+                Intent res = new Intent();
+                if (e instanceof SocketTimeoutException) {
+                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
+                } else {
+                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.no_internet_connection));
+                }
+                return res;
+            }
         }
 
         @Override
         protected void onPostExecute(final Intent intent) {
             mAuthTask = null;
             showProgress(false);
+
+            if (intent != null) {
+                finishLogin(intent);
+            } else {
+                showSnackbar(R.string.something_went_wrong);
+            }
         }
 
         @Override
@@ -452,6 +525,16 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void closeKeyBoard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
     }
 }
 
