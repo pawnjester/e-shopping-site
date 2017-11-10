@@ -3,10 +3,18 @@ package co.loystar.loystarbusiness.models;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.List;
+
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionEntity;
+import io.requery.Transaction;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -16,7 +24,7 @@ public interface IDatabaseManager {
     @Nullable
     MerchantEntity getMerchant(int merchantId);
 
-    void addMerchant(@NonNull MerchantEntity merchantEntity);
+    void insertNewMerchant(@NonNull MerchantEntity merchantEntity);
 
     void updateMerchant(@NonNull MerchantEntity merchantEntity);
 
@@ -28,4 +36,61 @@ public interface IDatabaseManager {
 
     @Nullable
     SubscriptionEntity getMerchantSubscription(int merchantId);
+
+    @Nullable
+    String getMerchantCustomersLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
+    String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
+    String getMerchantLoyaltyProgramsLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
+    String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
+    CustomerEntity getCustomerById(int customerId);
+
+    @Nullable
+    LoyaltyProgramEntity getLoyaltyProgramById(int programId);
+
+    @Nullable
+    ProductEntity getProductById(int productId);
+
+    @Nullable
+    ProductCategoryEntity getProductCategoryById(int productCategoryId);
+
+    void deleteMerchantBirthdayOffer(@NonNull MerchantEntity merchantEntity);
+
+    void deleteCustomer(@NonNull CustomerEntity customerEntity);
+
+    void deleteLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
+
+    void deleteProduct(@NonNull ProductEntity productEntity);
+
+    void deleteTransaction(@NonNull TransactionEntity transactionEntity);
+
+    void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
+
+    void insertNewCustomer(@NonNull CustomerEntity customerEntity);
+
+    void insertNewProduct(@NonNull ProductEntity productEntity);
+
+    void insertNewProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
+
+    void insertNewLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
+
+    void insertNewTransaction(@NonNull TransactionEntity transactionEntity);
+
+    void updateCustomer(@NonNull CustomerEntity customerEntity);
+
+    void updateProduct (@NonNull ProductEntity productEntity);
+
+    void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
+
+    void updateProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
+
+    @NonNull
+    List<TransactionEntity> getUnsyncedTransactions(@NonNull MerchantEntity  merchantEntity);
 }

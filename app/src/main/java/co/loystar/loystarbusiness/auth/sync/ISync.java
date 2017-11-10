@@ -6,8 +6,11 @@ package co.loystar.loystarbusiness.auth.sync;
 
 public interface ISync {
     void syncMerchantSubscription();
-
     void syncMerchantBirthdayOffer();
-
     void syncMerchantBirthdayOfferPresetSms();
+    void syncCustomers();
+    void syncTransactions();
+    void syncProductCategories();
+    void syncProducts();
+    void syncLoyaltyPrograms();
 }

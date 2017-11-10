@@ -25,7 +25,6 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
@@ -45,8 +44,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.security.auth.login.LoginException;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -421,7 +418,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                         merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                     }
 
-                    mDatabaseManager.addMerchant(merchantEntity);
+                    mDatabaseManager.insertNewMerchant(merchantEntity);
                     mSessionManager.setMerchantSessionData(
                             merchant.getId(),
                             merchant.getEmail(),

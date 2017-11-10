@@ -6,15 +6,25 @@ import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
+import java.util.List;
+
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
+import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionEntity;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
+import io.requery.query.Result;
+import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
+import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
 import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
@@ -66,7 +76,7 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public void addMerchant(@NonNull MerchantEntity merchantEntity) {
+    public void insertNewMerchant(@NonNull MerchantEntity merchantEntity) {
         mDataStore.upsert(merchantEntity)
                 .subscribe(/*no-op*/);
     }
@@ -105,5 +115,193 @@ public class DatabaseManager implements IDatabaseManager{
                 .get()
                 .firstOrNull();
         return merchantEntity != null ? merchantEntity.getSubscription() : null;
+    }
+
+    @Nullable
+    @Override
+    public String getMerchantCustomersLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<CustomerEntity> customerEntities = mDataStore.select(CustomerEntity.class)
+                .where(CustomerEntity.OWNER.eq(merchantEntity)).orderBy(CustomerEntity.UPDATED_AT.desc()).get();
+
+        CustomerEntity customerEntity = customerEntities.firstOrNull();
+        if (customerEntity != null) {
+            return mDateFormat.format(customerEntity.getUpdatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<TransactionEntity> transactions = mDataStore.select(TransactionEntity.class)
+                .where(TransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(TransactionEntity.CREATED_AT.desc()).get();
+
+        TransactionEntity transactionEntity = transactions.firstOrNull();
+        if (transactionEntity != null) {
+            return mDateFormat.format(transactionEntity.getCreatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getMerchantLoyaltyProgramsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<LoyaltyProgramEntity> loyaltyProgramEntities = mDataStore.select(LoyaltyProgramEntity.class)
+                .where(LoyaltyProgramEntity.OWNER.eq(merchantEntity)).orderBy(LoyaltyProgramEntity.UPDATED_AT.desc()).get();
+
+        LoyaltyProgramEntity loyaltyProgramEntity = loyaltyProgramEntities.firstOrNull();
+        if (loyaltyProgramEntity != null) {
+            return mDateFormat.format(loyaltyProgramEntity.getUpdatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<ProductEntity> productEntities = mDataStore.select(ProductEntity.class)
+                .where(ProductEntity.OWNER.eq(merchantEntity)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
+
+        ProductEntity productEntity = productEntities.firstOrNull();
+        if (productEntity != null) {
+            return mDateFormat.format(productEntity.getUpdatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public CustomerEntity getCustomerById(int customerId) {
+        return mDataStore.select(CustomerEntity.class)
+                .where(CustomerEntity.ID.eq(customerId))
+                .get()
+                .firstOrNull();
+    }
+
+    @Nullable
+    @Override
+    public LoyaltyProgramEntity getLoyaltyProgramById(int programId) {
+        return mDataStore.select(LoyaltyProgramEntity.class)
+                .where(LoyaltyProgramEntity.ID.eq(programId))
+                .get()
+                .firstOrNull();
+    }
+
+    @Nullable
+    @Override
+    public ProductEntity getProductById(int productId) {
+        return mDataStore.select(ProductEntity.class)
+                .where(ProductEntity.ID.eq(productId))
+                .get()
+                .firstOrNull();
+    }
+
+    @Nullable
+    @Override
+    public ProductCategoryEntity getProductCategoryById(int productCategoryId) {
+        return mDataStore.select(ProductCategoryEntity.class)
+                .where(ProductCategoryEntity.ID.eq(productCategoryId))
+                .get()
+                .firstOrNull();
+    }
+
+    @Override
+    public void deleteMerchantBirthdayOffer(@NonNull MerchantEntity merchantEntity) {
+        if (merchantEntity.getBirthdayOffer() != null) {
+            mDataStore.delete(merchantEntity.getBirthdayOffer())
+                    .subscribe(/*no-op*/);
+        }
+    }
+
+    @Override
+    public void deleteCustomer(@NonNull CustomerEntity customerEntity) {
+        mDataStore.delete(customerEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void deleteLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        mDataStore.delete(loyaltyProgramEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void deleteProduct(@NonNull ProductEntity productEntity) {
+        mDataStore.delete(productEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void deleteTransaction(@NonNull TransactionEntity transactionEntity) {
+        mDataStore.delete(transactionEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
+        mDataStore.delete(productCategoryEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewCustomer(@NonNull CustomerEntity customerEntity) {
+        mDataStore.upsert(customerEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewProduct(@NonNull ProductEntity productEntity) {
+        mDataStore.upsert(productEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
+        mDataStore.upsert(productCategoryEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        mDataStore.upsert(loyaltyProgramEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewTransaction(@NonNull TransactionEntity transactionEntity) {
+        mDataStore.upsert(transactionEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void updateCustomer(@NonNull CustomerEntity customerEntity) {
+
+    }
+
+    @Override
+    public void updateProduct(@NonNull ProductEntity productEntity) {
+        mDataStore.update(productEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        mDataStore.update(loyaltyProgramEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void updateProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
+        mDataStore.update(productCategoryEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @NonNull
+    @Override
+    public List<TransactionEntity> getUnsyncedTransactions(@NonNull MerchantEntity merchantEntity) {
+        Selection<ReactiveResult<TransactionEntity>> query = mDataStore.select(TransactionEntity.class);
+        query.where(TransactionEntity.SYNCED.eq(false));
+        query.where(TransactionEntity.MERCHANT.eq(merchantEntity));
+        return query.get().toList();
     }
 }

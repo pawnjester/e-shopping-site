@@ -5,12 +5,15 @@ import android.databinding.Observable;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.List;
 
+import io.requery.CascadeAction;
 import io.requery.Column;
 import io.requery.Entity;
 import io.requery.ForeignKey;
 import io.requery.Index;
 import io.requery.Key;
+import io.requery.OneToMany;
 import io.requery.OneToOne;
 import io.requery.Persistable;
 
@@ -31,7 +34,7 @@ public interface Merchant extends Parcelable, Persistable {
 
     String getLastName();
 
-    @Index("phone_index")
+    @Index("contact_number_index")
     @Column(unique = true)
     String getContactNumber();
     void setContactNumber(String contactNumber);
@@ -53,4 +56,19 @@ public interface Merchant extends Parcelable, Persistable {
     @ForeignKey
     @OneToOne
     BirthdayOfferPresetSmsEntity getBirthdayOfferPresetSms();
+
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<CustomerEntity> getCustomers();
+
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<ProductEntity> getProducts();
+
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<ProductCategoryEntity> getProductCategories();
+
+    @OneToMany(mappedBy = "merchant", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<TransactionEntity> getTransactions();
+
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<LoyaltyProgramEntity> getLoyaltyPrograms();
 }

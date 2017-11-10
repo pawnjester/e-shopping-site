@@ -10,22 +10,34 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
-import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
+import co.loystar.loystarbusiness.BuildConfig;
+import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
+import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
+import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
-import co.loystar.loystarbusiness.models.entities.Merchant;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionEntity;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -99,7 +111,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         MerchantEntity merchant = mDatabaseManager.getMerchant(subscription.getMerchant_id());
                         if (merchant != null) {
                             merchant.setSubscription(subscriptionEntity);
-                            mDatabaseManager.addMerchant(merchant);
+                            mDatabaseManager.insertNewMerchant(merchant);
                         }
                     } else {
                         if (response.code() == 401) {
@@ -171,6 +183,292 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 @Override
                 public void onFailure(Call<BirthdayOfferPresetSms> call, Throwable t) {}
             });
+        }
+
+        @Override
+        public void syncCustomers() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantCustomersLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                Call<ArrayList<Customer>> call = mApiClient.getLoystarApi(false).getLatestMerchantCustomers(requestBody);
+                Response<ArrayList<Customer>> response = call.execute();
+
+                if (response.isSuccessful()) {
+                    ArrayList<Customer> customers = response.body();
+                    for (Customer customer: customers) {
+                        if (customer.isDeleted() != null && customer.isDeleted()) {
+                            CustomerEntity existingRecord = mDatabaseManager.getCustomerById(customer.getId());
+                            if (existingRecord != null) {
+                                mDatabaseManager.deleteCustomer(existingRecord);
+                            }
+                        } else {
+                            CustomerEntity customerEntity = new CustomerEntity();
+                            customerEntity.setId(customer.getId());
+                            customerEntity.setEmail(customer.getEmail());
+                            customerEntity.setFirstName(customer.getFirst_name());
+                            customerEntity.setLastName(customer.getLast_name());
+                            customerEntity.setSex(customer.getSex());
+                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
+                            customerEntity.setPhoneNumber(customer.getPhone_number());
+                            customerEntity.setUserId(customer.getUser_id());
+                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                            customerEntity.setOwner(merchantEntity);
+
+                            mDatabaseManager.insertNewCustomer(customerEntity);
+                        }
+                    }
+
+                }  else {
+                    if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void syncTransactions() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
+                Response<ArrayList<Transaction>> response = call.execute();
+
+                if (response.isSuccessful()) {
+                    ArrayList<Transaction> transactions = response.body();
+                    for (Transaction transaction: transactions) {
+                        CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
+                        TransactionEntity transactionEntity = new TransactionEntity();
+                        transactionEntity.setId(transaction.getId());
+                        transactionEntity.setAmount(transaction.getAmount());
+                        transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                        transactionEntity.setPoints(transaction.getPoints());
+                        transactionEntity.setStamps(transaction.getStamps());
+                        transactionEntity.setSynced(transaction.isSynced());
+                        transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                        transactionEntity.setProductId(transaction.getProduct_id());
+                        transactionEntity.setProgramType(transaction.getProgram_type());
+                        transactionEntity.setUserId(transaction.getUser_id());
+
+                        transactionEntity.setMerchant(merchantEntity);
+                        if (customerEntity != null) {
+                            transactionEntity.setCustomer(customerEntity);
+                        }
+                        mDatabaseManager.insertNewTransaction(transactionEntity);
+                    }
+                } else {
+                    if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            List<TransactionEntity> unsyncedTransactions = mDatabaseManager.getUnsyncedTransactions(merchantEntity);
+            if (!unsyncedTransactions.isEmpty()) {
+                /*Upload transactions that have not been synced with the server*/
+                for (final TransactionEntity transactionEntity : unsyncedTransactions) {
+                    LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
+                    final CustomerEntity customer = mDatabaseManager.getCustomerById(transactionEntity.getCustomer().getId());
+                    if (customer != null) {
+
+                        try {
+
+                            JSONObject jsonObjectData = new JSONObject();
+                            JSONObject requestData = new JSONObject();
+
+                            jsonObjectData.put("merchant_id", merchantEntity.getId());
+                            jsonObjectData.put("amount", transactionEntity.getAmount());
+
+                            jsonObjectData.put("product_id", transactionEntity.getProductId());
+
+                            if (programEntity != null) {
+
+                                jsonObjectData.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                                jsonObjectData.put("program_type", transactionEntity.getProgramType());
+                                int versionCode = BuildConfig.VERSION_CODE;
+                                jsonObjectData.put("android_app_version_code", versionCode);
+
+
+                                if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
+                                    jsonObjectData.put("points", transactionEntity.getPoints());
+                                }
+                                else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
+                                    jsonObjectData.put("stamps", transactionEntity.getStamps());
+                                }
+
+
+                                requestData.put("data", jsonObjectData);
+
+                                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+
+                                mApiClient.getLoystarApi(false).recordSales(requestBody, String.valueOf(customer.getId())).enqueue(new Callback<Transaction>() {
+                                    @Override
+                                    public void onResponse(Call<Transaction> call, Response<Transaction> response) {
+                                        if (response.isSuccessful()) {
+                                            mDatabaseManager.deleteTransaction(transactionEntity);
+                                            Transaction transaction = response.body();
+
+                                            TransactionEntity transactionEntity = new TransactionEntity();
+                                            transactionEntity.setId(transaction.getId());
+                                            transactionEntity.setAmount(transaction.getAmount());
+                                            transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                            transactionEntity.setPoints(transaction.getPoints());
+                                            transactionEntity.setStamps(transaction.getStamps());
+                                            transactionEntity.setSynced(transaction.isSynced());
+                                            transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                            transactionEntity.setProductId(transaction.getProduct_id());
+                                            transactionEntity.setProgramType(transaction.getProgram_type());
+                                            transactionEntity.setUserId(transaction.getUser_id());
+
+                                            transactionEntity.setMerchant(merchantEntity);
+                                            transactionEntity.setCustomer(customer);
+                                            mDatabaseManager.insertNewTransaction(transactionEntity);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Transaction> call, Throwable t) {
+                                        t.printStackTrace();
+                                    }
+                                });
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void syncProductCategories() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
+                Response<ArrayList<Transaction>> response = call.execute();
+
+                if (response.isSuccessful()) {
+                    ArrayList<Transaction> transactions = response.body();
+                    for (Transaction transaction: transactions) {
+
+                    }
+                } else {
+                    if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void syncProducts() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
+                Response<ArrayList<Transaction>> response = call.execute();
+
+                if (response.isSuccessful()) {
+                    ArrayList<Transaction> transactions = response.body();
+                    for (Transaction transaction: transactions) {
+
+                    }
+                } else {
+                    if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void syncLoyaltyPrograms() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
+                Response<ArrayList<Transaction>> response = call.execute();
+
+                if (response.isSuccessful()) {
+                    ArrayList<Transaction> transactions = response.body();
+                    for (Transaction transaction: transactions) {
+
+                    }
+                } else {
+                    if (response.code() == 401) {
+                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 

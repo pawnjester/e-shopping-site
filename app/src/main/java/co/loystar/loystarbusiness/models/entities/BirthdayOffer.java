@@ -2,7 +2,7 @@ package co.loystar.loystarbusiness.models.entities;
 
 import android.os.Parcelable;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import io.requery.Entity;
 import io.requery.Key;
@@ -19,8 +19,8 @@ public interface BirthdayOffer extends Parcelable, Persistable {
     int getId();
 
     String getOfferDescription();
-    Date getCreatedAt();
-    Date getUpdatedAt();
+    Timestamp getCreatedAt();
+    Timestamp getUpdatedAt();
 
     @OneToOne(mappedBy = "birthdayOffer")
     Merchant getMerchant();
