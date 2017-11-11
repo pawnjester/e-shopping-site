@@ -39,8 +39,8 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionEntity;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -93,6 +93,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private class SyncNow implements ISync {
         void startAllSyncs() {
+            syncCustomers();
+            syncTransactions();
+            syncProductCategories();
+            syncProducts();
+            syncLoyaltyPrograms();
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
@@ -216,6 +221,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 mDatabaseManager.deleteCustomer(existingRecord);
                             }
                         } else {
+                            //CustomerEntity existingCustomer = mDatabaseManager.getC
                             CustomerEntity customerEntity = new CustomerEntity();
                             customerEntity.setId(customer.getId());
                             customerEntity.setEmail(customer.getEmail());
@@ -268,7 +274,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     ArrayList<Transaction> transactions = response.body();
                     for (Transaction transaction: transactions) {
                         CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
-                        TransactionEntity transactionEntity = new TransactionEntity();
+                        SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
                         transactionEntity.setId(transaction.getId());
                         transactionEntity.setAmount(transaction.getAmount());
                         transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
@@ -284,7 +290,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         if (customerEntity != null) {
                             transactionEntity.setCustomer(customerEntity);
                         }
-                        mDatabaseManager.insertNewTransaction(transactionEntity);
+                        mDatabaseManager.insertNewSalesTransaction(transactionEntity);
                     }
                 } else {
                     if (response.code() == 401) {
@@ -297,10 +303,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 e.printStackTrace();
             }
 
-            List<TransactionEntity> unsyncedTransactions = mDatabaseManager.getUnsyncedTransactions(merchantEntity);
+            List<SalesTransactionEntity> unsyncedTransactions = mDatabaseManager.getUnsyncedSalesTransactions(merchantEntity);
             if (!unsyncedTransactions.isEmpty()) {
                 // Upload transactions that have not been synced with the server
-                for (final TransactionEntity transactionEntity : unsyncedTransactions) {
+                for (final SalesTransactionEntity transactionEntity : unsyncedTransactions) {
                     LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
                     final CustomerEntity customer = mDatabaseManager.getCustomerById(transactionEntity.getCustomer().getId());
                     if (customer != null) {
@@ -338,10 +344,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     @Override
                                     public void onResponse(Call<Transaction> call, Response<Transaction> response) {
                                         if (response.isSuccessful()) {
-                                            mDatabaseManager.deleteTransaction(transactionEntity);
+                                            mDatabaseManager.deleteSalesTransaction(transactionEntity);
                                             Transaction transaction = response.body();
 
-                                            TransactionEntity transactionEntity = new TransactionEntity();
+                                            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
                                             transactionEntity.setId(transaction.getId());
                                             transactionEntity.setAmount(transaction.getAmount());
                                             transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
@@ -355,7 +361,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                                             transactionEntity.setMerchant(merchantEntity);
                                             transactionEntity.setCustomer(customer);
-                                            mDatabaseManager.insertNewTransaction(transactionEntity);
+                                            mDatabaseManager.insertNewSalesTransaction(transactionEntity);
                                         }
                                     }
 

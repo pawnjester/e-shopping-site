@@ -25,24 +25,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_merchant_back_office);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        DatabaseManager databaseManager = DatabaseManager.getInstance(this);
-        SessionManager sessionManager = new SessionManager(this);
-        BirthdayOfferEntity birthdayOfferEntity = databaseManager.getMerchantBirthdayOffer(sessionManager.getMerchantId());
-        BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity = databaseManager.getMerchantBirthdayOfferPresetSms(sessionManager.getMerchantId());
-        SubscriptionEntity subscriptionEntity = databaseManager.getMerchantSubscription(sessionManager.getMerchantId());
-
-        if (birthdayOfferEntity != null) {
-            Log.e(TAG, "birthdayOfferEntity: " + birthdayOfferEntity.getOfferDescription());
-        }
-
-        if (birthdayOfferPresetSmsEntity != null) {
-            Log.e(TAG, "birthdayOfferPresetSmsEntity: " + birthdayOfferPresetSmsEntity.getPresetSmsText());
-        }
-
-        if (subscriptionEntity != null) {
-            Log.e(TAG, "subscriptionEntity: " + subscriptionEntity.getPlanName());
-        }
     }
 
 }

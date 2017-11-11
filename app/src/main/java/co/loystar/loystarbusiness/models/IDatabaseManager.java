@@ -12,9 +12,8 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionEntity;
-import io.requery.Transaction;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -55,6 +54,8 @@ public interface IDatabaseManager {
     @Nullable
     CustomerEntity getCustomerById(int customerId);
 
+
+
     @Nullable
     LoyaltyProgramEntity getLoyaltyProgramById(int programId);
 
@@ -72,7 +73,7 @@ public interface IDatabaseManager {
 
     void deleteProduct(@NonNull ProductEntity productEntity);
 
-    void deleteTransaction(@NonNull TransactionEntity transactionEntity);
+    void deleteSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity);
 
     void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
 
@@ -84,7 +85,7 @@ public interface IDatabaseManager {
 
     void insertNewLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
 
-    void insertNewTransaction(@NonNull TransactionEntity transactionEntity);
+    void insertNewSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity);
 
     void updateCustomer(@NonNull CustomerEntity customerEntity);
 
@@ -95,5 +96,5 @@ public interface IDatabaseManager {
     void updateProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
 
     @NonNull
-    List<TransactionEntity> getUnsyncedTransactions(@NonNull MerchantEntity  merchantEntity);
+    List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity  merchantEntity);
 }

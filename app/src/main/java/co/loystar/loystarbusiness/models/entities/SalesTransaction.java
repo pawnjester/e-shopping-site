@@ -17,7 +17,7 @@ import io.requery.Persistable;
  */
 
 @Entity
-public interface Transaction extends Observable, Parcelable, Persistable {
+public interface SalesTransaction extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 

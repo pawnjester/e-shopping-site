@@ -17,8 +17,8 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionEntity;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.query.Result;
@@ -133,10 +133,10 @@ public class DatabaseManager implements IDatabaseManager{
     @Nullable
     @Override
     public String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
-        Result<TransactionEntity> transactions = mDataStore.select(TransactionEntity.class)
-                .where(TransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(TransactionEntity.CREATED_AT.desc()).get();
+        Result<SalesTransactionEntity> transactions = mDataStore.select(SalesTransactionEntity.class)
+                .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesTransactionEntity.CREATED_AT.desc()).get();
 
-        TransactionEntity transactionEntity = transactions.firstOrNull();
+        SalesTransactionEntity transactionEntity = transactions.firstOrNull();
         if (transactionEntity != null) {
             return mDateFormat.format(transactionEntity.getCreatedAt());
         }
@@ -245,8 +245,8 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public void deleteTransaction(@NonNull TransactionEntity transactionEntity) {
-        mDataStore.delete(transactionEntity)
+    public void deleteSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity) {
+        mDataStore.delete(salesTransactionEntity)
                 .subscribe(/*no-op*/);
     }
 
@@ -258,8 +258,14 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public void insertNewCustomer(@NonNull CustomerEntity customerEntity) {
-        mDataStore.upsert(customerEntity)
-                .subscribe(/*no-op*/);
+        CustomerEntity existingCustomer = mDataStore.select(CustomerEntity.class)
+                .where(CustomerEntity.PHONE_NUMBER.eq(customerEntity.getPhoneNumber()))
+                .get()
+                .firstOrNull();
+        if (existingCustomer == null) {
+            mDataStore.upsert(customerEntity)
+                    .subscribe(/*no-op*/);
+        }
     }
 
     @Override
@@ -281,8 +287,8 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public void insertNewTransaction(@NonNull TransactionEntity transactionEntity) {
-        mDataStore.upsert(transactionEntity)
+    public void insertNewSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity) {
+        mDataStore.upsert(salesTransactionEntity)
                 .subscribe(/*no-op*/);
     }
 
@@ -311,10 +317,10 @@ public class DatabaseManager implements IDatabaseManager{
 
     @NonNull
     @Override
-    public List<TransactionEntity> getUnsyncedTransactions(@NonNull MerchantEntity merchantEntity) {
-        Selection<ReactiveResult<TransactionEntity>> query = mDataStore.select(TransactionEntity.class);
-        query.where(TransactionEntity.SYNCED.eq(false));
-        query.where(TransactionEntity.MERCHANT.eq(merchantEntity));
+    public List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity merchantEntity) {
+        Selection<ReactiveResult<SalesTransactionEntity>> query = mDataStore.select(SalesTransactionEntity.class);
+        query.where(SalesTransactionEntity.SYNCED.eq(false));
+        query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
         return query.get().toList();
     }
 }
