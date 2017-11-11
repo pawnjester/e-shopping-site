@@ -24,7 +24,7 @@ public class ProductCategory {
     private DateTime created_at;
     private DateTime updated_at;
     private int merchant_id;
-    private boolean deleted;
+    private Boolean deleted;
     private String name;
 
     public ProductCategory() {}
@@ -76,12 +76,12 @@ public class ProductCategory {
     }
 
     @JsonProperty("deleted")
-    public boolean isDeleted() {
+    public Boolean isDeleted() {
         return deleted;
     }
 
     @JsonProperty("deleted")
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
 

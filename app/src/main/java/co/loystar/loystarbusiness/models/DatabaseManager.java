@@ -171,6 +171,19 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
+    public String getProductCategoriesLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<ProductCategoryEntity> productCategoryEntities = mDataStore.select(ProductCategoryEntity.class)
+                .where(ProductCategoryEntity.OWNER.eq(merchantEntity)).orderBy(ProductCategoryEntity.UPDATED_AT.desc()).get();
+
+        ProductCategoryEntity productCategoryEntity = productCategoryEntities.firstOrNull();
+        if (productCategoryEntity != null) {
+            return mDateFormat.format(productCategoryEntity.getUpdatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
     public CustomerEntity getCustomerById(int customerId) {
         return mDataStore.select(CustomerEntity.class)
                 .where(CustomerEntity.ID.eq(customerId))

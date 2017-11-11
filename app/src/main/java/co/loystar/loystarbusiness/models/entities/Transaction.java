@@ -21,7 +21,6 @@ public interface Transaction extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 
-    @Column(value = "0")
     boolean isSynced();
 
     int getUserId();

@@ -27,6 +27,9 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
+import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
+import co.loystar.loystarbusiness.models.databinders.Product;
+import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
@@ -34,6 +37,8 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.models.entities.TransactionEntity;
 import okhttp3.MediaType;
@@ -215,6 +220,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             customerEntity.setId(customer.getId());
                             customerEntity.setEmail(customer.getEmail());
                             customerEntity.setFirstName(customer.getFirst_name());
+                            customerEntity.setDeleted(false);
                             customerEntity.setLastName(customer.getLast_name());
                             customerEntity.setSex(customer.getSex());
                             customerEntity.setDateOfBirth(customer.getDate_of_birth());
@@ -268,7 +274,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
                         transactionEntity.setPoints(transaction.getPoints());
                         transactionEntity.setStamps(transaction.getStamps());
-                        transactionEntity.setSynced(transaction.isSynced());
+                        transactionEntity.setSynced(true);
                         transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
                         transactionEntity.setProductId(transaction.getProduct_id());
                         transactionEntity.setProgramType(transaction.getProgram_type());
@@ -293,7 +299,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             List<TransactionEntity> unsyncedTransactions = mDatabaseManager.getUnsyncedTransactions(merchantEntity);
             if (!unsyncedTransactions.isEmpty()) {
-                /*Upload transactions that have not been synced with the server*/
+                // Upload transactions that have not been synced with the server
                 for (final TransactionEntity transactionEntity : unsyncedTransactions) {
                     LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
                     final CustomerEntity customer = mDatabaseManager.getCustomerById(transactionEntity.getCustomer().getId());
@@ -324,7 +330,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     jsonObjectData.put("stamps", transactionEntity.getStamps());
                                 }
 
-
                                 requestData.put("data", jsonObjectData);
 
                                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
@@ -342,7 +347,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                             transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
                                             transactionEntity.setPoints(transaction.getPoints());
                                             transactionEntity.setStamps(transaction.getStamps());
-                                            transactionEntity.setSynced(transaction.isSynced());
+                                            transactionEntity.setSynced(true);
                                             transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
                                             transactionEntity.setProductId(transaction.getProduct_id());
                                             transactionEntity.setProgramType(transaction.getProgram_type());
@@ -372,7 +377,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         @Override
         public void syncProductCategories() {
             try {
-                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                String timeStamp = mDatabaseManager.getProductCategoriesLastRecordDate(merchantEntity);
                 JSONObject jsonObjectData = new JSONObject();
                 if (timeStamp == null) {
                     jsonObjectData.put("time_stamp", 0);
@@ -383,13 +388,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 requestData.put("data", jsonObjectData);
 
                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
-                Response<ArrayList<Transaction>> response = call.execute();
+                Call<ArrayList<ProductCategory>> call = mApiClient.getLoystarApi(false).getLatestMerchantProductCategories(requestBody);
+                Response<ArrayList<ProductCategory>> response = call.execute();
 
                 if (response.isSuccessful()) {
-                    ArrayList<Transaction> transactions = response.body();
-                    for (Transaction transaction: transactions) {
+                    ArrayList<ProductCategory> productCategories = response.body();
+                    for (ProductCategory productCategory: productCategories) {
+                        if (productCategory.isDeleted() != null && productCategory.isDeleted()) {
+                            ProductCategoryEntity existingProductCategory = mDatabaseManager.getProductCategoryById(productCategory.getId());
+                            if (existingProductCategory != null) {
+                                mDatabaseManager.deleteProductCategory(existingProductCategory);
+                            }
+                        } else {
+                            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+                            productCategoryEntity.setId(productCategory.getId());
+                            productCategoryEntity.setDeleted(false);
+                            productCategoryEntity.setName(productCategory.getName());
+                            productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
+                            productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
+                            productCategoryEntity.setOwner(merchantEntity);
 
+                            mDatabaseManager.insertNewProductCategory(productCategoryEntity);
+                        }
                     }
                 } else {
                     if (response.code() == 401) {
@@ -406,7 +426,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         @Override
         public void syncProducts() {
             try {
-                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                String timeStamp = mDatabaseManager.getMerchantProductsLastRecordDate(merchantEntity);
                 JSONObject jsonObjectData = new JSONObject();
                 if (timeStamp == null) {
                     jsonObjectData.put("time_stamp", 0);
@@ -417,13 +437,35 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 requestData.put("data", jsonObjectData);
 
                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
-                Response<ArrayList<Transaction>> response = call.execute();
+                Call<ArrayList<Product>> call = mApiClient.getLoystarApi(false).getLatestMerchantProducts(requestBody);
+                Response<ArrayList<Product>> response = call.execute();
 
                 if (response.isSuccessful()) {
-                    ArrayList<Transaction> transactions = response.body();
-                    for (Transaction transaction: transactions) {
+                    ArrayList<Product> products = response.body();
+                    for (Product product: products) {
+                        if (product.isDeleted() != null && product.isDeleted()) {
+                            ProductEntity existingProduct = mDatabaseManager.getProductById(product.getId());
+                            if (existingProduct != null) {
+                                mDatabaseManager.deleteProduct(existingProduct);
+                            }
+                        } else {
+                            ProductEntity productEntity = new ProductEntity();
+                            productEntity.setId(product.getId());
+                            productEntity.setName(product.getName());
+                            productEntity.setPicture(product.getPicture());
+                            productEntity.setPrice(product.getPrice());
+                            productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
+                            productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
+                            productEntity.setDeleted(false);
 
+                            ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                            if (productCategoryEntity != null) {
+                                productEntity.setCategory(productCategoryEntity);
+                            }
+                            productEntity.setOwner(merchantEntity);
+
+                            mDatabaseManager.insertNewProduct(productEntity);
+                        }
                     }
                 } else {
                     if (response.code() == 401) {
@@ -440,7 +482,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         @Override
         public void syncLoyaltyPrograms() {
             try {
-                String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
+                String timeStamp = mDatabaseManager.getMerchantLoyaltyProgramsLastRecordDate(merchantEntity);
                 JSONObject jsonObjectData = new JSONObject();
                 if (timeStamp == null) {
                     jsonObjectData.put("time_stamp", 0);
@@ -451,13 +493,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 requestData.put("data", jsonObjectData);
 
                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                Call<ArrayList<Transaction>> call = mApiClient.getLoystarApi(false).getLatestTransactions(requestBody);
-                Response<ArrayList<Transaction>> response = call.execute();
+                Call<ArrayList<LoyaltyProgram>> call = mApiClient.getLoystarApi(false).getMerchantLoyaltyPrograms(requestBody);
+                Response<ArrayList<LoyaltyProgram>> response = call.execute();
 
                 if (response.isSuccessful()) {
-                    ArrayList<Transaction> transactions = response.body();
-                    for (Transaction transaction: transactions) {
+                    ArrayList<LoyaltyProgram> loyaltyPrograms = response.body();
+                    for (LoyaltyProgram loyaltyProgram: loyaltyPrograms) {
+                        if (loyaltyProgram.isDeleted() != null && loyaltyProgram.isDeleted()) {
+                            LoyaltyProgramEntity existingProgram = mDatabaseManager.getLoyaltyProgramById(loyaltyProgram.getId());
+                            if (existingProgram != null) {
+                                mDatabaseManager.deleteLoyaltyProgram(existingProgram);
+                            }
+                        } else {
+                            LoyaltyProgramEntity loyaltyProgramEntity = new LoyaltyProgramEntity();
+                            loyaltyProgramEntity.setId(loyaltyProgram.getId());
+                            loyaltyProgramEntity.setName(loyaltyProgram.getName());
+                            loyaltyProgramEntity.setProgramType(loyaltyProgram.getProgram_type());
+                            loyaltyProgramEntity.setReward(loyaltyProgram.getReward());
+                            loyaltyProgramEntity.setThreshold(loyaltyProgram.getThreshold());
+                            loyaltyProgramEntity.setCreatedAt(new Timestamp(loyaltyProgram.getCreated_at().getMillis()));
+                            loyaltyProgramEntity.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
+                            loyaltyProgramEntity.setDeleted(false);
 
+                            loyaltyProgramEntity.setOwner(merchantEntity);
+                            mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
+                        }
                     }
                 } else {
                     if (response.code() == 401) {

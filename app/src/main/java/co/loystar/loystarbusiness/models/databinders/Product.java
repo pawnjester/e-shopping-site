@@ -32,7 +32,7 @@ public class Product {
     private String name;
     private String picture;
     private String description;
-    private boolean deleted;
+    private Boolean deleted;
     private int merchant_product_category_id;
 
     public Product() {}
@@ -93,12 +93,12 @@ public class Product {
     }
 
     @JsonProperty("deleted")
-    public boolean isDeleted() {
+    public Boolean isDeleted() {
         return deleted;
     }
 
     @JsonProperty("deleted")
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
 

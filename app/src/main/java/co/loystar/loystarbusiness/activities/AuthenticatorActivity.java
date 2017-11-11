@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -55,6 +56,10 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.ui.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import io.reactivex.Completable;
+import io.requery.BlockingEntityStore;
+import io.requery.Persistable;
+import io.requery.reactivex.ReactiveEntityStore;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -405,7 +410,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                     String authToken = response.headers().get("Access-Token");
                     String client = response.headers().get("Client");
                     Merchant merchant = response.body();
-                    MerchantEntity merchantEntity = new MerchantEntity();
+                    final MerchantEntity merchantEntity = new MerchantEntity();
                     merchantEntity.setId(merchant.getId());
                     merchantEntity.setFirstName(merchant.getFirst_name());
                     merchantEntity.setLastName(merchant.getLast_name());
@@ -418,7 +423,23 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                         merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                     }
 
-                    mDatabaseManager.insertNewMerchant(merchantEntity);
+                    final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
+                    Completable completable = Completable.fromCallable(new Callable<Void>() {
+
+                        @Override
+                        public Void call() throws Exception {
+                            mDataStore.runInTransaction(new Callable() {
+                                @Override
+                                public Void call() throws Exception {
+                                    mDataStore.upsert(merchantEntity);
+                                    return null;
+                                }
+                            });
+                            return null;
+                        }
+                    });
+                    completable.subscribe();
+                    //mDatabaseManager.insertNewMerchant(merchantEntity);
                     mSessionManager.setMerchantSessionData(
                             merchant.getId(),
                             merchant.getEmail(),

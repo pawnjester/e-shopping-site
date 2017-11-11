@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.models.entities;
 
+import android.databinding.Observable;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
@@ -14,7 +15,7 @@ import io.requery.Persistable;
  */
 
 @Entity
-public interface BirthdayOfferPresetSms extends Parcelable, Persistable {
+public interface BirthdayOfferPresetSms extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 

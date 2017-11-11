@@ -50,6 +50,9 @@ public interface IDatabaseManager {
     String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable
+    String getProductCategoriesLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
     CustomerEntity getCustomerById(int customerId);
 
     @Nullable

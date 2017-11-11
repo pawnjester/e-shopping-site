@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.models.entities;
 
-import android.databinding.Bindable;
 import android.databinding.Observable;
 import android.os.Parcelable;
 
@@ -22,7 +21,7 @@ import io.requery.Persistable;
  */
 
 @Entity
-public interface Merchant extends Parcelable, Persistable {
+public interface Merchant extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 
