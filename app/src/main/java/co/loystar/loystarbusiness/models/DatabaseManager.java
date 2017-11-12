@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
+import java.util.Collections;
 import java.util.List;
 
 import co.loystar.loystarbusiness.BuildConfig;
@@ -322,5 +323,22 @@ public class DatabaseManager implements IDatabaseManager{
         query.where(SalesTransactionEntity.SYNCED.eq(false));
         query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
         return query.get().toList();
+    }
+
+    @NonNull
+    @Override
+    public List<SalesTransactionEntity> getMerchantSalesTransactions(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        /*if (merchantEntity == null) {
+
+        } else {
+            Selection<ReactiveResult<Tuple>> query = mDataStore.select(SalesTransactionEntity.class);
+            query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+            query.where(SalesTransactionEntity.AMOUNT.sum().as("amount").notNull());
+        }*/
+        return merchantEntity != null ? merchantEntity.getSalesTransactions() : Collections.<SalesTransactionEntity>emptyList();
     }
 }

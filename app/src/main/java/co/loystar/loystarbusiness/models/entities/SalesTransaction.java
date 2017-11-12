@@ -26,7 +26,10 @@ public interface SalesTransaction extends Observable, Parcelable, Persistable {
     int getUserId();
     int getProductId();
     int getMerchantLoyaltyProgramId();
+
+    @Column(value = "0")
     int getAmount();
+
     int getPoints();
     int getStamps();
     String getProgramType();

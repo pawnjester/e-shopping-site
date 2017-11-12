@@ -439,13 +439,14 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                         }
                     });
                     completable.subscribe();
-                    //mDatabaseManager.insertNewMerchant(merchantEntity);
                     mSessionManager.setMerchantSessionData(
                             merchant.getId(),
                             merchant.getEmail(),
                             merchant.getFirst_name(),
                             merchant.getLast_name(),
                             merchant.getContact_number(),
+                            merchant.getBusiness_name(),
+                            merchant.getCurrency(),
                             authToken,
                             client
                     );

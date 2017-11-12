@@ -18,11 +18,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.concurrent.Callable;
 
 import co.loystar.loystarbusiness.activities.AuthenticatorActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
+import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import io.reactivex.Completable;
+import io.requery.BlockingEntityStore;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -103,55 +109,60 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
         if (TextUtils.isEmpty(authToken)) {
             String password = am.getPassword(account);
             if (password != null && !TextUtils.isEmpty(password)) {
+                // authenticate merchant by email and password
                 Call<Merchant> call = mApiClient.getLoystarApi(true).signInMerchant(account.name, password);
                 try {
                     Response<Merchant> response = call.execute();
                     if (response.isSuccessful()) {
-                        Log.e(TAG, "getAuthToken: " + response.body().getContact_number() );
+                        authToken = response.headers().get("Access-Token");
+                        String client = response.headers().get("Client");
+                        Merchant merchant = response.body();
+                        final MerchantEntity merchantEntity = new MerchantEntity();
+                        merchantEntity.setId(merchant.getId());
+                        merchantEntity.setFirstName(merchant.getFirst_name());
+                        merchantEntity.setLastName(merchant.getLast_name());
+                        merchantEntity.setBusinessName(merchant.getBusiness_name());
+                        merchantEntity.setEmail(merchant.getEmail());
+                        merchantEntity.setBusinessType(merchant.getBusiness_type());
+                        merchantEntity.setContactNumber(merchant.getContact_number());
+                        merchantEntity.setCurrency(merchant.getCurrency());
+                        if (merchant.getSubscription_expires_on() != null) {
+                            merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
+                        }
+
+                        final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
+                        Completable completable = Completable.fromCallable(new Callable<Void>() {
+
+                            @Override
+                            public Void call() throws Exception {
+                                mDataStore.runInTransaction(new Callable() {
+                                    @Override
+                                    public Void call() throws Exception {
+                                        mDataStore.upsert(merchantEntity);
+                                        return null;
+                                    }
+                                });
+                                return null;
+                            }
+                        });
+                        completable.subscribe();
+                        mSessionManager.setMerchantSessionData(
+                                merchant.getId(),
+                                merchant.getEmail(),
+                                merchant.getFirst_name(),
+                                merchant.getLast_name(),
+                                merchant.getContact_number(),
+                                merchant.getBusiness_name(),
+                                merchant.getCurrency(),
+                                authToken,
+                                client
+                        );
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                //get user by email and password
-                /*JSONObject data = new JSONObject();
-                JSONObject requestData = new JSONObject();
-                try {
-                    data.put("email", account.name);
-                    data.put("password", password);
-                    requestData.put("data", data);
-                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                    Call<User> call = mApiClient.getLoystarApi().LoginUser(requestBody);
-                    Response<User> response = call.execute();
-                    if (response.isSuccessful()) {
-                        User user = response.body();
-                        UserEntity userEntity = new UserEntity();
-                        userEntity.setId(user.getId());
-                        userEntity.setEmail(user.getEmail());
-                        userEntity.setFirstName(user.getFirst_name());
-                        userEntity.setLastName(user.getLast_name());
-                        userEntity.setPhoneNumber(user.getPhone_number());
-                        userEntity.setSex(user.getGender());
-                        userEntity.setCreatedAt(user.getCreated_at().toDate());
-                        userEntity.setDateOfBirth(user.getDate_of_birth());
-
-                        DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-                        databaseManager.addUser(userEntity);
-
-                        authToken = response.headers().get("Access-Token");
-                        mSessionManager.setUserSessionData(
-                                user.getId(),
-                                user.getEmail(),
-                                user.getFirst_name(),
-                                user.getLast_name(),
-                                user.getPhone_number(),
-                                authToken
-                        );
-                    }
-                } catch (JSONException | IOException e) {
-                    e.printStackTrace();
-                }*/
             } else {
-                //login user by phone number and firebase_uid
+                // authenticate merchant by phone number and firebase_uid
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 /*if (firebaseUser != null) {
                     Call<User> call = mApiClient.getLoystarApi().LoginUserByPhone(mSessionManager.getPhoneNumber(), firebaseUser.getUid());

@@ -24,7 +24,9 @@ public class SessionManager {
     private static final String CLIENT_KEY = "clientKey";
     private static final String CONTACT_NUMBER = "contactNumber";
     private static final String IS_LOGGED_IN = "isLoggedIn";
+    private static  final String BUSINESS_NAME = "businessName";
     private static final String MERCHANT_ID = "merchantId";
+    private static final String CURRENCY = "currency";
     private static final int PRIVATE_MODE = 0;
     private static final String TAG = SessionManager.class.getSimpleName();
 
@@ -48,6 +50,8 @@ public class SessionManager {
             String first_name,
             String last_name,
             String contact_number,
+            String businessName,
+            String currency,
             String accessToken,
             String clientKey
     ) {
@@ -56,6 +60,8 @@ public class SessionManager {
         editor.putString(FIRST_NAME, first_name);
         editor.putString(LAST_NAME, last_name);
         editor.putString(CONTACT_NUMBER, contact_number);
+        editor.putString(BUSINESS_NAME, businessName);
+        editor.putString(CURRENCY, currency);
         editor.putString(ACCESS_TOKEN, accessToken);
         editor.putString(CLIENT_KEY, clientKey);
         editor.putBoolean(IS_LOGGED_IN, true);
@@ -92,6 +98,14 @@ public class SessionManager {
             lastName = " " + lastName;
         }
         return getFirstName() + lastName;
+    }
+
+    public String getBusinessName() {
+        return sharedPreferences.getString(BUSINESS_NAME, "");
+    }
+
+    public String getCurrency() {
+        return sharedPreferences.getString(CURRENCY, "");
     }
 
     public int getMerchantId() {

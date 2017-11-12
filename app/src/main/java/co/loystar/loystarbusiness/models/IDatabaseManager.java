@@ -54,8 +54,6 @@ public interface IDatabaseManager {
     @Nullable
     CustomerEntity getCustomerById(int customerId);
 
-
-
     @Nullable
     LoyaltyProgramEntity getLoyaltyProgramById(int programId);
 
@@ -97,4 +95,7 @@ public interface IDatabaseManager {
 
     @NonNull
     List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<SalesTransactionEntity> getMerchantSalesTransactions(int  merchantId);
 }

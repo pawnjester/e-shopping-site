@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabs>
+    <tab
+        id="@+id/home"
+        icon="@drawable/ic_home_black_24dp"
+        title="@string/home_menu" />
+    <tab
+        id="@+id/record_sale"
+        icon="@drawable/ic_sale"
+        title="@string/record_sale" />
+    <tab
+        id="@+id/customers"
+        icon="@drawable/ic_people_black_24dp"
+        title="@string/customers_title" />
+    <tab
+        id="@+id/campaigns"
+        icon="@drawable/ic_loyalty_program"
+        title="@string/campaigns" />
+</tabs>

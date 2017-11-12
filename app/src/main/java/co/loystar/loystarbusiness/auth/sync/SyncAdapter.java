@@ -8,8 +8,10 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,6 +43,7 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -93,6 +96,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private class SyncNow implements ISync {
         void startAllSyncs() {
+            Intent intent = new Intent(Constants.SYNC_STARTED);
+            getContext().sendBroadcast(intent);
+
             syncCustomers();
             syncTransactions();
             syncProductCategories();
@@ -101,6 +107,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
+
+            Intent i = new Intent(Constants.SYNC_FINISHED);
+            getContext().sendBroadcast(i);
         }
 
         @Override
@@ -255,6 +264,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         @Override
         public void syncTransactions() {
+            Log.e(TAG, "syncTransactions: " + DatabaseManager.getDataStore(mContext).count(SalesTransactionEntity.class).get().value());
             try {
                 String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
                 JSONObject jsonObjectData = new JSONObject();
@@ -272,6 +282,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<Transaction> transactions = response.body();
+                    Log.e(TAG, "syncTransactions: " + transactions.size() );
                     for (Transaction transaction: transactions) {
                         CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
                         SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
@@ -298,8 +309,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                 }
             } catch (IOException e) {
+                Log.e(TAG, "syncTransactions: " + e.getMessage() );
                 e.printStackTrace();
             } catch (JSONException e) {
+                Log.e(TAG, "syncTransactions: " + e.getMessage() );
                 e.printStackTrace();
             }
 
