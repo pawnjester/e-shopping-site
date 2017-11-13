@@ -127,4 +127,37 @@
     <string name="record_sale">Sell</string>
     <string name="customers_title">Customers</string>
     <string name="campaigns">Campaigns</string>
+    <string name="title_customer_list">Customers</string>
+    <string name="title_customer_detail">Customer Detail</string>
+    <string name="no_customers_found">No customers found!</string>
+    <string name="add_customer">Add customer</string>
+    <string name="customers_count">Customers (%1$s)</string>
+    <string name="confirm_delete_positive">Delete</string>
+    <string name="confirm_delete_negative">No don\'t delete!</string>
+    <string name="action_search">Search</string>
+    <string name="filter_list">Filter list</string>
+    <string name="download_customer_list">Download list</string>
+    <string name="all_contacts">All contacts</string>
+    <string name="last_visit_30_days">Last visit (30 days)</string>
+    <string name="male_only">Male only</string>
+    <string name="female_only">Female only</string>
+    <string name="error_export_failed">Export failed! Please try again.</string>
+    <string name="open_file">Open file</string>
+
+    <!--runtime permissions-->
+    <string name="button_allow">Allow</string>
+    <string name="button_deny">Deny</string>
+    <string name="permission_write_external_storage__denied">External storage permission is denied.</string>
+    <string name="permission_write_external_storage_neverask">External Storage permission was denied with never ask again.</string>
+    <string name="permission_available_external_storage">External Storage Permission has been granted. </string>
+    <string name="permission_granted_accounts">Accounts permission has been granted</string>
+    <string name="permission_available_contacts">Contacts Permissions have been granted.</string>
+    <string name="permissions_not_granted">Permissions were not granted.</string>
+    <string name="permission_write_external_storage_rationale">Storage permission is needed to store this file.</string>
+    <string name="permission_read_external_storage_rationale">Storage permission is needed to open this file.</string>
+    <string name="permission_get_accounts_rationale">Accounts permission is needed to sync your records with our servers.</string>
+    <string name="permission_contacts_rationale">Contacts permission is needed to pick contacts.</string>
+    <string name="permission_contacts_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable contacts permission.</string>
+    <string name="permission_external_storage_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable storage permission.</string>
+    <string name="permission_get_accounts_rationale_extra">>Click on \'OK\' and then \'Permissions\' to enable accounts permission.</string>
 </resources>

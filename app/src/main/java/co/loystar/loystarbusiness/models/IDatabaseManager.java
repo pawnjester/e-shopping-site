@@ -98,4 +98,8 @@ public interface IDatabaseManager {
 
     @NonNull
     List<SalesTransactionEntity> getMerchantSalesTransactions(int  merchantId);
+
+    int getTotalUserStampsForMerchant(int merchantId, int customerId);
+
+    int getTotalUserPointsForMerchant(int merchantId, int customerId);
 }

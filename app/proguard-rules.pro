@@ -24,6 +24,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-keepattributes *Annotation*, EnclosingMethod, Signature, InnerClasses
+
 # joda time
 -dontwarn org.joda.convert.FromString
 -dontwarn org.joda.convert.ToString
@@ -39,3 +41,7 @@
 -keep class com.fasterxml.jackson.databind.ObjectWriter {
     public ** writeValueAsString(**);
 }
+
+-keep class android.support.v7.widget.SearchView { *; }
+
+-dontwarn org.apache.**

@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.models;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
@@ -24,6 +25,7 @@ import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.query.Result;
 import io.requery.query.Selection;
+import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
@@ -332,13 +334,29 @@ public class DatabaseManager implements IDatabaseManager{
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()
                 .firstOrNull();
-        /*if (merchantEntity == null) {
-
-        } else {
-            Selection<ReactiveResult<Tuple>> query = mDataStore.select(SalesTransactionEntity.class);
-            query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
-            query.where(SalesTransactionEntity.AMOUNT.sum().as("amount").notNull());
-        }*/
         return merchantEntity != null ? merchantEntity.getSalesTransactions() : Collections.<SalesTransactionEntity>emptyList();
+    }
+
+    @Override
+    public int getTotalUserStampsForMerchant(int merchantId, int customerId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        if (merchantEntity != null) {
+            Selection<ReactiveResult<Tuple>> query = mDataStore.select(SalesTransactionEntity.STAMPS);
+            query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+            query.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+            query.where(SalesTransactionEntity.STAMPS.sum().as("amount").notNull());
+            for (Tuple tuple: query.get().toList()) {
+                Log.e("TAG", "getTotalUserStampsForMerchant: " + tuple.get("amount") );
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getTotalUserPointsForMerchant(int merchantId, int customerId) {
+        return 0;
     }
 }

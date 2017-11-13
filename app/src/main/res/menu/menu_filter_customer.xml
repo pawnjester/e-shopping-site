@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/all_contacts_filter"
+        android:orderInCategory="100"
+        android:title="@string/all_contacts" />
+
+    <item
+        android:id="@+id/last_visit_filter"
+        android:orderInCategory="101"
+        android:title="@string/last_visit_30_days" />
+
+    <item
+        android:id="@+id/male_only_filter"
+        android:orderInCategory="102"
+        android:title="@string/male_only" />
+
+    <item
+        android:id="@+id/female_only_filter"
+        android:orderInCategory="103"
+        android:title="@string/female_only" />
+</menu>

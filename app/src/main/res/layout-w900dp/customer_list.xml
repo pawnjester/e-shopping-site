@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    android:showDividers="middle"
+    tools:context="co.loystar.loystarbusiness.activities.CustomerListActivity">
+
+    <!--
+    This layout is a two-pane layout for the Customers
+    master/detail flow.
+    
+    -->
+
+    <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/customers_rv"
+        android:name="co.loystar.loystarbusiness.activities.CustomerListFragment"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="co.loystar.loystarbusiness.activities.CustomerListActivity" />
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/customer_list_empty_container"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:text="@string/no_customers_found"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:layout_height="wrap_content" />
+
+        <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/no_customer_add_customer_btn"
+            android:text="@string/add_customer"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/customer_detail_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3" />
+
+</LinearLayout>

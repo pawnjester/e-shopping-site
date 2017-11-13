@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -35,6 +36,9 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.OnTabReselectListener;
+import com.roughike.bottombar.OnTabSelectListener;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -69,6 +73,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private View mLayout;
     private String merchantCurrencySymbol;
     private BarChart barChart;
+    private BottomBar bottomNavigationBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +95,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         }
 
         setupGraph();
+        setupBottomNavigation();
     }
 
     private void setupGraph() {
@@ -238,6 +244,85 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         return graphCoordinates;
     }
 
+    private void setupBottomNavigation() {
+        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar);
+        bottomNavigationBar.setOnTabSelectListener(new OnTabSelectListener() {
+            @Override
+            public void onTabSelected(@IdRes int tabId) {
+                switch (tabId) {
+                    case R.id.record_sale:
+                        /*boolean isPosTurnedOn = merchant.getTurn_on_point_of_sale() != null
+                                && merchant.getTurn_on_point_of_sale();
+                        loyaltyPrograms = databaseHelper.listMerchantPrograms(sessionManager.getMerchantId());
+
+                        if (loyaltyPrograms.isEmpty()) {
+                            Intent intent = new Intent(mContext, CreateLoyaltyProgramListActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
+                        else {
+                            if (loyaltyPrograms.size() == 1) {
+                                DBMerchantLoyaltyProgram loyaltyProgram = loyaltyPrograms.get(0);
+                                if (isPosTurnedOn) {
+                                    if (loyaltyProgram.getProgram_type().equals(getString(R.string.simple_points))) {
+                                        Intent intent = new Intent(mContext, RecordPointsSalesWithPosActivity.class);
+                                        intent.putExtra(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
+                                        startActivity(intent);
+                                    }
+                                    else if (loyaltyProgram.getProgram_type().equals(getString(R.string.stamps_program))) {
+                                        Intent intent = new Intent(mContext, RecordStampsSalesWithPosActivity.class);
+                                        intent.putExtra(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
+                                        startActivity(intent);
+                                    }
+                                }
+                                else {
+                                    Bundle data = new Bundle();
+                                    data.putString(RecordDirectSalesActivity.LOYALTY_PROGRAM_TYPE, loyaltyProgram.getProgram_type());
+                                    data.putLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
+                                    Intent intent = new Intent(mContext, RecordDirectSalesActivity.class);
+                                    intent.putExtras(data);
+                                    startActivity(intent);
+                                }
+                            }
+                            else {
+                                if (isPosTurnedOn) {
+                                    Intent chooseProgram = new Intent(MerchantBackOffice.this, SelectLoyaltyProgramForSales.class);
+                                    startActivityForResult(chooseProgram, RECORD_SALES_WITH_POS_CHOOSE_PROGRAM);
+                                }
+                                else {
+                                    Intent chooseProgram = new Intent(MerchantBackOffice.this, SelectLoyaltyProgramForSales.class);
+                                    startActivityForResult(chooseProgram, RECORD_SALES_WITHOUT_POS_CHOOSE_PROGRAM);
+                                }
+                            }
+                        }*/
+                        break;
+                    case R.id.customers:
+                        Intent intent = new Intent(mContext, CustomerListActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        break;
+                    case R.id.campaigns:
+                        /*Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramsListActivity.class);
+                        loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(loyaltyIntent);*/
+                        break;
+                }
+            }
+        });
+
+        bottomNavigationBar.setOnTabReselectListener(new OnTabReselectListener() {
+            @Override
+            public void onTabReSelected(@IdRes int tabId) {
+                if (tabId == R.id.home) {
+                    if (barChart != null) {
+                        barChart.highlightValues(null);
+                        barChart.fitScreen();
+                    }
+                }
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -286,6 +371,11 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
 
         registerReceiver(syncFinishedReceiver, new IntentFilter(Constants.SYNC_FINISHED));
         registerReceiver(syncStartedReceiver, new IntentFilter(Constants.SYNC_STARTED));
+
+        if (bottomNavigationBar != null){
+            bottomNavigationBar.selectTabWithId(R.id.home);
+
+        }
     }
 
     private BroadcastReceiver syncFinishedReceiver = new BroadcastReceiver() {

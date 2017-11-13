@@ -95,7 +95,25 @@
             android:theme="@style/VerticalIntroStyle" />
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".activities.CustomerListActivity"
+            android:label="@string/title_customer_list"
+            android:parentActivityName=".activities.MerchantBackOfficeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
+        </activity>
+        <activity
+            android:name=".activities.CustomerDetailActivity"
+            android:label="@string/title_customer_detail"
+            android:parentActivityName=".activities.CustomerListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
+        </activity>
     </application>
 
 </manifest>

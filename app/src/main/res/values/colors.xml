@@ -12,6 +12,7 @@
     <color name="walkthrough_transp_bg">#E6913461</color>
     <color name="green">#00A79B</color>
     <color name="translucent">#80000000</color>
+    <color name="title">#222222</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="white">#ffffff</color>
