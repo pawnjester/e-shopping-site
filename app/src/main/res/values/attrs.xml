@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Shareable attributes-->
+    <attr name="backGroundColor" format="color"/>
+
+    <declare-styleable name="FullRectangleButton">
+        <attr name="backGroundColor" />
+    </declare-styleable>
+
+    <declare-styleable name="SpinnerButton">
+        <attr name="android:prompt" />
+        <attr name="android:entries" />
+    </declare-styleable>
+
+</resources>

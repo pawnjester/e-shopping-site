@@ -12,7 +12,8 @@ import android.widget.TextView;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.CustomerDetailActivity;
 import co.loystar.loystarbusiness.activities.CustomerListActivity;
-import co.loystar.loystarbusiness.activities.dummy.DummyContent;
+import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 
 /**
  * A fragment representing a single Customer detail screen.
@@ -30,7 +31,7 @@ public class CustomerDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private DummyContent.DummyItem mItem;
+    private CustomerEntity mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -47,12 +48,13 @@ public class CustomerDetailFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
+            mItem = databaseManager.getCustomerById(getArguments().getInt(ARG_ITEM_ID, 0));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle(mItem.getFirstName());
             }
         }
     }
@@ -64,7 +66,7 @@ public class CustomerDetailFragment extends Fragment {
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.customer_detail)).setText(mItem.details);
+            ((TextView) rootView.findViewById(R.id.customer_detail)).setText(mItem.getPhoneNumber());
         }
 
         return rootView;

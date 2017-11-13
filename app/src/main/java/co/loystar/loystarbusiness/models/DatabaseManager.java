@@ -341,26 +341,39 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public int getTotalUserStampsForMerchant(int merchantId, int customerId) {
+    public int getTotalCustomerStamps(int merchantId, int customerId) {
+        int stamps = 0;
         MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()
                 .firstOrNull();
-        if (merchantEntity != null) {
-            Selection<ReactiveResult<Tuple>> query = mDataStore.select(SalesTransactionEntity.STAMPS);
-            query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
-            query.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
-            query.where(SalesTransactionEntity.STAMPS.sum().as("amount").notNull());
-            for (Tuple tuple: query.get().toList()) {
-                Log.e("TAG", "getTotalUserStampsForMerchant: " + tuple.get("amount") );
-            }
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+        resultSelection.where(SalesTransactionEntity.STAMPS.notNull());
+        for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
+            stamps += transactionEntity.getStamps();
         }
-        return 0;
+        return stamps;
     }
 
     @Override
-    public int getTotalUserPointsForMerchant(int merchantId, int customerId) {
-        return 0;
+    public int getTotalCustomerPoints(int merchantId, int customerId) {
+        int points = 0;
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+        resultSelection.where(SalesTransactionEntity.POINTS.notNull());
+        for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
+            points += transactionEntity.getPoints();
+        }
+
+        return points;
     }
 
     @NonNull

@@ -58,6 +58,16 @@
                 android:resource="@xml/sync_adapter" />
         </service>
 
+        <provider
+            android:name=".utils.GenericFileProvider"
+            android:authorities="${applicationId}.co.loystar.loystarbusiness.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
         <activity
             android:name=".activities.SplashActivity"
             android:label="@string/app_name"
@@ -114,6 +124,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
         </activity>
+        <activity
+            android:name=".activities.AddNewCustomerActivity"
+            android:label="@string/title_activity_add_new_customer"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

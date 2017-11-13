@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils.ui.Currency;
+package co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput;
 
 import android.content.Context;
 
@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import co.loystar.loystarbusiness.R;
 
 /**
- * Created by ordgen on 11/11/17.
+ * Created by ordgen on 11/13/17.
  */
 
-public class CurrenciesFetcher {
-    private static CurrencyList mCurrencies;
+public class CountriesFetcher {
+    private static CountryList mCountries;
 
     /**
      * Fetch JSON from RAW resource
@@ -56,41 +56,44 @@ public class CurrenciesFetcher {
 
         return  writer.toString();
     }
-
     /**
-     * Import CurrencyList from RAW resource
+     * Import CountryList from RAW resource
      *
      * @param context Context
-     * @return CurrencyList
+     * @return CountryList
      */
-
-    public static CurrencyList getCurrencies(Context context) {
-        if (mCurrencies != null) {
-            return mCurrencies;
+    public static CountryList getCountries(Context context) {
+        if (mCountries != null) {
+            return mCountries;
         }
-        mCurrencies = new CurrencyList();
+        mCountries = new CountryList();
         try {
-            JSONArray currencies = new JSONArray(getJsonFromRaw(context, R.raw.currencies));
-            for (int i = 0; i < currencies.length(); i++) {
-                JSONObject currency = (JSONObject) currencies.get(i);
-                mCurrencies.add(new Currency(currency.getString("name"), currency.getString("symbol"), currency.getString("code")));
+            JSONArray countries = new JSONArray(getJsonFromRaw(context, R.raw.countries));
+            for (int i = 0; i < countries.length(); i++) {
+                try {
+                    JSONObject country = (JSONObject) countries.get(i);
+                    mCountries.add(new Country(country.getString("name"), country.getString("iso2"), country.getInt("dialCode")));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return mCurrencies;
+        return mCountries;
     }
 
-    public static class CurrencyList extends ArrayList<Currency> {
+
+    public static class CountryList extends ArrayList<Country> {
         /**
-         * Fetch item index on the list by ISO code
+         * Fetch item index on the list by iso
          *
-         * @param code Currency's ISO code
+         * @param iso Country's iso2
          * @return index of the item in the list
          */
-        int indexOfIsoCode(String code) {
+        public int indexOfIso(String iso) {
             for (int i = 0; i < this.size(); i++) {
-                if (this.get(i).getCode().toUpperCase().equals(code.toUpperCase())) {
+                if (this.get(i).getIso().toUpperCase().equals(iso.toUpperCase())) {
                     return i;
                 }
             }
@@ -98,17 +101,19 @@ public class CurrenciesFetcher {
         }
 
         /**
-         * Get currency by ISO code
-         * @param code Currency's ISO code
-         * @return Currency
-         * */
-        public Currency getCurrency(String code) {
-            if (code != null && code.isEmpty()) {
-                int index = indexOfIsoCode("USD");
-                return this.get(index);
+         * Fetch item index on the list by dial coder
+         *
+         * @param dialCode Country's dial code prefix
+         * @return index of the item in the list
+         */
+        @SuppressWarnings("unused")
+        public int indexOfDialCode(int dialCode) {
+            for (int i = 0; i < this.size(); i++) {
+                if (this.get(i).getDialCode() == dialCode) {
+                    return i;
+                }
             }
-            int index = indexOfIsoCode(code);
-            return this.get(index);
+            return -1;
         }
     }
 }

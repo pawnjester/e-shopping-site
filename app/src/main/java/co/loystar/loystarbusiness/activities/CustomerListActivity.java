@@ -17,12 +17,11 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.view.menu.MenuItemImpl;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -138,9 +137,7 @@ public class CustomerListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_list);
 
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+        toolbar = findViewById(R.id.customer_list_toolbar);
 
         searchFilterText = getString(R.string.all_contacts);
         myAlertDialog = new MyAlertDialog();
@@ -153,13 +150,13 @@ public class CustomerListActivity extends AppCompatActivity
         executor = Executors.newSingleThreadExecutor();
         mAdapter.setExecutor(executor);
 
+        if (toolbar != null) {
+            toolbar.setTitle(getString(R.string.customers_count, String.valueOf(mDataStore.count(CustomerEntity.class).get().value())));
+        }
+        setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        if (toolbar != null) {
-            toolbar.setTitle(getString(R.string.customers_count, mDataStore.count(CustomerEntity.class).get().value()));
         }
 
         if (findViewById(R.id.customer_detail_container) != null) {
@@ -681,8 +678,8 @@ public class CustomerListActivity extends AppCompatActivity
                         }
 
                         DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-                        int customer_stamps = databaseManager.getTotalUserStampsForMerchant(mSessionManager.getMerchantId(), customer.getId());
-                        int customer_points = databaseManager.getTotalUserPointsForMerchant(mSessionManager.getMerchantId(), customer.getId());
+                        int customer_stamps = databaseManager.getTotalCustomerStamps(mSessionManager.getMerchantId(), customer.getId());
+                        int customer_points = databaseManager.getTotalCustomerPoints(mSessionManager.getMerchantId(), customer.getId());
 
                         sheet.addCell(new Label(0, index, customer.getFirstName()));
                         sheet.addCell(new Label(1, index, customer.getLastName()));
@@ -738,9 +735,13 @@ public class CustomerListActivity extends AppCompatActivity
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                                 PackageManager packageManager = getPackageManager();
+                                 Uri uriForFile = FileProvider.getUriForFile(
+                                        mContext,
+                                        mContext.getApplicationContext().getPackageName() + ".co.loystar.loystarbusiness.provider",
+                                        file);
                                 Intent intent = new Intent();
                                 intent.setAction(android.content.Intent.ACTION_VIEW);
-                                intent.setDataAndType(Uri.fromFile(file), mime);
+                                intent.setDataAndType(uriForFile, mime);
                                 List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
                                 if (list.size() > 0) {
                                     startActivity(intent);

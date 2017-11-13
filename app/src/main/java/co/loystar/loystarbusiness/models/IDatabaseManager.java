@@ -99,9 +99,9 @@ public interface IDatabaseManager {
     @NonNull
     List<SalesTransactionEntity> getMerchantSalesTransactions(int  merchantId);
 
-    int getTotalUserStampsForMerchant(int merchantId, int customerId);
+    int getTotalCustomerStamps(int merchantId, int customerId);
 
-    int getTotalUserPointsForMerchant(int merchantId, int customerId);
+    int getTotalCustomerPoints(int merchantId, int customerId);
 
     @NonNull
     List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);

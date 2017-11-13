@@ -117,6 +117,7 @@ dependencies {
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.roughike:bottom-bar:2.3.1'
+    compile group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.8.5'
     compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
     compile "net.gotev:uploadservice-okhttp:$uploadServiceVersion"
     compile "net.gotev:uploadservice:$uploadServiceVersion"

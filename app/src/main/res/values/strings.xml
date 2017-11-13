@@ -136,13 +136,15 @@
     <string name="confirm_delete_negative">No don\'t delete!</string>
     <string name="action_search">Search</string>
     <string name="filter_list">Filter list</string>
-    <string name="download_customer_list">Download list</string>
+    <string name="export_list">Export list</string>
     <string name="all_contacts">All contacts</string>
     <string name="last_visit_30_days">Last visit (30 days)</string>
     <string name="male_only">Male only</string>
     <string name="female_only">Female only</string>
     <string name="error_export_failed">Export failed! Please try again.</string>
     <string name="open_file">Open file</string>
+    <string-array name="empty_select" />
+    <string name="select_date">Select date</string>
 
     <!--runtime permissions-->
     <string name="button_allow">Allow</string>
@@ -160,4 +162,16 @@
     <string name="permission_contacts_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable contacts permission.</string>
     <string name="permission_external_storage_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable storage permission.</string>
     <string name="permission_get_accounts_rationale_extra">>Click on \'OK\' and then \'Permissions\' to enable accounts permission.</string>
+    <string name="title_activity_add_new_customer">Add New Customer</string>
+    <string name="add_customer_from_contacts">Add from contacts</string>
+    <string name="fname">First name</string>
+    <string name="lname">Last name</string>
+    <string name="gender">Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="date_of_birth">Date of birth</string>
+    <string name="birth_date_field_reason">Birthday messages would be sent to your customers.</string>
+    <string name="or_caps">OR</string>
+    <string name="item_image_contentDescription">Country flag</string>
+    <string name="prompt_phone">Enter phone number</string>
 </resources>
