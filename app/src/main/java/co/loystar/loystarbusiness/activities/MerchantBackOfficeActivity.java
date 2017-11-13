@@ -374,7 +374,10 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
 
         if (bottomNavigationBar != null){
             bottomNavigationBar.selectTabWithId(R.id.home);
+        }
 
+        if (barChart != null) {
+            addGraphDataset();
         }
     }
 

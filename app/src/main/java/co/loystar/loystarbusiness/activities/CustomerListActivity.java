@@ -59,6 +59,7 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.CustomerItemBinding;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -264,10 +265,10 @@ public class CustomerListActivity extends AppCompatActivity
             public void onLongClick(View view, int position) {
                 CustomerItemBinding customerItemBinding = (CustomerItemBinding) view.getTag();
                 if (customerItemBinding != null) {
-                    Customer customer = customerItemBinding.getCustomer();
-                    if (customer != null) {
+                    mSelectedCustomer = customerItemBinding.getCustomer();
+                    if (mSelectedCustomer != null) {
                         myAlertDialog.setTitle("Are you sure?");
-                        myAlertDialog.setMessage("All sales records for " + customer.getFirstName() + " will be deleted as well.");
+                        myAlertDialog.setMessage("All sales records for " + mSelectedCustomer.getFirstName() + " will be deleted as well.");
                         myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), CustomerListActivity.this);
                         myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
                         myAlertDialog.setDialogIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert));
@@ -287,21 +288,17 @@ public class CustomerListActivity extends AppCompatActivity
             case BUTTON_POSITIVE:
                 myAlertDialog.dismiss();
                 if (mSelectedCustomer != null) {
-                    /*mSelectedCustomer.setDeleted(true);
-                    databaseHelper.updateCustomer(mSelectedCustomer);
-                    mCustomerList.remove(adapterPosition);
-                    mAdapter.notifyItemRemoved(adapterPosition);
-                    mAdapter.notifyItemRangeChanged(adapterPosition, mCustomerList.size());
-                    mAdapter.notifyDataSetChanged();
-                    Snackbar.make(mLayout, mSelectedCustomer.getFirst_name() + " has been deleted!", Snackbar.LENGTH_LONG).show();
+                    Log.e(TAG, "onClick: " );
+                    CustomerEntity customerEntity = mDataStore.findByKey(CustomerEntity.class, mSelectedCustomer.getId()).blockingGet();
+                    if (customerEntity != null) {
+                        customerEntity.setDeleted(true);
+                        mDataStore.update(customerEntity).subscribe(/*no-op*/);
+                        mAdapter.queryAsync();
+                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            CustomerListActivityPermissionsDispatcher.syncDataWithCheck(CustomerListActivity.this);
-                        }
-                    }, 200);*/
+                        String deleteText =  mSelectedCustomer.getFirstName() + " has been deleted!";
+                        Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
+                    }
                 }
                 break;
         }

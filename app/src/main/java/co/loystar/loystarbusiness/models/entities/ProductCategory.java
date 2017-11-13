@@ -32,6 +32,6 @@ public interface ProductCategory extends Observable, Parcelable, Persistable {
     @ManyToOne
     Merchant getOwner();
 
-    @OneToMany(mappedBy = "category", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "category", cascade = {CascadeAction.SAVE})
     List<ProductEntity> getProducts();
 }

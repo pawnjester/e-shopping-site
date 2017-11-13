@@ -102,4 +102,16 @@ public interface IDatabaseManager {
     int getTotalUserStampsForMerchant(int merchantId, int customerId);
 
     int getTotalUserPointsForMerchant(int merchantId, int customerId);
+
+    @NonNull
+    List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<ProductCategoryEntity> getProductCategoriesMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<ProductEntity> getProductsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<LoyaltyProgramEntity> getLoyaltyProgramsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
 }

@@ -232,7 +232,7 @@ public class DatabaseManager implements IDatabaseManager{
     @Override
     public void deleteCustomer(@NonNull CustomerEntity customerEntity) {
         mDataStore.delete(customerEntity)
-                .subscribe(/*no-op*/);
+                .subscribe();
     }
 
     @Override
@@ -255,6 +255,9 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
+        for (ProductEntity productEntity: productCategoryEntity.getProducts()) {
+            deleteProduct(productEntity);
+        }
         mDataStore.delete(productCategoryEntity)
                 .subscribe(/*no-op*/);
     }
@@ -358,5 +361,41 @@ public class DatabaseManager implements IDatabaseManager{
     @Override
     public int getTotalUserPointsForMerchant(int merchantId, int customerId) {
         return 0;
+    }
+
+    @NonNull
+    @Override
+    public List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
+        Selection<ReactiveResult<CustomerEntity>> customersSelection = mDataStore.select(CustomerEntity.class);
+        customersSelection.where(CustomerEntity.DELETED.equal(true));
+        customersSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+        return customersSelection.get().toList();
+    }
+
+    @NonNull
+    @Override
+    public List<ProductCategoryEntity> getProductCategoriesMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
+        Selection<ReactiveResult<ProductCategoryEntity>> productCategoriesSelection = mDataStore.select(ProductCategoryEntity.class);
+        productCategoriesSelection.where(ProductCategoryEntity.DELETED.equal(true));
+        productCategoriesSelection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
+        return productCategoriesSelection.get().toList();
+    }
+
+    @NonNull
+    @Override
+    public List<ProductEntity> getProductsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
+        Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+        productsSelection.where(ProductEntity.DELETED.equal(true));
+        productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+        return productsSelection.get().toList();
+    }
+
+    @NonNull
+    @Override
+    public List<LoyaltyProgramEntity> getLoyaltyProgramsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
+        Selection<ReactiveResult<LoyaltyProgramEntity>> programsSelection = mDataStore.select(LoyaltyProgramEntity.class);
+        programsSelection.where(LoyaltyProgramEntity.DELETED.equal(true));
+        programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
+        return programsSelection.get().toList();
     }
 }

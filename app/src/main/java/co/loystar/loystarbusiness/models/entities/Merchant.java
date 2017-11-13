@@ -56,18 +56,18 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     @OneToOne
     BirthdayOfferPresetSmsEntity getBirthdayOfferPresetSms();
 
-    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
     List<CustomerEntity> getCustomers();
 
-    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
     List<ProductEntity> getProducts();
 
-    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
     List<ProductCategoryEntity> getProductCategories();
 
-    @OneToMany(mappedBy = "merchant", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "merchant", cascade = {CascadeAction.SAVE})
     List<SalesTransactionEntity> getSalesTransactions();
 
-    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
     List<LoyaltyProgramEntity> getLoyaltyPrograms();
 }

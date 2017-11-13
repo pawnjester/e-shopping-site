@@ -46,6 +46,7 @@ import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -130,7 +131,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         MerchantEntity merchant = mDatabaseManager.getMerchant(subscription.getMerchant_id());
                         if (merchant != null) {
                             merchant.setSubscription(subscriptionEntity);
-                            mDatabaseManager.insertNewMerchant(merchant);
+                            mDatabaseManager.updateMerchant(merchant);
                         }
                     } else {
                         if (response.code() == 401) {
@@ -165,6 +166,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     } else {
                         if (response.code() == 401) {
                             mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                        } else if (response.code() == 401) {
+                            mDatabaseManager.deleteMerchantBirthdayOffer(merchantEntity);
                         }
                     }
                 }
@@ -230,7 +233,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 mDatabaseManager.deleteCustomer(existingRecord);
                             }
                         } else {
-                            //CustomerEntity existingCustomer = mDatabaseManager.getC
                             CustomerEntity customerEntity = new CustomerEntity();
                             customerEntity.setId(customer.getId());
                             customerEntity.setEmail(customer.getEmail());
@@ -260,11 +262,32 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            /* sync customers marked for deletion*/
+            List<CustomerEntity> customersMarkedForDeletion = mDatabaseManager.getCustomersMarkedForDeletion(merchantEntity);
+            for (final CustomerEntity customerEntity: customersMarkedForDeletion) {
+                mApiClient.getLoystarApi(false).setCustomerDeleteFlagToTrue(String.valueOf(customerEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            mDatabaseManager.deleteCustomer(customerEntity);
+                        } else {
+                            if (response.code() == 401) {
+                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+            }
         }
 
         @Override
         public void syncTransactions() {
-            Log.e(TAG, "syncTransactions: " + DatabaseManager.getDataStore(mContext).count(SalesTransactionEntity.class).get().value());
             try {
                 String timeStamp = mDatabaseManager.getMerchantTransactionsLastRecordDate(merchantEntity);
                 JSONObject jsonObjectData = new JSONObject();
@@ -282,7 +305,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<Transaction> transactions = response.body();
-                    Log.e(TAG, "syncTransactions: " + transactions.size() );
                     for (Transaction transaction: transactions) {
                         CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
                         SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
@@ -309,10 +331,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                 }
             } catch (IOException e) {
-                Log.e(TAG, "syncTransactions: " + e.getMessage() );
                 e.printStackTrace();
             } catch (JSONException e) {
-                Log.e(TAG, "syncTransactions: " + e.getMessage() );
                 e.printStackTrace();
             }
 
@@ -440,6 +460,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            /* sync product categories marked for deletion */
+            List<ProductCategoryEntity> productCategoriesMarkedForDeletion = mDatabaseManager.getProductCategoriesMarkedForDeletion(merchantEntity);
+            for (final ProductCategoryEntity productCategoryEntity: productCategoriesMarkedForDeletion) {
+                mApiClient.getLoystarApi(false).setMerchantProductCategoryDeleteFlagToTrue(String.valueOf(productCategoryEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            mDatabaseManager.deleteProductCategory(productCategoryEntity);
+                        } else {
+                            if (response.code() == 401) {
+                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+            }
         }
 
         @Override
@@ -496,6 +538,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            /* sync products marked for deletion */
+            List<ProductEntity> productsMarkedForDeletion = mDatabaseManager.getProductsMarkedForDeletion(merchantEntity);
+            for (final ProductEntity productEntity: productsMarkedForDeletion) {
+                mApiClient.getLoystarApi(false).setProductDeleteFlagToTrue(String.valueOf(productEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            mDatabaseManager.deleteProduct(productEntity);
+                        } else {
+                            if (response.code() == 401) {
+                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+            }
         }
 
         @Override
@@ -547,6 +611,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+
+            /* sync loyaltyPrograms marked for deletion */
+            List<LoyaltyProgramEntity> loyaltyProgramsMarkedForDeletion = mDatabaseManager.getLoyaltyProgramsMarkedForDeletion(merchantEntity);
+            for (final LoyaltyProgramEntity loyaltyProgramEntity: loyaltyProgramsMarkedForDeletion) {
+                mApiClient.getLoystarApi(false).setMerchantLoyaltyProgramDeleteFlagToTrue(String.valueOf(loyaltyProgramEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            mDatabaseManager.deleteLoyaltyProgram(loyaltyProgramEntity);
+                        } else {
+                            if (response.code() == 401) {
+                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
             }
         }
     }
