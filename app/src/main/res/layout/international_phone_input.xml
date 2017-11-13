@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.design.widget.TextInputLayout
+    <co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.CountryPhoneSpinner
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:paddingEnd="1dp"
+        android:id="@+id/country_phone_spinner"
+        android:paddingRight="1dp"
+        android:paddingStart="0dp"
+        android:paddingLeft="0dp"
+        android:dropDownWidth="350dp"/>
+
+    <EditText
+        android:id="@+id/international_phone_edit_text"
         android:layout_width="match_parent"
-        android:id="@+id/international_phone_input_layout"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/international_phone_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/prompt_phone"
-            android:inputType="phone"
-            android:maxLines="1" />
-
-    </android.support.design.widget.TextInputLayout>
+        android:layout_height="wrap_content"
+        android:hint="@string/prompt_phone"
+        android:inputType="phone"
+        android:maxLines="1" />
 
 </LinearLayout>

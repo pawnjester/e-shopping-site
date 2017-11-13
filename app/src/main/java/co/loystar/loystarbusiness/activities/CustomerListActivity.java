@@ -306,8 +306,8 @@ public class CustomerListActivity extends AppCompatActivity
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.activity_customer_list_fab_add_customer:
-                    /*Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
-                    startActivityForResult(addCustomerIntent, ADD_NEW_CUSTOMER_REQUEST);*/
+                    Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
+                    startActivityForResult(addCustomerIntent, Constants.ADD_NEW_CUSTOMER_REQUEST);
                     break;
                 case R.id.activity_customer_list_fab_rewards:
                     /*Intent rewardCustomerIntent = new Intent(mContext, RewardCustomersActivity.class);
@@ -773,5 +773,33 @@ public class CustomerListActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         CustomerListActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.ADD_NEW_CUSTOMER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    CustomerEntity customer = mDataStore.findByKey(CustomerEntity.class, extras.getInt(Constants.CUSTOMER_ID, 0)).blockingGet();
+                    if (customer != null) {
+                        if (mTwoPane) {
+                            Bundle arguments = new Bundle();
+                            arguments.putLong(CustomerDetailFragment.ARG_ITEM_ID, customer.getId());
+                            CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
+                            customerDetailFragment.setArguments(arguments);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.customer_detail_container, customerDetailFragment)
+                                    .commit();
+                        } else {
+                            Intent intent = new Intent(mContext, CustomerDetailActivity.class);
+                            intent.putExtra(CustomerDetailFragment.ARG_ITEM_ID, customer.getId());
+                            startActivity(intent);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="8dp"
+    android:orientation="vertical"
     android:paddingRight="8dp"
     android:paddingLeft="8dp">
 
@@ -16,6 +17,6 @@
         android:id="@+id/countries_rv"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

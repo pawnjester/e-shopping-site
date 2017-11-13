@@ -12,6 +12,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,9 +36,8 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDeco
  */
 
 public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implements
-        SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-
-    private SearchView mSearchView;
+        SearchView.OnQueryTextListener {
+    public static final String TAG = CountryPhoneSpinnerDialog.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private CountryPhoneSpinnerDialogAdapter mAdapter;
     private CountriesFetcher.CountryList mCountryList;
@@ -57,14 +57,13 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context
                 .SEARCH_SERVICE);
 
-        mSearchView = rootView.findViewById(R.id.country_search);
+        SearchView mSearchView = rootView.findViewById(R.id.country_search);
         if (searchManager != null) {
             mSearchView.setSearchableInfo(
                     searchManager.getSearchableInfo(getActivity().getComponentName())
             );
             mSearchView.setIconifiedByDefault(false);
             mSearchView.setOnQueryTextListener(this);
-            mSearchView.setOnCloseListener(this);
             mSearchView.clearFocus();
         }
         InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -72,7 +71,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             mgr.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
         }
 
-        mAdapter = new CountryPhoneSpinnerDialogAdapter(getActivity(), mCountryList);
+        mAdapter = new CountryPhoneSpinnerDialogAdapter(mCountryList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView = rootView.findViewById(R.id.countries_rv);
         mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -90,7 +89,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             @Override
             public void onClick(View view, int position) {
                 if (mListener != null) {
-                    mListener.onItemSelected(position);
+                    mListener.onItemSelected(mAdapter.mCountries.get(position));
                 }
                 getDialog().cancel();
             }
@@ -120,11 +119,6 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     }
 
     @Override
-    public boolean onClose() {
-        return false;
-    }
-
-    @Override
     public boolean onQueryTextSubmit(String s) {
         return false;
     }
@@ -140,7 +134,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     }
 
     public interface OnItemSelectedListener {
-        void onItemSelected(int position);
+        void onItemSelected(Country country);
     }
 
     public void setListener(OnItemSelectedListener listener) {
@@ -149,11 +143,9 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
 
     private class CountryPhoneSpinnerDialogAdapter extends RecyclerView.Adapter<CountryPhoneSpinnerDialogAdapter.ViewHolder> implements Filterable {
         private ArrayList<Country> mCountries;
-        private Context mContext;
         private Filter filter;
 
-        public CountryPhoneSpinnerDialogAdapter(Context context, ArrayList<Country> countries) {
-            mContext = context;
+        CountryPhoneSpinnerDialogAdapter(ArrayList<Country> countries) {
             mCountries = countries;
         }
 
@@ -180,6 +172,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         @Override
         public void onBindViewHolder(CountryPhoneSpinnerDialogAdapter.ViewHolder holder, int position) {
             Country country = mCountries.get(position);
+            Log.e(TAG, "onBindViewHolder: " + country.getName() );
             holder.mImageView.setImageResource(getFlagResource(country));
             holder.mNameView.setText(country.getName());
             holder.mDialCode.setText(String.format("+%s", country.getDialCode()));
@@ -248,7 +241,6 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
                 ArrayList<Country> filtered = (ArrayList<Country>) filterResults.values;
                 if (filtered != null) {
                     animateTo(filtered);
-
                 }
                 else {
                     animateTo(mCountries);
@@ -262,8 +254,8 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             }
 
             private void applyAndAnimateRemovals(ArrayList<Country> newList) {
-                for (int i = mCountries.size() - 1; i >= 0; i--) {
-                    final Country country = mCountries.get(i);
+                for (int i = mCountryList.size() - 1; i >= 0; i--) {
+                    final Country country = mCountryList.get(i);
                     if (!newList.contains(country)) {
                         removeItem(i);
                     }
@@ -273,7 +265,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             private void applyAndAnimateAdditions(ArrayList<Country> newList) {
                 for (int i = 0, count = newList.size(); i < count; i++) {
                     final Country country = newList.get(i);
-                    if (!mCountries.contains(country)) {
+                    if (!mCountryList.contains(country)) {
                         addItem(i, country);
                     }
                 }
@@ -282,7 +274,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             private void applyAndAnimateMovedItems(ArrayList<Country> newList) {
                 for (int toPosition = newList.size() - 1; toPosition >= 0; toPosition--) {
                     final Country country = newList.get(toPosition);
-                    final int fromPosition = mCountries.indexOf(country);
+                    final int fromPosition = mCountryList.indexOf(country);
                     if (fromPosition >= 0 && fromPosition != toPosition) {
                         moveItem(fromPosition, toPosition);
                     }
@@ -290,18 +282,18 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             }
 
             void removeItem(int position) {
-                mCountries.remove(position);
+                mCountryList.remove(position);
                 notifyItemRemoved(position);
             }
 
             void addItem(int position, Country country) {
-                mCountries.add(position, country);
+                mCountryList.add(position, country);
                 notifyItemInserted(position);
             }
 
             void moveItem(int fromPosition, int toPosition) {
-                final Country country = mCountries.remove(fromPosition);
-                mCountries.add(toPosition, country);
+                final Country country = mCountryList.remove(fromPosition);
+                mCountryList.add(toPosition, country);
                 notifyItemMoved(fromPosition, toPosition);
             }
         }

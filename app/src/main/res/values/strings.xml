@@ -167,11 +167,26 @@
     <string name="fname">First name</string>
     <string name="lname">Last name</string>
     <string name="gender">Gender</string>
+    <string name="error_add_user">Sorry we couldn\'t add customer. Please try again.</string>
     <string name="male">Male</string>
+    <string name="discard_changes">Discard Changes</string>
+    <string name="discard">Discard</string>
+    <string name="discard_changes_explain">Are you sure you want to discard all changes?</string>
+    <string name="permission_read_contacts_neverask">Contacts permission was denied with never ask again.</string>
+    <string name="permission_read_contacts_denied">Contacts permission is denied.</string>
     <string name="female">Female</string>
     <string name="date_of_birth">Date of birth</string>
     <string name="birth_date_field_reason">Birthday messages would be sent to your customers.</string>
     <string name="or_caps">OR</string>
     <string name="item_image_contentDescription">Country flag</string>
     <string name="prompt_phone">Enter phone number</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_caps">ADD</string>
+    <string name="error_first_name_required">Please enter first name</string>
+    <string name="error_phone_required">Please enter phone number</string>
+    <string name="error_phone_invalid">Phone number is not valid</string>
+    <string name="error_gender_required">Please choose gender</string>
+    <string name="error_phone_not_unique">Phone number is already taken. Please change.</string>
+    <string name="a_moment">just a moment...</string>
 </resources>

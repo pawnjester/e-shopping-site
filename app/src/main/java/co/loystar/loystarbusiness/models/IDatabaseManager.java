@@ -114,4 +114,10 @@ public interface IDatabaseManager {
 
     @NonNull
     List<LoyaltyProgramEntity> getLoyaltyProgramsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
+
+    @Nullable
+    MerchantEntity getMerchantByPhone(String phoneNumber);
+
+    @Nullable
+    CustomerEntity getCustomerByPhone(String phoneNumber);
 }

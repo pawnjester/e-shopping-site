@@ -52,6 +52,7 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
     private boolean[] mPreSelectedEntries;
     private List<String> mSelectedEntries = new ArrayList<>();
     private Date dateSelection;
+    private OnDatePickedListener datePickedListener;
 
     public SpinnerButton(Context context) {
         super(context);
@@ -187,6 +188,9 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
                             StdDateFormat mDateFormat = new StdDateFormat();
                             try {
                                 dateSelection = mDateFormat.parse(date);
+                                if (datePickedListener != null) {
+                                    datePickedListener.onDatePicked(dateSelection);
+                                }
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
@@ -251,6 +255,14 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
 
     public interface OnItemSelectedListener {
         void onItemSelected(int position);
+    }
+
+    public interface OnDatePickedListener {
+        void onDatePicked(Date date);
+    }
+
+    public void setDatePickedListener(OnDatePickedListener datePickedListener) {
+        this.datePickedListener = datePickedListener;
     }
 
     private class SpinnerButtonAdapter extends ArrayAdapter<CharSequence> {

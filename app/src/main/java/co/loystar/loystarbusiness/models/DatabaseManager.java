@@ -411,4 +411,22 @@ public class DatabaseManager implements IDatabaseManager{
         programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
         return programsSelection.get().toList();
     }
+
+    @Nullable
+    @Override
+    public MerchantEntity getMerchantByPhone(String phoneNumber) {
+        return mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.CONTACT_NUMBER.eq(phoneNumber))
+                .get()
+                .firstOrNull();
+    }
+
+    @Nullable
+    @Override
+    public CustomerEntity getCustomerByPhone(String phoneNumber) {
+        return mDataStore.select(CustomerEntity.class)
+                .where(CustomerEntity.PHONE_NUMBER.eq(phoneNumber))
+                .get()
+                .firstOrNull();
+    }
 }

@@ -43,7 +43,6 @@ public class AddCustomerButton extends AppCompatButton{
             setCompoundDrawablePadding(8);
         }
 
-        setTextAppearance(context, android.R.style.TextAppearance_Medium);
         setBackgroundResource(R.drawable.digits_button);
         setPadding(30, 0, 30, 0);
         setTextColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
