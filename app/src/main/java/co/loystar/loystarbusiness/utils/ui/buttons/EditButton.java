@@ -8,34 +8,39 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatButton;
 import android.util.AttributeSet;
 
-import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.R;
 
 /**
- * Created by ordgen on 11/1/17.
+ * Created by ordgen on 11/14/17.
  */
 
-public class AddCustomerButton extends AppCompatButton{
-    private Context context;
-
-    public AddCustomerButton(Context context) {
+public class EditButton extends AppCompatButton {
+    private Context mContext;
+    public EditButton(Context context) {
         super(context);
-        this.context = context;
+        mContext = context;
+        init();
+
+    }
+
+    public EditButton(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mContext = context;
         init();
     }
 
-    public AddCustomerButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.context = context;
+    public EditButton(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        mContext = context;
         init();
     }
 
     private void init() {
-        if (isInEditMode()) {
+        if (isInEditMode()){
             return;
         }
 
-        Drawable drawableToUse = AppCompatResources.getDrawable(context, R.drawable.ic_person_add_white_24px);
+        Drawable drawableToUse = AppCompatResources.getDrawable(mContext, R.drawable.ic_mode_edit_black_24px);
 
         if (drawableToUse != null) {
             drawableToUse.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
@@ -43,10 +48,8 @@ public class AddCustomerButton extends AppCompatButton{
             setCompoundDrawablePadding(8);
         }
 
+        setText(mContext.getString(R.string.edit));
         setBackgroundResource(R.drawable.brand_button_transparent);
         setPadding(30, 0, 30, 0);
-        setTextColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
-        setTypeface(App.getInstance().getTypeface());
-
     }
 }

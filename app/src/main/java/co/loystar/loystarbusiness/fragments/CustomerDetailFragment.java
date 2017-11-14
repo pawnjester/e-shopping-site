@@ -54,11 +54,6 @@ public class CustomerDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.customer_detail, container, false);
-
-//        if (mItem != null) {
-//            ((TextView) rootView.findViewById(R.id.customer_detail)).setText(mItem.getPhoneNumber());
-//        }
-
         return rootView;
     }
 }
