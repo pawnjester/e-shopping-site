@@ -127,7 +127,16 @@
         <activity
             android:name=".activities.AddNewCustomerActivity"
             android:label="@string/title_activity_add_new_customer"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.EditCustomerDetailsActivity"
+            android:label="@string/title_activity_edit_customer_details"
+            android:parentActivityName=".activities.CustomerDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.CustomerDetailActivity" />
+        </activity>
     </application>
 
 </manifest>

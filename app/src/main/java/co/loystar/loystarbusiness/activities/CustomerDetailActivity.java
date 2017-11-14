@@ -2,9 +2,12 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
@@ -12,6 +15,9 @@ import android.view.MenuItem;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
+import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 
 /**
  * An activity representing a single Customer detail screen. This
@@ -20,27 +26,40 @@ import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
  * in a {@link CustomerListActivity}.
  */
 public class CustomerDetailActivity extends AppCompatActivity {
+    private static final String TAG = CustomerDetailActivity.class.getSimpleName();
+    private int customerId;
+    private CustomerEntity mItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_detail);
-        Toolbar toolbar = findViewById(R.id.detail_toolbar);
+        Toolbar toolbar = findViewById(R.id.customer_detail_toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
+        customerId = getIntent().getIntExtra(CustomerDetailFragment.ARG_ITEM_ID, 0);
+        mItem = mDatabaseManager.getCustomerById(customerId);
+
+        FloatingActionButton fab = findViewById(R.id.customer_detail_fab);
+        if (fab != null) {
+            fab.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_create_white_48px));
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mItem != null) {
+                        Intent intent = new Intent(CustomerDetailActivity.this, EditCustomerDetailsActivity.class);
+                        intent.putExtra(Constants.CUSTOMER_ID, customerId);
+                        startActivity(intent);
+                    }
+                }
+            });
         }
 
         // savedInstanceState is non-null when there is fragment state
@@ -56,8 +75,7 @@ public class CustomerDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(CustomerDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(CustomerDetailFragment.ARG_ITEM_ID));
+            arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, customerId);
             CustomerDetailFragment fragment = new CustomerDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

@@ -188,5 +188,13 @@
     <string name="error_phone_invalid">Phone number is not valid</string>
     <string name="error_gender_required">Please choose gender</string>
     <string name="error_phone_not_unique">Phone number is already taken. Please change.</string>
-    <string name="a_moment">just a moment...</string>
+    <string name="a_moment">just a moment…</string>
+    <string name="title_activity_edit_customer_details">Edit Customer Details</string>
+    <string name="last_visit">Last visit</string>
+    <string name="stamps_txt">stamps</string>
+    <string name="points_txt">points</string>
+    <string name="spent_txt">spent</string>
+    <string name="message">Message</string>
+    <string name="redeem">Redeem</string>
+    <string name="mobile_input">MOBILE</string>
 </resources>

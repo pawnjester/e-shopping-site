@@ -222,8 +222,8 @@ public class CustomerListActivity extends AppCompatActivity
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Intent intent = new Intent(mContext, AddFarmerActivity.class);
-                startActivity(intent);*/
+                Intent intent = new Intent(mContext, AddNewCustomerActivity.class);
+                startActivity(intent);
             }
         });
 

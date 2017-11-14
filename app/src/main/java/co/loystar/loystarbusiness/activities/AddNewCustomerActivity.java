@@ -32,6 +32,7 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
@@ -40,7 +41,6 @@ import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
@@ -56,7 +56,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static android.R.attr.versionCode;
 
 @RuntimePermissions
 public class AddNewCustomerActivity extends AppCompatActivity {
@@ -323,7 +322,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
             jsonObject.put("phone_number", customerEntity.getPhoneNumber());
             jsonObject.put("sex", genderSelected);
             jsonObject.put("merchant_id", mSessionManager.getMerchantId());
-            jsonObject.put("android_app_version_code", versionCode);
+            jsonObject.put("android_app_version_code", BuildConfig.VERSION_CODE);
             jsonObject.put("date_of_birth", dateOfBirth);
 
             JSONObject requestData = new JSONObject();
