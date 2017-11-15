@@ -1,10 +1,12 @@
 package co.loystar.loystarbusiness.fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,11 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.CustomerDetailActivity;
 import co.loystar.loystarbusiness.activities.CustomerListActivity;
 import co.loystar.loystarbusiness.activities.EditCustomerDetailsActivity;
+import co.loystar.loystarbusiness.activities.PaySubscriptionActivity;
+import co.loystar.loystarbusiness.activities.RewardCustomersActivity;
+import co.loystar.loystarbusiness.activities.SendSmsActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -132,6 +138,46 @@ public class CustomerDetailFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.total_stamps_value)).setText(String.valueOf(customer_stamps));
             ((TextView) rootView.findViewById(R.id.total_points_value)).setText(String.valueOf(customer_points));
             ((TextView) rootView.findViewById(R.id.total_amount_spent_value)).setText(total_amount_text);
+
+            rootView.findViewById(R.id.messageBtn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!AccountGeneral.isAccountActive(getActivity())) {
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle("Your Account Is Inactive")
+                                .setMessage("SMS communications are disabled until you resubscribe.")
+                                .setPositiveButton(getString(R.string.pay_subscription), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        Intent intent = new Intent(getActivity(), PaySubscriptionActivity.class);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                        return;
+                    }
+                    Intent msgIntent = new Intent(getActivity(), SendSmsActivity.class);
+                    msgIntent.putExtra(Constants.CUSTOMER_NAME, mItem.getFirstName());
+                    msgIntent.putExtra(Constants.PHONE_NUMBER, mItem.getPhoneNumber());
+                    startActivity(msgIntent);
+                }
+            });
+
+            rootView.findViewById(R.id.redeemBtn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent redeemIntent = new Intent(getActivity(), RewardCustomersActivity.class);
+                    redeemIntent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
+                    startActivity(redeemIntent);
+                }
+            });
         }
         return rootView;
     }

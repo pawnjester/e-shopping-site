@@ -220,6 +220,8 @@
     <string name="send">Send</string>
     <string name="enter_message">Enter message</string>
     <string name="image">Image</string>
+    <string name="sms_sent_notice">Message successfully sent.</string>
+    <string name="error_sending_sms">Sorry! we coudn\'t send your message. Please try again.</string>
     <string name="sms_messages_queued">Your Messages have been queued for immediate delivery. Thank You.</string>
     <string name="customer_name_placeholder_explanation">By clicking on \'INSERT CUSTOMER NAME\', [CUSTOMER_NAME] will be inserted. This will be replaced with customers\' name.</string>
     <string name="error_message_required">Please enter message</string>
@@ -227,4 +229,5 @@
     <string name="error_sending_sms_blast">Sorry! we couldn\'t send your messages. Please try again.</string>
     <string name="title_activity_pay_subscription">Pay Subscription</string>
     <string name="pay_subscription">Pay subscription</string>
+    <string name="title_activity_send_sms">Message</string>
 </resources>

@@ -168,6 +168,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
         </activity>
+        <activity
+            android:name=".activities.SendSmsActivity"
+            android:label="@string/title_activity_send_sms"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
