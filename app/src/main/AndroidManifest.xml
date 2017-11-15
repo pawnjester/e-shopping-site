@@ -149,7 +149,25 @@
         <activity
             android:name=".activities.TransactionsConfirmation"
             android:label="@string/title_activity_transactions_confirmation"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.MessageBroadcastActivity"
+            android:label="@string/title_activity_message_broadcast"
+            android:parentActivityName=".activities.CustomerListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.PaySubscriptionActivity"
+            android:label="@string/title_activity_pay_subscription"
+            android:parentActivityName=".activities.MerchantBackOfficeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
+        </activity>
     </application>
 
 </manifest>

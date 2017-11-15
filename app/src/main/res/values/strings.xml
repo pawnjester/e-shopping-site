@@ -216,4 +216,15 @@
     <string name="program_target">Program Target</string>
     <string name="total_customer_stamps">Total Customer Stamps</string>
     <string name="title_activity_transactions_confirmation">Transaction Confirmation</string>
+    <string name="title_activity_message_broadcast">Messaging</string>
+    <string name="send">Send</string>
+    <string name="enter_message">Enter message</string>
+    <string name="image">Image</string>
+    <string name="sms_messages_queued">Your Messages have been queued for immediate delivery. Thank You.</string>
+    <string name="customer_name_placeholder_explanation">By clicking on \'INSERT CUSTOMER NAME\', [CUSTOMER_NAME] will be inserted. This will be replaced with customers\' name.</string>
+    <string name="error_message_required">Please enter message</string>
+    <string name="ok">OK</string>
+    <string name="error_sending_sms_blast">Sorry! we couldn\'t send your messages. Please try again.</string>
+    <string name="title_activity_pay_subscription">Pay Subscription</string>
+    <string name="pay_subscription">Pay subscription</string>
 </resources>

@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.utils;
 
-import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -40,12 +40,13 @@ import jxl.write.biff.RowsExceededException;
  */
 
 public class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
+    private static final String TAG = DownloadCustomerList.class.getSimpleName();
     private ProgressDialog dialog;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
-    private WeakReference<Application> appReference;
+    private WeakReference<AppCompatActivity> appReference;
 
-    public DownloadCustomerList(Application context) {
+    public DownloadCustomerList(AppCompatActivity context) {
         dialog = new ProgressDialog(context);
         mDatabaseManager = DatabaseManager.getInstance(context);
         mSessionManager = new SessionManager(context);
@@ -54,7 +55,6 @@ public class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
 
     @Override
     protected void onPreExecute() {
-
         this.dialog.setMessage("Exporting customer list...");
         this.dialog.show();
 
@@ -152,7 +152,7 @@ public class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
             final File file = new File(filePath, fileName);
             final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".XLS");
 
-            final Application mContext = appReference.get();
+            final AppCompatActivity mContext = appReference.get();
             new AlertDialog.Builder(mContext)
                     .setTitle("Export successful!")
                     .setMessage("Click the button below to open your file or open 'MyLoystarCustomerList.xls' later from inside the Loystar folder on your phone. Thanks.")

@@ -5,18 +5,26 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+
+import org.joda.time.DateTime;
+
+import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 
 /**
  * Created by ordgen on 11/1/17.
  */
 
 public class AccountGeneral {
-    public static final String AUTHORITY = "co.loystar.loystarbusiness.provider";
+    static final String AUTHORITY = "co.loystar.loystarbusiness.provider";
     public static final String AUTH_TOKEN_TYPE_FULL_ACCESS = "Full access";
     public static final String ACCOUNT_TYPE = "co.loystar.loystarbusiness";
     static final String AUTH_TOKEN_TYPE_READ_ONLY = "Read only";
     static final String AUTH_TOKEN_TYPE_READ_ONLY_LABEL = "Read only access to a Loystar account";
-    public static final String AUTH_TOKEN_TYPE_FULL_ACCESS_LABEL = "Full access to Loystar account";
+    static final String AUTH_TOKEN_TYPE_FULL_ACCESS_LABEL = "Full access to Loystar account";
     private static final String TAG = AccountGeneral.class.getSimpleName();
 
     /**
@@ -71,5 +79,18 @@ public class AccountGeneral {
         if (created) {
             SyncAdapter.performSync(c, account.name);
         }
+    }
+
+    public static boolean isAccountActive(Context context) {
+        boolean isActive = false;
+        DatabaseManager databaseManager = DatabaseManager.getInstance(context);
+        SessionManager sessionManager = new SessionManager(context);
+        MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
+        if (merchantEntity != null) {
+            SubscriptionEntity subscriptionEntity = merchantEntity.getSubscription();
+            DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
+            isActive = expiresOn.isAfterNow();
+        }
+        return isActive;
     }
 }

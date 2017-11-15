@@ -1,23 +1,17 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -29,7 +23,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +30,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.Filter;
 import android.widget.Filterable;
 
@@ -45,18 +37,12 @@ import com.github.clans.fab.FloatingActionButton;
 
 import org.joda.time.DateTime;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -82,13 +68,6 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
 import permissions.dispatcher.OnPermissionDenied;
@@ -322,8 +301,8 @@ public class CustomerListActivity extends AppCompatActivity
                     startActivity(rewardCustomerIntent);
                     break;
                 case R.id.activity_customer_list_fab_send_blast:
-                    /*Intent sendBlastIntent = new Intent(mContext, SendSMSBroadcast.class);
-                    startActivity(sendBlastIntent);*/
+                    Intent sendBlastIntent = new Intent(mContext, MessageBroadcastActivity.class);
+                    startActivity(sendBlastIntent);
                     break;
             }
         }
@@ -584,7 +563,7 @@ public class CustomerListActivity extends AppCompatActivity
     @SuppressWarnings("MissingPermission")
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     public void startCustomerListDownload() {
-        DownloadCustomerList downloadCustomerList = new DownloadCustomerList(App.getInstance());
+        DownloadCustomerList downloadCustomerList = new DownloadCustomerList(CustomerListActivity.this);
         downloadCustomerList.execute();
     }
 
