@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -67,11 +68,12 @@ public class RewardCustomersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reward_customers);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.reward_customers_toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
         mContext = this;
@@ -302,5 +304,4 @@ public class RewardCustomersActivity extends AppCompatActivity {
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
-
 }

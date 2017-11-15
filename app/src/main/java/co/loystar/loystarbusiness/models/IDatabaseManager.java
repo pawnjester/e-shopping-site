@@ -133,7 +133,7 @@ public interface IDatabaseManager {
     @Nullable
     CustomerEntity getCustomerByPhone(String phoneNumber);
 
-    List<CustomerEntity> searchCustomersByNameOrNumber(@Nullable String q, int merchantId);
+    List<CustomerEntity> searchCustomersByNameOrNumber(@NonNull String q, int merchantId);
 
     List<CustomerEntity> getMerchantCustomers(int merchantId);
 

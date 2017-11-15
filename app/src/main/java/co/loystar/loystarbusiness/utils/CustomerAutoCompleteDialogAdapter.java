@@ -23,7 +23,6 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
  */
 
 public class CustomerAutoCompleteDialogAdapter extends BaseAdapter implements Filterable {
-    private Context mContext;
     private ArrayList<CustomerEntity> mCustomers;
     private Filter filter;
     private DatabaseManager mDatabaseManager;
@@ -31,7 +30,6 @@ public class CustomerAutoCompleteDialogAdapter extends BaseAdapter implements Fi
     private LayoutInflater mLayoutInflater;
 
     public CustomerAutoCompleteDialogAdapter(Context context, ArrayList<CustomerEntity> customerEntities) {
-        this.mContext = context;
         mCustomers = customerEntities;
         mSessionManager = new SessionManager(context);
         mDatabaseManager = DatabaseManager.getInstance(context);
@@ -121,7 +119,7 @@ public class CustomerAutoCompleteDialogAdapter extends BaseAdapter implements Fi
         @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            ArrayList<CustomerEntity> filtered = (ArrayList<CustomerEntity>) filterResults.values;
+            List<CustomerEntity> filtered = (List<CustomerEntity>) filterResults.values;
             mCustomers.clear();
             notifyDataSetChanged();
             if (filtered != null) {

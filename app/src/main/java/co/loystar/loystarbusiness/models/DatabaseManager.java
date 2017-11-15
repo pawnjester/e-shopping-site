@@ -488,33 +488,26 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public List<CustomerEntity> searchCustomersByNameOrNumber(@Nullable String q, int merchantId) {
+    public List<CustomerEntity> searchCustomersByNameOrNumber(@NonNull String q, int merchantId) {
         List<CustomerEntity> customerEntityList = new ArrayList<>();
         MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()
                 .firstOrNull();
-        if (q == null) {
-            if (merchantEntity != null) {
-                customerEntityList = merchantEntity.getCustomers();
-            }
-
+        String query = q.substring(0, 1).equals("0") ? q.substring(1) : q;
+        String searchQuery = "%" + query.toLowerCase() + "%";
+        if (TextUtilsHelper.isInteger(q)) {
+            Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
+            phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+            phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
+            phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
+            customerEntityList = phoneSelection.get().toList();
         } else {
-            String query = q.substring(0, 1).equals("0") ? q.substring(1) : q;
-            String searchQuery = "%" + query.toLowerCase() + "%";
-            if (TextUtilsHelper.isInteger(q)) {
-                Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
-                phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
-                phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
-                customerEntityList = phoneSelection.get().toList();
-            } else {
-                Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
-                nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                nameSelection.where(CustomerEntity.DELETED.notEqual(true));
-                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
-                customerEntityList = nameSelection.get().toList();
-            }
+            Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
+            nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+            nameSelection.where(CustomerEntity.DELETED.notEqual(true));
+            nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
+            customerEntityList = nameSelection.get().toList();
         }
         return customerEntityList;
     }

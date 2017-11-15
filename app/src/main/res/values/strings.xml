@@ -200,7 +200,7 @@
     <string name="edit">Edit</string>
     <string name="stamp_label_text">stamp</string>
     <string name="customer_update_success">Customer updated successfully!</string>
-    <string name="title_activity_reward_customers">Reward customer</string>
+    <string name="title_activity_reward_customers">Redeem</string>
     <string name="redemption_code">Six digit code</string>
     <string name="enter_code">Enter code</string>
     <string name="error_redemption_code_required">Please enter six digit code</string>

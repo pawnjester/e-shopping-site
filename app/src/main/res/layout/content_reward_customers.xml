@@ -54,6 +54,7 @@
             android:layout_height="wrap_content"
             android:text="@string/select_loyalty_program"
             android:textSize="18sp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"/>
 
@@ -67,7 +68,7 @@
             android:entries="@array/empty_select"/>
 
         <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
-            android:layout_below="@+id/reward_customers_select_customer_spinner"
+            android:layout_below="@+id/reward_customers_select_program_spinner"
             android:id="@+id/activity_reward_customers_submit_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
