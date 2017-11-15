@@ -107,8 +107,19 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
         }
     }
 
-    public void setCalendarView(boolean calendarView) {
-        isCalendarView = calendarView;
+    /**
+     * set calendar view
+     * */
+    public void setCalendarView() {
+        isCalendarView = true;
+    }
+
+    /**
+     * set entries to use for spinner
+     * @param mEntries entries
+     * */
+    public void setEntries(CharSequence[] mEntries) {
+        this.mEntries = mEntries;
     }
 
     public List<String> getSelectedItems() {
@@ -119,6 +130,10 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
         return mSelection;
     }
 
+    /**
+     * Set preselected entry for single-mode
+     * @param selection position of entry
+     * */
     public void setSelection(int selection) {
         mSelection = selection;
 
@@ -129,14 +144,27 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
         }
     }
 
+    /**
+     * set prompt text
+     * @param mPrompt text to use as propmt
+     * */
     public void setPrompt(String mPrompt) {
         this.mPrompt = mPrompt;
     }
 
+    /**
+     * set multi-mode for spinner
+     * @param mAllowMultipleSelection
+     * */
     public void setAllowMultipleSelection(boolean mAllowMultipleSelection) {
         this.mAllowMultipleSelection = mAllowMultipleSelection;
     }
 
+    /**
+     * Set preselected entries for multi-mode
+     *
+     * @param  mPSelectedEntries preselected entries
+     */
     public void setSelectedEntries(boolean[] mPSelectedEntries) {
         this.mPreSelectedEntries = mPSelectedEntries;
         StringBuilder stringBuilder = new StringBuilder();

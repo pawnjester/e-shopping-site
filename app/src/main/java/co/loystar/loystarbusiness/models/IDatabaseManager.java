@@ -40,6 +40,12 @@ public interface IDatabaseManager {
     String getMerchantCustomersLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable
+    SalesTransactionEntity getCustomerLastTransaction(
+            @NonNull MerchantEntity merchantEntity,
+            @NonNull CustomerEntity customerEntity
+    );
+
+    @Nullable
     String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable
@@ -103,6 +109,12 @@ public interface IDatabaseManager {
 
     int getTotalCustomerPoints(int merchantId, int customerId);
 
+    int getTotalCustomerSpent(int merchantId, int customerId);
+
+    int getTotalCustomerPointsForProgram(int programId, int customerId);
+
+    int getTotalCustomerStampsForProgram(int programId, int customerId);
+
     @NonNull
     List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
 
@@ -120,4 +132,10 @@ public interface IDatabaseManager {
 
     @Nullable
     CustomerEntity getCustomerByPhone(String phoneNumber);
+
+    List<CustomerEntity> searchCustomersByNameOrNumber(@Nullable String q, int merchantId);
+
+    List<CustomerEntity> getMerchantCustomers(int merchantId);
+
+    List<LoyaltyProgramEntity> getMerchantLoyaltyPrograms(int merchantId);
 }

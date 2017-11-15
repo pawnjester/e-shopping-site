@@ -14,7 +14,7 @@
     <string name="intro5_body">Designed to be simple, Loystar puts all these powerful features at your fingertips and you can see the effect of your efforts in weekly and monthly reports.</string>
     <string name="title_activity_authenticator">Loystar</string>
     <string name="sign_up_cancelled">Sign up cancelled</string>
-    <string name="unknown_error">An unknown error occurred</string>
+    <string name="unknown_error">Sorry! An unknown error occurred. Please again.</string>
     <string name="no_internet_connection">Connection failed! please check your connection and try again.</string>
     <string name="error_internet_connection_timed_out">Error connection timed out. Please check your connection and try again.</string>
 
@@ -189,7 +189,7 @@
     <string name="error_gender_required">Please choose gender</string>
     <string name="error_phone_not_unique">Phone number is already taken. Please change.</string>
     <string name="a_moment">just a moment…</string>
-    <string name="title_activity_edit_customer_details">Edit Customer Details</string>
+    <string name="title_activity_edit_customer_details">Edit profile</string>
     <string name="last_visit">Last visit:</string>
     <string name="stamps_txt">stamps</string>
     <string name="points_txt">points</string>
@@ -198,4 +198,22 @@
     <string name="redeem">Redeem</string>
     <string name="mobile_input">MOBILE</string>
     <string name="edit">Edit</string>
+    <string name="stamp_label_text">stamp</string>
+    <string name="customer_update_success">Customer updated successfully!</string>
+    <string name="title_activity_reward_customers">Reward customer</string>
+    <string name="redemption_code">Six digit code</string>
+    <string name="enter_code">Enter code</string>
+    <string name="error_redemption_code_required">Please enter six digit code</string>
+    <string name="error_redemption_code_incorrect">Code is incorrect</string>
+    <string name="error_redemption_code_length">Code must be six digits</string>
+    <string name="select_customer">Select customer</string>
+    <string name="customer_autocomplete_hint">Enter customer name or number</string>
+    <string name="select_loyalty_program">Select loyalty program</string>
+    <string name="select_one_prompt">Select one</string>
+    <string name="error_select_customer">Please select customer</string>
+    <string name="error_loyalty_program_required">Please select loyalty program</string>
+    <string name="total_customer_points">Total Customer Points:</string>
+    <string name="program_target">Program Target</string>
+    <string name="total_customer_stamps">Total Customer Stamps</string>
+    <string name="title_activity_transactions_confirmation">Transaction Confirmation</string>
 </resources>

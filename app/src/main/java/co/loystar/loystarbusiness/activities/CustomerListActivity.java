@@ -56,6 +56,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -68,6 +69,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.DownloadCustomerList;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
@@ -214,6 +216,13 @@ public class CustomerListActivity extends AppCompatActivity
         EmptyRecyclerView recyclerView = findViewById(R.id.customers_rv);
         assert recyclerView != null;
         setupRecyclerView(recyclerView);
+
+        boolean customerUpdated = getIntent().getBooleanExtra(Constants.CUSTOMER_UPDATE_SUCCESS, false);
+
+        if (customerUpdated) {
+            showSnackbar(R.string.customer_update_success);
+            mAdapter.queryAsync();
+        }
     }
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -285,7 +294,6 @@ public class CustomerListActivity extends AppCompatActivity
             case BUTTON_POSITIVE:
                 myAlertDialog.dismiss();
                 if (mSelectedCustomer != null) {
-                    Log.e(TAG, "onClick: " );
                     CustomerEntity customerEntity = mDataStore.findByKey(CustomerEntity.class, mSelectedCustomer.getId()).blockingGet();
                     if (customerEntity != null) {
                         customerEntity.setDeleted(true);
@@ -310,8 +318,8 @@ public class CustomerListActivity extends AppCompatActivity
                     startActivityForResult(addCustomerIntent, Constants.ADD_NEW_CUSTOMER_REQUEST);
                     break;
                 case R.id.activity_customer_list_fab_rewards:
-                    /*Intent rewardCustomerIntent = new Intent(mContext, RewardCustomersActivity.class);
-                    startActivity(rewardCustomerIntent);*/
+                    Intent rewardCustomerIntent = new Intent(mContext, RewardCustomersActivity.class);
+                    startActivity(rewardCustomerIntent);
                     break;
                 case R.id.activity_customer_list_fab_send_blast:
                     /*Intent sendBlastIntent = new Intent(mContext, SendSMSBroadcast.class);
@@ -576,7 +584,7 @@ public class CustomerListActivity extends AppCompatActivity
     @SuppressWarnings("MissingPermission")
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     public void startCustomerListDownload() {
-        DownloadCustomerList downloadCustomerList = new DownloadCustomerList();
+        DownloadCustomerList downloadCustomerList = new DownloadCustomerList(App.getInstance());
         downloadCustomerList.execute();
     }
 
@@ -622,151 +630,6 @@ public class CustomerListActivity extends AppCompatActivity
                     }
                 })
                 .show();
-    }
-
-    private class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
-        private final ProgressDialog dialog = new ProgressDialog(mContext);
-
-        @Override
-        protected void onPreExecute() {
-
-            this.dialog.setMessage("Exporting customer list...");
-            this.dialog.show();
-
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-
-            String fileName = "MyLoystarCustomerList.xls";
-            File sdCard = Environment.getExternalStorageDirectory();
-            File directory = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
-
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            //file path
-            File file = new File(directory, fileName);
-
-            WorkbookSettings wbSettings = new WorkbookSettings();
-            wbSettings.setLocale(new Locale("en", "EN"));
-            WritableWorkbook workbook;
-            try {
-                workbook = Workbook.createWorkbook(file, wbSettings);
-                WritableSheet sheet = workbook.createSheet("MyLoystarCustomerList", 0);
-                try {
-                    sheet.addCell(new Label(0, 0, "First Name")); //column and row
-                    sheet.addCell(new Label(1, 0, "Last Name"));
-                    sheet.addCell(new Label(2, 0, "Phone Number"));
-                    sheet.addCell(new Label(3, 0, "Email"));
-                    sheet.addCell(new Label(4, 0, "Gender"));
-                    sheet.addCell(new Label(5, 0, "Total Points"));
-                    sheet.addCell(new Label(6, 0, "Total Stamps"));
-                    sheet.addCell(new Label(7, 0, "Date of Birth"));
-
-                    int index = 1;
-
-                    Result<CustomerEntity> customerEntities = mAdapter.performQuery();
-                    for (CustomerEntity customer: customerEntities.toList()) {
-                        Date dt = customer.getDateOfBirth();
-                        String date = "";
-                        if (dt != null) {
-                            Calendar calendar = Calendar.getInstance();
-                            calendar.setTime(dt);
-                            date = TextUtilsHelper.getFormattedDateString(calendar);
-                        }
-
-                        DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-                        int customer_stamps = databaseManager.getTotalCustomerStamps(mSessionManager.getMerchantId(), customer.getId());
-                        int customer_points = databaseManager.getTotalCustomerPoints(mSessionManager.getMerchantId(), customer.getId());
-
-                        sheet.addCell(new Label(0, index, customer.getFirstName()));
-                        sheet.addCell(new Label(1, index, customer.getLastName()));
-                        sheet.addCell(new Label(2, index, customer.getPhoneNumber()));
-                        sheet.addCell(new Label(3, index, customer.getEmail()));
-                        sheet.addCell(new Label(4, index, customer.getSex()));
-                        sheet.addCell(new Label(5, index, String.valueOf(customer_points)));
-                        sheet.addCell(new Label(6, index, String.valueOf(customer_stamps)));
-                        sheet.addCell(new Label(7, index, date));
-
-                        index += 1;
-                    }
-
-                }  catch (RowsExceededException e) {
-                    e.printStackTrace();
-                    return false;
-                }catch (WriteException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                workbook.write();
-                try {
-                    workbook.close();
-                } catch (WriteException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                return true;
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-
-            if (this.dialog.isShowing()){
-                this.dialog.dismiss();
-            }
-            if (success){
-                String fileName = "MyLoystarCustomerList.xls";
-                File sdCard = Environment.getExternalStorageDirectory();
-                File filePath = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
-                final File file = new File(filePath, fileName);
-                final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".XLS");
-
-                new AlertDialog.Builder(mContext)
-                        .setTitle("Export successful!")
-                        .setMessage("Click the button below to open your file or open 'MyLoystarCustomerList.xls' later from inside the Loystar folder on your phone. Thanks.")
-                        .setPositiveButton(getString(R.string.open_file), new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                PackageManager packageManager = getPackageManager();
-                                 Uri uriForFile = FileProvider.getUriForFile(
-                                        mContext,
-                                        mContext.getApplicationContext().getPackageName() + ".co.loystar.loystarbusiness.provider",
-                                        file);
-                                Intent intent = new Intent();
-                                intent.setAction(android.content.Intent.ACTION_VIEW);
-                                intent.setDataAndType(uriForFile, mime);
-                                List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-                                if (list.size() > 0) {
-                                    startActivity(intent);
-                                } else {
-                                    new AlertDialog.Builder(mContext)
-                                            .setTitle("Sorry! No Excel reader found.")
-                                            .setMessage("We couldn't open the file because you don't have an Excel reader installed.")
-                                            .setPositiveButton("Download Excel Reader", new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    Intent intent = new Intent(Intent.ACTION_VIEW)
-                                                            .setData(Uri.parse("https://play.google.com/store/apps/details?id=cn.wps.moffice_eng&hl=en"));
-                                                    startActivity(intent);
-                                                }
-                                            })
-                                            .setIcon(android.R.drawable.ic_dialog_alert)
-                                            .show();
-                                }
-                            }
-                        })
-                        .show();
-            }
-            else {
-                showSnackbar(R.string.error_export_failed);
-            }
-        }
     }
 
     @Override

@@ -45,4 +45,9 @@
         <item name="android:background">@color/light_grey</item>
     </style>
 
+    <style name="textViewLabelTextStyle">
+        <item name="android:textColor">@color/wallet_hint_foreground_holo_dark</item>
+        <item name="android:textSize">@dimen/text_view_label_text_size</item>
+    </style>
+
 </resources>

@@ -137,6 +137,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerDetailActivity" />
         </activity>
+        <activity
+            android:name=".activities.RewardCustomersActivity"
+            android:label="@string/title_activity_reward_customers"
+            android:parentActivityName=".activities.CustomerListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.TransactionsConfirmation"
+            android:label="@string/title_activity_transactions_confirmation"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

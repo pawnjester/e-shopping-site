@@ -119,12 +119,12 @@ public interface LoystarApi {
     @POST("transactions/redeem_reward/{redemption_code}/{customer_id}/{loyalty_program_id}")
     Call<Transaction> redeemReward(
             @Path("redemption_code") String redemption_code,
-            @Path("customer_id") String customer_id,
-            @Path("loyalty_program_id") String loyalty_program_id);
+            @Path("customer_id") int customer_id,
+            @Path("loyalty_program_id") int loyalty_program_id);
 
     @POST("customers/set_delete_flag_to_true/{id}")
     Call<ResponseBody> setCustomerDeleteFlagToTrue(@Path("id") String id);
 
     @POST("customers/update_customer/{id}")
-    Call<Customer> updateCustomer(@Path("id") String id, @Body RequestBody requestBody);
+    Call<Customer> updateCustomer(@Path("id") int id, @Body RequestBody requestBody);
 }

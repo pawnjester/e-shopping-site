@@ -116,9 +116,9 @@ public class AddNewCustomerActivity extends AppCompatActivity {
         dividerBloc = findViewById(R.id.divider_bloc);
 
         SpinnerButton datePicker = findViewById(R.id.date_of_birth_spinner_2);
-        datePicker.setCalendarView(true);
+        datePicker.setCalendarView();
         SpinnerButton datePickerFromContacts = findViewById(R.id.date_of_birth_spinner);
-        datePickerFromContacts.setCalendarView(true);
+        datePickerFromContacts.setCalendarView();
 
         SpinnerButton.OnDatePickedListener onDatePickedListener = new SpinnerButton.OnDatePickedListener() {
             @Override

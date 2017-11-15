@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.query.Result;
@@ -131,6 +133,16 @@ public class DatabaseManager implements IDatabaseManager{
             return mDateFormat.format(customerEntity.getUpdatedAt());
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    public SalesTransactionEntity getCustomerLastTransaction(@NonNull MerchantEntity merchantEntity, @NonNull CustomerEntity customerEntity) {
+        Selection<ReactiveResult<SalesTransactionEntity>> transactionsSelection = mDataStore.select(SalesTransactionEntity.class);
+        transactionsSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+        transactionsSelection.where(SalesTransactionEntity.CUSTOMER.equal(customerEntity));
+
+        return transactionsSelection.orderBy(SalesTransactionEntity.CREATED_AT.desc()).get().firstOrNull();
     }
 
     @Nullable
@@ -300,7 +312,8 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public void updateCustomer(@NonNull CustomerEntity customerEntity) {
-
+        mDataStore.update(customerEntity)
+                .subscribe(/*no-op*/);
     }
 
     @Override
@@ -376,6 +389,50 @@ public class DatabaseManager implements IDatabaseManager{
         return points;
     }
 
+    @Override
+    public int getTotalCustomerSpent(int merchantId, int customerId) {
+        int spent = 0;
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+        resultSelection.where(SalesTransactionEntity.AMOUNT.notNull());
+        for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
+            spent += transactionEntity.getAmount();
+        }
+        return spent;
+    }
+
+    @Override
+    public int getTotalCustomerPointsForProgram(int programId, int customerId) {
+        int points = 0;
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT_LOYALTY_PROGRAM_ID.eq(programId));
+        resultSelection.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+        resultSelection.where(SalesTransactionEntity.POINTS.notNull());
+        for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
+            points += transactionEntity.getPoints();
+        }
+
+        return points;
+    }
+
+    @Override
+    public int getTotalCustomerStampsForProgram(int programId, int customerId) {
+        int stamps = 0;
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT_LOYALTY_PROGRAM_ID.eq(programId));
+        resultSelection.where(SalesTransactionEntity.CUSTOMER_ID.eq(customerId));
+        resultSelection.where(SalesTransactionEntity.STAMPS.notNull());
+        for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
+            stamps += transactionEntity.getStamps();
+        }
+        return stamps;
+    }
+
     @NonNull
     @Override
     public List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
@@ -428,5 +485,69 @@ public class DatabaseManager implements IDatabaseManager{
                 .where(CustomerEntity.PHONE_NUMBER.eq(phoneNumber))
                 .get()
                 .firstOrNull();
+    }
+
+    @Override
+    public List<CustomerEntity> searchCustomersByNameOrNumber(@Nullable String q, int merchantId) {
+        List<CustomerEntity> customerEntityList = new ArrayList<>();
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        if (q == null) {
+            if (merchantEntity != null) {
+                customerEntityList = merchantEntity.getCustomers();
+            }
+
+        } else {
+            String query = q.substring(0, 1).equals("0") ? q.substring(1) : q;
+            String searchQuery = "%" + query.toLowerCase() + "%";
+            if (TextUtilsHelper.isInteger(q)) {
+                Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
+                phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
+                phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
+                customerEntityList = phoneSelection.get().toList();
+            } else {
+                Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
+                nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                nameSelection.where(CustomerEntity.DELETED.notEqual(true));
+                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
+                customerEntityList = nameSelection.get().toList();
+            }
+        }
+        return customerEntityList;
+    }
+
+    @Override
+    public List<CustomerEntity> getMerchantCustomers(int merchantId) {
+        List<CustomerEntity> customerEntityList = new ArrayList<>();
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        if (merchantEntity != null) {
+            Selection<ReactiveResult<CustomerEntity>> customersSelection = mDataStore.select(CustomerEntity.class);
+            customersSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+            customersSelection.where(CustomerEntity.DELETED.notEqual(true));
+            customerEntityList = customersSelection.get().toList();
+        }
+        return customerEntityList;
+    }
+
+    @Override
+    public List<LoyaltyProgramEntity> getMerchantLoyaltyPrograms(int merchantId) {
+        List<LoyaltyProgramEntity> loyaltyProgramEntityList = new ArrayList<>();
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        if (merchantEntity != null) {
+            Selection<ReactiveResult<LoyaltyProgramEntity>> programsSelection = mDataStore.select(LoyaltyProgramEntity.class);
+            programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
+            programsSelection.where(LoyaltyProgramEntity.DELETED.notEqual(true));
+            loyaltyProgramEntityList = programsSelection.get().toList();
+        }
+        return loyaltyProgramEntityList;
     }
 }

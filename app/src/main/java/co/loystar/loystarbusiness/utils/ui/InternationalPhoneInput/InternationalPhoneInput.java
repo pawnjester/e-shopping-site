@@ -230,4 +230,11 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
         CustomerEntity customerEntity = mDatabaseManager.getCustomerByPhone(getNumber());
         return merchantEntity == null && customerEntity == null;
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        mPhoneEdit.setEnabled(enabled);
+        mCountrySpinner.setEnabled(enabled);
+    }
 }
