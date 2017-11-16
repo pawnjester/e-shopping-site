@@ -172,7 +172,6 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         @Override
         public void onBindViewHolder(CountryPhoneSpinnerDialogAdapter.ViewHolder holder, int position) {
             Country country = mCountries.get(position);
-            Log.e(TAG, "onBindViewHolder: " + country.getName() );
             holder.mImageView.setImageResource(getFlagResource(country));
             holder.mNameView.setText(country.getName());
             holder.mDialCode.setText(String.format("+%s", country.getDialCode()));

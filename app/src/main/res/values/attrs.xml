@@ -17,4 +17,10 @@
         <attr name="backgroundDrawable"/>
     </declare-styleable>
 
+    <declare-styleable name="CurrencyEditText">
+        <attr name="enableDefaultHint" format="boolean"/>
+        <attr name="allowNegativeValues" format="boolean" />
+        <attr name="formatWithTextFormatter" format="boolean"/>
+    </declare-styleable>
+
 </resources>

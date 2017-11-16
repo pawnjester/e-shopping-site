@@ -2,6 +2,7 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.MainThread;
@@ -26,12 +27,14 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.LoyaltyProgramItemBinding;
+import co.loystar.loystarbusiness.fragments.LoyaltyProgramDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
-import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
@@ -52,6 +55,7 @@ import io.requery.reactivex.ReactiveResult;
  */
 public class LoyaltyProgramListActivity extends AppCompatActivity {
     private final String KEY_RECYCLER_STATE = "recycler_state";
+    private static final int REQ_CREATE_PROGRAM = 110;
     private Bundle mBundleRecyclerViewState;
 
     /**
@@ -84,8 +88,8 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+                startActivityForResult(intent, REQ_CREATE_PROGRAM);
             }
         });
 
@@ -117,13 +121,13 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Intent intent = new Intent(mContext, AddNewCustomerActivity.class);
-                startActivity(intent);*/
+                Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+                startActivityForResult(intent, REQ_CREATE_PROGRAM);
             }
         });
 
         mRecyclerView = recyclerView;
-        //mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -134,75 +138,6 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setEmptyView(emptyView);
     }
-
-    /*public static class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
-
-        private final ItemListActivity mParentActivity;
-        private final List<DummyContent.DummyItem> mValues;
-        private final boolean mTwoPane;
-        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
-                if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(LoyaltyProgramDetailFragment.ARG_ITEM_ID, item.id);
-                    LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
-                    fragment.setArguments(arguments);
-                    mParentActivity.getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.loyaltyprogram_detail_container, fragment)
-                            .commit();
-                } else {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, LoyaltyProgramDetailActivity.class);
-                    intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, item.id);
-
-                    context.startActivity(intent);
-                }
-            }
-        };
-
-        SimpleItemRecyclerViewAdapter(LoyaltyProgramListActivity parent,
-                                      List<DummyContent.DummyItem> items,
-                                      boolean twoPane) {
-            mValues = items;
-            mParentActivity = parent;
-            mTwoPane = twoPane;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.loyaltyprogram_list_content, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
-
-            holder.itemView.setTag(mValues.get(position));
-            holder.itemView.setOnClickListener(mOnClickListener);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView mIdView;
-            final TextView mContentView;
-
-            ViewHolder(View view) {
-                super(view);
-                mIdView = (TextView) view.findViewById(R.id.id_text);
-                mContentView = (TextView) view.findViewById(R.id.content);
-            }
-        }
-    }*/
 
     private class LoyaltyProgramListAdapter extends QueryRecyclerAdapter<LoyaltyProgramEntity, BindingHolder<LoyaltyProgramItemBinding>> {
 
@@ -265,12 +200,22 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
                     if (loyaltyProgramItemBinding != null) {
+                        final LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
                         new AlertDialog.Builder(mContext)
                                 .setTitle("Are you sure?")
                                 .setMessage("You won't be able to recover this program.")
                                 .setPositiveButton(mContext.getString(R.string.confirm_delete_positive), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
+                                        LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, loyaltyProgram.getId()).blockingGet();
+                                        if (loyaltyProgramEntity != null) {
+                                            loyaltyProgramEntity.setDeleted(true);
+                                            mDataStore.update(loyaltyProgramEntity).subscribe();
+                                            mAdapter.queryAsync();
+                                            SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+
+                                            showSnackbar(R.string.loyalty_program_deleted);
+                                        }
                                     }
                                 })
                                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -289,7 +234,20 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
                     if (loyaltyProgramItemBinding != null) {
-
+                        LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
+                        if (mTwoPane) {
+                            Bundle arguments = new Bundle();
+                            arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                            LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
+                            fragment.setArguments(arguments);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.loyalty_program_detail_container, fragment)
+                                    .commit();
+                        } else {
+                            Intent intent = new Intent(mContext, LoyaltyProgramDetailActivity.class);
+                            intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                            startActivity(intent);
+                        }
                     }
                 }
             });
@@ -338,6 +296,15 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_CREATE_PROGRAM && resultCode == RESULT_OK) {
+            showSnackbar(R.string.create_program_success);
+            mAdapter.queryAsync();
         }
     }
 }

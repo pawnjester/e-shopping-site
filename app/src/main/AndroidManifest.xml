@@ -185,6 +185,24 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.LoyaltyProgramListActivity" />
         </activity>
+        <activity
+            android:name=".activities.NewLoyaltyProgramListActivity"
+            android:label="@string/title_activity_new_loyalty_program_list"
+            android:parentActivityName=".activities.LoyaltyProgramListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.LoyaltyProgramListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.CreateNewLoyaltyProgramActivity"
+            android:label="@string/title_activity_create_new_loyalty_program"
+            android:parentActivityName=".activities.NewLoyaltyProgramListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.NewLoyaltyProgramListActivity" />
+        </activity>
     </application>
 
 </manifest>

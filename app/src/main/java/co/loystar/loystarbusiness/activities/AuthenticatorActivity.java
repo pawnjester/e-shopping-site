@@ -446,6 +446,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                             merchant.getLast_name(),
                             merchant.getContact_number(),
                             merchant.getBusiness_name(),
+                            merchant.getBusiness_type(),
                             merchant.getCurrency(),
                             authToken,
                             client

@@ -153,6 +153,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                                 merchant.getLast_name(),
                                 merchant.getContact_number(),
                                 merchant.getBusiness_name(),
+                                merchant.getBusiness_type(),
                                 merchant.getCurrency(),
                                 authToken,
                                 client

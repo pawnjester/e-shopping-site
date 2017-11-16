@@ -234,11 +234,57 @@
     <string name="title_activity_send_sms">Message</string>
     <string name="title_activity_loyalty_programs_list">My Loyalty Programs</string>
     <string name="title_loyaltyprogram_list">My Loyalty Programs</string>
-    <string name="title_loyaltyprogram_detail">LoyaltyProgram Detail</string>
+    <string name="title_loyaltyprogram_detail">Edit program</string>
     <string name="no_programs_found">No programs found</string>
     <string name="add_program">Add program</string>
     <string name="program_type_label">Type:</string>
     <string name="program_target_label">Target:</string>
     <string name="reward_label">Reward:</string>
     <string name="program_target_value">%1$s %2$s</string>
+    <string name="loyalty_program_deleted">Program deleted successfully!</string>
+    <string name="program_name">Name of program</string>
+    <string name="what_is_the_reward">What is the reward?</string>
+    <string name="spending_target">Spending target</string>
+    <string name="spending_target_explanation">Spending target is how much a customer must spend to earn the reward. 1 %1$s = 1 point.</string>
+    <string name="stamps_target_explanation">Stamps target is how many stamps a customer must collect to earn the reward.</string>
+    <string name="stamps_target">Stamps target</string>
+
+
+    <string name="select_biz_category">Select Business Category</string>
+    <string name="business_category">Business Category</string>
+    <string name="food_and_drinks">Food and Drinks</string>
+    <string name="hair_and_beauty">Hair and Beauty</string>
+    <string name="fashion_and_accessories">Fashion and Accessories</string>
+    <string name="gym_and_fitness">Gym and Fitness</string>
+    <string name="beverages_and_deserts">Beverages and Desserts</string>
+
+
+    <string name="salon_and_beauty_reward_eg">E.g. Free hairdo.</string>
+    <string name="fashion_and_accessories_reward_points">E.g. 20% discount on your next purchase.</string>
+    <string name="fashion_and_accessories_reward_stamps">E.g. 1 free fashion item.</string>
+    <string name="gym_and_fitness_reward_stamps">E.g. 1 free session.</string>
+    <string name="gym_and_fitness_reward_points">E.g. 20% discount on your next subscription.</string>
+    <string name="discount_on_next_purchase">E.g. 20% discount on your next purchase.</string>
+    <string name="bakery_and_pastry">Bakery and Pastry</string>
+    <string name="travel_and_hotel">Travel and Hotel</string>
+    <string name="other">Other</string>
+    <string name="beverages_and_deserts_reward">eg. Free bottle of wine</string>
+    <string name="next_purchase_free">E.g. Next purchase free</string>
+    <string name="travel_and_hotel_reward">E.g. 20% discount on your next travel</string>
+
+    <string name="creating_loyalty_wait">Please wait while we setup your loyalty program.</string>
+    <string name="updating_loyalty_wait">Please wait while we update your loyalty program.</string>
+    <string name="error_spend_target_cant_be_zero">Spending target can\'t be zero</string>
+    <string name="error_program_name_required">Please enter program name</string>
+    <string name="error_reward_required">Please enter reward</string>
+    <string name="error_program_update_connection">Sorry we couldn\'t update your program. Please check your network and try again.</string>
+    <string name="error_program_update">Sorry we couldn\'t update your program. Please try again.</string>
+    <string name="program_update_success">Program successfully updated!</string>
+    <string name="error_stamps_threshold">Stamps threshold should be between 1 and 10</string>
+    <string name="error_program_create_connection">Sorry we couldn\'t create your program. Please check your connection and try again.</string>
+    <string name="error_program_create">Sorry we couldn\'t create your program. Please try again.</string>
+    <string name="title_activity_new_loyalty_program_list">Choose program type</string>
+    <string name="set_program_details_text">Set program details here.</string>
+    <string name="title_activity_create_new_loyalty_program">New loyalty program</string>
+    <string name="create_program_success">Program successfully created!</string>
 </resources>

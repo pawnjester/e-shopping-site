@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.SplashActivity;
+import co.loystar.loystarbusiness.models.entities.SalesTransaction;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -27,6 +28,7 @@ public class SessionManager {
     private static  final String BUSINESS_NAME = "businessName";
     private static final String MERCHANT_ID = "merchantId";
     private static final String CURRENCY = "currency";
+    private static final String BUSINESS_TYPE = "businessType";
     private static final int PRIVATE_MODE = 0;
     private static final String TAG = SessionManager.class.getSimpleName();
 
@@ -47,19 +49,20 @@ public class SessionManager {
     public void setMerchantSessionData(
             int id,
             String email,
-            String first_name,
-            String last_name,
-            String contact_number,
+            String firstName,
+            String lastName,
+            String contactNumber,
             String businessName,
+            String businessType,
             String currency,
             String accessToken,
             String clientKey
     ) {
         editor.putInt(MERCHANT_ID, id);
         editor.putString(EMAIL, email);
-        editor.putString(FIRST_NAME, first_name);
-        editor.putString(LAST_NAME, last_name);
-        editor.putString(CONTACT_NUMBER, contact_number);
+        editor.putString(FIRST_NAME, firstName);
+        editor.putString(LAST_NAME, lastName);
+        editor.putString(CONTACT_NUMBER, contactNumber);
         editor.putString(BUSINESS_NAME, businessName);
         editor.putString(CURRENCY, currency);
         editor.putString(ACCESS_TOKEN, accessToken);
@@ -106,6 +109,10 @@ public class SessionManager {
 
     public String getCurrency() {
         return sharedPreferences.getString(CURRENCY, "");
+    }
+
+    public String getBusinessType() {
+        return sharedPreferences.getString(BUSINESS_TYPE, "");
     }
 
     public int getMerchantId() {
