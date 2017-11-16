@@ -25,6 +25,7 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDeco
 
 public class NewLoyaltyProgramListActivity extends AppCompatActivity {
     private static final int REQ_CREATE_PROGRAM = 115;
+    private static final String TAG = NewLoyaltyProgramListActivity.class.getSimpleName();
     private Context mContext;
     private List<LoyaltyProgram> loyaltyPrograms;
 
@@ -64,11 +65,6 @@ public class NewLoyaltyProgramListActivity extends AppCompatActivity {
                 recyclerView, new RecyclerTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-
-            }
-
-            @Override
-            public void onLongClick(View view, int position) {
                 LoyaltyProgram loyaltyProgram = loyaltyPrograms.get(position);
                 if (loyaltyProgram != null) {
                     Intent intent = new Intent(mContext, CreateNewLoyaltyProgramActivity.class);
@@ -76,6 +72,9 @@ public class NewLoyaltyProgramListActivity extends AppCompatActivity {
                     startActivityForResult(intent, REQ_CREATE_PROGRAM);
                 }
             }
+
+            @Override
+            public void onLongClick(View view, int position) {}
         }));
     }
 
@@ -124,8 +123,12 @@ public class NewLoyaltyProgramListActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_CREATE_PROGRAM && resultCode == RESULT_OK) {
-            setResult(RESULT_OK);
-            finish();
+            if (data.hasExtra(Constants.LOYALTY_PROGRAM_CREATED) && data.getBooleanExtra(Constants.LOYALTY_PROGRAM_CREATED, false)) {
+                Intent intent = new Intent();
+                intent.putExtra(Constants.LOYALTY_PROGRAM_CREATED, true);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         }
     }
 }

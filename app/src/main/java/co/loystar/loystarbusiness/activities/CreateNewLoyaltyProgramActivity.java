@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.activities;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
@@ -11,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,7 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
-
+    private static final String TAG = CreateNewLoyaltyProgramActivity.class.getSimpleName();
     /*views*/
     private EditText programNameView;
     private CurrencyEditText spendingTargetView;
@@ -225,7 +227,9 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
 
                         mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
 
-                        setResult(RESULT_OK);
+                        Intent intent = new Intent();
+                        intent.putExtra(Constants.LOYALTY_PROGRAM_CREATED, true);
+                        setResult(RESULT_OK, intent);
                         finish();
                     }
                     else {

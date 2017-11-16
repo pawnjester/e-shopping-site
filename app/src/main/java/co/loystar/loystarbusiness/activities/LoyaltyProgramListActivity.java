@@ -35,6 +35,7 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
@@ -113,6 +114,11 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         EmptyRecyclerView recyclerView = findViewById(R.id.loyalty_programs_rv);
         assert recyclerView != null;
         setupRecyclerView(recyclerView);
+
+        boolean programUpdated = getIntent().getBooleanExtra(Constants.LOYALTY_PROGRAM_UPDATED, false);
+        if (programUpdated) {
+            showSnackbar(R.string.program_update_success);
+        }
     }
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -159,7 +165,7 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
             Selection<ReactiveResult<LoyaltyProgramEntity>> programsSelection = mDataStore.select(LoyaltyProgramEntity.class);
             programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
             programsSelection.where(LoyaltyProgramEntity.DELETED.notEqual(true));
-            return programsSelection.get();
+            return programsSelection.orderBy(LoyaltyProgramEntity.UPDATED_AT.desc()).get();
         }
 
         @Override
@@ -303,8 +309,10 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_CREATE_PROGRAM && resultCode == RESULT_OK) {
-            showSnackbar(R.string.create_program_success);
-            mAdapter.queryAsync();
+            if (data.hasExtra(Constants.LOYALTY_PROGRAM_CREATED) && data.getBooleanExtra(Constants.LOYALTY_PROGRAM_CREATED, false)) {
+                showSnackbar(R.string.create_program_success);
+                mAdapter.queryAsync();
+            }
         }
     }
 }

@@ -350,7 +350,7 @@ public class CustomerListActivity extends AppCompatActivity
                 Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
                 customerSelection.where(CustomerEntity.DELETED.notEqual(true));
                 customerSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                return customerSelection.orderBy(CustomerEntity.UPDATED_AT.desc()).get();
+                return customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
             } else if (searchFilterText.equals(getString(R.string.last_visit_30_days))) {
                 List<Integer> customerIds = new ArrayList<>();
                 Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
@@ -363,19 +363,19 @@ public class CustomerListActivity extends AppCompatActivity
                 Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
                 customerSelection.where(CustomerEntity.DELETED.notEqual(true));
                 customerSelection.where(CustomerEntity.ID.in(customerIds));
-                return customerSelection.orderBy(CustomerEntity.UPDATED_AT.desc()).get();
+                return customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
             } else if (searchFilterText.equals(getString(R.string.male_only))) {
                 Selection<ReactiveResult<CustomerEntity>> maleSelection = mDataStore.select(CustomerEntity.class);
                 maleSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
                 maleSelection.where(CustomerEntity.DELETED.notEqual(true));
                 maleSelection.where(CustomerEntity.SEX.eq("M"));
-                return maleSelection.get();
+                return maleSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
             } else if (searchFilterText.equals(getString(R.string.female_only))) {
                 Selection<ReactiveResult<CustomerEntity>> femaleSelection = mDataStore.select(CustomerEntity.class);
                 femaleSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
                 femaleSelection.where(CustomerEntity.DELETED.notEqual(true));
                 femaleSelection.where(CustomerEntity.SEX.eq("F"));
-                return femaleSelection.get();
+                return femaleSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
             } else {
                 String query = searchFilterText.substring(0, 1).equals("0") ? searchFilterText.substring(1) : searchFilterText;
                 String searchQuery = "%" + query.toLowerCase() + "%";
@@ -384,13 +384,13 @@ public class CustomerListActivity extends AppCompatActivity
                     phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
                     phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
                     phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
-                    return phoneSelection.get();
+                    return phoneSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
                 } else {
                     Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
                     nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
                     nameSelection.where(CustomerEntity.DELETED.notEqual(true));
                     nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
-                    return nameSelection.get();
+                    return nameSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
                 }
             }
         }

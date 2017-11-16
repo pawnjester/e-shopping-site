@@ -40,6 +40,7 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
 import okhttp3.MediaType;
@@ -249,7 +250,7 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                         mDatabaseManager.updateLoyaltyProgram(mItem);
 
                         Intent intent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
-                        intent.putExtra("programUpdated", true);
+                        intent.putExtra(Constants.LOYALTY_PROGRAM_UPDATED, true);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                     }

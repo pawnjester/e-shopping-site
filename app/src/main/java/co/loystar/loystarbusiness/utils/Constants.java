@@ -16,4 +16,6 @@ public class Constants {
     public static final String LOYALTY_PROGRAM_TYPE = "LOYALTY_PROGRAM_TYPE";
     public static final String CUSTOMER_PROGRAM_WORTH = "CUSTOMER_PROGRAM_WORTH";
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
+    public static final String LOYALTY_PROGRAM_CREATED = "LOYALTY_PROGRAM_CREATED";
+    public static final String LOYALTY_PROGRAM_UPDATED = "LOYALTY_PROGRAM_UPDATED";
 }
