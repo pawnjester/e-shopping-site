@@ -171,7 +171,20 @@
         <activity
             android:name=".activities.SendSmsActivity"
             android:label="@string/title_activity_send_sms"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.LoyaltyProgramListActivity"
+            android:label="@string/title_loyaltyprogram_list"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.LoyaltyProgramDetailActivity"
+            android:label="@string/title_loyaltyprogram_detail"
+            android:parentActivityName=".activities.LoyaltyProgramListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.LoyaltyProgramListActivity" />
+        </activity>
     </application>
 
 </manifest>

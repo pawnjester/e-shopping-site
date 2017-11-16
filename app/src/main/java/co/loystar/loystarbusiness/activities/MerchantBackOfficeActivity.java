@@ -302,9 +302,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                         startActivity(intent);
                         break;
                     case R.id.campaigns:
-                        /*Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramsListActivity.class);
+                        Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramListActivity.class);
                         loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(loyaltyIntent);*/
+                        startActivity(loyaltyIntent);
                         break;
                 }
             }
