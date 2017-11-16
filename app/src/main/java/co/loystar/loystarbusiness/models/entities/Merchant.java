@@ -43,6 +43,8 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     String getBusinessName();
     String getCurrency();
     Timestamp getSubscriptionExpiresOn();
+    boolean isPosTurnedOn();
+    boolean isUpdateRequired();
 
     @ForeignKey
     @OneToOne

@@ -27,7 +27,6 @@ import org.joda.time.DateTime;
         "subscription_expires_on",
         "subscription_plan",
         "turn_on_point_of_sale",
-        "update_required"
 })
 public class Merchant {
     private int id;
@@ -42,6 +41,7 @@ public class Merchant {
     private String currency;
     private DateTime subscription_expires_on;
     private String subscription_plan;
+    private boolean turn_on_point_of_sale;
 
     public Merchant() {}
 
@@ -57,7 +57,8 @@ public class Merchant {
             String business_type,
             String currency,
             DateTime subscription_expires_on,
-            String subscription_plan
+            String subscription_plan,
+            boolean turn_on_point_of_sale
     ) {
         this.id = id;
         this.email = email;
@@ -71,6 +72,7 @@ public class Merchant {
         this.currency = currency;
         this.subscription_expires_on = subscription_expires_on;
         this.subscription_plan = subscription_plan;
+        this.turn_on_point_of_sale = turn_on_point_of_sale;
     }
 
     @JsonProperty("id")
@@ -116,6 +118,16 @@ public class Merchant {
     @JsonProperty("address_line1")
     public String getAddress_line1() {
         return address_line1;
+    }
+
+    @JsonProperty("turn_on_point_of_sale")
+    public boolean isTurn_on_point_of_sale() {
+        return turn_on_point_of_sale;
+    }
+
+    @JsonProperty("turn_on_point_of_sale")
+    public void setTurn_on_point_of_sale(boolean turn_on_point_of_sale) {
+        this.turn_on_point_of_sale = turn_on_point_of_sale;
     }
 
     @JsonProperty("address_line1")

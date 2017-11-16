@@ -162,11 +162,11 @@
         <activity
             android:name=".activities.PaySubscriptionActivity"
             android:label="@string/title_activity_pay_subscription"
-            android:parentActivityName=".activities.MerchantBackOfficeActivity"
+            android:parentActivityName=".activities.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
+                android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
         </activity>
         <activity
             android:name=".activities.SendSmsActivity"
@@ -202,6 +202,50 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.NewLoyaltyProgramListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.MyAccountProfileActivity"
+            android:label="@string/title_activity_my_account_profile"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
+        </activity>
+        <activity
+            android:name=".activities.ProductListActivity"
+            android:label="@string/title_product_list"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.ProductDetailActivity"
+            android:label="@string/title_product_detail"
+            android:parentActivityName=".activities.ProductListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.ProductListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.ProductCategoryListActivity"
+            android:label="@string/title_productcategory_list"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.ProductCategoryDetailActivity"
+            android:label="@string/title_productcategory_detail"
+            android:parentActivityName=".activities.ProductCategoryListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.ProductCategoryListActivity" />
+        </activity>
+        <activity
+            android:name=".activities.BirthdayOffersAndMessagingActivity"
+            android:label="@string/title_activity_birthday_offers_and_messaging"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
         </activity>
     </application>
 

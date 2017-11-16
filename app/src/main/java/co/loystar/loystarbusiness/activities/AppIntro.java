@@ -79,7 +79,14 @@ public class AppIntro extends VerticalIntro {
 
     @Override
     protected void onDonePressed() {
-        AccountManager.get(this).addAccount(AccountGeneral.ACCOUNT_TYPE, null, null, null, AppIntro.this,
-                null, null);
+        AccountManager.get(this).addAccount(
+                AccountGeneral.ACCOUNT_TYPE,
+                AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS,
+                null,
+                null,
+                AppIntro.this,
+                null,
+                null
+        );
     }
 }

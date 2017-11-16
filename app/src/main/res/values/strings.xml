@@ -31,6 +31,7 @@
     <string name="signing_up_msg">Signing up… Please wait.</string>
     <string name="signing_in_msg">Signing in… Please wait.</string>
     <string name="sign_up_btn_text">New to Loystar? Sign Up</string>
+    <string name="sign_out">Sign Out</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
@@ -287,4 +288,50 @@
     <string name="set_program_details_text">Set program details here.</string>
     <string name="title_activity_create_new_loyalty_program">New loyalty program</string>
     <string name="create_program_success">Program successfully created!</string>
+
+
+    <string name="pref_account_title">Account Information</string>
+    <string name="pref_account_status_title">Status</string>
+    <string name="pref_account_status_key">account_status</string>
+    <string name="pref_pay_subscription_title">Pay Subscription</string>
+    <string name="pref_edit_account_title">My Profile</string>
+    <string name="pref_pay_subscription_key">pay_subscription</string>
+    <string name="pref_edit_account_key">edit_account</string>
+    <string name="pref_check_sms_bal_title">Check SMS Balance</string>
+    <string name="pref_check_sms_bal_key">check_sms_balance</string>
+    <string name="pref_sign_out_key">sign_out</string>
+    <string name="pref_support_key">account_support</string>
+    <string name="pref_support_title">Customer Support</string>
+    <string name="pref_sign_out_title">Sign out</string>
+    <string name="pref_app_version_key">app_version</string>
+    <string name="pref_app_version_title">App version</string>
+    <string name="pref_privacy_policy_key">privacy_policy</string>
+    <string name="pref_privacy_policy_title">Privacy Policy</string>
+    <string name="birthday_messages_and_offers">Birthday Messages &amp; Offers</string>
+    <string name="pref_birthday_messages_and_offers_key">pref_birthday_messages_and_offers</string>
+    <string name="settings_birthday_messages_and_offers">settings_birthday_messages_and_offers</string>
+    <string name="pref_turn_on_pos_key">turn_on_point_of_sale</string>
+    <string name="pref_turn_on_pos_title">Turn on POS</string>
+    <string name="pos">Point of Sale (POS)</string>
+    <string name="settings_pos">settings_pos</string>
+    <string name="pref_product_categories_key">pref_product_categories</string>
+    <string name="pref_product_categories_title">Categories</string>
+    <string name="pref_my_products_key">pref_my_products</string>
+    <string name="pref_my_products_title">Products / Services</string>
+    <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
+    <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
+    <string name="pos_turn_off_notice">POS  has been disabled.</string>
+    <string name="pos_turn_on_notice">POS has been enabled.</string>
+
+
+    <string name="account">Account</string>
+    <string name="title_activity_my_account_profile">My Profile</string>
+    <string name="turn_off">Yes, turn off</string>
+    <string name="title_product_list">My products / services</string>
+    <string name="title_product_detail">Product Detail</string>
+    <string name="title_productcategory_list">ProductCategories</string>
+    <string name="title_productcategory_detail">ProductCategory Detail</string>
+    <string name="my_products_and_services">My Products and Services</string>
+    <string name="title_activity_birthday_offers_and_messaging">Birthday Offers and Messaging
+    </string>
 </resources>

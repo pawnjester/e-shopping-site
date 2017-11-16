@@ -30,6 +30,7 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
@@ -99,7 +100,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         void startAllSyncs() {
             Intent intent = new Intent(Constants.SYNC_STARTED);
             getContext().sendBroadcast(intent);
-
+            syncMerchant();
             syncCustomers();
             syncTransactions();
             syncProductCategories();
@@ -111,6 +112,39 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
             getContext().sendBroadcast(i);
+        }
+
+        @Override
+        public void syncMerchant() {
+            if (merchantEntity.isUpdateRequired()) {
+                mApiClient.getLoystarApi(true).updateMerchant(
+                        merchantEntity.getFirstName(),
+                        merchantEntity.getLastName(),
+                        merchantEntity.getEmail(),
+                        merchantEntity.getBusinessName(),
+                        merchantEntity.getContactNumber(),
+                        merchantEntity.getBusinessType(),
+                        merchantEntity.getCurrency(),
+                        merchantEntity.isPosTurnedOn()
+                ).enqueue(new Callback<Merchant>() {
+                    @Override
+                    public void onResponse(Call<Merchant> call, Response<Merchant> response) {
+                        if (response.isSuccessful()) {
+                            merchantEntity.setUpdateRequired(false);
+                            mDatabaseManager.updateMerchant(merchantEntity);
+                        } else {
+                            if (response.code() == 401) {
+                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Merchant> call, Throwable t) {
+
+                    }
+                });
+            }
         }
 
         @Override

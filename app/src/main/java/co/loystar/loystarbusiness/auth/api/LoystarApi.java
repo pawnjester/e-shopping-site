@@ -9,6 +9,7 @@ import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
+import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import okhttp3.RequestBody;
@@ -34,6 +35,17 @@ public interface LoystarApi {
     Call<Merchant> signInMerchant(
             @Field("email") String email,
             @Field("password") String password);
+
+    @FormUrlEncoded
+    @PUT("auth")
+    Call<Merchant> updateMerchant(@Field("first_name") String firstName,
+                                                       @Field("last_name") String lastName,
+                                                       @Field("email") String email,
+                                                       @Field("business_name") String businessName,
+                                                       @Field("contact_number") String contactNumber,
+                                                       @Field("business_type") String businessType,
+                                                       @Field("currency") String currency,
+                                                       @Field("turn_on_point_of_sale") Boolean turnOnPointOfSale);
 
     @GET("get_merchant_current_subscription")
     Call<Subscription> getMerchantSubscription();
@@ -63,7 +75,7 @@ public interface LoystarApi {
     Call<ArrayList<LoyaltyProgram>> getMerchantLoyaltyPrograms(@Body RequestBody requestBody);
 
     @GET("get_merchant_sms_balance")
-    Call<ResponseBody> getSmsBalance();
+    Call<SmsBalance> getSmsBalance();
 
     @POST("get_pricing_plan_data")
     Call<ResponseBody> getPricingPlanPrice(@Body RequestBody requestBody);

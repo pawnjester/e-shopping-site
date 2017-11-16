@@ -9,10 +9,13 @@ import android.util.Log;
 
 import org.joda.time.DateTime;
 
+import java.util.Date;
+
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -93,4 +96,18 @@ public class AccountGeneral {
         }
         return isActive;
     }
+
+    public static Date accountExpiry(Context context) {
+        Date date = null;
+        DatabaseManager databaseManager = DatabaseManager.getInstance(context);
+        SessionManager sessionManager = new SessionManager(context);
+        MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
+        if (merchantEntity != null) {
+            SubscriptionEntity subscriptionEntity = merchantEntity.getSubscription();
+            DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
+            date = expiresOn.toDate();
+        }
+        return date;
+    }
+
 }

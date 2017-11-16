@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.auth;
 
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -10,7 +11,9 @@ import android.os.AsyncTask;
 import com.google.firebase.auth.FirebaseAuth;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.activities.AppIntro;
 import co.loystar.loystarbusiness.activities.SplashActivity;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.entities.SalesTransaction;
 
 /**
@@ -122,7 +125,7 @@ public class SessionManager {
     /**
      * Clear session details
      * */
-    public void logoutUser() {
+    public void signOutMerchant() {
         new ClearSessionData(mContext).execute();
     }
 

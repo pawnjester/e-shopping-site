@@ -3,6 +3,18 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$AccountPreferenceFragment"
+        android:icon="@drawable/ic_account_circle_24dp"
+        android:title="@string/account">
+    </header>
+
+    <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$ProductsAndServices"
+        android:icon="@drawable/ic_shopping_cart_brand_24px"
+        android:title="@string/my_products_and_services">
+    </header>
+
+    <header
         android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
