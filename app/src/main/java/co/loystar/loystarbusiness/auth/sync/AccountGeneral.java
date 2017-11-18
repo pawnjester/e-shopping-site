@@ -91,8 +91,10 @@ public class AccountGeneral {
         MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
         if (merchantEntity != null) {
             SubscriptionEntity subscriptionEntity = merchantEntity.getSubscription();
-            DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
-            isActive = expiresOn.isAfterNow();
+            if (subscriptionEntity != null) {
+                DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
+                isActive = expiresOn.isAfterNow();
+            }
         }
         return isActive;
     }
@@ -104,8 +106,10 @@ public class AccountGeneral {
         MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
         if (merchantEntity != null) {
             SubscriptionEntity subscriptionEntity = merchantEntity.getSubscription();
-            DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
-            date = expiresOn.toDate();
+            if (subscriptionEntity != null) {
+                DateTime expiresOn = new DateTime(subscriptionEntity.getExpiresOn().getTime());
+                date = expiresOn.toDate();
+            }
         }
         return date;
     }

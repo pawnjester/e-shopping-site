@@ -301,7 +301,7 @@
     <string name="pref_check_sms_bal_key">check_sms_balance</string>
     <string name="pref_sign_out_key">sign_out</string>
     <string name="pref_support_key">account_support</string>
-    <string name="pref_support_title">Customer Support</string>
+    <string name="pref_support_title">Support</string>
     <string name="pref_sign_out_title">Sign out</string>
     <string name="pref_app_version_key">app_version</string>
     <string name="pref_app_version_title">App version</string>

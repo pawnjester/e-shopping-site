@@ -43,6 +43,7 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import io.smooch.ui.ConversationActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -110,17 +111,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if (merchant != null) {
                     DateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
                     Date expiryDate = AccountGeneral.accountExpiry(preference.getContext());
-                    if (AccountGeneral.isAccountActive(preference.getContext())) {
-                        String tmt = "Your account is active and will expire on %s.";
-                        String activeTxt = String.format(
-                                tmt,
-                                df.format(expiryDate)
-                        );
-                        preference.setSummary(activeTxt);
-                    } else {
-                        String tmt = "Your account is inactive since %s. Click below to pay subscription and unlock the full features of Loystar.";
-                        String inActiveTxt = String.format(tmt, df.format(expiryDate));
+                    if (expiryDate == null) {
+                        String inActiveTxt = "Your account has expired. Click to pay subscription and unlock the full features of Loystar.";
                         preference.setSummary(inActiveTxt);
+                    } else {
+                        if (AccountGeneral.isAccountActive(preference.getContext())) {
+                            String tmt = "Your account is active and will expire on %s.";
+                            String activeTxt = String.format(
+                                    tmt,
+                                    df.format(expiryDate)
+                            );
+                            preference.setSummary(activeTxt);
+                        } else {
+                            String tmt = "Your account has expired since %s. Click to pay subscription and unlock the full features of Loystar.";
+                            String inActiveTxt = String.format(tmt, df.format(expiryDate));
+                            preference.setSummary(inActiveTxt);
+                        }
                     }
                 }
             } else {
@@ -224,12 +230,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_app_version_key)));
+            Preference prefPrivacyPolicy = findPreference(getString(R.string.pref_privacy_policy_key));
+            prefPrivacyPolicy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-privacy-policy/"));
+                    startActivity(browserIntent);
+                    return true;
+                }
+            });
         }
 
         @Override
@@ -362,6 +372,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 }
                             })
                             .show();
+                    return true;
+                }
+            });
+
+            Preference prefSupport = findPreference(getString(R.string.pref_support_key));
+            prefSupport.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    ConversationActivity.show(getActivity());
                     return true;
                 }
             });
@@ -524,5 +543,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Toast.makeText(mContext, mContext.getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

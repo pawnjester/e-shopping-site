@@ -4,13 +4,13 @@
 
     <header
         android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$AccountPreferenceFragment"
-        android:icon="@drawable/ic_account_circle_24dp"
+        android:icon="@drawable/ic_account_circle_black_24px"
         android:title="@string/account">
     </header>
 
     <header
         android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$ProductsAndServices"
-        android:icon="@drawable/ic_shopping_cart_brand_24px"
+        android:icon="@drawable/ic_shopping_cart_black_24px"
         android:title="@string/my_products_and_services">
     </header>
 
