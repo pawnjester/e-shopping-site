@@ -22,7 +22,4 @@ public interface BirthdayOffer extends Observable, Parcelable, Persistable {
     String getOfferDescription();
     Timestamp getCreatedAt();
     Timestamp getUpdatedAt();
-
-    @OneToOne(mappedBy = "birthdayOffer")
-    Merchant getMerchant();
 }

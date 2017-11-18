@@ -339,4 +339,20 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_birthday_offer">No Birthday offer found!</string>
+    <string name="birthday_offer_reason">Setting a birthday offer allows customers to receive this offer via SMS on their birthday.</string>
+    <string name="create_offer">Create offer</string>
+    <string name="birthday_offer_create_success">Birthday offer created successfully.</string>
+    <string name="birthday_offer_update_success">Birthday offer updated successfully.</string>
+    <string name="birthday_offer_delete_success">Birthday offer deleted successfully.</string>
+    <string name="error_offer_required">Please enter description of offer</string>
+    <string name="birthday_offer_field_label">What\'s the offer?</string>
+    <string name="error_birthday_offer_delete">Sorry! we couldn\'t delete your birthday offer. Please try again.</string>
+    <string name="error_birthday_offer_text_required">Please enter birthday offer</string>
+    <string name="error_birthday_offer_update">Sorry! we couldn\'t update your birthday offer. Please try again.</string>
+    <string name="update_offer">Update offer</string>
+    <string name="birthday_offer_hint">Birthday Cake, Discount or Gift </string>
+    <string name="error_birthday_offer_create">Sorry! we couldn\'t create your birthday offer. Please try again.</string>
+    <string name="error_birthday_offer_preset_sms_update">Sorry! we couldn\'t update your birthday message text. Please try again.</string>
+    <string name="error_birthday_offer_preset_sms_create">Sorry! we couldn\'t create your birthday message text. Please try again.</string>
 </resources>

@@ -108,7 +108,7 @@ public interface LoystarApi {
     Call<Product> updateProduct(@Body RequestBody requestBody, @Path("id") String id);
 
     @DELETE("birthday_offers/{id}")
-    Call<ResponseBody> deleteBirthdayOffer(@Path("id") String id);
+    Call<ResponseBody> deleteBirthdayOffer(@Path("id") int id);
 
     @PATCH("birthday_offers/{id}")
     Call<BirthdayOffer> updateBirthdayOffer(@Path("id") String id, @Body RequestBody requestBody);

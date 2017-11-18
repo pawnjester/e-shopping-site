@@ -51,7 +51,7 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     SubscriptionEntity getSubscription();
 
     @ForeignKey
-    @OneToOne
+    @OneToOne(cascade = CascadeAction.DELETE)
     BirthdayOfferEntity getBirthdayOffer();
 
     @ForeignKey

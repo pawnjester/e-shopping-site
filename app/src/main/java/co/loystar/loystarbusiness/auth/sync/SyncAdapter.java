@@ -200,8 +200,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     } else {
                         if (response.code() == 401) {
                             mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                        } else if (response.code() == 401) {
-                            mDatabaseManager.deleteMerchantBirthdayOffer(merchantEntity);
+                        } else if (response.code() == 404) {
+                            BirthdayOfferEntity existingOffer = merchantEntity.getBirthdayOffer();
+                            if (existingOffer != null) {
+                                merchantEntity.setBirthdayOffer(null);
+                                mDatabaseManager.updateMerchant(merchantEntity);
+                            }
                         }
                     }
                 }

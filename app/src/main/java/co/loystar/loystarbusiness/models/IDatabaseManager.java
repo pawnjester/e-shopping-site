@@ -69,8 +69,6 @@ public interface IDatabaseManager {
     @Nullable
     ProductCategoryEntity getProductCategoryById(int productCategoryId);
 
-    void deleteMerchantBirthdayOffer(@NonNull MerchantEntity merchantEntity);
-
     void deleteCustomer(@NonNull CustomerEntity customerEntity);
 
     void deleteLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
@@ -92,6 +90,8 @@ public interface IDatabaseManager {
     void insertNewSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity);
 
     void updateCustomer(@NonNull CustomerEntity customerEntity);
+
+    void updateBirthdayOffer(@NonNull BirthdayOfferEntity birthdayOfferEntity);
 
     void updateProduct (@NonNull ProductEntity productEntity);
 

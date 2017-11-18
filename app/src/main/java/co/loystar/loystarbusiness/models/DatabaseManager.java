@@ -234,14 +234,6 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public void deleteMerchantBirthdayOffer(@NonNull MerchantEntity merchantEntity) {
-        if (merchantEntity.getBirthdayOffer() != null) {
-            mDataStore.delete(merchantEntity.getBirthdayOffer())
-                    .subscribe(/*no-op*/);
-        }
-    }
-
-    @Override
     public void deleteCustomer(@NonNull CustomerEntity customerEntity) {
         mDataStore.delete(customerEntity)
                 .subscribe();
@@ -313,6 +305,12 @@ public class DatabaseManager implements IDatabaseManager{
     @Override
     public void updateCustomer(@NonNull CustomerEntity customerEntity) {
         mDataStore.update(customerEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void updateBirthdayOffer(@NonNull BirthdayOfferEntity birthdayOfferEntity) {
+        mDataStore.update(birthdayOfferEntity)
                 .subscribe(/*no-op*/);
     }
 
