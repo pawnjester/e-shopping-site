@@ -315,6 +315,12 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
+    public void updateBirthdayPresetSms(@NonNull BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity) {
+        mDataStore.update(birthdayOfferPresetSmsEntity)
+                .subscribe(/*no-op*/);
+    }
+
+    @Override
     public void updateProduct(@NonNull ProductEntity productEntity) {
         mDataStore.update(productEntity)
                 .subscribe(/*no-op*/);

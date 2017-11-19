@@ -111,7 +111,7 @@ public class BirthdayOffersFragment extends Fragment {
                                             mProgressDialog.dismiss();
                                         }
 
-                                        if (response.isSuccessful()) {
+                                        if (response.isSuccessful() || response.code() == 404) {
                                             assert merchantEntity != null;
 
                                             merchantEntity.setBirthdayOffer(null);

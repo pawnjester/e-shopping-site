@@ -93,6 +93,8 @@ public interface IDatabaseManager {
 
     void updateBirthdayOffer(@NonNull BirthdayOfferEntity birthdayOfferEntity);
 
+    void updateBirthdayPresetSms(@NonNull BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity);
+
     void updateProduct (@NonNull ProductEntity productEntity);
 
     void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);

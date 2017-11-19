@@ -315,9 +315,9 @@
     <string name="pos">Point of Sale (POS)</string>
     <string name="settings_pos">settings_pos</string>
     <string name="pref_product_categories_key">pref_product_categories</string>
-    <string name="pref_product_categories_title">Categories</string>
+    <string name="pref_product_categories_title">My Product Categories</string>
     <string name="pref_my_products_key">pref_my_products</string>
-    <string name="pref_my_products_title">Products / Services</string>
+    <string name="pref_my_products_title">My Products / Services</string>
     <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
     <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
     <string name="pos_turn_off_notice">POS  has been disabled.</string>
@@ -355,4 +355,17 @@
     <string name="error_birthday_offer_create">Sorry! we couldn\'t create your birthday offer. Please try again.</string>
     <string name="error_birthday_offer_preset_sms_update">Sorry! we couldn\'t update your birthday message text. Please try again.</string>
     <string name="error_birthday_offer_preset_sms_create">Sorry! we couldn\'t create your birthday message text. Please try again.</string>
+    <string name="no_birthday_message">No birthday message set!</string>
+    <string name="reset">Reset</string>
+    <string name="default_birthday_preset_sms_with_no_offer">Happy Birthday [CUSTOMER_NAME]. Thank you for being a loyal customer. We appreciate you. From all of us here at %1$s.</string>
+    <string name="default_birthday_preset_sms_with_offer">Happy Birthday [CUSTOMER_NAME]. Please visit %1$s today and redeem [BIRTHDAY_OFFER]. Thank you :)</string>
+    <string name="customer_name_placeholder_label">[CUSTOMER_NAME] - </string>
+    <string name="customer_name_placeholder_value">This will be replaced with the customer\'s name. \n*Required</string>
+    <string name="insert_b_offer_placeholder_label">[BIRTHDAY_OFFER] -</string>
+    <string name="insert_b_offer_placeholder_value">This will be replaced with the birthday offer you set.</string>
+    <string name="error_preset_sms_special_strings_more_found">Please include only one of [CUSTOMER_NAME] or [BIRTHDAY_OFFER]</string>
+    <string name="error_special_strings_customer_name_not_found">Please include [CUSTOMER_NAME]</string>
+    <string name="update">Update</string>
+    <string name="birthday_offer_preset_sms_update_success">Birthday message  updated successfully</string>
+    <string name="create">Create</string>
 </resources>
