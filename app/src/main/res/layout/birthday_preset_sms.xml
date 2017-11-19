@@ -44,10 +44,11 @@
                 android:clickable="true"
                 android:contentDescription="@string/image"
                 android:focusable="true"
-                app:layout_constraintBaseline_toBaselineOf="@+id/insertBirthdayOffer"
+                app:layout_constraintBottom_toBottomOf="@+id/insertBirthdayOffer"
                 app:layout_constraintEnd_toStartOf="@+id/insertBirthdayOffer"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/insertBirthdayOffer"
                 app:srcCompat="@drawable/ic_insert_fname" />
 
             <ImageView
@@ -55,10 +56,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/image"
+                app:layout_constraintBottom_toBottomOf="@+id/charCounter"
                 app:layout_constraintEnd_toStartOf="@+id/charCounter"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/insertCustomerName"
-                app:layout_constraintTop_toTopOf="@+id/insertCustomerName"
+                app:layout_constraintTop_toTopOf="@+id/charCounter"
                 app:srcCompat="@drawable/ic_insert_bday" />
 
             <TextView
@@ -66,10 +68,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1234567"
+                app:layout_constraintBottom_toBottomOf="@+id/resetBtn"
                 app:layout_constraintEnd_toStartOf="@+id/resetBtn"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/insertBirthdayOffer"
-                app:layout_constraintBaseline_toBaselineOf="@+id/insertBirthdayOffer" />
+                app:layout_constraintTop_toTopOf="@+id/resetBtn" />
 
             <Button
                 android:id="@+id/resetBtn"
@@ -79,58 +82,63 @@
                 android:text="@string/reset"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/charCounter"
-                app:layout_constraintTop_toTopOf="@+id/charCounter" />
+                app:layout_constraintStart_toEndOf="@+id/charCounter" />
 
         </android.support.constraint.ConstraintLayout>
 
-        <!--<android.support.constraint.ConstraintLayout
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/placeholdersWrapper"
             android:layout_width="match_parent"
             android:layout_height="198dp"
-            android:id="@+id/placeholdersWrapper"
             android:layout_marginTop="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/birthdayPresetConstraint">
 
-            <TextView
-                android:id="@+id/customerNamePlaceholderLabel"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/customer_name_placeholder_label"
+                android:orientation="horizontal"
+                android:id="@+id/customerNamePlaceholderGuide"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:weightSum="3">
+                <TextView
+                    android:text="@string/customer_name_placeholder_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:padding="3dp"/>
+                <TextView
+                    android:text="@string/customer_name_placeholder_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:padding="3dp"/>
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/customerNamePlaceholderValue"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
-                android:text="@string/customer_name_placeholder_value"
-                app:layout_constraintBaseline_toBaselineOf="@+id/customerNamePlaceholderLabel"
-                app:layout_constraintStart_toEndOf="@+id/customerNamePlaceholderLabel" />
-
-            <TextView
-                android:id="@+id/birthdayOfferPlaceHolderLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/insert_b_offer_placeholder_label"
-                app:layout_constraintTop_toBottomOf="@+id/customerNamePlaceholderLabel"
-                app:layout_constraintLeft_toLeftOf="parent"/>
-
-            <TextView
-                android:id="@+id/birthdayOfferPlaceHolderValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
-                android:text="@string/insert_b_offer_placeholder_value"
-                app:layout_constraintBaseline_toBaselineOf="@+id/birthdayOfferPlaceHolderLabel"
-                app:layout_constraintStart_toEndOf="@+id/birthdayOfferPlaceHolderLabel" />
-        </android.support.constraint.ConstraintLayout>-->
-
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/customerNamePlaceholderGuide"
+                android:id="@+id/birthdayOfferPlaceholderGuide"
+                android:weightSum="3">
+                <TextView
+                    android:text="@string/insert_b_offer_placeholder_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:padding="3dp"/>
+                <TextView
+                    android:text="@string/insert_b_offer_placeholder_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:padding="3dp"/>
+            </LinearLayout>
+        </android.support.constraint.ConstraintLayout>
 
     </android.support.constraint.ConstraintLayout>
 

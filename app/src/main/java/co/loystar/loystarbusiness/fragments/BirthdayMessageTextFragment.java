@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,8 +116,7 @@ public class BirthdayMessageTextFragment extends Fragment {
 
                 if (mBirthdayOffer == null) {
                     insertOfferView.setVisibility(View.GONE);
-                    (promptsView.findViewById(R.id.birthdayOfferPlaceHolderLabel)).setVisibility(View.GONE);
-                    (promptsView.findViewById(R.id.birthdayOfferPlaceHolderValue)).setVisibility(View.GONE);
+                    (promptsView.findViewById(R.id.birthdayOfferPlaceholderGuide)).setVisibility(View.GONE);
                 }
 
                 resetFieldView.setOnClickListener(new View.OnClickListener() {
@@ -219,6 +219,7 @@ public class BirthdayMessageTextFragment extends Fragment {
 
                                                             merchantEntity.setBirthdayOfferPresetSms(birthdayOfferPresetSmsEntity);
                                                             mDatabaseManager.updateMerchant(merchantEntity);
+                                                            offerPresetSmsEntity = merchantEntity.getBirthdayOfferPresetSms();
                                                             mPresetTextView.setText(birthdayOfferPresetSms.getPreset_sms_text());
 
                                                         }
@@ -286,6 +287,7 @@ public class BirthdayMessageTextFragment extends Fragment {
 
                                                             mDatabaseManager.updateBirthdayPresetSms(offerPresetSmsEntity);
                                                             mPresetTextView.setText(birthdayOfferPresetSms.getPreset_sms_text());
+                                                            offerPresetSmsEntity = merchantEntity.getBirthdayOfferPresetSms();
                                                             Toast.makeText(getContext(), getString(R.string.birthday_offer_preset_sms_update_success), Toast.LENGTH_LONG).show();
                                                         }
 
@@ -334,27 +336,17 @@ public class BirthdayMessageTextFragment extends Fragment {
         }
         Pattern MY_PATTERN = Pattern.compile("\\[(.*?)\\]");
         Matcher m = MY_PATTERN.matcher(text);
-        ArrayList<String> foundMatches = new ArrayList<>();
+
+        List<String> cNames = new ArrayList<>();
 
         while (m.find()) {
             String s = m.group(1);
-            if (s.equals("BIRTHDAY_OFFER") || s.equals("CUSTOMER_NAME")) {
-                foundMatches.add(s);
+            if (s.equals("CUSTOMER_NAME")) {
+                cNames.add(s);
             }
         }
-        if (foundMatches.size() > 0) {
-            if (foundMatches.size() == 1) {
-                if (foundMatches.get(0).equals("BIRTHDAY_OFFER")) {
-                    Toast.makeText(getContext(), getString(R.string.error_special_strings_customer_name_not_found), Toast.LENGTH_LONG).show();
-                    msgIsValid = false;
-                }
-            }
-            else if (foundMatches.size() > 2) {
-                Toast.makeText(getContext(), getString(R.string.error_preset_sms_special_strings_more_found), Toast.LENGTH_LONG).show();
-                msgIsValid = false;
-            }
-        }
-        else {
+
+        if (cNames.isEmpty()) {
             Toast.makeText(getContext(), getString(R.string.error_special_strings_customer_name_not_found), Toast.LENGTH_LONG).show();
             msgIsValid = false;
         }
