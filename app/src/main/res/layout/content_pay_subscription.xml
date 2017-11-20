@@ -4,8 +4,228 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="co.loystar.loystarbusiness.activities.PaySubscriptionActivity"
     tools:showIn="@layout/activity_pay_subscription">
+
+    <ProgressBar
+        android:id="@+id/fetchPriceProgress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/fetchPriceErrorWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/pricing_data_err"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/fetch_pricing_data_network_error"
+            android:textSize="18sp"
+            android:padding="16dp" />
+
+        <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/try_again"
+            android:text="@string/try_again"/>
+
+    </LinearLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/paySubscriptionWrapper"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/currencySymbol"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="2dp"
+                        android:layout_marginRight="2dp"
+                        app:layout_constraintEnd_toStartOf="@+id/litePlanPrice"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/litePlanPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        android:text="150"
+                        android:textSize="40sp"
+                        app:layout_constraintStart_toEndOf="@+id/currencySymbol"
+                        app:layout_constraintTop_toTopOf="@+id/currencySymbol" />
+
+                    <TextView
+                        android:id="@+id/monthlyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/monthly"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/litePlanPrice" />
+
+                    <ImageView
+                        android:id="@+id/loyaltyProgramsFeatureImg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="@string/image"
+                        app:layout_constraintEnd_toStartOf="@+id/loyaltyProgramsFeatureText"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintTop_toBottomOf="@+id/monthlyText"
+                        app:srcCompat="@drawable/ic_greentick_small" />
+
+                    <TextView
+                        android:id="@+id/loyaltyProgramsFeatureText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/loystar_feature_one"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/loyaltyProgramsFeatureImg"
+                        app:layout_constraintTop_toBottomOf="@+id/monthlyText" />
+
+                    <ImageView
+                        android:id="@+id/smsBundleLiteImg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="@string/image"
+                        app:layout_constraintBottom_toBottomOf="@+id/smsBundleLiteText"
+                        app:layout_constraintEnd_toStartOf="@+id/smsBundleLiteText"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintTop_toTopOf="@+id/smsBundleLiteText"
+                        app:srcCompat="@drawable/ic_greentick_small" />
+
+                    <TextView
+                        android:id="@+id/smsBundleLiteText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/sms_bundle_lite"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/smsBundleLiteImg"
+                        app:layout_constraintTop_toBottomOf="@+id/loyaltyProgramsFeatureText" />
+
+                </android.support.constraint.ConstraintLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginTop="25dp"
+                    android:textAlignment="center"
+                    android:visibility="gone"
+                    android:textColor="@color/white"
+                    android:background="@color/orange"
+                    android:padding="@dimen/cardview_compat_inset_shadow"
+                    android:id="@+id/saveMsg"/>
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content">
+
+                        <Spinner
+                            android:id="@+id/subscriptionsSpinner"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+
+                        <LinearLayout
+                            android:id="@+id/totalWrapper"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:background="@color/green"
+                            android:padding="@dimen/activity_vertical_margin">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/text_size_large"
+                                android:text="@string/total_label"
+                                android:layout_height="wrap_content" />
+
+                            <TextView
+                                android:id="@+id/totalPrice"
+                                android:layout_width="match_parent"
+                                android:gravity="center"
+                                android:textSize="@dimen/text_size_large"
+                                android:textColor="@color/white"
+                                android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </android.support.constraint.ConstraintLayout>
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/make_payments"
+                    android:id="@+id/payBtn"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </ScrollView>
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

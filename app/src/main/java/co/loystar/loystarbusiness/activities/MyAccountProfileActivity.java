@@ -12,7 +12,7 @@ public class MyAccountProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_account_profile);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.activity_my_account_profile_toolbar);
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {

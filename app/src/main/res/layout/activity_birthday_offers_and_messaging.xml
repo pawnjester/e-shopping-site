@@ -23,7 +23,7 @@
             android:id="@+id/activity_birthday_offers_and_messaging_tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar"
+            android:layout_below="@+id/activity_birthday_offers_and_messaging_toolbar"
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>

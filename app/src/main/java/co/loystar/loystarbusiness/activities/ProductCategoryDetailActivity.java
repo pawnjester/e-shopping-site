@@ -21,7 +21,7 @@ public class ProductCategoryDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_productcategory_detail);
-        Toolbar toolbar = findViewById(R.id.detail_toolbar);
+        Toolbar toolbar = findViewById(R.id.activity_product_category_detail_toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -42,7 +42,7 @@ public class ProductCategoryDetailActivity extends AppCompatActivity {
             ProductCategoryDetailFragment fragment = new ProductCategoryDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.productcategory_detail_container, fragment)
+                    .add(R.id.product_category_detail_container, fragment)
                     .commit();
         }
     }

@@ -79,7 +79,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merchant_back_office);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.activity_merchant_back_office_toolbar);
         setSupportActionBar(toolbar);
 
         mLayout = findViewById(R.id.merchant_back_office_wrapper);

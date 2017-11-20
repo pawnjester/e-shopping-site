@@ -7,6 +7,8 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.databinders.PaySubscription;
+import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
@@ -78,10 +80,10 @@ public interface LoystarApi {
     Call<SmsBalance> getSmsBalance();
 
     @POST("get_pricing_plan_data")
-    Call<ResponseBody> getPricingPlanPrice(@Body RequestBody requestBody);
+    Call<PricingPlan> getPricingPlanPrice(@Body RequestBody requestBody);
 
     @POST("subscriptions/pay_with_mobile_money")
-    Call<ResponseBody> paySubscriptionWithMobileMoney(@Body RequestBody requestBody);
+    Call<PaySubscription> paySubscriptionWithMobileMoney(@Body RequestBody requestBody);
 
     @POST("products/set_delete_flag_to_true/{id}")
     Call<ResponseBody> setProductDeleteFlagToTrue(@Path("id") String id);

@@ -164,7 +164,9 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
         if (mAuth.getCurrentUser() != null && !mSessionManager.isLoggedIn()) {
             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
-            signUp.putExtras(getIntent().getExtras());
+            if (getIntent() != null) {
+                signUp.putExtras(getIntent().getExtras());
+            }
             startActivityForResult(signUp, REQ_SIGN_UP);
         }
     }

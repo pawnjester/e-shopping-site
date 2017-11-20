@@ -32,7 +32,7 @@ public class ProductCategoryListActivity extends AppCompatActivity {
             }
         });
 
-        if (findViewById(R.id.productcategory_detail_container) != null) {
+        if (findViewById(R.id.product_category_detail_container) != null) {
             mTwoPane = true;
         }
 

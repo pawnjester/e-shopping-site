@@ -368,4 +368,38 @@
     <string name="update">Update</string>
     <string name="birthday_offer_preset_sms_update_success">Birthday message  updated successfully</string>
     <string name="create">Create</string>
+    <string name="sms_bundle_lite">Get %1$s SMS credits each month</string>
+    <string name="sms_bundle_lite_ngn">Get 500 SMS credits each month</string>
+    <string name="simple_points_program_plan_desc">Run a points based loyalty program for your customers</string>
+    <string name="lite_plan_amount_text">157</string>
+    <string name="loystar_lite_header_text">Loystar Lite</string>
+    <string name="loystar_feature_one">Design and run unlimited loyalty programs.</string>
+    <string name="fetch_pricing_data_network_error">Sorry, an error occurred. Please check your connection and try again.</string>
+    <string name="monthly">Monthly</string>
+    <string name="try_again">Try again!</string>
+    <string name="total_label">Total</string>
+    <string name="make_payments">Make payment</string>
+    <string name="how_to_pay">Select How to pay:</string>
+    <string name="enter_mob_money_no">Enter mobile money number</string>
+    <string name="saving_msg_12">1200 bonus sms when you pay for a year</string>
+    <string name="saving_msg_6">450 bonus sms when you pay for 6 months</string>
+    <string name="saving_msg_3">200 bonus sms when you pay for 3 months</string>
+    <string name="subs_sel_title">Choose a plan</string>
+    <string name="tigo">Tigo</string>
+    <string name="mtn">MTN</string>
+    <string name="airtel">Airtel</string>
+    <string name="pay_with_momoney">Pay with Mobile Money</string>
+    <string name="error_mobile_money_number_required">Mobile money number is required</string>
+    <string name="transaction_success">Payment successfully completed!</string>
+    <string name="one_month">1-month</string>
+    <string name="three_months">3-months</string>
+    <string name="six_months">6-months</string>
+    <string name="twelve_months">12-months</string>
+
+    <string-array name="subs_duration">
+        <item>@string/one_month</item>
+        <item>@string/three_months</item>
+        <item>@string/six_months</item>
+        <item>@string/twelve_months</item>
+    </string-array>
 </resources>
