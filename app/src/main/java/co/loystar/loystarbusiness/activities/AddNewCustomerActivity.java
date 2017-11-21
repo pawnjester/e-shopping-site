@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,6 +37,7 @@ import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -83,6 +85,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     private SessionManager mSessionManager;
     private String genderSelected = "";
     private DatabaseManager mDatabaseManager;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -307,7 +310,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     }
 
     private void completeNewCustomerRegistration(CustomerEntity customerEntity) {
-        final ProgressDialog progressDialog = new ProgressDialog(mContext);
+        progressDialog = new ProgressDialog(mContext);
         progressDialog.setMessage(getString(R.string.a_moment));
         progressDialog.setIndeterminate(true);
         progressDialog.show();
@@ -360,6 +363,10 @@ public class AddNewCustomerActivity extends AppCompatActivity {
 
                     }
                     else {
+                        if (response.code() == 401) {
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                        }
                         Snackbar.make(mLayout, getString(R.string.error_add_user), Snackbar.LENGTH_LONG).show();
                     }
                 }

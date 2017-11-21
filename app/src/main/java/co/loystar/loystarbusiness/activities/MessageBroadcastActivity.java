@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -55,6 +56,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
     private List<CustomerEntity> mCustomerList;
     private View mLayout;
     private ProgressDialog progressDialog;
+    private SessionManager mSessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
 
         mContext = this;
         DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
-        SessionManager mSessionManager = new SessionManager(this);
+        mSessionManager = new SessionManager(this);
 
         mCustomerList = mDatabaseManager.getMerchantCustomers(mSessionManager.getMerchantId());
 
@@ -194,6 +196,10 @@ public class MessageBroadcastActivity extends AppCompatActivity {
                                                 .show();
                                     }
                                     else {
+                                        if (response.code() == 401) {
+                                            AccountManager accountManager = AccountManager.get(mContext);
+                                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                                        }
                                         showSnackbar(R.string.error_sending_sms_blast);
                                     }
                                 }

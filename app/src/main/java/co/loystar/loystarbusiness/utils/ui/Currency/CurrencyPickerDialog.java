@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput;
+package co.loystar.loystarbusiness.utils.ui.Currency;
 
 import android.app.Dialog;
 import android.app.SearchManager;
@@ -19,7 +19,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -31,25 +30,26 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchLi
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 
 /**
- * Created by ordgen on 11/13/17.
+ * Created by ordgen on 11/20/17.
  */
 
-public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implements
+public class CurrencyPickerDialog extends AppCompatDialogFragment implements
         SearchView.OnQueryTextListener {
-    public static final String TAG = CountryPhoneSpinnerDialog.class.getSimpleName();
+
+    public static final String TAG = CurrencyPickerDialog.class.getSimpleName();
     private RecyclerView mRecyclerView;
-    private CountryPhoneSpinnerDialogAdapter mAdapter;
-    private CountriesFetcher.CountryList mCountryList;
+    private CurrencyPickerDialogAdapter mAdapter;
+    private CurrenciesFetcher.CurrencyList mCurrenciesList;
     private OnItemSelectedListener mListener;
 
-    public static CountryPhoneSpinnerDialog newInstance() {
-        return new CountryPhoneSpinnerDialog();
+    public static CurrencyPickerDialog newInstance() {
+        return new CurrencyPickerDialog();
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        mCountryList = CountriesFetcher.getCountries(getActivity());
+        mCurrenciesList = CurrenciesFetcher.getCurrencies(getActivity());
         final LayoutInflater inflater = LayoutInflater.from(getActivity());
         View rootView = inflater.inflate(R.layout.searchable_list_dialog, null);
 
@@ -70,7 +70,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             mgr.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
         }
 
-        mAdapter = new CountryPhoneSpinnerDialogAdapter(mCountryList);
+        mAdapter = new CurrencyPickerDialogAdapter(mCurrenciesList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView = rootView.findViewById(R.id.items_rv);
         mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -88,7 +88,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             @Override
             public void onClick(View view, int position) {
                 if (mListener != null) {
-                    mListener.onItemSelected(mAdapter.mCountries.get(position));
+                    mListener.onItemSelected(mAdapter.currencyList.get(position));
                 }
                 getDialog().cancel();
             }
@@ -125,88 +125,78 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     @Override
     public boolean onQueryTextChange(String newText) {
         if (TextUtils.isEmpty(newText)) {
-            ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+            ((CurrencyPickerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
         } else {
-            ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+            ((CurrencyPickerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
         }
         return true;
     }
 
     public interface OnItemSelectedListener {
-        void onItemSelected(Country country);
+        void onItemSelected(Currency currency);
     }
 
-    public void setListener(OnItemSelectedListener listener) {
+    public void setListener(CurrencyPickerDialog.OnItemSelectedListener listener) {
         mListener = listener;
     }
 
-    private class CountryPhoneSpinnerDialogAdapter extends RecyclerView.Adapter<CountryPhoneSpinnerDialogAdapter.ViewHolder> implements Filterable {
-        private ArrayList<Country> mCountries;
+    private class CurrencyPickerDialogAdapter extends RecyclerView.Adapter<CurrencyPickerDialogAdapter.ViewHolder>
+            implements Filterable {
+        private ArrayList<Currency> currencyList;
         private Filter filter;
 
-        CountryPhoneSpinnerDialogAdapter(ArrayList<Country> countries) {
-            mCountries = countries;
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            private ImageView mImageView;
-            private TextView mNameView;
-            private TextView mDialCode;
-
-            ViewHolder(View itemView) {
-                super(itemView);
-                mImageView = itemView.findViewById(R.id.international_phone_input_country_flag);
-                mNameView = itemView.findViewById(R.id.international_phone_input_country_name);
-                mDialCode = itemView.findViewById(R.id.international_phone_input_country_dial_code);
-            }
-        }
-
-        @Override
-        public CountryPhoneSpinnerDialogAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.country_item, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(CountryPhoneSpinnerDialogAdapter.ViewHolder holder, int position) {
-            Country country = mCountries.get(position);
-            holder.mImageView.setImageResource(getFlagResource(country));
-            holder.mNameView.setText(country.getName());
-            holder.mDialCode.setText(String.format("+%s", country.getDialCode()));
-        }
-
-        @Override
-        public int getItemCount() {
-            return mCountries.size();
+        public CurrencyPickerDialogAdapter(ArrayList<Currency> currencies) {
+            currencyList = currencies;
         }
 
         @Override
         public Filter getFilter() {
             if (filter == null) {
-                filter =  new CountryFilter<>(mCountryList);
+                filter = new CurrencyFilter<>(mCurrenciesList);
             }
             return filter;
         }
 
-        /**
-         * Fetch flag resource by Country
-         *
-         * @param country Country
-         * @return int of resource | 0 value if not exists
-         */
-        private int getFlagResource(Country country) {
-            return getContext().getResources().getIdentifier("country_" + country.getIso().toLowerCase(), "drawable", getContext().getPackageName());
+        class ViewHolder extends RecyclerView.ViewHolder {
+            private TextView mCurrencySymbol;
+            private TextView mCurrencyName;
+            private TextView mCurrencyIsoCode;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                mCurrencySymbol = itemView.findViewById(R.id.currency_symbol);
+                mCurrencyName = itemView.findViewById(R.id.currency_name);
+                mCurrencyIsoCode = itemView.findViewById(R.id.currency_iso_code);
+            }
         }
 
-        private class CountryFilter<T> extends Filter {
+        @Override
+        public CurrencyPickerDialogAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.currency_item, parent, false);
+            return new ViewHolder(view);
+        }
 
-            private ArrayList<Country> mCountries;
+        @Override
+        public void onBindViewHolder(CurrencyPickerDialogAdapter.ViewHolder holder, int position) {
+            Currency currency = currencyList.get(position);
+            holder.mCurrencySymbol.setText(currency.getSymbol());
+            holder.mCurrencyName.setText(currency.getName());
+            holder.mCurrencyIsoCode.setText(currency.getCode());
+        }
 
-            CountryFilter(ArrayList<Country> countries) {
-                mCountries = new ArrayList<>();
+        @Override
+        public int getItemCount() {
+            return currencyList.size();
+        }
+
+        private class CurrencyFilter<T> extends Filter {
+
+            private ArrayList<Currency>currencyArrayList;
+            CurrencyFilter(ArrayList<Currency> currencies) {
+                currencyArrayList = new ArrayList<>();
                 synchronized (this) {
-                    mCountries.addAll(countries);
+                    currencyArrayList.addAll(currencies);
                 }
             }
 
@@ -216,63 +206,62 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
                 FilterResults result = new FilterResults();
                 if (TextUtils.isEmpty(filterSeq)) {
                     synchronized (this) {
-                        result.count = mCountries.size();
-                        result.values = mCountries;
+                        result.count = currencyArrayList.size();
+                        result.values = currencyArrayList;
                     }
-                }
-                else {
-                    ArrayList<Country> filter = new ArrayList<>();
-                    for (Country country: mCountries) {
-                        if (country.getName().toLowerCase().contains(filterSeq)) {
-                            filter.add(country);
+                } else {
+                    ArrayList<Currency> filter = new ArrayList<>();
+                    for (Currency currency: currencyArrayList) {
+                        if (currency.getName().toLowerCase().contains(filterSeq)) {
+                            filter.add(currency);
                         }
                     }
                     result.count = filter.size();
                     result.values = filter;
                 }
-                return result;
+                return null;
             }
 
             @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                ArrayList<Country> filtered = (ArrayList<Country>) filterResults.values;
+                ArrayList<Currency> filtered = (ArrayList<Currency>) filterResults.values;
                 if (filtered != null) {
                     animateTo(filtered);
                 }
                 else {
-                    animateTo(mCountries);
+                    animateTo(currencyArrayList);
                 }
             }
 
-            void animateTo(ArrayList<Country> countries) {
-                applyAndAnimateRemovals(countries);
-                applyAndAnimateAdditions(countries);
-                applyAndAnimateMovedItems(countries);
+            void animateTo(ArrayList<Currency> currencies) {
+                applyAndAnimateRemovals(currencies);
+                applyAndAnimateAdditions(currencies);
+                applyAndAnimateMovedItems(currencies);
             }
 
-            private void applyAndAnimateRemovals(ArrayList<Country> newList) {
-                for (int i = mCountryList.size() - 1; i >= 0; i--) {
-                    final Country country = mCountryList.get(i);
-                    if (!newList.contains(country)) {
+            private void applyAndAnimateRemovals(ArrayList<Currency> newList) {
+                for (int i = mCurrenciesList.size() - 1; i >= 0; i--) {
+                    final Currency currency = mCurrenciesList.get(i);
+                    if (!newList.contains(currency)) {
                         removeItem(i);
                     }
                 }
             }
 
-            private void applyAndAnimateAdditions(ArrayList<Country> newList) {
+            private void applyAndAnimateAdditions(ArrayList<Currency> newList) {
                 for (int i = 0, count = newList.size(); i < count; i++) {
-                    final Country country = newList.get(i);
-                    if (!mCountryList.contains(country)) {
-                        addItem(i, country);
+                    final Currency currency = newList.get(i);
+                    if (!mCurrenciesList.contains(currency)) {
+                        addItem(i, currency);
                     }
                 }
             }
 
-            private void applyAndAnimateMovedItems(ArrayList<Country> newList) {
+            private void applyAndAnimateMovedItems(ArrayList<Currency> newList) {
                 for (int toPosition = newList.size() - 1; toPosition >= 0; toPosition--) {
-                    final Country country = newList.get(toPosition);
-                    final int fromPosition = mCountryList.indexOf(country);
+                    final Currency currency = newList.get(toPosition);
+                    final int fromPosition = mCurrenciesList.indexOf(currency);
                     if (fromPosition >= 0 && fromPosition != toPosition) {
                         moveItem(fromPosition, toPosition);
                     }
@@ -280,18 +269,18 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             }
 
             void removeItem(int position) {
-                mCountryList.remove(position);
+                mCurrenciesList.remove(position);
                 notifyItemRemoved(position);
             }
 
-            void addItem(int position, Country country) {
-                mCountryList.add(position, country);
+            void addItem(int position, Currency currency) {
+                mCurrenciesList.add(position, currency);
                 notifyItemInserted(position);
             }
 
             void moveItem(int fromPosition, int toPosition) {
-                final Country country = mCountryList.remove(fromPosition);
-                mCountryList.add(toPosition, country);
+                final Currency currency = mCurrenciesList.remove(fromPosition);
+                mCurrenciesList.add(toPosition, currency);
                 notifyItemMoved(fromPosition, toPosition);
             }
         }

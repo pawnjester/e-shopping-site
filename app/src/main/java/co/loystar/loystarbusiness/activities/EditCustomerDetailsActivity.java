@@ -1,9 +1,12 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.MainThread;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -29,8 +32,10 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -162,11 +167,11 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
         }
         if (!userPhoneField.isValid()) {
             if (phoneNumber == null) {
-                Snackbar.make(mLayout, R.string.error_phone_required, Snackbar.LENGTH_LONG).show();
+                showSnackbar(R.string.error_phone_required);
 
             }
             else {
-                Snackbar.make(mLayout, R.string.error_phone_invalid, Snackbar.LENGTH_LONG).show();
+                showSnackbar(R.string.error_phone_invalid);
             }
             return;
         }
@@ -227,23 +232,26 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                         intent.putExtra(Constants.CUSTOMER_UPDATE_SUCCESS, true);
                         intent.putExtra(Constants.CUSTOMER_ID, mCustomer.getId());
                         startActivity(intent);
+                    } else if (response.code() == 422) {
+                        ObjectMapper mapper = ApiUtils.getObjectMapper(false);
+                        try {
+                            JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+                            JSONObject errorObject = new JSONObject(responseObject.toString());
+                            JSONObject errors = errorObject.getJSONObject("errors");
+                            JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
+                            Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                        } catch (IOException | JSONException e) {
+                            showSnackbar(R.string.unknown_error);
+                            e.printStackTrace();
+                        }
                     }
                     else {
-                        if (response.code() == 422) {
-                            ObjectMapper mapper = ApiUtils.getObjectMapper(false);
-                            try {
-                                JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
-                                JSONObject errorObject = new JSONObject(responseObject.toString());
-                                JSONObject errors = errorObject.getJSONObject("errors");
-                                JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
-                                Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
-                            } catch (IOException | JSONException e) {
-                                e.printStackTrace();
-                            }
+                        if (response.code() == 401) {
+                            SessionManager sessionManager = new SessionManager(mContext);
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
                         }
-                        else {
-                            Snackbar.make(mLayout, getString(R.string.unknown_error), Snackbar.LENGTH_LONG).show();
-                        }
+                        showSnackbar(R.string.unknown_error);
                     }
                 }
 
@@ -252,7 +260,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
-                    Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
+                    showSnackbar(R.string.error_internet_connection_timed_out);
                 }
             });
 
@@ -274,4 +282,8 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
         return true;
     }
 
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
 }

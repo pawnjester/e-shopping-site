@@ -26,6 +26,7 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import io.reactivex.Completable;
 import io.requery.BlockingEntityStore;
@@ -110,13 +111,13 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
             String password = am.getPassword(account);
             if (password != null && !TextUtils.isEmpty(password)) {
                 // authenticate merchant by email and password
-                Call<Merchant> call = mApiClient.getLoystarApi(true).signInMerchant(account.name, password);
+                Call<MerchantWrapper> call = mApiClient.getLoystarApi(false).signInMerchant(account.name, password);
                 try {
-                    Response<Merchant> response = call.execute();
+                    Response<MerchantWrapper> response = call.execute();
                     if (response.isSuccessful()) {
                         authToken = response.headers().get("Access-Token");
                         String client = response.headers().get("Client");
-                        Merchant merchant = response.body();
+                        Merchant merchant = response.body().getMerchant();
                         final MerchantEntity merchantEntity = new MerchantEntity();
                         merchantEntity.setId(merchant.getId());
                         merchantEntity.setFirstName(merchant.getFirst_name());

@@ -31,6 +31,7 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
@@ -66,7 +67,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private MerchantEntity merchantEntity;
     private Context mContext;
 
-    public SyncAdapter(Context context, boolean autoInitialize) {
+    SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContext = context;
         mAccountManager = AccountManager.get(context);
@@ -117,7 +118,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         @Override
         public void syncMerchant() {
             if (merchantEntity.isUpdateRequired()) {
-                mApiClient.getLoystarApi(true).updateMerchant(
+                mApiClient.getLoystarApi(false).updateMerchant(
                         merchantEntity.getFirstName(),
                         merchantEntity.getLastName(),
                         merchantEntity.getEmail(),
@@ -126,9 +127,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         merchantEntity.getBusinessType(),
                         merchantEntity.getCurrency(),
                         merchantEntity.isPosTurnedOn()
-                ).enqueue(new Callback<Merchant>() {
+                ).enqueue(new Callback<MerchantWrapper>() {
                     @Override
-                    public void onResponse(Call<Merchant> call, Response<Merchant> response) {
+                    public void onResponse(Call<MerchantWrapper> call, Response<MerchantWrapper> response) {
                         if (response.isSuccessful()) {
                             merchantEntity.setUpdateRequired(false);
                             mDatabaseManager.updateMerchant(merchantEntity);
@@ -140,7 +141,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<Merchant> call, Throwable t) {
+                    public void onFailure(Call<MerchantWrapper> call, Throwable t) {
 
                     }
                 });

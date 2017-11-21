@@ -7,6 +7,7 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PaySubscription;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
@@ -34,13 +35,13 @@ import retrofit2.http.Path;
 public interface LoystarApi {
     @FormUrlEncoded
     @POST("auth/sign_in")
-    Call<Merchant> signInMerchant(
+    Call<MerchantWrapper> signInMerchant(
             @Field("email") String email,
             @Field("password") String password);
 
     @FormUrlEncoded
     @PUT("auth")
-    Call<Merchant> updateMerchant(@Field("first_name") String firstName,
+    Call<MerchantWrapper> updateMerchant(@Field("first_name") String firstName,
                                                        @Field("last_name") String lastName,
                                                        @Field("email") String email,
                                                        @Field("business_name") String businessName,

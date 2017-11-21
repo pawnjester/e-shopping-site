@@ -8,13 +8,13 @@
     android:paddingLeft="8dp">
 
     <SearchView
-        android:id="@+id/country_search"
+        android:id="@+id/items_search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"/>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/countries_rv"
+        android:id="@+id/items_rv"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

@@ -1,9 +1,14 @@
 package co.loystar.loystarbusiness.models.databinders;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import org.joda.time.DateTime;
 
@@ -11,7 +16,6 @@ import org.joda.time.DateTime;
  * Created by ordgen on 11/1/17.
  */
 
-@JsonRootName(value = "data")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "id",
@@ -41,7 +45,7 @@ public class Merchant {
     private String currency;
     private DateTime subscription_expires_on;
     private String subscription_plan;
-    private boolean turn_on_point_of_sale;
+    private Boolean turn_on_point_of_sale;
 
     public Merchant() {}
 
@@ -58,7 +62,7 @@ public class Merchant {
             String currency,
             DateTime subscription_expires_on,
             String subscription_plan,
-            boolean turn_on_point_of_sale
+            Boolean turn_on_point_of_sale
     ) {
         this.id = id;
         this.email = email;
@@ -121,12 +125,12 @@ public class Merchant {
     }
 
     @JsonProperty("turn_on_point_of_sale")
-    public boolean isTurn_on_point_of_sale() {
+    public Boolean isTurn_on_point_of_sale() {
         return turn_on_point_of_sale;
     }
 
     @JsonProperty("turn_on_point_of_sale")
-    public void setTurn_on_point_of_sale(boolean turn_on_point_of_sale) {
+    public void setTurn_on_point_of_sale(Boolean turn_on_point_of_sale) {
         this.turn_on_point_of_sale = turn_on_point_of_sale;
     }
 

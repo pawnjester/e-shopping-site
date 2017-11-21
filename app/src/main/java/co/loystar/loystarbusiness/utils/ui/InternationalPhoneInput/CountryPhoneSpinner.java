@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,7 +70,6 @@ public class CountryPhoneSpinner extends AppCompatSpinner implements
                 setCountrySelection(iso);
             }
         } catch (SecurityException e) {
-            Log.e(TAG, "setDefault: " + e.getMessage() );
             SessionManager sessionManager = new SessionManager(mContext);
             String merchantCurrency = sessionManager.getCurrency();
             if (merchantCurrency == null) {
@@ -135,12 +133,12 @@ public class CountryPhoneSpinner extends AppCompatSpinner implements
     @Override
     public void onItemSelected(Country country) {
         mSelectedCountry = country;
-        setCountrySelection(mSelectedCountry.getIso());
+        setSelection(mCountries.indexOf(country));
     }
 
     private class CountryPhoneSpinnerAdapter extends ArrayAdapter<Country> implements SpinnerAdapter {
 
-        public CountryPhoneSpinnerAdapter(@NonNull Context context, int resource, @NonNull ArrayList<Country> countries) {
+        CountryPhoneSpinnerAdapter(@NonNull Context context, int resource, @NonNull ArrayList<Country> countries) {
             super(context, resource, countries);
         }
 

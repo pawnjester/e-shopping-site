@@ -395,6 +395,10 @@
     <string name="three_months">3-months</string>
     <string name="six_months">6-months</string>
     <string name="twelve_months">12-months</string>
+    <string name="business_name">Business name</string>
+    <string name="currency">Currency</string>
+    <string name="error_business_name_required">Please enter business name</string>
+    <string name="profile_update_success">Profile was successfully updated!</string>
 
     <string-array name="subs_duration">
         <item>@string/one_month</item>

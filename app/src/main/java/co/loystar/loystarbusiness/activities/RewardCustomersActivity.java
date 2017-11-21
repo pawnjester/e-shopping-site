@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +38,7 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -220,70 +223,71 @@ public class RewardCustomersActivity extends AppCompatActivity {
                             intent.putExtras(arguments);
                             startActivity(intent);
 
-                        }
-                        else {
-                            if (response.code() == 412) {
+                        } else if (response.code() == 412) {
+                            ObjectMapper mapper = ApiUtils.getObjectMapper(false);
+                            try {
+                                JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+                                JSONObject errorObject = new JSONObject(responseObject.toString());
+                                JSONObject error = errorObject.getJSONObject("error");
 
-                                ObjectMapper mapper = ApiUtils.getObjectMapper(false);
-                                try {
-                                    JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
-                                    JSONObject errorObject = new JSONObject(responseObject.toString());
-                                    JSONObject error = errorObject.getJSONObject("error");
+                                LayoutInflater inflater = LayoutInflater.from(mContext);
+                                View rewardView = inflater.inflate(R.layout.reward_dialog_layout, null);
 
-                                    LayoutInflater inflater = LayoutInflater.from(mContext);
-                                    View rewardView = inflater.inflate(R.layout.reward_dialog_layout, null);
+                                TextView programThresholdView  = rewardView.findViewById(R.id.program_threshold_value);
+                                TextView customerValueLabel = rewardView.findViewById(R.id.customer_value_label);
+                                TextView customerValue = rewardView.findViewById(R.id.customer_value);
 
-                                    TextView programThresholdView  = rewardView.findViewById(R.id.program_threshold_value);
-                                    TextView customerValueLabel = rewardView.findViewById(R.id.customer_value_label);
-                                    TextView customerValue = rewardView.findViewById(R.id.customer_value);
+                                if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                                    customerValueLabel.setText(R.string.total_customer_points);
+                                    customerValue.setText(error.getString("totalCustomerPoints"));
 
-                                    if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
-                                        customerValueLabel.setText(R.string.total_customer_points);
-                                        customerValue.setText(error.getString("totalCustomerPoints"));
-
-                                    }
-                                    else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
-                                        customerValueLabel.setText(R.string.total_customer_stamps);
-                                        customerValue.setText(error.getString("totalCustomerStamps"));
-                                    }
-
-                                    programThresholdView.setText(error.getString("threshold"));
-
-                                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
-                                    alertDialogBuilder.setView(rewardView);
-                                    alertDialogBuilder.setTitle(error.getString("message"));
-                                    alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
-
-                                    alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            dialogInterface.dismiss();
-                                        }
-                                    });
-
-                                    alertDialogBuilder.create().show();
-
-                                } catch (IOException | JSONException e) {
-                                    e.printStackTrace();
                                 }
-                            }
-                            else if (response.code() == 404) {
-                                redemptionCodeView.setError(getString(R.string.error_redemption_code_incorrect));
-                                redemptionCodeView.requestFocus();
-                            }
-                            else if (response.code() == 422) {
-                                ObjectMapper mapper = ApiUtils.getObjectMapper(false);
-                                try {
-                                    JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
-                                    JSONObject errorObject = new JSONObject(responseObject.toString());
-                                    JSONObject errors = errorObject.getJSONObject("errors");
-                                } catch (IOException | JSONException e) {
-                                    e.printStackTrace();
+                                else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                                    customerValueLabel.setText(R.string.total_customer_stamps);
+                                    customerValue.setText(error.getString("totalCustomerStamps"));
                                 }
+
+                                programThresholdView.setText(error.getString("threshold"));
+
+                                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+                                alertDialogBuilder.setView(rewardView);
+                                alertDialogBuilder.setTitle(error.getString("message"));
+                                alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+
+                                alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                });
+
+                                alertDialogBuilder.create().show();
+
+                            } catch (IOException | JSONException e) {
+                                showSnackbar(R.string.unknown_error);
+                                e.printStackTrace();
                             }
-                            else {
-                                showSnackbar(R.string.something_went_wrong);
+                        } else if (response.code() == 404) {
+                            redemptionCodeView.setError(getString(R.string.error_redemption_code_incorrect));
+                            redemptionCodeView.requestFocus();
+                        } else if (response.code() == 422) {
+                            ObjectMapper mapper = ApiUtils.getObjectMapper(false);
+                            try {
+                                JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+                                JSONObject errorObject = new JSONObject(responseObject.toString());
+                                JSONObject errors = errorObject.getJSONObject("errors");
+                                JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
+                                Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                            } catch (IOException | JSONException e) {
+                                showSnackbar(R.string.unknown_error);
+                                e.printStackTrace();
                             }
+                        } else {
+                            if (response.code() == 401) {
+                                AccountManager accountManager = AccountManager.get(mContext);
+                                accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                            }
+                            showSnackbar(R.string.unknown_error);
                         }
                     }
 

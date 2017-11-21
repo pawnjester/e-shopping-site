@@ -11,12 +11,14 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -52,6 +54,7 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
+import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.ui.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
@@ -405,13 +408,13 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
         @Override
         protected Intent doInBackground(Void... params) {
-            Call<Merchant> call = mApiClient.getLoystarApi(true).signInMerchant(mEmail, mPassword);
+            Call<MerchantWrapper> call = mApiClient.getLoystarApi(false).signInMerchant(mEmail, mPassword);
             try {
-                Response<Merchant> response = call.execute();
+                Response<MerchantWrapper> response = call.execute();
                 if (response.isSuccessful()) {
                     String authToken = response.headers().get("Access-Token");
                     String client = response.headers().get("Client");
-                    Merchant merchant = response.body();
+                    Merchant merchant = response.body().getMerchant();
                     final MerchantEntity merchantEntity = new MerchantEntity();
                     merchantEntity.setId(merchant.getId());
                     merchantEntity.setFirstName(merchant.getFirst_name());
@@ -453,6 +456,11 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
                             authToken,
                             client
                     );
+
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean(getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                    editor.apply();
 
                     Bundle bundle = new Bundle();
                     Intent res = new Intent();

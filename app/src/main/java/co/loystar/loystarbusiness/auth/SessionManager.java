@@ -67,6 +67,7 @@ public class SessionManager {
         editor.putString(LAST_NAME, lastName);
         editor.putString(CONTACT_NUMBER, contactNumber);
         editor.putString(BUSINESS_NAME, businessName);
+        editor.putString(BUSINESS_TYPE, businessType);
         editor.putString(CURRENCY, currency);
         editor.putString(ACCESS_TOKEN, accessToken);
         editor.putString(CLIENT_KEY, clientKey);
