@@ -7,7 +7,9 @@ import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.concurrent.Callable;
 
+import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.AuthenticatorActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
@@ -159,6 +162,11 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                                 authToken,
                                 client
                         );
+
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                        editor.apply();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
