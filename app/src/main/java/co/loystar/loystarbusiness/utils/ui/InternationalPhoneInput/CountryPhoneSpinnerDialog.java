@@ -26,6 +26,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPickerDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -90,6 +91,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
                 if (mListener != null) {
                     mListener.onItemSelected(mAdapter.mCountries.get(position));
                 }
+                ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
                 getDialog().cancel();
             }
 
@@ -105,6 +107,8 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
+                ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+                getDialog().cancel();
             }
         });
 

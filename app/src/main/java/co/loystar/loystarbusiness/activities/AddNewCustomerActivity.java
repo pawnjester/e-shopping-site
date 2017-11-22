@@ -396,12 +396,11 @@ public class AddNewCustomerActivity extends AppCompatActivity {
             return;
         }
         if (!customerPhoneView.isValid()) {
-            if (phone == null) {
+            if (TextUtils.isEmpty(phone)) {
                 customerPhoneView.setErrorText(getString(R.string.error_phone_required));
             }
             else {
                 customerPhoneView.setErrorText(getString(R.string.error_phone_invalid));
-                Snackbar.make(mLayout, R.string.error_phone_invalid, Snackbar.LENGTH_LONG).show();
             }
             return;
         }

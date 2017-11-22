@@ -166,7 +166,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             return;
         }
         if (!userPhoneField.isValid()) {
-            if (phoneNumber == null) {
+            if (TextUtils.isEmpty(phoneNumber)) {
                 showSnackbar(R.string.error_phone_required);
 
             }

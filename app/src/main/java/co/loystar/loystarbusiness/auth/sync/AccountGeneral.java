@@ -46,6 +46,9 @@ public class AccountGeneral {
                     account = ac;
                 }
             }
+            if (account == null) {
+                account = new Account(accountName, AccountGeneral.ACCOUNT_TYPE);
+            }
         }
         return account;
     }

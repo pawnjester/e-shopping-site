@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
+import co.loystar.loystarbusiness.models.databinders.EmailAvailability;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
-import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PaySubscription;
+import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
@@ -34,6 +35,17 @@ import retrofit2.http.Path;
 
 public interface LoystarApi {
     @FormUrlEncoded
+    @POST("auth")
+    Call<MerchantWrapper> signUpMerchant(
+            @Field("first_name") String firstName,
+            @Field("email") String email,
+            @Field("business_name") String businessName,
+            @Field("contact_number") String contactNumber,
+            @Field("business_type") String businessType,
+            @Field("currency") String currency,
+            @Field("password") String password);
+
+    @FormUrlEncoded
     @POST("auth/sign_in")
     Call<MerchantWrapper> signInMerchant(
             @Field("email") String email,
@@ -55,6 +67,12 @@ public interface LoystarApi {
 
     @GET("get_merchant_birthday_preset_sms")
     Call<BirthdayOfferPresetSms> getMerchantBirthdayPresetSms();
+
+    @GET("merchants/check_phone_availability/{contact_number}")
+    Call<PhoneNumberAvailability> checkMerchantPhoneNumberAvailability(@Path("contact_number") String contact_number);
+
+    @GET("merchants/check_email_availability/{email}")
+    Call<EmailAvailability> checkMerchantEmailAvailability(@Path("email") String email);
 
     @GET("get_merchant_birthday_offer")
     Call<BirthdayOffer> getMerchantBirthdayOffer();

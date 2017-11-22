@@ -1,7 +1,10 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.view.View;
 
 import com.luseen.verticalintrolibrary.VerticalIntro;
@@ -85,7 +88,12 @@ public class AppIntro extends VerticalIntro {
                 null,
                 null,
                 AppIntro.this,
-                null,
+                new AccountManagerCallback<Bundle>() {
+                    @Override
+                    public void run(AccountManagerFuture<Bundle> accountManagerFuture) {
+                        finish();
+                    }
+                },
                 null
         );
     }

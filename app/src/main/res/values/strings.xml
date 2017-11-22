@@ -21,7 +21,7 @@
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="error_login_credentials">Email or Password is incorrect. Please try again!</string>
-    <string name="prompt_password">Password (optional)</string>
+    <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
@@ -31,6 +31,9 @@
     <string name="signing_up_msg">Signing up… Please wait.</string>
     <string name="signing_in_msg">Signing in… Please wait.</string>
     <string name="sign_up_btn_text">New to Loystar? Sign Up</string>
+    <string name="have_account"><u>HAVE AN ACCOUNT? LOGIN HERE</u></string>
+    <string name="phone_rationale_text">Please use a number you can access to receive important notifications.</string>
+    <string name="email_rationale_text">Please use an email you can access to receive reports.</string>
     <string name="sign_out">Sign Out</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
@@ -191,6 +194,7 @@
     <string name="error_phone_invalid">Phone number is not valid</string>
     <string name="error_gender_required">Please choose gender</string>
     <string name="error_phone_not_unique">Phone number is already taken. Please change.</string>
+    <string name="error_email_not_unique">Email is already taken. Please change.</string>
     <string name="a_moment">just a moment…</string>
     <string name="title_activity_edit_customer_details">Edit profile</string>
     <string name="last_visit">Last visit:</string>
@@ -303,6 +307,7 @@
     <string name="pref_support_key">account_support</string>
     <string name="pref_support_title">Support</string>
     <string name="pref_sign_out_title">Sign out</string>
+    <string name="merchant_sign_up_pref">co.loystar.loystarbusiness.merchant_sign_up_pref</string>
     <string name="pref_app_version_key">app_version</string>
     <string name="pref_app_version_title">App version</string>
     <string name="pref_privacy_policy_key">privacy_policy</string>
@@ -399,6 +404,17 @@
     <string name="currency">Currency</string>
     <string name="error_business_name_required">Please enter business name</string>
     <string name="profile_update_success">Profile was successfully updated!</string>
+    <string name="first_name">First name</string>
+    <string name="error_email_required">Please enter email</string>
+    <string name="account_with_phone_exists">Phone number exists with another account. Please login to continue.</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="finish">Finish</string>
+    <string name="privacy_policy_txt">By tapping \'Finish\', you agree to our Privacy Policy.</string>
+    <string name="privacy_policy_link"><u>PRIVACY POLICY</u></string>
+    <string name="error_business_category_required">Please choose business category</string>
+    <string name="error_currency_required">Please choose currency</string>
+    <string name="error_incorrect_password_extra">Password must be at least 6 characters long.</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
 
     <string-array name="subs_duration">
         <item>@string/one_month</item>

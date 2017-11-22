@@ -90,6 +90,7 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
                 if (mListener != null) {
                     mListener.onItemSelected(mAdapter.currencyList.get(position));
                 }
+                ((CurrencyPickerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
                 getDialog().cancel();
             }
 
@@ -100,11 +101,13 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
         alertDialog.setView(rootView);
-        alertDialog.setTitle("Select country");
+        alertDialog.setTitle("Select currency");
         alertDialog.setPositiveButton("CLOSE", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
+                ((CurrencyPickerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+                getDialog().cancel();
             }
         });
 
@@ -145,7 +148,7 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
         private ArrayList<Currency> currencyList;
         private Filter filter;
 
-        public CurrencyPickerDialogAdapter(ArrayList<Currency> currencies) {
+        CurrencyPickerDialogAdapter(ArrayList<Currency> currencies) {
             currencyList = currencies;
         }
 
@@ -162,7 +165,7 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
             private TextView mCurrencyName;
             private TextView mCurrencyIsoCode;
 
-            public ViewHolder(View itemView) {
+            ViewHolder(View itemView) {
                 super(itemView);
                 mCurrencySymbol = itemView.findViewById(R.id.currency_symbol);
                 mCurrencyName = itemView.findViewById(R.id.currency_name);
@@ -191,8 +194,8 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
         }
 
         private class CurrencyFilter<T> extends Filter {
-
             private ArrayList<Currency>currencyArrayList;
+
             CurrencyFilter(ArrayList<Currency> currencies) {
                 currencyArrayList = new ArrayList<>();
                 synchronized (this) {
@@ -219,7 +222,7 @@ public class CurrencyPickerDialog extends AppCompatDialogFragment implements
                     result.count = filter.size();
                     result.values = filter;
                 }
-                return null;
+                return result;
             }
 
             @SuppressWarnings("unchecked")

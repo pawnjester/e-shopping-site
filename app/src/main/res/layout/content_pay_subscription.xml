@@ -94,7 +94,7 @@
                         android:layout_height="wrap_content"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
-                        android:text="150"
+                        android:textStyle="bold"
                         android:textSize="40sp"
                         app:layout_constraintStart_toEndOf="@+id/currencySymbol"
                         app:layout_constraintTop_toTopOf="@+id/currencySymbol" />

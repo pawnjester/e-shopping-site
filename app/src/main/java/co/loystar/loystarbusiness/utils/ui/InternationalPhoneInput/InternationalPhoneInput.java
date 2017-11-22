@@ -90,6 +90,7 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
             super.onTextChanged(s, start, before, count);
             try {
                 String iso = null;
+                mSelectedCountry = (Country) mCountrySpinner.getSelectedItem();
                 if (mSelectedCountry != null) {
                     iso = mSelectedCountry.getIso();
                 }
@@ -175,7 +176,7 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
                 iso = mSelectedCountry.getIso();
             }
             return mPhoneUtil.parse(mPhoneEdit.getText().toString(), iso);
-        } catch (NumberParseException ignored) {
+        } catch (NumberParseException e) {
             return null;
         }
     }

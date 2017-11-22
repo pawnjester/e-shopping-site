@@ -18,4 +18,10 @@ public class Constants {
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String LOYALTY_PROGRAM_CREATED = "LOYALTY_PROGRAM_CREATED";
     public static final String LOYALTY_PROGRAM_UPDATED = "LOYALTY_PROGRAM_UPDATED";
+    public static final String FIRST_NAME = "FIRST_NAME";
+    public static final String BUSINESS_NAME = "BUSINESS_NAME";
+    public static final String BUSINESS_EMAIL = "BUSINESS_EMAIL";
+    public static final String BUSINESS_CATEGORY = "BUSINESS_CATEGORY";
+    public static final String CURRENCY = "CURRENCY";
+    public static final String PASSWORD = "PASSWORD";
 }

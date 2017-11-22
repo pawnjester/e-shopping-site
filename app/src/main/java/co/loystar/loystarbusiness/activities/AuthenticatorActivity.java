@@ -7,6 +7,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
@@ -55,15 +57,15 @@ import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
+import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.utils.ui.Constants;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Completable;
 import io.requery.BlockingEntityStore;
-import io.requery.Persistable;
-import io.requery.reactivex.ReactiveEntityStore;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -167,9 +169,10 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
         if (mAuth.getCurrentUser() != null && !mSessionManager.isLoggedIn()) {
             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
-            if (getIntent() != null) {
+            if (getIntent().getExtras() != null) {
                 signUp.putExtras(getIntent().getExtras());
             }
+            signUp.putExtra(Constants.PHONE_NUMBER, mAuth.getCurrentUser().getPhoneNumber());
             startActivityForResult(signUp, REQ_SIGN_UP);
         }
     }
@@ -186,26 +189,55 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
     }
 
     private void handlePhoneVerificationResponse(int resultCode, Intent data) {
-        IdpResponse response = IdpResponse.fromResultIntent(data);
-        if (resultCode == RESULT_OK && response != null) {
-            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
-            signUp.putExtras(getIntent().getExtras());
-            signUp.putExtra(Constants.CUSTOMER_PHONE_NUMBER, response.getPhoneNumber());
-            startActivityForResult(signUp, REQ_SIGN_UP);
+        final IdpResponse idpResponse = IdpResponse.fromResultIntent(data);
+        if (resultCode == RESULT_OK && idpResponse != null) {
+            final ProgressDialog progressDialog = new ProgressDialog(mContext);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMessage(getString(R.string.a_moment));
+            progressDialog.show();
+            mApiClient.getLoystarApi(false).checkMerchantPhoneNumberAvailability(idpResponse.getPhoneNumber()).enqueue(new Callback<PhoneNumberAvailability>() {
+                @Override
+                public void onResponse(Call<PhoneNumberAvailability> call, Response<PhoneNumberAvailability> response) {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+                    if (response.isSuccessful()) {
+                        if (response.body().isPhoneAvailable()) {
+                            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
+                            if (getIntent().getExtras() != null) {
+                                signUp.putExtras(getIntent().getExtras());
+                            }
+                            signUp.putExtra(Constants.PHONE_NUMBER, idpResponse.getPhoneNumber());
+                            startActivityForResult(signUp, REQ_SIGN_UP);
+                        } else {
+                            showSnackbar(R.string.account_with_phone_exists);
+                            mAuth.signOut();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<PhoneNumberAvailability> call, Throwable t) {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+                    showSnackbar(R.string.error_internet_connection_timed_out);
+                }
+            });
         } else {
             /*Verification failed*/
-            if (response == null) {
+            if (idpResponse == null) {
                 /*User pressed back button*/
                 showSnackbar(R.string.sign_up_cancelled);
                 return;
             }
 
-            if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
+            if (idpResponse.getErrorCode() == ErrorCodes.NO_NETWORK) {
                 showSnackbar(R.string.no_internet_connection);
                 return;
             }
 
-            if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
+            if (idpResponse.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
                 showSnackbar(R.string.unknown_error);
             }
         }
