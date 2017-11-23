@@ -135,7 +135,7 @@
     <string name="campaigns">Programs</string>
     <string name="title_customer_list">Customers</string>
     <string name="title_customer_detail">Customer Detail</string>
-    <string name="no_customers_found">No customers found!</string>
+    <string name="no_customers_found">We could not find any customers for you.</string>
     <string name="add_customer">Add customer</string>
     <string name="customers_count">Customers (%1$s)</string>
     <string name="confirm_delete_positive">Delete</string>
@@ -240,7 +240,7 @@
     <string name="title_activity_loyalty_programs_list">My Loyalty Programs</string>
     <string name="title_loyaltyprogram_list">My Loyalty Programs</string>
     <string name="title_loyaltyprogram_detail">Edit program</string>
-    <string name="no_programs_found">No programs found</string>
+    <string name="no_programs_found">We could not find any loyalty \nprograms for you.</string>
     <string name="add_program">Add program</string>
     <string name="program_type_label">Type:</string>
     <string name="program_target_label">Target:</string>
@@ -253,6 +253,8 @@
     <string name="spending_target_explanation">Spending target is how much a customer must spend to earn the reward. 1 %1$s = 1 point.</string>
     <string name="stamps_target_explanation">Stamps target is how many stamps a customer must collect to earn the reward.</string>
     <string name="stamps_target">Stamps target</string>
+    <string name="welcome_text">Welcome, %1$s</string>
+    <string name="hello_text">Hello, %1$s</string>
 
 
     <string name="select_biz_category">Select Business Category</string>
@@ -415,6 +417,11 @@
     <string name="error_currency_required">Please choose currency</string>
     <string name="error_incorrect_password_extra">Password must be at least 6 characters long.</string>
     <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="start_loyalty_program_empty_state">Let\'s get started with keeping \nyour customers coming back</string>
+    <string name="start_loyalty_program_btn_label">Start Your Loyalty Program</string>
+    <string name="start_sale_empty_state">You have not recorded a sale yet.</string>
+    <string name="start_sale_btn_label">Record a Sale</string>
+    <string name="start_adding_customers_label">Start Adding Customers</string>
 
     <string-array name="subs_duration">
         <item>@string/one_month</item>

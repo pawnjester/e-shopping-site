@@ -24,4 +24,8 @@ public class Constants {
     public static final String BUSINESS_CATEGORY = "BUSINESS_CATEGORY";
     public static final String CURRENCY = "CURRENCY";
     public static final String PASSWORD = "PASSWORD";
+    public static final String NO_LOYALTY_PROGRAM = "NO_LOYALTY_PROGRAM";
+    public static final String NO_SALES_TRANSACTIONS = "NO_SALES_TRANSACTIONS";
+    public static final String STATE_TYPE = "STATE_TYPE";
+    public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
 }

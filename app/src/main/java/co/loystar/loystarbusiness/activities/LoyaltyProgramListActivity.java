@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +59,7 @@ import io.requery.reactivex.ReactiveResult;
  */
 public class LoyaltyProgramListActivity extends AppCompatActivity {
     private final String KEY_RECYCLER_STATE = "recycler_state";
-    private static final int REQ_CREATE_PROGRAM = 110;
+    public static final int REQ_CREATE_PROGRAM = 110;
     private Bundle mBundleRecyclerViewState;
 
     /**
@@ -84,6 +87,12 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        if (getIntent().hasExtra(Constants.CREATE_LOYALTY_PROGRAM)) {
+            Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+            startActivityForResult(intent, REQ_CREATE_PROGRAM);
+        }
+
 
         FloatingActionButton fab = findViewById(R.id.activity_loyalty_program_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -123,8 +132,17 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.loyalty_programs_list_empty_container);
-        BrandButtonNormal addBtn = emptyView.findViewById(R.id.no_loyalty_program_add_program_btn);
-        addBtn.setOnClickListener(new View.OnClickListener() {
+        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.welcomeImage);
+        TextView stateWelcomeTextView = emptyView.findViewById(R.id.welcomeText);
+        TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
+        BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
+
+        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_campaigns));
+        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateDescriptionTextView.setText(getString(R.string.no_programs_found));
+
+        stateActionBtn.setText(getString(R.string.start_loyalty_program_btn_label));
+        stateActionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);

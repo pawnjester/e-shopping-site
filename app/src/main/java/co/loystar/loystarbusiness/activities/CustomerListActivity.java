@@ -32,6 +32,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
 
@@ -206,8 +208,17 @@ public class CustomerListActivity extends AppCompatActivity
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.customer_list_empty_container);
-        BrandButtonNormal addBtn = emptyView.findViewById(R.id.no_customer_add_customer_btn);
-        addBtn.setOnClickListener(new View.OnClickListener() {
+        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.welcomeImage);
+        TextView stateWelcomeTextView = emptyView.findViewById(R.id.welcomeText);
+        TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
+        BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
+
+        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_staff));
+        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateDescriptionTextView.setText(getString(R.string.no_customers_found));
+
+        stateActionBtn.setText(getString(R.string.start_adding_customers_label));
+        stateActionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AddNewCustomerActivity.class);

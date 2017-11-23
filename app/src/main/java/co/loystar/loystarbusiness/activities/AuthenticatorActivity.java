@@ -465,7 +465,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
                         @Override
                         public Void call() throws Exception {
-                            mDataStore.runInTransaction(new Callable() {
+                            mDataStore.runInTransaction(git new Callable() {
                                 @Override
                                 public Void call() throws Exception {
                                     mDataStore.upsert(merchantEntity);
