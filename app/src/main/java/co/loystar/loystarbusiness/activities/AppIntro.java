@@ -88,12 +88,7 @@ public class AppIntro extends VerticalIntro {
                 null,
                 null,
                 AppIntro.this,
-                new AccountManagerCallback<Bundle>() {
-                    @Override
-                    public void run(AccountManagerFuture<Bundle> accountManagerFuture) {
-                        finish();
-                    }
-                },
+                accountManagerFuture -> finish(),
                 null
         );
     }

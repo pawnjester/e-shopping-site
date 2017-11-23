@@ -8,6 +8,7 @@ import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.EmailAvailability;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
+import co.loystar.loystarbusiness.models.databinders.PasswordReset;
 import co.loystar.loystarbusiness.models.databinders.PaySubscription;
 import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
@@ -162,4 +163,10 @@ public interface LoystarApi {
 
     @POST("customers/update_customer/{id}")
     Call<Customer> updateCustomer(@Path("id") int id, @Body RequestBody requestBody);
+
+    @POST("auth/password")
+    Call<PasswordReset> sendPasswordResetEmail(@Body RequestBody requestBody);
+
+    @POST("merchants/reset_password")
+    Call<ResponseBody> resetMerchantPassword(@Body RequestBody requestBody);
 }

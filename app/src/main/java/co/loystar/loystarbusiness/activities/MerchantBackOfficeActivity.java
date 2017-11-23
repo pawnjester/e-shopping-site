@@ -86,6 +86,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private TextView stateWelcomeTextView;
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
+    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,13 +108,20 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         mSessionManager = new SessionManager(this);
         mDataStore = DatabaseManager.getDataStore(this);
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
+        merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(mSessionManager.getBusinessName().substring(0, 1).toUpperCase() + mSessionManager.getBusinessName().substring(1));
         }
 
-        mDataStore.count(LoyaltyProgramEntity.class).get().single()
-                .mergeWith(mDataStore.count(SalesTransactionEntity.class).get().single())
+        mDataStore.count(LoyaltyProgramEntity.class)
+                .where(LoyaltyProgramEntity.OWNER.eq(merchantEntity)).get().single()
+                .mergeWith(
+                        mDataStore.count(SalesTransactionEntity.class)
+                        .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity))
+                                .get()
+                                .single()
+                )
                 .toList()
                 .subscribe(integers -> {
                     int totalLoyaltyPrograms = integers.get(0);
@@ -167,7 +175,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     }
 
     private void addGraphDataset() {
-        MerchantEntity merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         mDataStore.select(SalesTransactionEntity.class).where(
                 SalesTransactionEntity.MERCHANT.eq(merchantEntity))
                 .get()

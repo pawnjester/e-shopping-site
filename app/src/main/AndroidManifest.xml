@@ -247,6 +247,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
         </activity>
+        <activity
+            android:name=".activities.ConfirmPasswordResetActivity"
+            android:label="@string/title_activity_confirm_password_reset"
+            android:parentActivityName=".activities.ForgotPasswordActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.ForgotPasswordActivity" />
+        </activity>
     </application>
 
 </manifest>
