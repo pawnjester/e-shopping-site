@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -46,6 +47,11 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.SalesTransactionsSyncObserver;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -342,25 +348,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<Transaction> transactions = response.body();
-                    for (Transaction transaction: transactions) {
-                        CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
-                        SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                        transactionEntity.setId(transaction.getId());
-                        transactionEntity.setAmount(transaction.getAmount());
-                        transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
-                        transactionEntity.setPoints(transaction.getPoints());
-                        transactionEntity.setStamps(transaction.getStamps());
-                        transactionEntity.setSynced(true);
-                        transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
-                        transactionEntity.setProductId(transaction.getProduct_id());
-                        transactionEntity.setProgramType(transaction.getProgram_type());
-                        transactionEntity.setUserId(transaction.getUser_id());
+                    if (transactions != null) {
+                        for (Transaction transaction: transactions) {
+                            CustomerEntity customerEntity = mDatabaseManager.getCustomerById(transaction.getCustomer_id());
+                            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                            transactionEntity.setId(transaction.getId());
+                            transactionEntity.setAmount(transaction.getAmount());
+                            transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                            transactionEntity.setPoints(transaction.getPoints());
+                            transactionEntity.setStamps(transaction.getStamps());
+                            transactionEntity.setSynced(true);
+                            transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                            transactionEntity.setProductId(transaction.getProduct_id());
+                            transactionEntity.setProgramType(transaction.getProgram_type());
+                            transactionEntity.setUserId(transaction.getUser_id());
 
-                        transactionEntity.setMerchant(merchantEntity);
-                        if (customerEntity != null) {
-                            transactionEntity.setCustomer(customerEntity);
+                            transactionEntity.setMerchant(merchantEntity);
+                            if (customerEntity != null) {
+                                transactionEntity.setCustomer(customerEntity);
+                            }
+                            mDatabaseManager.insertNewSalesTransaction(transactionEntity);
                         }
-                        mDatabaseManager.insertNewSalesTransaction(transactionEntity);
+                        Intent i = new Intent(Constants.SALES_TRANSACTIONS_SYNC_FINISHED);
+                        getContext().sendBroadcast(i);
+
                     }
                 } else {
                     if (response.code() == 401) {

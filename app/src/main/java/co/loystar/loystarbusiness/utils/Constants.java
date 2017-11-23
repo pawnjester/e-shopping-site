@@ -7,6 +7,7 @@ package co.loystar.loystarbusiness.utils;
 public class Constants {
     public static final String SYNC_STARTED = "SyncStarted";
     public static final String SYNC_FINISHED = "SyncFinished";
+    public static final String SALES_TRANSACTIONS_SYNC_FINISHED = "SALES_TRANSACTIONS_SYNC_FINISHED";
     public static final String CUSTOMER_ID = "CUSTOMER_ID";
     public static final int ADD_NEW_CUSTOMER_REQUEST = 100;
     public static final String CUSTOMER_UPDATE_SUCCESS = "CUSTOMER_UPDATE_SUCCESS";

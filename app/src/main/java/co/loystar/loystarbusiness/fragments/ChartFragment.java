@@ -1,6 +1,10 @@
 package co.loystar.loystarbusiness.fragments;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,10 +47,18 @@ import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.GraphCoordinates;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.requery.Persistable;
+import io.requery.query.Selection;
+import io.requery.reactivex.ReactiveEntityStore;
+import io.requery.reactivex.ReactiveResult;
 
 
 public class ChartFragment extends Fragment implements OnChartValueSelectedListener {
@@ -102,7 +114,35 @@ public class ChartFragment extends Fragment implements OnChartValueSelectedListe
     }
 
     private void addGraphDataset() {
-        List<SalesTransactionEntity> salesTransactionEntities = mDatabaseManager.getMerchantSalesTransactions(mSessionManager.getMerchantId());
+        ReactiveEntityStore<Persistable> mDataStore = DatabaseManager.getDataStore(getActivity());
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(mSessionManager.getMerchantId()))
+                .get()
+                .firstOrNull();
+        Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
+        resultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.get().observableResult().subscribe(new Observer<ReactiveResult<SalesTransactionEntity>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(ReactiveResult<SalesTransactionEntity> salesTransactionEntities) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+        List<SalesTransactionEntity> salesTransactionEntities = resultSelection.get().toList();
         if (!salesTransactionEntities.isEmpty()) {
             ArrayList<GraphCoordinates> graphValues = getGraphValues(salesTransactionEntities);
             String[] xVals = new String[graphValues.size()];
@@ -247,4 +287,28 @@ public class ChartFragment extends Fragment implements OnChartValueSelectedListe
             return String.format(mFormat, merchantCurrencySymbol, Math.round(value));
         }
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        try {
+            getActivity().unregisterReceiver(salesTransactionsSyncFinishedReceiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().registerReceiver(salesTransactionsSyncFinishedReceiver, new IntentFilter(Constants.SALES_TRANSACTIONS_SYNC_FINISHED));
+    }
+
+    private BroadcastReceiver salesTransactionsSyncFinishedReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            addGraphDataset();
+        }
+    };
 }
