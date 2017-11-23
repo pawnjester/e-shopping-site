@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.auth.api;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
@@ -36,19 +38,16 @@ public class ApiClient {
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
-                    .addInterceptor(new Interceptor() {
-                        @Override
-                        public Response intercept(Chain chain) throws IOException {
-                            Request original = chain.request();
+                    .addInterceptor(chain -> {
+                        Request original = chain.request();
 
-                            Request.Builder requestBuilder = original.newBuilder()
-                                    .header("ACCESS-TOKEN", sessionManager.getAccessToken())
-                                    .header("CLIENT", sessionManager.getClientKey())
-                                    .header("UID", sessionManager.getEmail());
+                        Request.Builder requestBuilder = original.newBuilder()
+                                .header("ACCESS-TOKEN", sessionManager.getAccessToken())
+                                .header("CLIENT", sessionManager.getClientKey())
+                                .header("UID", sessionManager.getEmail());
 
-                            Request request = requestBuilder.build();
-                            return chain.proceed(request);
-                        }
+                        Request request = requestBuilder.build();
+                        return chain.proceed(request);
                     })
                     .build();
 
@@ -56,6 +55,7 @@ public class ApiClient {
                     .baseUrl(BASE_URL + URL_PREFIX)
                     .client(okHttpClient)
                     .addConverterFactory(JacksonConverterFactory.create(ApiUtils.getObjectMapper(hasRootValue)))
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
         }
         return retrofit;

@@ -65,11 +65,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
-    private Context mContext;
 
     SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        mContext = context;
         mAccountManager = AccountManager.get(context);
         mApiClient = new ApiClient(context);
         mDatabaseManager = DatabaseManager.getInstance(context);

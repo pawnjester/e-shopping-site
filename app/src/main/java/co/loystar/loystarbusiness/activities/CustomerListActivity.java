@@ -218,12 +218,9 @@ public class CustomerListActivity extends AppCompatActivity
         stateDescriptionTextView.setText(getString(R.string.no_customers_found));
 
         stateActionBtn.setText(getString(R.string.start_adding_customers_label));
-        stateActionBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(mContext, AddNewCustomerActivity.class);
-                startActivity(intent);
-            }
+        stateActionBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(mContext, AddNewCustomerActivity.class);
+            startActivity(intent);
         });
 
         mRecyclerView = recyclerView;

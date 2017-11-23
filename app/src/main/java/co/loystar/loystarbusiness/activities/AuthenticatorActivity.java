@@ -16,7 +16,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,11 +25,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -41,14 +37,13 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -63,10 +58,9 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.BlockingEntityStore;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -77,7 +71,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  * We want to use the support library hence AppCompatActivity
  * We use setAccountAuthenticatorResult() to set the result of adding an account
  * */
-public class AuthenticatorActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class AuthenticatorActivity extends RxAppCompatActivity implements LoaderCallbacks<Cursor> {
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
     public final static String PARAM_USER_PASS = "USER_PASS";
@@ -96,9 +90,8 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
 
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    private UserLoginTask mAuthTask = null;
+    //private UserLoginTask mAuthTask = null;
     private SessionManager mSessionManager;
-    private DatabaseManager mDatabaseManager;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -120,7 +113,6 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
         mContext = this;
         mSessionManager = new SessionManager(this);
         mApiClient = new ApiClient(this);
-        mDatabaseManager = DatabaseManager.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
 
         mEmailView = findViewById(R.id.email);
@@ -132,38 +124,25 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
         passwordLayout.setPasswordVisibilityToggleEnabled(true);
 
         BrandButtonNormal mEmailSignInButton = findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        mEmailSignInButton.setOnClickListener(view -> attemptLogin());
 
         mLoginFormView = findViewById(R.id.email_login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        findViewById(R.id.sign_up_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(
-                        AuthUI.getInstance()
-                                .createSignInIntentBuilder()
-                                .setAvailableProviders(Collections.singletonList(
-                                        new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()
-                                ))
-                                .build(),
-                        REQ_VERIFY_PHONE_NUMBER);
-            }
-        });
+        findViewById(R.id.sign_up_btn).setOnClickListener(view -> startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(Collections.singletonList(
+                                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()
+                        ))
+                        .build(),
+                REQ_VERIFY_PHONE_NUMBER));
 
         TextView forgot_pass = findViewById(R.id.forgot_password);
         if (forgot_pass != null) {
-            forgot_pass.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(mContext, ForgotPasswordActivity.class);
-                    startActivity(intent);
-                }
+            forgot_pass.setOnClickListener(v -> {
+                Intent intent = new Intent(mContext, ForgotPasswordActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -195,35 +174,41 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
             progressDialog.setIndeterminate(true);
             progressDialog.setMessage(getString(R.string.a_moment));
             progressDialog.show();
-            mApiClient.getLoystarApi(false).checkMerchantPhoneNumberAvailability(idpResponse.getPhoneNumber()).enqueue(new Callback<PhoneNumberAvailability>() {
-                @Override
-                public void onResponse(Call<PhoneNumberAvailability> call, Response<PhoneNumberAvailability> response) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
-                    if (response.isSuccessful()) {
-                        if (response.body().isPhoneAvailable()) {
-                            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
-                            if (getIntent().getExtras() != null) {
-                                signUp.putExtras(getIntent().getExtras());
-                            }
-                            signUp.putExtra(Constants.PHONE_NUMBER, idpResponse.getPhoneNumber());
-                            startActivityForResult(signUp, REQ_SIGN_UP);
-                        } else {
-                            showSnackbar(R.string.account_with_phone_exists);
-                            mAuth.signOut();
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<PhoneNumberAvailability> call, Throwable t) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
-                    showSnackbar(R.string.error_internet_connection_timed_out);
-                }
-            });
+            mApiClient.getLoystarApi(false)
+                    .checkMerchantPhoneNumberAvailability(idpResponse.getPhoneNumber())
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .compose(bindToLifecycle())
+                    .subscribe(
+                            response -> {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
+                                if (response.isSuccessful()) {
+                                    PhoneNumberAvailability phoneNumberAvailability = response.body();
+                                    if (phoneNumberAvailability == null) {
+                                        showSnackbar(R.string.unknown_error);
+                                    } else {
+                                        if (phoneNumberAvailability.isPhoneAvailable()) {
+                                            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
+                                            if (getIntent().getExtras() != null) {
+                                                signUp.putExtras(getIntent().getExtras());
+                                            }
+                                            signUp.putExtra(Constants.PHONE_NUMBER, idpResponse.getPhoneNumber());
+                                            startActivityForResult(signUp, REQ_SIGN_UP);
+                                        } else {
+                                            showSnackbar(R.string.account_with_phone_exists);
+                                            mAuth.signOut();
+                                        }
+                                    }
+                                }
+                            },
+                            e -> {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
+                                showSnackbar(R.string.error_internet_connection_timed_out);
+                            });
         } else {
             /*Verification failed*/
             if (idpResponse == null) {
@@ -260,13 +245,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
+                    .setAction(android.R.string.ok, v -> requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS));
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }
@@ -293,10 +272,6 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -335,8 +310,7 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
             // perform the user login attempt.
             closeKeyBoard();
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            loginMerchant(email, password);
         }
     }
 
@@ -428,115 +402,93 @@ public class AuthenticatorActivity extends AppCompatActivity implements LoaderCa
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private class UserLoginTask extends AsyncTask<Void, Void, Intent> {
+    private void loginMerchant(String email, String password) {
+        mApiClient.getLoystarApi(false).signInMerchant(email, password)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .subscribe(
+                response -> {
+                    showProgress(false);
+                    if (response.isSuccessful()) {
+                        String authToken = response.headers().get("Access-Token");
+                        String client = response.headers().get("Client");
+                        MerchantWrapper merchantWrapper = response.body();
+                        if (merchantWrapper == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            Merchant merchant = merchantWrapper.getMerchant();
+                            final MerchantEntity merchantEntity = new MerchantEntity();
+                            merchantEntity.setId(merchant.getId());
+                            merchantEntity.setFirstName(merchant.getFirst_name());
+                            merchantEntity.setLastName(merchant.getLast_name());
+                            merchantEntity.setBusinessName(merchant.getBusiness_name());
+                            merchantEntity.setEmail(merchant.getEmail());
+                            merchantEntity.setBusinessType(merchant.getBusiness_type());
+                            merchantEntity.setContactNumber(merchant.getContact_number());
+                            merchantEntity.setCurrency(merchant.getCurrency());
+                            if (merchant.getSubscription_expires_on() != null) {
+                                merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
+                            }
 
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Intent doInBackground(Void... params) {
-            Call<MerchantWrapper> call = mApiClient.getLoystarApi(false).signInMerchant(mEmail, mPassword);
-            try {
-                Response<MerchantWrapper> response = call.execute();
-                if (response.isSuccessful()) {
-                    String authToken = response.headers().get("Access-Token");
-                    String client = response.headers().get("Client");
-                    Merchant merchant = response.body().getMerchant();
-                    final MerchantEntity merchantEntity = new MerchantEntity();
-                    merchantEntity.setId(merchant.getId());
-                    merchantEntity.setFirstName(merchant.getFirst_name());
-                    merchantEntity.setLastName(merchant.getLast_name());
-                    merchantEntity.setBusinessName(merchant.getBusiness_name());
-                    merchantEntity.setEmail(merchant.getEmail());
-                    merchantEntity.setBusinessType(merchant.getBusiness_type());
-                    merchantEntity.setContactNumber(merchant.getContact_number());
-                    merchantEntity.setCurrency(merchant.getCurrency());
-                    if (merchant.getSubscription_expires_on() != null) {
-                        merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
-                    }
-
-                    final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
-                    Completable completable = Completable.fromCallable(new Callable<Void>() {
-
-                        @Override
-                        public Void call() throws Exception {
-                            mDataStore.runInTransaction(git new Callable() {
-                                @Override
-                                public Void call() throws Exception {
+                            final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
+                            Completable completable = Completable.fromCallable(() -> {
+                                mDataStore.runInTransaction(() -> {
                                     mDataStore.upsert(merchantEntity);
                                     return null;
-                                }
+                                });
+                                return null;
                             });
-                            return null;
+                            completable.subscribe();
+                            mSessionManager.setMerchantSessionData(
+                                    merchant.getId(),
+                                    merchant.getEmail(),
+                                    merchant.getFirst_name(),
+                                    merchant.getLast_name(),
+                                    merchant.getContact_number(),
+                                    merchant.getBusiness_name(),
+                                    merchant.getBusiness_type(),
+                                    merchant.getCurrency(),
+                                    authToken,
+                                    client
+                            );
+
+                            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean(getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                            editor.apply();
+
+                            Bundle bundle = new Bundle();
+                            Intent intent = new Intent();
+
+                            bundle.putString(AccountManager.KEY_ACCOUNT_NAME, merchant.getEmail());
+                            bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+                            bundle.putString(PARAM_USER_PASS, password);
+
+                            intent.putExtras(bundle);
+                            finishLogin(intent);
                         }
-                    });
-                    completable.subscribe();
-                    mSessionManager.setMerchantSessionData(
-                            merchant.getId(),
-                            merchant.getEmail(),
-                            merchant.getFirst_name(),
-                            merchant.getLast_name(),
-                            merchant.getContact_number(),
-                            merchant.getBusiness_name(),
-                            merchant.getBusiness_type(),
-                            merchant.getCurrency(),
-                            authToken,
-                            client
-                    );
 
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean(getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
-                    editor.apply();
-
-                    Bundle bundle = new Bundle();
-                    Intent res = new Intent();
-
-                    bundle.putString(AccountManager.KEY_ACCOUNT_NAME, merchant.getEmail());
-                    bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-                    bundle.putString(PARAM_USER_PASS, mPassword);
-
-                    res.putExtras(bundle);
-                    return res;
-
-                } else {
-                    Intent res = new Intent();
-                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_login_credentials));
-                    return res;
-                }
-            } catch (IOException e) {
-                Intent res = new Intent();
-                if (e instanceof SocketTimeoutException) {
-                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
-                } else {
-                    res.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.no_internet_connection));
-                }
-                return res;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(final Intent intent) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (intent != null) {
-                finishLogin(intent);
-            } else {
-                showSnackbar(R.string.something_went_wrong);
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
+                    } else if (response.code() == 401) {
+                        Intent intent = new Intent();
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_login_credentials));
+                        finishLogin(intent);
+                    } else {
+                        Intent intent = new Intent();
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.unknown_error));
+                        finishLogin(intent);
+                    }
+                },
+                e -> {
+                    showProgress(false);
+                    Intent intent = new Intent();
+                    if (e instanceof SocketTimeoutException) {
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
+                    } else {
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.no_internet_connection));
+                    }
+                    finishLogin(intent);
+                });
     }
 
     private void finishLogin(Intent intent) {

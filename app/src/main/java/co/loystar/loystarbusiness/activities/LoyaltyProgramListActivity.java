@@ -93,14 +93,10 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
             startActivityForResult(intent, REQ_CREATE_PROGRAM);
         }
 
-
         FloatingActionButton fab = findViewById(R.id.activity_loyalty_program_list_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
-                startActivityForResult(intent, REQ_CREATE_PROGRAM);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+            startActivityForResult(intent, REQ_CREATE_PROGRAM);
         });
 
         mContext = this;
@@ -142,12 +138,9 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         stateDescriptionTextView.setText(getString(R.string.no_programs_found));
 
         stateActionBtn.setText(getString(R.string.start_loyalty_program_btn_label));
-        stateActionBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
-                startActivityForResult(intent, REQ_CREATE_PROGRAM);
-            }
+        stateActionBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+            startActivityForResult(intent, REQ_CREATE_PROGRAM);
         });
 
         mRecyclerView = recyclerView;
@@ -253,25 +246,22 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
                 }
             });
 
-            binding.editProgramBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
-                    if (loyaltyProgramItemBinding != null) {
-                        LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
-                        if (mTwoPane) {
-                            Bundle arguments = new Bundle();
-                            arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
-                            LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
-                            fragment.setArguments(arguments);
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.loyalty_program_detail_container, fragment)
-                                    .commit();
-                        } else {
-                            Intent intent = new Intent(mContext, LoyaltyProgramDetailActivity.class);
-                            intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
-                            startActivity(intent);
-                        }
+            binding.editProgramBtn.setOnClickListener(view -> {
+                LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
+                if (loyaltyProgramItemBinding != null) {
+                    LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
+                    if (mTwoPane) {
+                        Bundle arguments = new Bundle();
+                        arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                        LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
+                        fragment.setArguments(arguments);
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.loyalty_program_detail_container, fragment)
+                                .commit();
+                    } else {
+                        Intent intent = new Intent(mContext, LoyaltyProgramDetailActivity.class);
+                        intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                        startActivity(intent);
                     }
                 }
             });

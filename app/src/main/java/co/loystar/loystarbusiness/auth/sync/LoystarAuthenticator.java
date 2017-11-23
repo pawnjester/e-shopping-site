@@ -32,6 +32,7 @@ import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.requery.BlockingEntityStore;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -114,63 +115,59 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
             String password = am.getPassword(account);
             if (password != null && !TextUtils.isEmpty(password)) {
                 // authenticate merchant by email and password
-                Call<MerchantWrapper> call = mApiClient.getLoystarApi(false).signInMerchant(account.name, password);
-                try {
-                    Response<MerchantWrapper> response = call.execute();
-                    if (response.isSuccessful()) {
-                        authToken = response.headers().get("Access-Token");
-                        String client = response.headers().get("Client");
-                        Merchant merchant = response.body().getMerchant();
-                        final MerchantEntity merchantEntity = new MerchantEntity();
-                        merchantEntity.setId(merchant.getId());
-                        merchantEntity.setFirstName(merchant.getFirst_name());
-                        merchantEntity.setLastName(merchant.getLast_name());
-                        merchantEntity.setBusinessName(merchant.getBusiness_name());
-                        merchantEntity.setEmail(merchant.getEmail());
-                        merchantEntity.setBusinessType(merchant.getBusiness_type());
-                        merchantEntity.setContactNumber(merchant.getContact_number());
-                        merchantEntity.setCurrency(merchant.getCurrency());
-                        if (merchant.getSubscription_expires_on() != null) {
-                            merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
-                        }
-
-                        final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
-                        Completable completable = Completable.fromCallable(new Callable<Void>() {
-
-                            @Override
-                            public Void call() throws Exception {
-                                mDataStore.runInTransaction(new Callable() {
-                                    @Override
-                                    public Void call() throws Exception {
-                                        mDataStore.upsert(merchantEntity);
-                                        return null;
-                                    }
-                                });
-                                return null;
-                            }
-                        });
-                        completable.subscribe();
-                        mSessionManager.setMerchantSessionData(
-                                merchant.getId(),
-                                merchant.getEmail(),
-                                merchant.getFirst_name(),
-                                merchant.getLast_name(),
-                                merchant.getContact_number(),
-                                merchant.getBusiness_name(),
-                                merchant.getBusiness_type(),
-                                merchant.getCurrency(),
-                                authToken,
-                                client
-                        );
-
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
-                        editor.apply();
+                Response<MerchantWrapper> response = mApiClient.getLoystarApi(false).signInMerchant(account.name, password).blockingSingle();
+                if (response.isSuccessful()) {
+                    authToken = response.headers().get("Access-Token");
+                    String client = response.headers().get("Client");
+                    @SuppressWarnings("ConstantConditions") Merchant merchant = response.body().getMerchant();
+                    final MerchantEntity merchantEntity = new MerchantEntity();
+                    merchantEntity.setId(merchant.getId());
+                    merchantEntity.setFirstName(merchant.getFirst_name());
+                    merchantEntity.setLastName(merchant.getLast_name());
+                    merchantEntity.setBusinessName(merchant.getBusiness_name());
+                    merchantEntity.setEmail(merchant.getEmail());
+                    merchantEntity.setBusinessType(merchant.getBusiness_type());
+                    merchantEntity.setContactNumber(merchant.getContact_number());
+                    merchantEntity.setCurrency(merchant.getCurrency());
+                    if (merchant.getSubscription_expires_on() != null) {
+                        merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                    final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
+                    Completable completable = Completable.fromCallable(new Callable<Void>() {
+
+                        @Override
+                        public Void call() throws Exception {
+                            mDataStore.runInTransaction(new Callable() {
+                                @Override
+                                public Void call() throws Exception {
+                                    mDataStore.upsert(merchantEntity);
+                                    return null;
+                                }
+                            });
+                            return null;
+                        }
+                    });
+                    completable.subscribe();
+                    mSessionManager.setMerchantSessionData(
+                            merchant.getId(),
+                            merchant.getEmail(),
+                            merchant.getFirst_name(),
+                            merchant.getLast_name(),
+                            merchant.getContact_number(),
+                            merchant.getBusiness_name(),
+                            merchant.getBusiness_type(),
+                            merchant.getCurrency(),
+                            authToken,
+                            client
+                    );
+
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                    editor.apply();
                 }
+
             } else {
                 // authenticate merchant by phone number and firebase_uid
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();

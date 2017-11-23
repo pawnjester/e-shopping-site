@@ -16,9 +16,11 @@ import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.Field;
@@ -47,7 +49,7 @@ public interface LoystarApi {
 
     @FormUrlEncoded
     @POST("auth/sign_in")
-    Call<MerchantWrapper> signInMerchant(
+    Observable<Response<MerchantWrapper>> signInMerchant(
             @Field("email") String email,
             @Field("password") String password);
 
@@ -69,7 +71,7 @@ public interface LoystarApi {
     Call<BirthdayOfferPresetSms> getMerchantBirthdayPresetSms();
 
     @GET("merchants/check_phone_availability/{contact_number}")
-    Call<PhoneNumberAvailability> checkMerchantPhoneNumberAvailability(@Path("contact_number") String contact_number);
+    Observable<Response<PhoneNumberAvailability>> checkMerchantPhoneNumberAvailability(@Path("contact_number") String contact_number);
 
     @GET("merchants/check_email_availability/{email}")
     Call<EmailAvailability> checkMerchantEmailAvailability(@Path("email") String email);

@@ -57,6 +57,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(mSessionManager.getBusinessName().substring(0, 1).toUpperCase() + mSessionManager.getBusinessName().substring(1));
         }
 
+
+
         if (savedInstanceState == null) {
             int totalLoyaltyPrograms = mDataStore.count(LoyaltyProgramEntity.class).get().value();
             int totalSales =  mDataStore.count(SalesTransactionEntity.class).get().value();
