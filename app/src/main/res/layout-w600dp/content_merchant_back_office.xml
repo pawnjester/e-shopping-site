@@ -87,7 +87,7 @@
 
                 <ImageView
                     android:contentDescription="@string/image"
-                    android:id="@+id/welcomeImage"
+                    android:id="@+id/stateImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toBottomOf="@+id/guideline"
@@ -95,7 +95,7 @@
                     app:layout_constraintRight_toRightOf="parent" />
 
                 <TextView
-                    android:id="@+id/welcomeText"
+                    android:id="@+id/stateIntroText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -103,7 +103,7 @@
                     android:textStyle="bold"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/welcomeImage" />
+                    app:layout_constraintTop_toBottomOf="@+id/stateImage" />
 
                 <TextView
                     android:id="@+id/stateDescriptionText"
@@ -115,7 +115,7 @@
                     android:gravity="center"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/welcomeText" />
+                    app:layout_constraintTop_toBottomOf="@+id/stateIntroText" />
 
                 <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
                     android:id="@+id/stateActionBtn"

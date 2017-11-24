@@ -53,6 +53,8 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
     private List<String> mSelectedEntries = new ArrayList<>();
     private Date dateSelection;
     private OnDatePickedListener datePickedListener;
+    private CreateNewItemListener createNewItemListener;
+    private String createNewItemDialogTitle;
 
     public SpinnerButton(Context context) {
         super(context);
@@ -205,37 +207,40 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
             int mDay = c.get(Calendar.DAY_OF_MONTH);
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(mContext,
-                    new DatePickerDialog.OnDateSetListener() {
-
-                        @Override
-                        public void onDateSet(DatePicker view, int year,
-                                              int monthOfYear, int dayOfMonth) {
-                            String m = (monthOfYear + 1) < 10 ? ("0" + (monthOfYear + 1)) : String.valueOf(monthOfYear + 1);
-                            String d = dayOfMonth < 10 ? ("0" + dayOfMonth) : String.valueOf(dayOfMonth);
-                            String date = year + "-" + m + "-" + d;
-                            StdDateFormat mDateFormat = new StdDateFormat();
-                            try {
-                                dateSelection = mDateFormat.parse(date);
-                                if (datePickedListener != null) {
-                                    datePickedListener.onDatePicked(dateSelection);
-                                }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+                    (view1, year, monthOfYear, dayOfMonth) -> {
+                        String m = (monthOfYear + 1) < 10 ? ("0" + (monthOfYear + 1)) : String.valueOf(monthOfYear + 1);
+                        String d = dayOfMonth < 10 ? ("0" + dayOfMonth) : String.valueOf(dayOfMonth);
+                        String date = year + "-" + m + "-" + d;
+                        StdDateFormat mDateFormat = new StdDateFormat();
+                        try {
+                            dateSelection = mDateFormat.parse(date);
+                            if (datePickedListener != null) {
+                                datePickedListener.onDatePicked(dateSelection);
                             }
-                            setText(date);
-
+                        } catch (ParseException e) {
+                            e.printStackTrace();
                         }
+                        setText(date);
+
                     }, mYear, mMonth, mDay);
             assert datePickerDialog.getWindow() != null;
             datePickerDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
             datePickerDialog.show();
         } else {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
-            dialogBuilder.setTitle(mPrompt);
-            if (mAllowMultipleSelection) {
-                dialogBuilder.setMultiChoiceItems(mEntries, mPreSelectedEntries, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which, boolean isChecked) {
+            if (createNewItemListener != null && createNewItemDialogTitle != null) {
+                dialogBuilder.setTitle(createNewItemDialogTitle);
+                dialogBuilder.setPositiveButton("Create new", (dialogInterface, i) -> {
+                    createNewItemListener.onCreateNewItemClicked();
+                    dialogInterface.cancel();
+                });
+                dialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> {
+                    dialogInterface.cancel();
+                });
+            } else {
+                dialogBuilder.setTitle(mPrompt);
+                if (mAllowMultipleSelection) {
+                    dialogBuilder.setMultiChoiceItems(mEntries, mPreSelectedEntries, (dialogInterface, which, isChecked) -> {
                         if (isChecked) {
                             mSelectedEntries.add(entries.get(which).toString());
                         } else {
@@ -247,11 +252,8 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
                         for (int i = 0; i < entries.size(); i ++) {
                             mPreSelectedEntries[i] = mSelectedEntries.contains(entries.get(i).toString());
                         }
-                    }
-                })
-                        .setPositiveButton("DONE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                    })
+                            .setPositiveButton("DONE", (dialogInterface, i) -> {
                                 if (mSelectedEntries.isEmpty()) {
                                     setText(mPrompt);
                                 } else {
@@ -261,21 +263,18 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
                                     }
                                     setText(stringBuilder.toString());
                                 }
-                            }
-                        });
-            } else {
-                SpinnerButtonAdapter mAdapter = new SpinnerButtonAdapter(mContext, R.layout.checked_view, entries);
-                dialogBuilder.setSingleChoiceItems(mAdapter, mSelection, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
+                            });
+                } else {
+                    SpinnerButtonAdapter mAdapter = new SpinnerButtonAdapter(mContext, R.layout.checked_view, entries);
+                    dialogBuilder.setSingleChoiceItems(mAdapter, mSelection, (dialogInterface, which) -> {
                         mSelection = which;
                         setText(mEntries[mSelection]);
                         if (mListener != null) {
                             mListener.onItemSelected(which);
                         }
                         dialogInterface.dismiss();
-                    }
-                });
+                    });
+                }
             }
             dialogBuilder.create().show();
         }
@@ -287,6 +286,18 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
 
     public interface OnDatePickedListener {
         void onDatePicked(Date date);
+    }
+
+    public interface CreateNewItemListener {
+        void onCreateNewItemClicked();
+    }
+
+    public void setCreateNewItemListener(CreateNewItemListener createNewItemListener) {
+        this.createNewItemListener = createNewItemListener;
+    }
+
+    public void setCreateNewItemDialogTitle(String createNewItemDialogTitle) {
+        this.createNewItemDialogTitle = createNewItemDialogTitle;
     }
 
     public void setDatePickedListener(OnDatePickedListener datePickedListener) {

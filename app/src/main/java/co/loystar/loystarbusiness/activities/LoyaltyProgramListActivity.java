@@ -128,8 +128,8 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.loyalty_programs_list_empty_container);
-        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.welcomeImage);
-        TextView stateWelcomeTextView = emptyView.findViewById(R.id.welcomeText);
+        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 

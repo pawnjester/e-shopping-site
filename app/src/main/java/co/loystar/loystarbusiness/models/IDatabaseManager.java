@@ -140,4 +140,6 @@ public interface IDatabaseManager {
     List<CustomerEntity> getMerchantCustomers(int merchantId);
 
     List<LoyaltyProgramEntity> getMerchantLoyaltyPrograms(int merchantId);
+
+    List<ProductCategoryEntity> getMerchantProductCategories(int merchantId);
 }

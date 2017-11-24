@@ -50,4 +50,13 @@
         <item name="android:textSize">@dimen/text_view_label_text_size</item>
     </style>
 
+    <style name="MenuButtonsDeleteStyle">
+        <item name="fab_size">mini</item>
+        <item name="fab_hideAnimation">@anim/jump_to_down</item>
+        <item name="fab_shadowColor">#444</item>
+        <item name="fab_colorNormal">@color/white</item>
+        <item name="fab_colorPressed">@color/cardview_light_background</item>
+        <item name="fab_colorRipple">@color/light_grey</item>
+    </style>
+
 </resources>

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -45,6 +46,7 @@ import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -212,34 +214,41 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             ApiClient apiClient = new ApiClient(mContext);
             apiClient.getLoystarApi(false).updateCustomer(mCustomer.getId(), requestBody).enqueue(new Callback<Customer>() {
                 @Override
-                public void onResponse(Call<Customer> call, Response<Customer> response) {
+                public void onResponse(@NonNull Call<Customer> call, @NonNull Response<Customer> response) {
                     if (response.isSuccessful()) {
                         if (progressDialog.isShowing()) {
                             progressDialog.dismiss();
                         }
 
                         Customer customer = response.body();
-                        mCustomer.setPhoneNumber(customer.getPhone_number());
-                        mCustomer.setFirstName(customer.getFirst_name());
-                        mCustomer.setLastName(customer.getLast_name());
-                        mCustomer.setDateOfBirth(customer.getDate_of_birth());
-                        mCustomer.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
-                        mCustomer.setSex(customer.getSex());
-                        mCustomer.setEmail(customer.getEmail());
-                        mDatabaseManager.updateCustomer(mCustomer);
+                        if (customer == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            mCustomer.setPhoneNumber(customer.getPhone_number());
+                            mCustomer.setFirstName(customer.getFirst_name());
+                            mCustomer.setLastName(customer.getLast_name());
+                            mCustomer.setDateOfBirth(customer.getDate_of_birth());
+                            mCustomer.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                            mCustomer.setSex(customer.getSex());
+                            mCustomer.setEmail(customer.getEmail());
+                            mDatabaseManager.updateCustomer(mCustomer);
 
-                        Intent intent = new Intent(EditCustomerDetailsActivity.this, CustomerListActivity.class);
-                        intent.putExtra(Constants.CUSTOMER_UPDATE_SUCCESS, true);
-                        intent.putExtra(Constants.CUSTOMER_ID, mCustomer.getId());
-                        startActivity(intent);
+                            Intent intent = new Intent(EditCustomerDetailsActivity.this, CustomerListActivity.class);
+                            intent.putExtra(Constants.CUSTOMER_UPDATE_SUCCESS, true);
+                            intent.putExtra(Constants.CUSTOMER_ID, mCustomer.getId());
+                            startActivity(intent);
+                        }
                     } else if (response.code() == 422) {
                         ObjectMapper mapper = ApiUtils.getObjectMapper(false);
                         try {
-                            JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
-                            JSONObject errorObject = new JSONObject(responseObject.toString());
-                            JSONObject errors = errorObject.getJSONObject("errors");
-                            JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
-                            Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                            ResponseBody responseBody = response.errorBody();
+                            if (responseBody != null) {
+                                JsonNode responseObject = mapper.readTree(responseBody.charStream());
+                                JSONObject errorObject = new JSONObject(responseObject.toString());
+                                JSONObject errors = errorObject.getJSONObject("errors");
+                                JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
+                                Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                            }
                         } catch (IOException | JSONException e) {
                             showSnackbar(R.string.unknown_error);
                             e.printStackTrace();

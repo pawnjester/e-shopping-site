@@ -547,4 +547,20 @@ public class DatabaseManager implements IDatabaseManager{
         }
         return loyaltyProgramEntityList;
     }
+
+    @Override
+    public List<ProductCategoryEntity> getMerchantProductCategories(int merchantId) {
+        List<ProductCategoryEntity> productCategoryEntities = new ArrayList<>();
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        if (merchantEntity != null) {
+            Selection<ReactiveResult<ProductCategoryEntity>> selection = mDataStore.select(ProductCategoryEntity.class);
+            selection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
+            selection.where(ProductCategoryEntity.DELETED.notEqual(true));
+            productCategoryEntities = selection.get().toList();
+        }
+        return productCategoryEntities;
+    }
 }

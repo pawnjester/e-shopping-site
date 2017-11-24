@@ -153,21 +153,24 @@
     <string name="select_date">Select date</string>
 
     <!--runtime permissions-->
+    <string name="runtime_permission_is_needed">%1$s Permission Needed</string>
+    <string name="permission_camera_rationale_never_ask_again">Permission denied, can\'t take the picture</string>
+    <string name="permission_camera_rationale">This app needs Camera permission, please accept to use Camera functionality.</string>
+    <string name="permission_storage_rationale">This app needs Storage permission, please accept to use Storage functionality.</string>
+    <string name="permission_storage_rationale_never_ask_again">Permission denied, can\'t access storage</string>
+    <string name="permission_camera_denied">Camera permission denied</string>
+    <string name="permission_storage_denied">Storage permission was denied</string>
     <string name="button_allow">Allow</string>
     <string name="button_deny">Deny</string>
     <string name="permission_write_external_storage__denied">External storage permission is denied.</string>
-    <string name="permission_write_external_storage_neverask">External Storage permission was denied with never ask again.</string>
+    <string name="permission_write_external_storage_never_ask">External Storage permission was denied with never ask again.</string>
     <string name="permission_available_external_storage">External Storage Permission has been granted. </string>
     <string name="permission_granted_accounts">Accounts permission has been granted</string>
     <string name="permission_available_contacts">Contacts Permissions have been granted.</string>
     <string name="permissions_not_granted">Permissions were not granted.</string>
     <string name="permission_write_external_storage_rationale">Storage permission is needed to store this file.</string>
-    <string name="permission_read_external_storage_rationale">Storage permission is needed to open this file.</string>
     <string name="permission_get_accounts_rationale">Accounts permission is needed to sync your records with our servers.</string>
     <string name="permission_contacts_rationale">Contacts permission is needed to pick contacts.</string>
-    <string name="permission_contacts_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable contacts permission.</string>
-    <string name="permission_external_storage_rationale_extra">Click on \'OK\' and then \'Permissions\' to enable storage permission.</string>
-    <string name="permission_get_accounts_rationale_extra">>Click on \'OK\' and then \'Permissions\' to enable accounts permission.</string>
     <string name="title_activity_add_new_customer">Add New Customer</string>
     <string name="add_customer_from_contacts">Add from contacts</string>
     <string name="fname">First name</string>
@@ -446,4 +449,29 @@
     </string-array>
     <string name="title_activity_confirm_password_reset">Confirm Password Reset</string>
     <string name="error_password_required">Please enter password</string>
+
+    <!--POS-->
+    <string name="no_products_found">We could not find any products for you.</string>
+    <string name="start_adding_products_label">Start Adding Products</string>
+    <string name="title_activity_add_product">Add Product</string>
+    <string name="title_activity_add_product_category">Add Product Category</string>
+    <string name="title_activity_edit_product">Edit Product</string>
+    <string name="name">Name</string>
+    <string name="price">Price</string>
+    <string name="product_category">Product category</string>
+    <string name="picture">Picture</string>
+    <string name="gallery">Gallery</string>
+    <string name="remove">Remove</string>
+    <string name="error_picture_required">Please add picture</string>
+    <string name="error_name_required">Please enter name</string>
+    <string name="error_price_cant_be_zero">Price can not be zero</string>
+    <string name="product_edit_success">Product has been successfully updated.</string>
+    <string name="update_in_progress">Update in progress…</string>
+    <string name="uploading">Uploading…</string>
+    <string name="creating_product">Creating your product</string>
+    <string name="delete">Delete</string>
+    <string name="product_delete_success">Product was successfully deleted.</string>
+    <string name="product_category_delete_success">Category has been successfully deleted</string>
+    <string name="error_upload_failed">Sorry! upload failed, please try again.</string>
+    <string name="error_product_update">Error! product update failed, please try again.</string>
 </resources>

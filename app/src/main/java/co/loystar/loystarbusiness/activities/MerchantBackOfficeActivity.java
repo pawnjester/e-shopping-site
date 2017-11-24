@@ -99,8 +99,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         chartLayout = findViewById(R.id.chartLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
 
-        stateWelcomeImageView = emptyStateLayout.findViewById(R.id.welcomeImage);
-        stateWelcomeTextView = emptyStateLayout.findViewById(R.id.welcomeText);
+        stateWelcomeImageView = emptyStateLayout.findViewById(R.id.stateImage);
+        stateWelcomeTextView = emptyStateLayout.findViewById(R.id.stateIntroText);
         stateDescriptionTextView = emptyStateLayout.findViewById(R.id.stateDescriptionText);
         stateActionBtn = emptyStateLayout.findViewById(R.id.stateActionBtn);
 

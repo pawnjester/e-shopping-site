@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -133,7 +134,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         merchantEntity.isPosTurnedOn()
                 ).enqueue(new Callback<MerchantWrapper>() {
                     @Override
-                    public void onResponse(Call<MerchantWrapper> call, Response<MerchantWrapper> response) {
+                    public void onResponse(@NonNull Call<MerchantWrapper> call, @NonNull Response<MerchantWrapper> response) {
                         if (response.isSuccessful()) {
                             merchantEntity.setUpdateRequired(false);
                             mDatabaseManager.updateMerchant(merchantEntity);
@@ -145,7 +146,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<MerchantWrapper> call, Throwable t) {
+                    public void onFailure(@NonNull Call<MerchantWrapper> call, @NonNull Throwable t) {
 
                     }
                 });
@@ -156,21 +157,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         public void syncMerchantSubscription() {
             mApiClient.getLoystarApi(false).getMerchantSubscription().enqueue(new Callback<Subscription>() {
                 @Override
-                public void onResponse(Call<Subscription> call, Response<Subscription> response) {
+                public void onResponse(@NonNull Call<Subscription> call, @NonNull Response<Subscription> response) {
                     if (response.isSuccessful()) {
                         Subscription subscription = response.body();
-                        SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
-                        subscriptionEntity.setId(subscription.getId());
-                        subscriptionEntity.setExpiresOn(new Timestamp(subscription.getExpires_on().getMillis()));
-                        subscriptionEntity.setCreatedAt(new Timestamp(subscription.getCreated_at().getMillis()));
-                        subscriptionEntity.setUpdatedAt(new Timestamp(subscription.getUpdated_at().getMillis()));
-                        subscriptionEntity.setPricingPlanId(subscription.getPricing_plan_id());
-                        subscriptionEntity.setPlanName(subscription.getPlan_name());
+                        if (subscription != null) {
+                            SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
+                            subscriptionEntity.setId(subscription.getId());
+                            subscriptionEntity.setExpiresOn(new Timestamp(subscription.getExpires_on().getMillis()));
+                            subscriptionEntity.setCreatedAt(new Timestamp(subscription.getCreated_at().getMillis()));
+                            subscriptionEntity.setUpdatedAt(new Timestamp(subscription.getUpdated_at().getMillis()));
+                            subscriptionEntity.setPricingPlanId(subscription.getPricing_plan_id());
+                            subscriptionEntity.setPlanName(subscription.getPlan_name());
 
-                        MerchantEntity merchant = mDatabaseManager.getMerchant(subscription.getMerchant_id());
-                        if (merchant != null) {
-                            merchant.setSubscription(subscriptionEntity);
-                            mDatabaseManager.updateMerchant(merchant);
+                            MerchantEntity merchant = mDatabaseManager.getMerchant(subscription.getMerchant_id());
+                            if (merchant != null) {
+                                merchant.setSubscription(subscriptionEntity);
+                                mDatabaseManager.updateMerchant(merchant);
+                            }
                         }
                     } else {
                         if (response.code() == 401) {
@@ -180,7 +183,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
 
                 @Override
-                public void onFailure(Call<Subscription> call, Throwable t) {}
+                public void onFailure(@NonNull Call<Subscription> call, @NonNull Throwable t) {}
             });
         }
 
@@ -188,19 +191,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         public void syncMerchantBirthdayOffer() {
             mApiClient.getLoystarApi(false).getMerchantBirthdayOffer().enqueue(new Callback<BirthdayOffer>() {
                 @Override
-                public void onResponse(Call<BirthdayOffer> call, Response<BirthdayOffer> response) {
+                public void onResponse(@NonNull Call<BirthdayOffer> call, @NonNull Response<BirthdayOffer> response) {
                     if (response.isSuccessful()) {
                         BirthdayOffer birthdayOffer = response.body();
-                        BirthdayOfferEntity birthdayOfferEntity = new BirthdayOfferEntity();
-                        birthdayOfferEntity.setId(birthdayOffer.getId());
-                        birthdayOfferEntity.setOfferDescription(birthdayOffer.getOffer_description());
-                        birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
-                        birthdayOfferEntity.setUpdatedAt(new Timestamp(birthdayOffer.getUpdated_at().getMillis()));
+                        if (birthdayOffer != null) {
+                            BirthdayOfferEntity birthdayOfferEntity = new BirthdayOfferEntity();
+                            birthdayOfferEntity.setId(birthdayOffer.getId());
+                            birthdayOfferEntity.setOfferDescription(birthdayOffer.getOffer_description());
+                            birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
+                            birthdayOfferEntity.setUpdatedAt(new Timestamp(birthdayOffer.getUpdated_at().getMillis()));
 
-                        MerchantEntity merchantEntity = mDatabaseManager.getMerchant(birthdayOffer.getMerchant_id());
-                        if (merchantEntity != null) {
-                            merchantEntity.setBirthdayOffer(birthdayOfferEntity);
-                            mDatabaseManager.updateMerchant(merchantEntity);
+                            MerchantEntity merchantEntity = mDatabaseManager.getMerchant(birthdayOffer.getMerchant_id());
+                            if (merchantEntity != null) {
+                                merchantEntity.setBirthdayOffer(birthdayOfferEntity);
+                                mDatabaseManager.updateMerchant(merchantEntity);
+                            }
                         }
                     } else {
                         if (response.code() == 401) {
@@ -216,7 +221,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
 
                 @Override
-                public void onFailure(Call<BirthdayOffer> call, Throwable t) {}
+                public void onFailure(@NonNull Call<BirthdayOffer> call, @NonNull Throwable t) {}
             });
         }
 
@@ -224,19 +229,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         public void syncMerchantBirthdayOfferPresetSms() {
             mApiClient.getLoystarApi(false).getMerchantBirthdayPresetSms().enqueue(new Callback<BirthdayOfferPresetSms>() {
                 @Override
-                public void onResponse(Call<BirthdayOfferPresetSms> call, Response<BirthdayOfferPresetSms> response) {
+                public void onResponse(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Response<BirthdayOfferPresetSms> response) {
                     if (response.isSuccessful()) {
                         BirthdayOfferPresetSms birthdayOfferPresetSms = response.body();
-                        BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity = new BirthdayOfferPresetSmsEntity();
-                        birthdayOfferPresetSmsEntity.setId(birthdayOfferPresetSms.getId());
-                        birthdayOfferPresetSmsEntity.setPresetSmsText(birthdayOfferPresetSms.getPreset_sms_text());
-                        birthdayOfferPresetSmsEntity.setCreatedAt(new Timestamp(birthdayOfferPresetSms.getCreated_at().getMillis()));
-                        birthdayOfferPresetSmsEntity.setUpdatedAt(new Timestamp(birthdayOfferPresetSms.getUpdated_at().getMillis()));
+                        if (birthdayOfferPresetSms != null) {
+                            BirthdayOfferPresetSmsEntity birthdayOfferPresetSmsEntity = new BirthdayOfferPresetSmsEntity();
+                            birthdayOfferPresetSmsEntity.setId(birthdayOfferPresetSms.getId());
+                            birthdayOfferPresetSmsEntity.setPresetSmsText(birthdayOfferPresetSms.getPreset_sms_text());
+                            birthdayOfferPresetSmsEntity.setCreatedAt(new Timestamp(birthdayOfferPresetSms.getCreated_at().getMillis()));
+                            birthdayOfferPresetSmsEntity.setUpdatedAt(new Timestamp(birthdayOfferPresetSms.getUpdated_at().getMillis()));
 
-                        MerchantEntity merchantEntity = mDatabaseManager.getMerchant(birthdayOfferPresetSms.getMerchant_id());
-                        if (merchantEntity != null) {
-                            merchantEntity.setBirthdayOfferPresetSms(birthdayOfferPresetSmsEntity);
-                            mDatabaseManager.updateMerchant(merchantEntity);
+                            MerchantEntity merchantEntity = mDatabaseManager.getMerchant(birthdayOfferPresetSms.getMerchant_id());
+                            if (merchantEntity != null) {
+                                merchantEntity.setBirthdayOfferPresetSms(birthdayOfferPresetSmsEntity);
+                                mDatabaseManager.updateMerchant(merchantEntity);
+                            }
                         }
                     } else {
                         if (response.code() == 401) {
@@ -246,7 +253,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
 
                 @Override
-                public void onFailure(Call<BirthdayOfferPresetSms> call, Throwable t) {}
+                public void onFailure(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Throwable t) {}
             });
         }
 
@@ -269,28 +276,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<Customer> customers = response.body();
-                    for (Customer customer: customers) {
-                        if (customer.isDeleted() != null && customer.isDeleted()) {
-                            CustomerEntity existingRecord = mDatabaseManager.getCustomerById(customer.getId());
-                            if (existingRecord != null) {
-                                mDatabaseManager.deleteCustomer(existingRecord);
-                            }
-                        } else {
-                            CustomerEntity customerEntity = new CustomerEntity();
-                            customerEntity.setId(customer.getId());
-                            customerEntity.setEmail(customer.getEmail());
-                            customerEntity.setFirstName(customer.getFirst_name());
-                            customerEntity.setDeleted(false);
-                            customerEntity.setLastName(customer.getLast_name());
-                            customerEntity.setSex(customer.getSex());
-                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
-                            customerEntity.setPhoneNumber(customer.getPhone_number());
-                            customerEntity.setUserId(customer.getUser_id());
-                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
-                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
-                            customerEntity.setOwner(merchantEntity);
+                    if (customers != null) {
+                        for (Customer customer: customers) {
+                            if (customer.isDeleted() != null && customer.isDeleted()) {
+                                CustomerEntity existingRecord = mDatabaseManager.getCustomerById(customer.getId());
+                                if (existingRecord != null) {
+                                    mDatabaseManager.deleteCustomer(existingRecord);
+                                }
+                            } else {
+                                CustomerEntity customerEntity = new CustomerEntity();
+                                customerEntity.setId(customer.getId());
+                                customerEntity.setEmail(customer.getEmail());
+                                customerEntity.setFirstName(customer.getFirst_name());
+                                customerEntity.setDeleted(false);
+                                customerEntity.setLastName(customer.getLast_name());
+                                customerEntity.setSex(customer.getSex());
+                                customerEntity.setDateOfBirth(customer.getDate_of_birth());
+                                customerEntity.setPhoneNumber(customer.getPhone_number());
+                                customerEntity.setUserId(customer.getUser_id());
+                                customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                                customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                                customerEntity.setOwner(merchantEntity);
 
-                            mDatabaseManager.insertNewCustomer(customerEntity);
+                                mDatabaseManager.insertNewCustomer(customerEntity);
+                            }
                         }
                     }
 
@@ -309,9 +318,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             /* sync customers marked for deletion*/
             List<CustomerEntity> customersMarkedForDeletion = mDatabaseManager.getCustomersMarkedForDeletion(merchantEntity);
             for (final CustomerEntity customerEntity: customersMarkedForDeletion) {
-                mApiClient.getLoystarApi(false).setCustomerDeleteFlagToTrue(String.valueOf(customerEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                mApiClient.getLoystarApi(false).setCustomerDeleteFlagToTrue(customerEntity.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteCustomer(customerEntity);
                         } else {
@@ -322,7 +331,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
                     }
                 });
@@ -421,33 +430,34 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                                mApiClient.getLoystarApi(false).recordSales(requestBody, String.valueOf(customer.getId())).enqueue(new Callback<Transaction>() {
+                                mApiClient.getLoystarApi(false).recordSales(requestBody, customer.getId()).enqueue(new Callback<Transaction>() {
                                     @Override
-                                    public void onResponse(Call<Transaction> call, Response<Transaction> response) {
+                                    public void onResponse(@NonNull Call<Transaction> call, @NonNull Response<Transaction> response) {
                                         if (response.isSuccessful()) {
                                             mDatabaseManager.deleteSalesTransaction(transactionEntity);
                                             Transaction transaction = response.body();
+                                            if (transaction != null) {
+                                                SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                                                transactionEntity.setId(transaction.getId());
+                                                transactionEntity.setAmount(transaction.getAmount());
+                                                transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                                transactionEntity.setPoints(transaction.getPoints());
+                                                transactionEntity.setStamps(transaction.getStamps());
+                                                transactionEntity.setSynced(true);
+                                                transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                                transactionEntity.setProductId(transaction.getProduct_id());
+                                                transactionEntity.setProgramType(transaction.getProgram_type());
+                                                transactionEntity.setUserId(transaction.getUser_id());
 
-                                            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                                            transactionEntity.setId(transaction.getId());
-                                            transactionEntity.setAmount(transaction.getAmount());
-                                            transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
-                                            transactionEntity.setPoints(transaction.getPoints());
-                                            transactionEntity.setStamps(transaction.getStamps());
-                                            transactionEntity.setSynced(true);
-                                            transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
-                                            transactionEntity.setProductId(transaction.getProduct_id());
-                                            transactionEntity.setProgramType(transaction.getProgram_type());
-                                            transactionEntity.setUserId(transaction.getUser_id());
-
-                                            transactionEntity.setMerchant(merchantEntity);
-                                            transactionEntity.setCustomer(customer);
-                                            mDatabaseManager.insertNewSalesTransaction(transactionEntity);
+                                                transactionEntity.setMerchant(merchantEntity);
+                                                transactionEntity.setCustomer(customer);
+                                                mDatabaseManager.insertNewSalesTransaction(transactionEntity);
+                                            }
                                         }
                                     }
 
                                     @Override
-                                    public void onFailure(Call<Transaction> call, Throwable t) {
+                                    public void onFailure(@NonNull Call<Transaction> call, @NonNull Throwable t) {
                                         t.printStackTrace();
                                     }
                                 });
@@ -480,22 +490,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<ProductCategory> productCategories = response.body();
-                    for (ProductCategory productCategory: productCategories) {
-                        if (productCategory.isDeleted() != null && productCategory.isDeleted()) {
-                            ProductCategoryEntity existingProductCategory = mDatabaseManager.getProductCategoryById(productCategory.getId());
-                            if (existingProductCategory != null) {
-                                mDatabaseManager.deleteProductCategory(existingProductCategory);
-                            }
-                        } else {
-                            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
-                            productCategoryEntity.setId(productCategory.getId());
-                            productCategoryEntity.setDeleted(false);
-                            productCategoryEntity.setName(productCategory.getName());
-                            productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
-                            productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
-                            productCategoryEntity.setOwner(merchantEntity);
+                    if (productCategories != null) {
+                        for (ProductCategory productCategory: productCategories) {
+                            if (productCategory.isDeleted() != null && productCategory.isDeleted()) {
+                                ProductCategoryEntity existingProductCategory = mDatabaseManager.getProductCategoryById(productCategory.getId());
+                                if (existingProductCategory != null) {
+                                    mDatabaseManager.deleteProductCategory(existingProductCategory);
+                                }
+                            } else {
+                                ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+                                productCategoryEntity.setId(productCategory.getId());
+                                productCategoryEntity.setDeleted(false);
+                                productCategoryEntity.setName(productCategory.getName());
+                                productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
+                                productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
+                                productCategoryEntity.setOwner(merchantEntity);
 
-                            mDatabaseManager.insertNewProductCategory(productCategoryEntity);
+                                mDatabaseManager.insertNewProductCategory(productCategoryEntity);
+                            }
                         }
                     }
                 } else {
@@ -512,9 +524,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             /* sync product categories marked for deletion */
             List<ProductCategoryEntity> productCategoriesMarkedForDeletion = mDatabaseManager.getProductCategoriesMarkedForDeletion(merchantEntity);
             for (final ProductCategoryEntity productCategoryEntity: productCategoriesMarkedForDeletion) {
-                mApiClient.getLoystarApi(false).setMerchantProductCategoryDeleteFlagToTrue(String.valueOf(productCategoryEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                mApiClient.getLoystarApi(false).setMerchantProductCategoryDeleteFlagToTrue(productCategoryEntity.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteProductCategory(productCategoryEntity);
                         } else {
@@ -525,7 +537,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
                     }
                 });
@@ -551,29 +563,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<Product> products = response.body();
-                    for (Product product: products) {
-                        if (product.isDeleted() != null && product.isDeleted()) {
-                            ProductEntity existingProduct = mDatabaseManager.getProductById(product.getId());
-                            if (existingProduct != null) {
-                                mDatabaseManager.deleteProduct(existingProduct);
-                            }
-                        } else {
-                            ProductEntity productEntity = new ProductEntity();
-                            productEntity.setId(product.getId());
-                            productEntity.setName(product.getName());
-                            productEntity.setPicture(product.getPicture());
-                            productEntity.setPrice(product.getPrice());
-                            productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
-                            productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
-                            productEntity.setDeleted(false);
+                    if (products != null) {
+                        for (Product product: products) {
+                            if (product.isDeleted() != null && product.isDeleted()) {
+                                ProductEntity existingProduct = mDatabaseManager.getProductById(product.getId());
+                                if (existingProduct != null) {
+                                    mDatabaseManager.deleteProduct(existingProduct);
+                                }
+                            } else {
+                                ProductEntity productEntity = new ProductEntity();
+                                productEntity.setId(product.getId());
+                                productEntity.setName(product.getName());
+                                productEntity.setPicture(product.getPicture());
+                                productEntity.setPrice(product.getPrice());
+                                productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
+                                productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
+                                productEntity.setDeleted(false);
 
-                            ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
-                            if (productCategoryEntity != null) {
-                                productEntity.setCategory(productCategoryEntity);
-                            }
-                            productEntity.setOwner(merchantEntity);
+                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                                if (productCategoryEntity != null) {
+                                    productEntity.setCategory(productCategoryEntity);
+                                }
+                                productEntity.setOwner(merchantEntity);
 
-                            mDatabaseManager.insertNewProduct(productEntity);
+                                mDatabaseManager.insertNewProduct(productEntity);
+                            }
                         }
                     }
                 } else {
@@ -590,9 +604,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             /* sync products marked for deletion */
             List<ProductEntity> productsMarkedForDeletion = mDatabaseManager.getProductsMarkedForDeletion(merchantEntity);
             for (final ProductEntity productEntity: productsMarkedForDeletion) {
-                mApiClient.getLoystarApi(false).setProductDeleteFlagToTrue(String.valueOf(productEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                mApiClient.getLoystarApi(false).setProductDeleteFlagToTrue(productEntity.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteProduct(productEntity);
                         } else {
@@ -603,7 +617,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
                     }
                 });
@@ -629,25 +643,27 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (response.isSuccessful()) {
                     ArrayList<LoyaltyProgram> loyaltyPrograms = response.body();
-                    for (LoyaltyProgram loyaltyProgram: loyaltyPrograms) {
-                        if (loyaltyProgram.isDeleted() != null && loyaltyProgram.isDeleted()) {
-                            LoyaltyProgramEntity existingProgram = mDatabaseManager.getLoyaltyProgramById(loyaltyProgram.getId());
-                            if (existingProgram != null) {
-                                mDatabaseManager.deleteLoyaltyProgram(existingProgram);
-                            }
-                        } else {
-                            LoyaltyProgramEntity loyaltyProgramEntity = new LoyaltyProgramEntity();
-                            loyaltyProgramEntity.setId(loyaltyProgram.getId());
-                            loyaltyProgramEntity.setName(loyaltyProgram.getName());
-                            loyaltyProgramEntity.setProgramType(loyaltyProgram.getProgram_type());
-                            loyaltyProgramEntity.setReward(loyaltyProgram.getReward());
-                            loyaltyProgramEntity.setThreshold(loyaltyProgram.getThreshold());
-                            loyaltyProgramEntity.setCreatedAt(new Timestamp(loyaltyProgram.getCreated_at().getMillis()));
-                            loyaltyProgramEntity.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
-                            loyaltyProgramEntity.setDeleted(false);
+                    if (loyaltyPrograms != null) {
+                        for (LoyaltyProgram loyaltyProgram: loyaltyPrograms) {
+                            if (loyaltyProgram.isDeleted() != null && loyaltyProgram.isDeleted()) {
+                                LoyaltyProgramEntity existingProgram = mDatabaseManager.getLoyaltyProgramById(loyaltyProgram.getId());
+                                if (existingProgram != null) {
+                                    mDatabaseManager.deleteLoyaltyProgram(existingProgram);
+                                }
+                            } else {
+                                LoyaltyProgramEntity loyaltyProgramEntity = new LoyaltyProgramEntity();
+                                loyaltyProgramEntity.setId(loyaltyProgram.getId());
+                                loyaltyProgramEntity.setName(loyaltyProgram.getName());
+                                loyaltyProgramEntity.setProgramType(loyaltyProgram.getProgram_type());
+                                loyaltyProgramEntity.setReward(loyaltyProgram.getReward());
+                                loyaltyProgramEntity.setThreshold(loyaltyProgram.getThreshold());
+                                loyaltyProgramEntity.setCreatedAt(new Timestamp(loyaltyProgram.getCreated_at().getMillis()));
+                                loyaltyProgramEntity.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
+                                loyaltyProgramEntity.setDeleted(false);
 
-                            loyaltyProgramEntity.setOwner(merchantEntity);
-                            mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
+                                loyaltyProgramEntity.setOwner(merchantEntity);
+                                mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
+                            }
                         }
                     }
                 } else {
@@ -664,9 +680,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             /* sync loyaltyPrograms marked for deletion */
             List<LoyaltyProgramEntity> loyaltyProgramsMarkedForDeletion = mDatabaseManager.getLoyaltyProgramsMarkedForDeletion(merchantEntity);
             for (final LoyaltyProgramEntity loyaltyProgramEntity: loyaltyProgramsMarkedForDeletion) {
-                mApiClient.getLoystarApi(false).setMerchantLoyaltyProgramDeleteFlagToTrue(String.valueOf(loyaltyProgramEntity.getId())).enqueue(new Callback<ResponseBody>() {
+                mApiClient.getLoystarApi(false).setMerchantLoyaltyProgramDeleteFlagToTrue(loyaltyProgramEntity.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteLoyaltyProgram(loyaltyProgramEntity);
                         } else {
@@ -677,7 +693,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
                     }
                 });

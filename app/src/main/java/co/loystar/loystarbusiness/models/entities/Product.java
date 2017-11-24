@@ -34,5 +34,5 @@ public interface Product extends Observable, Parcelable, Persistable {
 
     @Bindable
     @ManyToOne
-    ProductCategory getCategory();
+    ProductCategoryEntity getCategory();
 }

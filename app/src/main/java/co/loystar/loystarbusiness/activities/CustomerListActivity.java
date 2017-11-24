@@ -208,8 +208,8 @@ public class CustomerListActivity extends AppCompatActivity
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.customer_list_empty_container);
-        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.welcomeImage);
-        TextView stateWelcomeTextView = emptyView.findViewById(R.id.welcomeText);
+        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
@@ -579,18 +579,8 @@ public class CustomerListActivity extends AppCompatActivity
     void showRationaleForWriteExternalStorage(final PermissionRequest request) {
         new AlertDialog.Builder(mContext)
                 .setMessage(R.string.permission_write_external_storage_rationale)
-                .setPositiveButton(R.string.button_allow, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        request.proceed();
-                    }
-                })
-                .setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        request.cancel();
-                    }
-                })
+                .setPositiveButton(R.string.button_allow, (dialogInterface, i) -> request.proceed())
+                .setNegativeButton(R.string.button_deny, (dialogInterface, i) -> request.cancel())
                 .setCancelable(false)
                 .show();
     }
@@ -602,19 +592,16 @@ public class CustomerListActivity extends AppCompatActivity
 
     @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     void showNeverAskForWriteExternalStorage() {
-        Snackbar.make(mLayout, R.string.permission_write_external_storage_neverask,
+        Snackbar.make(mLayout, R.string.permission_write_external_storage_never_ask,
                 Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.button_allow, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        intent.setData(uri);
-                        startActivityForResult(intent, PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-                    }
+                .setAction(R.string.button_allow, view -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivityForResult(intent, PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
                 })
                 .show();
     }

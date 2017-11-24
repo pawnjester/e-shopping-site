@@ -18,6 +18,7 @@ import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import io.reactivex.Observable;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -27,9 +28,11 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 /**
@@ -93,7 +96,7 @@ public interface LoystarApi {
     Call<ArrayList<Transaction>> getLatestTransactions(@Body RequestBody requestBody);
 
     @POST("transactions/record_sales/{customer_id}")
-    Call<Transaction> recordSales(@Body RequestBody requestBody, @Path("customer_id") String customer_id);
+    Call<Transaction> recordSales(@Body RequestBody requestBody, @Path("customer_id") int customer_id);
 
     @POST("get_merchant_loyalty_programs")
     Call<ArrayList<LoyaltyProgram>> getMerchantLoyaltyPrograms(@Body RequestBody requestBody);
@@ -108,13 +111,13 @@ public interface LoystarApi {
     Call<PaySubscription> paySubscriptionWithMobileMoney(@Body RequestBody requestBody);
 
     @POST("products/set_delete_flag_to_true/{id}")
-    Call<ResponseBody> setProductDeleteFlagToTrue(@Path("id") String id);
+    Call<ResponseBody> setProductDeleteFlagToTrue(@Path("id") int id);
 
     @POST("merchant_product_categories/set_delete_flag_to_true/{id}")
-    Call<ResponseBody> setMerchantProductCategoryDeleteFlagToTrue(@Path("id") String id);
+    Call<ResponseBody> setMerchantProductCategoryDeleteFlagToTrue(@Path("id") int id);
 
     @POST("merchant_loyalty_programs/set_delete_flag_to_true/{id}")
-    Call<ResponseBody> setMerchantLoyaltyProgramDeleteFlagToTrue(@Path("id") String id);
+    Call<ResponseBody> setMerchantLoyaltyProgramDeleteFlagToTrue(@Path("id") int id);
 
     @POST("merchant_loyalty_programs")
     Call<LoyaltyProgram> createMerchantLoyaltyProgram(@Body RequestBody requestBody);
@@ -129,13 +132,13 @@ public interface LoystarApi {
     Call<ProductCategory> addProductCategory(@Body RequestBody requestBody);
 
     @PATCH("products/{id}")
-    Call<Product> updateProduct(@Body RequestBody requestBody, @Path("id") String id);
+    Call<Product> updateProduct(@Body RequestBody requestBody, @Path("id") int id);
 
     @DELETE("birthday_offers/{id}")
     Call<ResponseBody> deleteBirthdayOffer(@Path("id") int id);
 
     @PATCH("birthday_offers/{id}")
-    Call<BirthdayOffer> updateBirthdayOffer(@Path("id") String id, @Body RequestBody requestBody);
+    Call<BirthdayOffer> updateBirthdayOffer(@Path("id") int id, @Body RequestBody requestBody);
 
     @POST("birthday_offers")
     Call<BirthdayOffer> createBirthdayOffer(@Body RequestBody requestBody);
@@ -144,7 +147,7 @@ public interface LoystarApi {
     Call<BirthdayOfferPresetSms> createBirthdayOfferPresetSMS(@Body RequestBody requestBody);
 
     @PATCH("birthday_offer_preset_sms/{id}")
-    Call<BirthdayOfferPresetSms> updateBirthdayOfferPresetSMS(@Path("id") String id, @Body RequestBody requestBody);
+    Call<BirthdayOfferPresetSms> updateBirthdayOfferPresetSMS(@Path("id") int id, @Body RequestBody requestBody);
 
     @POST("short_message_service_campaigns")
     Call<ResponseBody> sendSmsBlast(@Body RequestBody requestBody);
@@ -159,7 +162,7 @@ public interface LoystarApi {
             @Path("loyalty_program_id") int loyalty_program_id);
 
     @POST("customers/set_delete_flag_to_true/{id}")
-    Call<ResponseBody> setCustomerDeleteFlagToTrue(@Path("id") String id);
+    Call<ResponseBody> setCustomerDeleteFlagToTrue(@Path("id") int id);
 
     @POST("customers/update_customer/{id}")
     Call<Customer> updateCustomer(@Path("id") int id, @Body RequestBody requestBody);
@@ -169,4 +172,14 @@ public interface LoystarApi {
 
     @POST("merchants/reset_password")
     Call<ResponseBody> resetMerchantPassword(@Body RequestBody requestBody);
+
+    @Multipart
+    @PATCH("products/{id}")
+    Call<Product> updateProduct(
+            @Path("id") int id,
+            @Part("data[name]") RequestBody name,
+            @Part("data[price]") RequestBody price,
+            @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
+            @Part MultipartBody.Part file
+    );
 }

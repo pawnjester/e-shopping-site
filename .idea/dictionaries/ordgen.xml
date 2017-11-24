@@ -3,6 +3,7 @@
     <words>
       <w>fname</w>
       <w>lname</w>
+      <w>okio</w>
     </words>
   </dictionary>
 </component>

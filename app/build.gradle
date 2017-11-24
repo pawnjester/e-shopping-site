@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 def requeryVersion = "1.4.0"
 def permissionsDispatcherVersion = "2.4.0"
-def uploadServiceVersion = "3.4"
 
 Properties props = new Properties()
 try {
@@ -104,6 +103,7 @@ dependencies {
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support:exifinterface:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:support-vector-drawable:26.1.0'
     compile 'com.google.android.gms:play-services-auth:11.6.0'
@@ -119,6 +119,9 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'com.github.armcha:Vertical-Intro:2.0.0'
+    compile 'com.github.bumptech.glide:glide:4.3.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.5.0'
     compile 'com.squareup.retrofit2:converter-jackson:2.3.0'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
@@ -131,11 +134,11 @@ dependencies {
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.roughike:bottom-bar:2.3.1'
+    compile 'id.zelory:compressor:2.1.0'
     compile 'de.hdodenhof:circleimageview:2.2.0'
+    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
     compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     compile 'net.sourceforge.jexcelapi:jxl:2.6.12'
-    compile "net.gotev:uploadservice-okhttp:$uploadServiceVersion"
-    compile "net.gotev:uploadservice:$uploadServiceVersion"
     compile("com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion") {
         exclude module: "support-v13"
     }
