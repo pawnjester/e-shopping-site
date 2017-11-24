@@ -114,11 +114,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
             getSupportActionBar().setTitle(mSessionManager.getBusinessName().substring(0, 1).toUpperCase() + mSessionManager.getBusinessName().substring(1));
         }
 
+        setupView();
+        setupGraph();
+        setupBottomNavigation();
+    }
+
+    private void setupView() {
         mDataStore.count(LoyaltyProgramEntity.class)
                 .where(LoyaltyProgramEntity.OWNER.eq(merchantEntity)).get().single()
                 .mergeWith(
                         mDataStore.count(SalesTransactionEntity.class)
-                        .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity))
+                                .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity))
                                 .get()
                                 .single()
                 )
@@ -145,9 +151,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                         emptyStateLayout.setVisibility(View.GONE);
                     }
                 });
-
-        setupGraph();
-        setupBottomNavigation();
     }
 
     private void setupGraph() {
@@ -454,8 +457,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            chartLayout.setVisibility(View.VISIBLE);
-            emptyStateLayout.setVisibility(View.GONE);
+            setupView();
             addGraphDataset();
         }
     };
