@@ -372,7 +372,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<Customer> call, Throwable t) {
+                public void onFailure(@NonNull Call<Customer> call, @NonNull Throwable t) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }

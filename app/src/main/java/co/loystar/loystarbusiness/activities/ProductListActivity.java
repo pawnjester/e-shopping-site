@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -10,6 +11,7 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -34,6 +36,7 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.ProductItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -139,7 +142,35 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
 
             @Override
             public void onLongClick(View view, int position) {
+                ProductItemBinding productItemBinding = (ProductItemBinding) view.getTag();
+                if (productItemBinding != null) {
+                    Product product = productItemBinding.getProduct();
+                    new AlertDialog.Builder(ProductListActivity.this)
+                            .setTitle("Are you sure?")
+                            .setMessage("You won't be able to recover this product.")
+                            .setPositiveButton(getString(R.string.confirm_delete_positive), new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, product.getId()).blockingGet();
+                                    if (productEntity != null) {
+                                        productEntity.setDeleted(true);
+                                        mDataStore.update(productEntity).subscribe(/*no-op*/);
+                                        mAdapter.queryAsync();
+                                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
+                                        String deleteText =  product.getName() + " has been deleted!";
+                                        Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
+                                    }
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }
             }
         }));
 

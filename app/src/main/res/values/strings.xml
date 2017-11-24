@@ -470,8 +470,11 @@
     <string name="uploading">Uploading…</string>
     <string name="creating_product">Creating your product</string>
     <string name="delete">Delete</string>
-    <string name="product_delete_success">Product was successfully deleted.</string>
-    <string name="product_category_delete_success">Category has been successfully deleted</string>
+    <string name="product_delete_success">Product was successfully deleted!</string>
+    <string name="product_category_delete_success">Category was successfully deleted!</string>
     <string name="error_upload_failed">Sorry! upload failed, please try again.</string>
     <string name="error_product_update">Error! product update failed, please try again.</string>
+    <string name="enter_name">Enter name</string>
+    <string name="create_product_in_progress">creating your product…</string>
+    <string name="product_category_create_success">Product Category successfully created!</string>
 </resources>

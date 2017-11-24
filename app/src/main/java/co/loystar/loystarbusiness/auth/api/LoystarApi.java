@@ -182,4 +182,13 @@ public interface LoystarApi {
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
             @Part MultipartBody.Part file
     );
+
+    @Multipart
+    @POST("add_product")
+    Call<Product> addProduct(
+            @Part("data[name]") RequestBody name,
+            @Part("data[price]") RequestBody price,
+            @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
+            @Part MultipartBody.Part file
+    );
 }

@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
@@ -56,6 +57,7 @@ import java.util.Locale;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
@@ -82,7 +84,7 @@ import retrofit2.Response;
 public class ProductDetailActivity extends AppCompatActivity {
     /*static fields*/
     public static final String ARG_ITEM_ID = "item_id";
-    private static final String TAG = AddProductActivity.class.getCanonicalName();
+    private static final String TAG = ProductDetailActivity.class.getCanonicalName();
     private static final int REQUEST_IMAGE_CAPTURE = 111;
     private static final int REQUEST_IMAGE_FROM_GALLERY = 133;
 
@@ -143,7 +145,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
 
-
         mLayout = findViewById(R.id.activity_product_detail_container);
         mProgressView = findViewById(R.id.productEditProgressView);
         mProgressBar = findViewById(R.id.productEditProgressBar);
@@ -197,22 +198,14 @@ public class ProductDetailActivity extends AppCompatActivity {
             SpinnerButton productCategoriesSpinner = findViewById(R.id.productCategoriesSelectSpinner);
             List<ProductCategoryEntity> productCategories = mDatabaseManager.getMerchantProductCategories(mSessionManager.getMerchantId());
             final CharSequence[] spinnerItems = new CharSequence[productCategories.size()];
-            if (productCategories.isEmpty()) {
-                SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
-
-                };
-                productCategoriesSpinner.setCreateNewItemListener(createNewItemListener);
-                productCategoriesSpinner.setCreateNewItemDialogTitle("No Categories Found!");
-            } else {
-                for (int i = 0; i < productCategories.size(); i++) {
-                    spinnerItems[i] = productCategories.get(i).getName();
-                }
-                productCategoriesSpinner.setEntries(spinnerItems);
-
-                SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> mProductCategory = productCategories.get(position);
-                productCategoriesSpinner.setListener(onItemSelectedListener);
-                productCategoriesSpinner.setSelection(productCategories.indexOf(mProductItem.getCategory()));
+            for (int i = 0; i < productCategories.size(); i++) {
+                spinnerItems[i] = productCategories.get(i).getName();
             }
+            productCategoriesSpinner.setEntries(spinnerItems);
+
+            SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> mProductCategory = productCategories.get(position);
+            productCategoriesSpinner.setListener(onItemSelectedListener);
+            productCategoriesSpinner.setSelection(productCategories.indexOf(mProductItem.getCategory()));
 
             baseFloatBtn.setOnClickListener(view -> {
                 if (isFabMenuOpen) {
@@ -255,7 +248,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             });
 
             takePictureBtn.setOnClickListener(view -> {
-                ProductDetailActivityPermissionsDispatcher.takePictureWithCheck(this);
+                ProductDetailActivityPermissionsDispatcher.takePictureWithCheck(ProductDetailActivity.this);
             });
 
             getAnimations();
@@ -403,8 +396,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 intent.putExtra(getString(R.string.product_edit_success), true);
                                 startActivity(intent);
                             }
-                        }
-                        else {
+                        } else if (response.code() == 401) {
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                        } else {
                             Snackbar.make(mLayout, getString(R.string.error_product_update), Snackbar.LENGTH_LONG).show();
                         }
                     }
@@ -473,6 +468,11 @@ public class ProductDetailActivity extends AppCompatActivity {
                                intent.putExtra(getString(R.string.product_edit_success), true);
                                startActivity(intent);
                            }
+                       } else if (response.code() == 401) {
+                           AccountManager accountManager = AccountManager.get(mContext);
+                           accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                       } else {
+                           showSnackbar(R.string.unknown_error);
                        }
                     }
 
@@ -588,7 +588,6 @@ public class ProductDetailActivity extends AppCompatActivity {
     /*
     * take picture with permissions
     * */
-    @SuppressWarnings("MissingPermission")
     @NeedsPermission(Manifest.permission.CAMERA)
     public void takePicture() {
         Uri outputFileUri = getCaptureImageOutputUri();
@@ -624,7 +623,6 @@ public class ProductDetailActivity extends AppCompatActivity {
      * crop image with permissions
      *
      */
-    @SuppressWarnings("MissingPermission")
     @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     public void cropImage(Uri uri) {
         CropImage.activity(uri)
