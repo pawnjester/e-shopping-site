@@ -520,28 +520,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            /* sync product categories marked for deletion */
-            List<ProductCategoryEntity> productCategoriesMarkedForDeletion = mDatabaseManager.getProductCategoriesMarkedForDeletion(merchantEntity);
-            for (final ProductCategoryEntity productCategoryEntity: productCategoriesMarkedForDeletion) {
-                mApiClient.getLoystarApi(false).setMerchantProductCategoryDeleteFlagToTrue(productCategoryEntity.getId()).enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            mDatabaseManager.deleteProductCategory(productCategoryEntity);
-                        } else {
-                            if (response.code() == 401) {
-                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
-                    }
-                });
-            }
         }
 
         @Override

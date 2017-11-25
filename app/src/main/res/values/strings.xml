@@ -339,7 +339,7 @@
     <string name="turn_off">Yes, turn off</string>
     <string name="title_product_list">My products / services</string>
     <string name="title_product_detail">Product Detail</string>
-    <string name="title_productcategory_list">ProductCategories</string>
+    <string name="title_productcategory_list">My Product Categories</string>
     <string name="title_productcategory_detail">ProductCategory Detail</string>
     <string name="my_products_and_services">My Products and Services</string>
     <string name="title_activity_birthday_offers_and_messaging">Birthday Offers and Messaging
@@ -453,6 +453,8 @@
     <!--POS-->
     <string name="no_products_found">We could not find any products for you.</string>
     <string name="start_adding_products_label">Start Adding Products</string>
+    <string name="no_product_categories_found">We could not find any product \ncategories for you.</string>
+    <string name="start_adding_product_categories_label">Start Adding Categories</string>
     <string name="title_activity_add_product">Add Product</string>
     <string name="title_activity_add_product_category">Add Product Category</string>
     <string name="title_activity_edit_product">Edit Product</string>
@@ -477,4 +479,5 @@
     <string name="enter_name">Enter name</string>
     <string name="create_product_in_progress">creating your product…</string>
     <string name="product_category_create_success">Product Category successfully created!</string>
+    <string name="error_delete_failed">Sorry! delete failed. Please try again.</string>
 </resources>

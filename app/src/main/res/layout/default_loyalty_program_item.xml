@@ -17,6 +17,7 @@
             android:id="@+id/default_program_title"
             android:layout_alignParentTop="true"
             android:textSize="18sp"
+            android:textColor="@color/colorPrimary"
             android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"/>
 
         <TextView

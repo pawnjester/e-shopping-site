@@ -213,7 +213,7 @@ public class CustomerListActivity extends AppCompatActivity
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
-        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_staff));
+        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_nocustomers));
         stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
         stateDescriptionTextView.setText(getString(R.string.no_customers_found));
 

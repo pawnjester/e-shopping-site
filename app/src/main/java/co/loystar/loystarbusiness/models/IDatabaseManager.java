@@ -121,9 +121,6 @@ public interface IDatabaseManager {
     List<CustomerEntity> getCustomersMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
 
     @NonNull
-    List<ProductCategoryEntity> getProductCategoriesMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
-
-    @NonNull
     List<ProductEntity> getProductsMarkedForDeletion(@NonNull MerchantEntity  merchantEntity);
 
     @NonNull

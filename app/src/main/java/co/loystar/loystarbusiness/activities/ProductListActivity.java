@@ -5,9 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -106,7 +104,17 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
-        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_staff));
+        String merchantBusinessType = mSessionManager.getBusinessType();
+        if (merchantBusinessType.equals(getString(R.string.hair_and_beauty))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_beauty));
+        } else if (merchantBusinessType.equals(getString(R.string.fashion_and_accessories))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_fashion));
+        } else if (merchantBusinessType.equals(getString(R.string.beverages_and_deserts)) || merchantBusinessType.equals(getString(R.string.bakery_and_pastry))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_food));
+        } else {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_others));
+        }
+
         stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
         stateDescriptionTextView.setText(getString(R.string.no_products_found));
 
@@ -163,11 +171,7 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
                                     }
                                 }
                             })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .show();
                 }
@@ -234,11 +238,6 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
         public Filter getFilter() {
             return null;
         }
-    }
-
-    @MainThread
-    private void showSnackbar(@StringRes int errorMessageRes) {
-        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
 
     @Override

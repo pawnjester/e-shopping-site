@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -234,25 +235,29 @@ public class LoyaltyProgramDetailFragment extends Fragment {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
             mApiClient.getLoystarApi(false).updateMerchantLoyaltyProgram(String.valueOf(mItem.getId()), requestBody).enqueue(new Callback<LoyaltyProgram>() {
                 @Override
-                public void onResponse(Call<LoyaltyProgram> call, Response<LoyaltyProgram> response) {
+                public void onResponse(@NonNull Call<LoyaltyProgram> call, @NonNull Response<LoyaltyProgram> response) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
                     if (response.isSuccessful()) {
                         LoyaltyProgram loyaltyProgram = response.body();
 
-                        mItem.setName(loyaltyProgram.getName());
-                        mItem.setProgramType(loyaltyProgram.getProgram_type());
-                        mItem.setReward(loyaltyProgram.getReward());
-                        mItem.setThreshold(loyaltyProgram.getThreshold());
-                        mItem.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
+                        if (loyaltyProgram == null) {
+                            Toast.makeText(getContext(), getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                        } else {
+                            mItem.setName(loyaltyProgram.getName());
+                            mItem.setProgramType(loyaltyProgram.getProgram_type());
+                            mItem.setReward(loyaltyProgram.getReward());
+                            mItem.setThreshold(loyaltyProgram.getThreshold());
+                            mItem.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
 
-                        mDatabaseManager.updateLoyaltyProgram(mItem);
+                            mDatabaseManager.updateLoyaltyProgram(mItem);
 
-                        Intent intent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
-                        intent.putExtra(Constants.LOYALTY_PROGRAM_UPDATED, true);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
+                            Intent intent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
+                            intent.putExtra(Constants.LOYALTY_PROGRAM_UPDATED, true);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
                     }
                     else {
                         Toast.makeText(getContext(), getString(R.string.error_program_update), Toast.LENGTH_LONG).show();
@@ -260,7 +265,7 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                 }
 
                 @Override
-                public void onFailure(Call<LoyaltyProgram> call, Throwable t) {
+                public void onFailure(@NonNull Call<LoyaltyProgram> call, @NonNull Throwable t) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
@@ -298,17 +303,11 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle(R.string.discard_changes);
                     builder.setMessage(R.string.discard_changes_explain)
-                            .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                    getActivity().navigateUpTo(new Intent(getActivity(), LoyaltyProgramListActivity.class));
-                                }
+                            .setPositiveButton(R.string.discard, (dialog, id) -> {
+                                dialog.dismiss();
+                                getActivity().navigateUpTo(new Intent(getActivity(), LoyaltyProgramListActivity.class));
                             })
-                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
                     builder.show();
                 }
                 else {

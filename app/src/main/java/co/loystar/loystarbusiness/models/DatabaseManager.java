@@ -3,7 +3,6 @@ package co.loystar.loystarbusiness.models;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
@@ -27,7 +26,6 @@ import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.query.Result;
 import io.requery.query.Selection;
-import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
@@ -259,9 +257,6 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
-        for (ProductEntity productEntity: productCategoryEntity.getProducts()) {
-            deleteProduct(productEntity);
-        }
         mDataStore.delete(productCategoryEntity)
                 .subscribe(/*no-op*/);
     }
@@ -444,15 +439,6 @@ public class DatabaseManager implements IDatabaseManager{
         customersSelection.where(CustomerEntity.DELETED.equal(true));
         customersSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
         return customersSelection.get().toList();
-    }
-
-    @NonNull
-    @Override
-    public List<ProductCategoryEntity> getProductCategoriesMarkedForDeletion(@NonNull MerchantEntity  merchantEntity) {
-        Selection<ReactiveResult<ProductCategoryEntity>> productCategoriesSelection = mDataStore.select(ProductCategoryEntity.class);
-        productCategoriesSelection.where(ProductCategoryEntity.DELETED.equal(true));
-        productCategoriesSelection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
-        return productCategoriesSelection.get().toList();
     }
 
     @NonNull
