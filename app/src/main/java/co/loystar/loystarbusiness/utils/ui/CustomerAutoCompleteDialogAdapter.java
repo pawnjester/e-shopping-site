@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils;
+package co.loystar.loystarbusiness.utils.ui;
 
 import android.content.Context;
 import android.text.TextUtils;

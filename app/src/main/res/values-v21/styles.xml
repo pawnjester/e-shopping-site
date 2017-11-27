@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ActionBar.HigherElevation" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:elevation">10dp</item>
+    </style>
+</resources>

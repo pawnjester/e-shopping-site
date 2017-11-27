@@ -139,44 +139,32 @@ public class CustomerDetailFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.total_points_value)).setText(String.valueOf(customer_points));
             ((TextView) rootView.findViewById(R.id.total_amount_spent_value)).setText(total_amount_text);
 
-            rootView.findViewById(R.id.messageBtn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!AccountGeneral.isAccountActive(getActivity())) {
-                        new AlertDialog.Builder(getActivity())
-                                .setTitle("Your Account Is Inactive")
-                                .setMessage("SMS communications are disabled until you resubscribe.")
-                                .setPositiveButton(getString(R.string.pay_subscription), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                        Intent intent = new Intent(getActivity(), PaySubscriptionActivity.class);
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
+            rootView.findViewById(R.id.messageBtn).setOnClickListener(v -> {
+                if (!AccountGeneral.isAccountActive(getActivity())) {
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Your Account Is Inactive")
+                            .setMessage("SMS communications are disabled until you resubscribe.")
+                            .setPositiveButton(getString(R.string.pay_subscription), (dialog, which) -> {
+                                dialog.dismiss();
+                                Intent intent = new Intent(getActivity(), PaySubscriptionActivity.class);
+                                startActivity(intent);
+                            })
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
 
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-                        return;
-                    }
-                    Intent msgIntent = new Intent(getActivity(), SendSmsActivity.class);
-                    msgIntent.putExtra(Constants.CUSTOMER_NAME, mItem.getFirstName());
-                    msgIntent.putExtra(Constants.PHONE_NUMBER, mItem.getPhoneNumber());
-                    startActivity(msgIntent);
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    return;
                 }
+                Intent msgIntent = new Intent(getActivity(), SendSmsActivity.class);
+                msgIntent.putExtra(Constants.CUSTOMER_NAME, mItem.getFirstName());
+                msgIntent.putExtra(Constants.PHONE_NUMBER, mItem.getPhoneNumber());
+                startActivity(msgIntent);
             });
 
-            rootView.findViewById(R.id.redeemBtn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent redeemIntent = new Intent(getActivity(), RewardCustomersActivity.class);
-                    redeemIntent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
-                    startActivity(redeemIntent);
-                }
+            rootView.findViewById(R.id.redeemBtn).setOnClickListener(v -> {
+                Intent redeemIntent = new Intent(getActivity(), RewardCustomersActivity.class);
+                redeemIntent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
+                startActivity(redeemIntent);
             });
         }
         return rootView;

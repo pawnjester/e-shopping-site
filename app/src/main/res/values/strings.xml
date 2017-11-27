@@ -480,4 +480,22 @@
     <string name="create_product_in_progress">creating your product…</string>
     <string name="product_category_create_success">Product Category successfully created!</string>
     <string name="error_delete_failed">Sorry! delete failed. Please try again.</string>
+
+    <!--POS-->
+    <string name="title_activity_points_sale_with_pos">Sell</string>
+    <string name="title_activity_stamps_sale_with_pos">Sell</string>
+    <string name="title_activity_sale_without_pos">Sell</string>
+    <string name="title_activity_choose_program">Choose Program</string>
+    <string name="dash">-</string>
+    <string name="plus">+</string>
+    <string name="title_order_summary">Order summary</string>
+    <string name="cart_is_empty">Your cart is empty!</string>
+    <string name="add_to_cart">Add to cart</string>
+    <string name="action_cart">Cart</string>
+    <string name="product_price">%1$s %2$s</string>
+    <string name="checkout">%1$s %2$s \n CHECKOUT</string>
+    <string name="clear">Clear</string>
+    <string name="product_count">%1$s added</string>
+    <string name="order_owner">This order belongs to</string>
+    <string name="change_customer">Change Customer</string>
 </resources>

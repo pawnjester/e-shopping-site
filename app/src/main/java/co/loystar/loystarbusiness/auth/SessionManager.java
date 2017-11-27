@@ -4,9 +4,11 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -161,9 +163,23 @@ public class SessionManager {
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            Intent intent = new Intent(mContext, SplashActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            mContext.startActivity(intent);
+
+            AppCompatActivity activity = scanForActivity(mContext);
+            if (activity == null) {
+                Intent intent = new Intent(mContext, SplashActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                mContext.startActivity(intent);
+            } else {
+                AccountManager.get(mContext).addAccount(
+                        AccountGeneral.ACCOUNT_TYPE,
+                        AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS,
+                        null,
+                        null,
+                        activity,
+                        accountManagerFuture -> activity.finish(),
+                        null
+                );
+            }
         }
     }
 
@@ -173,5 +189,16 @@ public class SessionManager {
      * **/
     public boolean isLoggedIn(){
         return sharedPreferences.getBoolean(IS_LOGGED_IN, false);
+    }
+
+    private AppCompatActivity scanForActivity(Context context) {
+        if (context == null)
+            return null;
+        else if (context instanceof AppCompatActivity)
+            return (AppCompatActivity) context;
+        else if (context instanceof ContextWrapper)
+            return scanForActivity(((ContextWrapper) context).getBaseContext());
+
+        return null;
     }
 }

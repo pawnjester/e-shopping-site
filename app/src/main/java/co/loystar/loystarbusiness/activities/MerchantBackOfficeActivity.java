@@ -2,18 +2,24 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.IdRes;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -67,12 +73,15 @@ import co.loystar.loystarbusiness.utils.GraphCoordinates;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity implements OnChartValueSelectedListener {
     private static final String TAG = MerchantBackOfficeActivity.class.getCanonicalName();
+    private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private SessionManager mSessionManager;
     private Context mContext;
     private View mLayout;
@@ -140,11 +149,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                             stateWelcomeTextView.setText(getString(R.string.welcome_text, mSessionManager.getFirstName()));
                             stateDescriptionTextView.setText(getString(R.string.start_loyalty_program_empty_state));
                             stateActionBtn.setText(getString(R.string.start_loyalty_program_btn_label));
+                            stateActionBtn.setOnClickListener(view -> {
+                                startLoyaltyProgram();
+                            });
                         } else {
                             stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_firstsale));
                             stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
                             stateDescriptionTextView.setText(getString(R.string.start_sale_empty_state));
                             stateActionBtn.setText(getString(R.string.start_sale_btn_label));
+                            stateActionBtn.setOnClickListener(view -> {
+                                startSale();
+                            });
                         }
                     } else {
                         chartLayout.setVisibility(View.VISIBLE);
@@ -305,80 +320,116 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
 
     private void setupBottomNavigation() {
         bottomNavigationBar = findViewById(R.id.bottom_navigation_bar);
-        bottomNavigationBar.setOnTabSelectListener(new OnTabSelectListener() {
-            @Override
-            public void onTabSelected(@IdRes int tabId) {
-                switch (tabId) {
-                    case R.id.record_sale:
-                        /*boolean isPosTurnedOn = merchant.getTurn_on_point_of_sale() != null
-                                && merchant.getTurn_on_point_of_sale();
-                        loyaltyPrograms = databaseHelper.listMerchantPrograms(sessionManager.getMerchantId());
+        bottomNavigationBar.setOnTabSelectListener(tabId -> {
+            switch (tabId) {
+                case R.id.record_sale:
+                    startSale();
+                    break;
+                case R.id.customers:
+                    Intent intent = new Intent(mContext, CustomerListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    break;
+                case R.id.campaigns:
+                    Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramListActivity.class);
+                    loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(loyaltyIntent);
+                    break;
+            }
+        });
+        bottomNavigationBar.setOnTabReselectListener(tabId -> {
+            if (tabId == R.id.home) {
+                if (barChart != null) {
+                    barChart.highlightValues(null);
+                    barChart.fitScreen();
+                }
+            }
+        });
+    }
 
-                        if (loyaltyPrograms.isEmpty()) {
-                            Intent intent = new Intent(mContext, CreateLoyaltyProgramListActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                        }
-                        else {
-                            if (loyaltyPrograms.size() == 1) {
-                                DBMerchantLoyaltyProgram loyaltyProgram = loyaltyPrograms.get(0);
-                                if (isPosTurnedOn) {
-                                    if (loyaltyProgram.getProgram_type().equals(getString(R.string.simple_points))) {
-                                        Intent intent = new Intent(mContext, RecordPointsSalesWithPosActivity.class);
-                                        intent.putExtra(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
-                                        startActivity(intent);
-                                    }
-                                    else if (loyaltyProgram.getProgram_type().equals(getString(R.string.stamps_program))) {
-                                        Intent intent = new Intent(mContext, RecordStampsSalesWithPosActivity.class);
-                                        intent.putExtra(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
-                                        startActivity(intent);
-                                    }
-                                }
-                                else {
-                                    Bundle data = new Bundle();
-                                    data.putString(RecordDirectSalesActivity.LOYALTY_PROGRAM_TYPE, loyaltyProgram.getProgram_type());
-                                    data.putLong(RecordDirectSalesActivity.LOYALTY_PROGRAM_ID, loyaltyProgram.getId());
-                                    Intent intent = new Intent(mContext, RecordDirectSalesActivity.class);
-                                    intent.putExtras(data);
-                                    startActivity(intent);
-                                }
-                            }
-                            else {
-                                if (isPosTurnedOn) {
-                                    Intent chooseProgram = new Intent(MerchantBackOffice.this, SelectLoyaltyProgramForSales.class);
-                                    startActivityForResult(chooseProgram, RECORD_SALES_WITH_POS_CHOOSE_PROGRAM);
-                                }
-                                else {
-                                    Intent chooseProgram = new Intent(MerchantBackOffice.this, SelectLoyaltyProgramForSales.class);
-                                    startActivityForResult(chooseProgram, RECORD_SALES_WITHOUT_POS_CHOOSE_PROGRAM);
-                                }
-                            }
-                        }*/
-                        break;
-                    case R.id.customers:
-                        Intent intent = new Intent(mContext, CustomerListActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        break;
-                    case R.id.campaigns:
-                        Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramListActivity.class);
-                        loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(loyaltyIntent);
-                        break;
-                }
-            }
-        });
-        bottomNavigationBar.setOnTabReselectListener(new OnTabReselectListener() {
-            @Override
-            public void onTabReSelected(@IdRes int tabId) {
-                if (tabId == R.id.home) {
-                    if (barChart != null) {
-                        barChart.highlightValues(null);
-                        barChart.fitScreen();
+    private void startSale() {
+        mDataStore.count(LoyaltyProgramEntity.class)
+                .get()
+                .single()
+                .toObservable()
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
                     }
-                }
+
+                    @Override
+                    public void onNext(Integer integer) {
+                        if (integer == 0) {
+                            new AlertDialog.Builder(mContext)
+                                    .setTitle("No Loyalty Program Found!")
+                                    .setMessage("To record a sale, you would have to start a loyalty program.")
+                                    .setPositiveButton(mContext.getString(R.string.start_loyalty_program_btn_label), (dialog, which) -> {
+                                        dialog.dismiss();
+                                        startLoyaltyProgram();
+                                    })
+                                    .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
+                        } else if (integer == 1) {
+                            LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
+                            initiateSalesProcess(loyaltyProgramEntity);
+                        } else {
+                            chooseProgram();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    private void initiateSalesProcess(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+        if (isPosTurnedOn) {
+            if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
+                startPointsSaleWithPos(loyaltyProgramEntity.getId());
+            } else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
+                startStampsSaleWithPos(loyaltyProgramEntity.getId());
             }
-        });
+        } else {
+            startSaleWithoutPos(loyaltyProgramEntity.getId());
+        }
+    }
+
+    private void chooseProgram() {
+        Intent intent = new Intent(this, ChooseProgramActivity.class);
+        startActivityForResult(intent, REQUEST_CHOOSE_PROGRAM);
+    }
+
+    private void startPointsSaleWithPos(int programId) {
+        Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startStampsSaleWithPos(int programId) {
+        Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startSaleWithoutPos(int programId) {
+        Intent intent = new Intent(this, SaleWithoutPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startLoyaltyProgram() {
+        Intent intent = new Intent(mContext, LoyaltyProgramListActivity.class);
+        intent.putExtra(Constants.CREATE_LOYALTY_PROGRAM, true);
+        startActivity(intent);
     }
 
     @Override
@@ -495,6 +546,18 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         @Override
         public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
             return String.format(mFormat, merchantCurrencySymbol, Math.round(value));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CHOOSE_PROGRAM) {
+                int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
+                LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
+                initiateSalesProcess(loyaltyProgramEntity);
+            }
         }
     }
 }

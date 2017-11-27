@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -26,6 +27,8 @@ public class EmptyRecyclerView extends RecyclerView {
     void checkIfEmpty() {
         if (emptyView != null) {
             emptyView.setVisibility(getAdapter().getItemCount() > 0 ? GONE : VISIBLE);
+            boolean v = emptyView.getVisibility() == VISIBLE;
+            Log.e("TAG", "checkIfEmpty: " + v );
         }
     }
 

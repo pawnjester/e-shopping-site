@@ -11,7 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +29,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxCheckedTextView;
+import com.jakewharton.rxbinding2.widget.RxRadioGroup;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,11 +48,16 @@ import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import io.requery.Persistable;
+import io.requery.reactivex.ReactiveEntityStore;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import permissions.dispatcher.NeedsPermission;
@@ -60,7 +72,7 @@ import retrofit2.Response;
 
 
 @RuntimePermissions
-public class AddNewCustomerActivity extends AppCompatActivity {
+public class AddNewCustomerActivity extends RxAppCompatActivity {
     /*Views*/
     private View mLayout;
     private AddCustomerButton addFromContactsBtn;
@@ -74,6 +86,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     private EditText customerLNameViewFromContacts;
     private InternationalPhoneInput customerPhoneViewFromContacts;
     private CustomerEntity customerFromContacts;
+    private ProgressDialog progressDialog;
     private View dividerBloc;
 
     /*Constants*/
@@ -84,8 +97,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     private Context mContext;
     private SessionManager mSessionManager;
     private String genderSelected = "";
-    private DatabaseManager mDatabaseManager;
-    private ProgressDialog progressDialog;
+    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,7 +113,8 @@ public class AddNewCustomerActivity extends AppCompatActivity {
         mContext = this;
         mLayout = findViewById(R.id.add_new_customer_wrapper);
         mSessionManager = new SessionManager(this);
-        mDatabaseManager = DatabaseManager.getInstance(this);
+        DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
+        merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
         /*Initialize views*/
         addFromContactsBtn = findViewById(R.id.add_customer_from_contacts);
@@ -123,54 +136,43 @@ public class AddNewCustomerActivity extends AppCompatActivity {
         SpinnerButton datePickerFromContacts = findViewById(R.id.date_of_birth_spinner);
         datePickerFromContacts.setCalendarView();
 
-        SpinnerButton.OnDatePickedListener onDatePickedListener = new SpinnerButton.OnDatePickedListener() {
-            @Override
-            public void onDatePicked(Date date) {
-                dateOfBirth = date;
-            }
-        };
+        SpinnerButton.OnDatePickedListener onDatePickedListener = date -> dateOfBirth = date;
         datePicker.setDatePickedListener(onDatePickedListener);
 
-        SpinnerButton.OnDatePickedListener onDatePickedListener1 = new SpinnerButton.OnDatePickedListener() {
-            @Override
-            public void onDatePicked(Date date) {
-                dateOfBirth = date;
-            }
-        };
+        SpinnerButton.OnDatePickedListener onDatePickedListener1 = date -> dateOfBirth = date;
         datePickerFromContacts.setDatePickedListener(onDatePickedListener1);
 
-        addFromContactsBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AddNewCustomerActivityPermissionsDispatcher.pickContactsWithCheck(AddNewCustomerActivity.this);
+        if (getIntent().hasExtra(Constants.PHONE_NUMBER)) {
+            customerPhoneView.setNumber(getIntent().getStringExtra(Constants.PHONE_NUMBER));
+        }
+
+        if (getIntent().hasExtra(Constants.CUSTOMER_NAME)) {
+            customerFnameView.setText(getIntent().getStringExtra(Constants.CUSTOMER_NAME));
+        }
+
+        RxView.clicks(addFromContactsBtn).subscribe(o -> {
+            AddNewCustomerActivityPermissionsDispatcher.pickContactsWithCheck(AddNewCustomerActivity.this);
+        });
+
+        RxRadioGroup.checkedChanges(genderSelect).subscribe(checkedId -> {
+            switch (checkedId) {
+                case R.id.male:
+                    genderSelected = "M";
+                    break;
+                case R.id.female:
+                    genderSelected = "F";
+                    break;
             }
         });
 
-        genderSelect.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.male:
-                        genderSelected = "M";
-                        break;
-                    case R.id.female:
-                        genderSelected = "F";
-                        break;
-                }
-            }
-        });
-
-        getGenderSelectFromContacts.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.male_1:
-                        genderSelected = "M";
-                        break;
-                    case R.id.female_1:
-                        genderSelected = "F";
-                        break;
-                }
+        RxRadioGroup.checkedChanges(getGenderSelectFromContacts).subscribe(checkedId -> {
+            switch (checkedId) {
+                case R.id.male:
+                    genderSelected = "M";
+                    break;
+                case R.id.female:
+                    genderSelected = "F";
+                    break;
             }
         });
     }
@@ -191,18 +193,8 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     void showRationaleForGetContacts(final PermissionRequest request) {
         new AlertDialog.Builder(mContext)
                 .setMessage(R.string.permission_contacts_rationale)
-                .setPositiveButton(R.string.button_allow, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        request.proceed();
-                    }
-                })
-                .setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        request.cancel();
-                    }
-                })
+                .setPositiveButton(R.string.button_allow, (dialogInterface, i) -> request.proceed())
+                .setNegativeButton(R.string.button_deny, (dialogInterface, i) -> request.cancel())
                 .setCancelable(false)
                 .show();
     }
@@ -216,17 +208,14 @@ public class AddNewCustomerActivity extends AppCompatActivity {
     void showNeverAskForGetContacts() {
         Snackbar.make(mLayout, R.string.permission_read_contacts_neverask,
                 Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.button_allow, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        intent.setData(uri);
-                        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
-                    }
+                .setAction(R.string.button_allow, view -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
                 })
                 .show();
     }
@@ -247,17 +236,11 @@ public class AddNewCustomerActivity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle(R.string.discard_changes);
                     builder.setMessage(R.string.discard_changes_explain)
-                            .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                    finish();
-                                }
+                            .setPositiveButton(R.string.discard, (dialog, id) -> {
+                                dialog.dismiss();
+                                finish();
                             })
-                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
                     builder.show();
                 }
                 else {
@@ -334,40 +317,49 @@ public class AddNewCustomerActivity extends AppCompatActivity {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
             mAPiClient.getLoystarApi(false).addUserDirect(requestBody).enqueue(new Callback<Customer>() {
                 @Override
-                public void onResponse(Call<Customer> call, Response<Customer> response) {
+                public void onResponse(@NonNull Call<Customer> call, @NonNull Response<Customer> response) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
                     if (response.isSuccessful()) {
                         Customer customer = response.body();
                         CustomerEntity customerEntity = new CustomerEntity();
-                        customerEntity.setId(customer.getId());
-                        customerEntity.setEmail(customer.getEmail());
-                        customerEntity.setFirstName(customer.getFirst_name());
-                        customerEntity.setDeleted(false);
-                        customerEntity.setLastName(customer.getLast_name());
-                        customerEntity.setSex(customer.getSex());
-                        customerEntity.setDateOfBirth(customer.getDate_of_birth());
-                        customerEntity.setPhoneNumber(customer.getPhone_number());
-                        customerEntity.setUserId(customer.getUser_id());
-                        customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
-                        customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
-                        customerEntity.setOwner(mDatabaseManager.getMerchant(mSessionManager.getMerchantId()));
+                        if (customer == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            customerEntity.setId(customer.getId());
+                            customerEntity.setEmail(customer.getEmail());
+                            customerEntity.setFirstName(customer.getFirst_name());
+                            customerEntity.setDeleted(false);
+                            customerEntity.setLastName(customer.getLast_name());
+                            customerEntity.setSex(customer.getSex());
+                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
+                            customerEntity.setPhoneNumber(customer.getPhone_number());
+                            customerEntity.setUserId(customer.getUser_id());
+                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                            customerEntity.setOwner(merchantEntity);
 
-                        mDatabaseManager.insertNewCustomer(customerEntity);
-
-                        Intent intent = new Intent();
-                        intent.putExtra(Constants.CUSTOMER_ID, customer.getId());
-                        setResult(RESULT_OK, intent);
-                        finish();
-
+                            ReactiveEntityStore<Persistable> dataStore = DatabaseManager.getDataStore(mContext);
+                            dataStore.insert(customerEntity)
+                                    .toObservable()
+                                    .compose(bindToLifecycle())
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(newCustomer -> {
+                                Intent intent = new Intent();
+                                intent.putExtra(Constants.CUSTOMER_ID, newCustomer.getId());
+                                setResult(RESULT_OK, intent);
+                                finish();
+                            });
+                        }
                     }
                     else {
                         if (response.code() == 401) {
                             AccountManager accountManager = AccountManager.get(mContext);
                             accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                         }
-                        Snackbar.make(mLayout, getString(R.string.error_add_user), Snackbar.LENGTH_LONG).show();
+                        showSnackbar(R.string.error_add_user);
                     }
                 }
 
@@ -376,7 +368,7 @@ public class AddNewCustomerActivity extends AppCompatActivity {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
-                    Snackbar.make(mLayout, getString(R.string.error_internet_connection_timed_out), Snackbar.LENGTH_LONG).show();
+                    showSnackbar(R.string.error_internet_connection_timed_out);
                 }
             });
         } catch (JSONException e) {
@@ -563,5 +555,10 @@ public class AddNewCustomerActivity extends AppCompatActivity {
                 AddNewCustomerActivityPermissionsDispatcher.pickContactsWithCheck(AddNewCustomerActivity.this);
             }
         }
+    }
+
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
 }

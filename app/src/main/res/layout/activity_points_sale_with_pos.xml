@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:id="@+id/activity_points_sale_with_pos_container"
+    android:layout_height="match_parent"
+    tools:context="co.loystar.loystarbusiness.activities.PointsSaleWithPosActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/activity_points_sale_with_pos_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <FrameLayout
+        app:layout_behavior="co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:clickable="true"
+        android:focusable="true"
+        style="@style/Theme.ActionBar.HigherElevation"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        android:id="@+id/order_summary_bs_wrapper">
+        <include layout="@layout/order_summary_bottom_sheet" />
+    </FrameLayout>
+
+    <include layout="@layout/content_points_sale_with_pos" />
+
+</android.support.design.widget.CoordinatorLayout>

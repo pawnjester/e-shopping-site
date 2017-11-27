@@ -12,6 +12,7 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -207,7 +208,7 @@ public class CustomerListActivity extends AppCompatActivity
     }
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
-        View emptyView = findViewById(R.id.customer_list_empty_container);
+        View emptyView = findViewById(R.id.empty_items_container);
         ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
         TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
@@ -215,7 +216,9 @@ public class CustomerListActivity extends AppCompatActivity
 
         stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_nocustomers));
         stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateWelcomeTextView.setTextColor(ContextCompat.getColor(this, R.color.wallet_hint_foreground_holo_dark));
         stateDescriptionTextView.setText(getString(R.string.no_customers_found));
+        stateDescriptionTextView.setTextColor(ContextCompat.getColor(this, R.color.wallet_hint_foreground_holo_dark));
 
         stateActionBtn.setText(getString(R.string.start_adding_customers_label));
         stateActionBtn.setOnClickListener(view -> {

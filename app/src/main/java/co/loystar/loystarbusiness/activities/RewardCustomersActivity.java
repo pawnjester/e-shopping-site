@@ -46,7 +46,7 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.AlphaNumericInputFilter;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.CustomerAutoCompleteDialogAdapter;
+import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import retrofit2.Call;

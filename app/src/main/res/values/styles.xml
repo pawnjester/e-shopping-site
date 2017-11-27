@@ -59,4 +59,8 @@
         <item name="fab_colorRipple">@color/light_grey</item>
     </style>
 
+    <style name="Theme.ActionBar.HigherElevation" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="elevation">10dp</item>
+    </style>
+
 </resources>
