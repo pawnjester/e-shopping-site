@@ -5,91 +5,113 @@
             name="product"
             type="co.loystar.loystarbusiness.models.entities.Product" />
     </data>
-    <android.support.v7.widget.CardView
-        android:id="@+id/card_view"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
+            android:id="@+id/product_image_wrapper"
+            android:clickable="true"
             android:focusable="true"
             android:layout_height="match_parent">
 
-            <RelativeLayout
-                android:id="@+id/product_image_wrapper"
+            <co.loystar.loystarbusiness.utils.ui.SquaredImageView
+                android:contentDescription="@string/image"
+                android:id="@+id/product_image"
                 android:layout_width="match_parent"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp" />
 
-                <ImageView
-                    android:contentDescription="@string/image"
-                    android:id="@+id/product_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp" />
-
-                <co.loystar.loystarbusiness.utils.ui.CircularImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_add"
-                    android:id="@+id/add_image"
-                    android:layout_centerInParent="true"/>
-
-                <ImageView
-                    android:contentDescription="@string/image"
-                    android:id="@+id/product_image_copy"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp" />
-
-                <TextView
-                    android:gravity="center_vertical"
-                    android:textAlignment="center"
-                    android:layout_alignBottom="@+id/product_image"
-                    android:layout_width="match_parent"
-                    android:id="@+id/product_count"
-                    android:visibility="gone"
-                    android:background="@color/translucent"
-                    android:textColor="@color/white"
-                    android:layout_height="50dp" />
-            </RelativeLayout>
-
-            <LinearLayout
+            <co.loystar.loystarbusiness.utils.ui.SquaredImageView
+                android:contentDescription="@string/image"
+                android:id="@+id/product_image_copy"
                 android:layout_width="match_parent"
-                android:layout_below="@+id/product_image_wrapper"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:id="@+id/product_decrement_wrapper"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_marginTop="10dp"
-                android:weightSum="2"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:id="@+id/product_name"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:textColor="#000"
-                    android:layout_weight="1.6"
-                    android:text="@{product.name}"
-                    android:textSize="14sp" />
-
-                <ImageView
-                    android:contentDescription="@string/image"
-                    android:layout_width="0dp"
-                    android:visibility="gone"
-                    android:layout_weight="0.4"
-                    android:layout_marginRight="1dp"
-                    android:layout_marginEnd="1dp"
-                    android:id="@+id/decrement_count"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp" />
 
         </RelativeLayout>
 
-    </android.support.v7.widget.CardView>
+        <co.loystar.loystarbusiness.utils.ui.CircularImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/add_image"
+            android:src="@drawable/ic_add"
+            android:layout_centerInParent="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:id="@+id/productInfo"
+            android:layout_alignBottom="@+id/product_image_wrapper"
+            android:background="@color/translucent"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/product_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_weight="1"
+                android:text="@{product.name}"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/white"
+                android:padding="1dp"/>
+
+            <TextView
+                android:id="@+id/product_price"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="end"
+                android:layout_weight="1"
+                android:padding="1dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/product_decrement_wrapper"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_below="@+id/productInfo"
+            android:orientation="horizontal"
+            android:background="@color/white">
+
+            <TextView
+                android:id="@+id/product_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:background="?attr/selectableItemBackground"
+                android:paddingEnd="15dp"
+                android:paddingRight="15dp"
+                android:paddingStart="3dp"
+                android:paddingLeft="3dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:layout_gravity="end"
+                android:textColor="@android:color/holo_red_dark"/>
+
+            <ImageView
+                android:contentDescription="@string/image"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/decrement_count"
+                android:layout_weight="1"
+                android:layout_gravity="start"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:tint="@android:color/holo_red_dark"/>
+        </LinearLayout>
+
+    </RelativeLayout>
 </layout>

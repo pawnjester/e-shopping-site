@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,13 +15,11 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,15 +45,16 @@ import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.ui.BadgeDrawable;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
+import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
 import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -77,7 +75,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private ExecutorService executor;
     private SessionManager mSessionManager;
     private BottomSheetBehavior.BottomSheetCallback mOrderSummaryBottomSheetCallback;
-    private LayerDrawable cartIcon;
     private SparseIntArray mSelectedProducts = new SparseIntArray();
     private BottomSheetBehavior orderSummaryBottomSheetBehavior;
     private boolean orderSummaryDraggingStateUp = false;
@@ -87,11 +84,14 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     CustomerAutoCompleteDialog customerAutoCompleteDialog;
 
     /*Views*/
-    private ImageView itemCartView;
+    private View collapsedToolbar;
     private Toolbar orderSummaryExpandedToolbar;
     private FullRectangleButton orderSummaryCheckoutBtn;
+    private CartCountButton proceedToCheckoutBtn;
     private View orderSummaryCheckoutWrapper;
     private CustomerEntity mSelectedCustomer;
+    private ImageView cartCountImageView;
+    private int proceedToCheckoutBtnHeight = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,28 +120,75 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        orderSummaryDraggingStateUp = false;
+                    case BottomSheetBehavior.STATE_HIDDEN:
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         orderSummaryDraggingStateUp = true;
+                        if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
+                            ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(true);
+                        }
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        orderSummaryDraggingStateUp = false;
+                        if (mSelectedCustomer == null) {
+                            if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
+                                ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
+                            }
+                        }
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        if (mSelectedCustomer == null) {
+                            if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
+                                ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
+                            }
+                        }
+                        break;
+                    case BottomSheetBehavior.STATE_SETTLING:
                         break;
                 }
             }
 
             @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                Runnable draggingStateUpAction = () -> {
-                    if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                        orderSummaryExpandedToolbar.setAlpha(1f);
+            public void onSlide(@NonNull final View bottomSheet, float slideOffset) {
+
+                Runnable draggingStateUpAction = new Runnable() {
+                    public void run() {
+                        //after fully expanded the ony way is down
+                        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                            collapsedToolbar.setVisibility(View.GONE);
+                            collapsedToolbar.setAlpha(0f);
+                            orderSummaryExpandedToolbar.setAlpha(1f);
+                        }
+                    }
+                };
+
+                Runnable draggingStateDownAction = new Runnable() {
+                    public void run() {
+                        //after collapsed the only way is up
+                        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                            orderSummaryExpandedToolbar.setVisibility(View.GONE);
+                            collapsedToolbar.setAlpha(1f);
+                            orderSummaryExpandedToolbar.setAlpha(0f);
+                        }
                     }
                 };
 
                 if (orderSummaryDraggingStateUp) {
+                    //when fully expanded and dragging down
                     orderSummaryExpandedToolbar.setVisibility(View.VISIBLE);
-                    orderSummaryExpandedToolbar.animate().alpha(slideOffset).setDuration((long) slideOffset);
+                    orderSummaryExpandedToolbar.animate().alpha(slideOffset).setDuration((long) slideOffset); //expanded toolbar will fade out
+
+                    float offset = 1f - slideOffset;
+                    collapsedToolbar.setVisibility(View.VISIBLE);
+                    collapsedToolbar.animate().alpha(offset).setDuration((long) offset).withEndAction(draggingStateDownAction); //collapsed toolbar will to fade in
+
                 }
                 else {
+                    //when collapsed and you are dragging up
+                    float offset = 1f - slideOffset; //collapsed toolbar will fade out
+                    collapsedToolbar.setVisibility(View.VISIBLE);
+                    collapsedToolbar.animate().alpha(offset).setDuration((long) offset);
+
                     orderSummaryExpandedToolbar.setVisibility(View.VISIBLE);
                     orderSummaryExpandedToolbar.animate().alpha(slideOffset).setDuration((long) slideOffset).withEndAction(draggingStateUpAction); //expanded toolbar will fade in
 
@@ -223,15 +270,42 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     }
 
     private void setUpBottomSheetView() {
+        collapsedToolbar = findViewById(R.id.order_summary_collapsed_toolbar);
+        proceedToCheckoutBtn = collapsedToolbar.findViewById(R.id.proceed_to_check_out);
+        cartCountImageView = proceedToCheckoutBtn.getCartImageView();
         orderSummaryExpandedToolbar = findViewById(R.id.order_summary_expanded_toolbar);
         orderSummaryCheckoutWrapper = findViewById(R.id.order_summary_checkout_wrapper);
         orderSummaryCheckoutBtn = findViewById(R.id.order_summary_checkout_btn);
         orderSummaryBottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.order_summary_bs_wrapper));
         orderSummaryBottomSheetBehavior.setBottomSheetCallback(mOrderSummaryBottomSheetCallback);
 
-        orderSummaryCheckoutBtn.setOnClickListener(view -> {
+        ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
+        treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                ViewTreeObserver obs = proceedToCheckoutBtn.getViewTreeObserver();
+                obs.removeOnGlobalLayoutListener(this);
+                proceedToCheckoutBtnHeight = proceedToCheckoutBtn.getMeasuredHeight();
+            }
+        });
+
+        RxView.clicks(proceedToCheckoutBtn).subscribe(o -> {
+            if (mSelectedCustomer == null) {
+                if (!customerAutoCompleteDialog.isAdded()) {
+                    customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+                }
+            } else {
+                showOrderSummaryView(mSelectedCustomer);
+            }
+        });
+
+        RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
 
         });
+
+        if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
+            ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
+        }
 
         findViewById(R.id.clear_cart).setOnClickListener(view -> new AlertDialog.Builder(mContext)
                 .setTitle("Are you sure?")
@@ -257,7 +331,9 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         View AddCustomerWrapper = findViewById(R.id.addCustomerWrapper);
         AddCustomerButton addCustomerButton = AddCustomerWrapper.findViewById(R.id.addCustomerButton);
         RxView.clicks(addCustomerButton).subscribe(o -> {
-            customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+            if (!customerAutoCompleteDialog.isAdded()) {
+                customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+            }
         });
         if (customerEntity == null) {
             AddCustomerWrapper.setVisibility(View.VISIBLE);
@@ -278,35 +354,19 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.points_sale_with_pos, menu);
-        MenuItem itemCart = menu.findItem(R.id.action_cart);
-        // manually setting a drawable here cos 'app:actionViewClass="android.widget.ImageView"'
-        // causes the view to disappear whilst 'android:actionViewClass="android.widget.ImageView"'
-        // causes the view to show but calling 'itemCart.getActionView()' returns null
-        itemCartView = (ImageView) itemCart.getActionView();
-        itemCartView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_menu_cart));
-        RxView.clicks(itemCartView).subscribe(o -> {
-            if (mSelectedProducts.size() == 0) {
-                orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            } else {
-                if (mSelectedCustomer == null) {
-                    customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
-                } else {
-                    showOrderSummaryView(mSelectedCustomer);
-                }
-            }
-        });
-        cartIcon = (LayerDrawable) itemCartView.getDrawable();
-        return true;
-    }
-
     private void showCheckoutBtn(boolean show) {
         if (show) {
             orderSummaryCheckoutWrapper.setVisibility(View.VISIBLE);
         } else {
             orderSummaryCheckoutWrapper.setVisibility(View.GONE);
+        }
+    }
+
+    private void showProceedToCheckoutBtn(boolean show) {
+        if (show) {
+            orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+        } else {
+            orderSummaryBottomSheetBehavior.setPeekHeight(0);
         }
     }
 
@@ -353,15 +413,14 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     .into(holder.binding.productImageCopy);
             holder.binding.productName.setText(item.getName());
             if (mSelectedProducts.get(item.getId()) == 0) {
-                holder.binding.productCount.setVisibility(View.GONE);
-                holder.binding.decrementCount.setVisibility(View.GONE);
+                holder.binding.productDecrementWrapper.setVisibility(View.GONE);
             } else {
-                holder.binding.productCount.setVisibility(View.VISIBLE);
-                holder.binding.decrementCount.setVisibility(View.VISIBLE);
+                holder.binding.productDecrementWrapper.setVisibility(View.VISIBLE);
                 holder.binding.productCount.setText(getString(R.string.product_count, String.valueOf(mSelectedProducts.get(item.getId()))));
             }
+            holder.binding.productPrice.setText(getString(R.string.product_price, merchantCurrencySymbol, String.valueOf(item.getPrice())));
             holder.binding.addImage.bringToFront();
-            holder.binding.decrementCount.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_remove_circle_black_24px));
+            holder.binding.decrementCount.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_remove_circle_outline_white_24px));
         }
 
         @Override
@@ -369,7 +428,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             final PosProductItemBinding binding = PosProductItemBinding.inflate(inflater);
             binding.getRoot().setTag(binding);
-            binding.productDecrementWrapper.setTag(binding);
+            binding.decrementCount.setTag(binding);
             binding.productImageWrapper.setTag(binding);
 
             binding.productImageWrapper.setOnClickListener(view -> {
@@ -388,12 +447,12 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                         setCheckoutValue();
                     }
 
-                    binding.decrementCount.setVisibility(View.VISIBLE);
-                    makeFlyAnimation(posProductItemBinding.productImageCopy, itemCartView);
+                    binding.productDecrementWrapper.setVisibility(View.VISIBLE);
+                    makeFlyAnimation(posProductItemBinding.productImageCopy, cartCountImageView);
                 }
             });
 
-            binding.productDecrementWrapper.setOnClickListener(view -> {
+            binding.decrementCount.setOnClickListener(view -> {
                 PosProductItemBinding posProductItemBinding = (PosProductItemBinding) view.getTag();
                 if (posProductItemBinding != null) {
                     Product product = posProductItemBinding.getProduct();
@@ -401,8 +460,8 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                         int newValue = mSelectedProducts.get(product.getId()) - 1;
                         setProductCountValue(newValue, product.getId());
                         if (newValue == 0) {
-                            posProductItemBinding.productCount.setVisibility(View.GONE);
-                            posProductItemBinding.decrementCount.setVisibility(View.GONE);
+                            posProductItemBinding.productCount.setText("0");
+                            posProductItemBinding.productDecrementWrapper.setVisibility(View.GONE);
                         } else {
                             posProductItemBinding.productCount.setText(getString(R.string.product_count, String.valueOf(newValue)));
                         }
@@ -500,9 +559,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     }
 
     private void addItemToCart() {
-        // TODO: debug why calling the method once does not update the badge count
-        BadgeDrawable.setBadgeCount(mContext, cartIcon, mSelectedProducts.size());
-        BadgeDrawable.setBadgeCount(mContext, cartIcon, mSelectedProducts.size());
+        proceedToCheckoutBtn.setCartCount(String.valueOf(mSelectedProducts.size()));
     }
 
     private void setProductCountValue(int newValue, int productId) {
@@ -532,6 +589,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                 .get();
 
         showCheckoutBtn(!result.toList().isEmpty());
+        showProceedToCheckoutBtn(!result.toList().isEmpty());
 
         double tc = 0;
         for (ProductEntity product: result.toList()) {
@@ -541,14 +599,15 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         String template = "%.2f";
         totalCharge = Double.valueOf(String.format(Locale.UK, template, tc));
         String cText = String.format(Locale.UK, template, totalCharge);
-        orderSummaryCheckoutBtn.setText(getString(R.string.checkout, merchantCurrencySymbol, cText));
+        orderSummaryCheckoutBtn.setText(getString(R.string.charge, merchantCurrencySymbol, cText));
+        proceedToCheckoutBtn.setCheckoutText(merchantCurrencySymbol, cText);
     }
 
     private void makeFlyAnimation(View targetView, View destinationView) {
 
         new CircleAnimationUtil().attachActivity(this)
                 .setTargetView(targetView)
-                .setMoveDuration(1000)
+                .setMoveDuration(500)
                 .setDestView(destinationView)
                 .setAnimationListener(new Animator.AnimatorListener() {
                     @Override

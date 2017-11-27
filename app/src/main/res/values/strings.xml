@@ -492,10 +492,11 @@
     <string name="cart_is_empty">Your cart is empty!</string>
     <string name="add_to_cart">Add to cart</string>
     <string name="action_cart">Cart</string>
-    <string name="product_price">%1$s %2$s</string>
-    <string name="checkout">%1$s %2$s \n CHECKOUT</string>
+    <string name="charge">CHARGE %1$s %2$s</string>
+    <string name="checkout">CHECKOUT %1$s %2$s</string>
     <string name="clear">Clear</string>
     <string name="product_count">%1$s added</string>
     <string name="order_owner">This order belongs to</string>
     <string name="change_customer">Change Customer</string>
+    <string name="product_price">%1$s %2$s</string>
 </resources>

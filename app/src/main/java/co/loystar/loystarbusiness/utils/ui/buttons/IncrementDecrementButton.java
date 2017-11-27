@@ -54,8 +54,7 @@ public class IncrementDecrementButton extends RelativeLayout {
         initView();
     }
 
-    private void initView()
-    {
+    private void initView() {
         inflate(context, R.layout.elegant_number_button_layout,this);
         int defaultColor = ContextCompat.getColor(context, R.color.colorPrimary);
         final int defaultTextColor = ContextCompat.getColor(context, R.color.white);
