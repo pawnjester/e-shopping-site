@@ -327,6 +327,10 @@
         <activity
             android:name=".activities.ChooseProgramActivity"
             android:label="@string/title_activity_choose_program"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.AddStampsActivity"
+            android:label="@string/title_activity_add_stamps"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

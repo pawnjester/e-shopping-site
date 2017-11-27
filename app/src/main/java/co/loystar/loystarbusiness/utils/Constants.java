@@ -29,4 +29,6 @@ public class Constants {
     public static final String NO_SALES_TRANSACTIONS = "NO_SALES_TRANSACTIONS";
     public static final String STATE_TYPE = "STATE_TYPE";
     public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
+    public static final String PRODUCT_ID = "PRODUCT_ID";
+    public static final String AMOUNT_SPENT = "AMOUNT_SPENT";
 }

@@ -171,6 +171,19 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
+    public SalesTransactionEntity getMerchantTransactionsLastRecord(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+                .where(MerchantEntity.ID.eq(merchantId))
+                .get()
+                .firstOrNull();
+        Result<SalesTransactionEntity> transactions = mDataStore.select(SalesTransactionEntity.class)
+                .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesTransactionEntity.CREATED_AT.desc()).get();
+
+        return transactions.firstOrNull();
+    }
+
+    @Nullable
+    @Override
     public String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
         Result<ProductEntity> productEntities = mDataStore.select(ProductEntity.class)
                 .where(ProductEntity.OWNER.eq(merchantEntity)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
@@ -349,7 +362,7 @@ public class DatabaseManager implements IDatabaseManager{
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()
                 .firstOrNull();
-        return merchantEntity != null ? merchantEntity.getSalesTransactions() : Collections.<SalesTransactionEntity>emptyList();
+        return merchantEntity != null ? merchantEntity.getSalesTransactions() : Collections.emptyList();
     }
 
     @Override
@@ -479,7 +492,7 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public List<CustomerEntity> searchCustomersByNameOrNumber(@NonNull String q, int merchantId) {
-        List<CustomerEntity> customerEntityList = new ArrayList<>();
+        List<CustomerEntity> customerEntityList;
         MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
                 .where(MerchantEntity.ID.eq(merchantId))
                 .get()

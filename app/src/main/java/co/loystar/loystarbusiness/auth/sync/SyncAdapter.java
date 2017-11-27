@@ -402,7 +402,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     if (customer != null) {
 
                         try {
-
                             JSONObject jsonObjectData = new JSONObject();
                             JSONObject requestData = new JSONObject();
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,4 +8,12 @@
     tools:context="co.loystar.loystarbusiness.activities.StampsSaleWithPosActivity"
     tools:showIn="@layout/activity_stamps_sale_with_pos">
 
-</android.support.constraint.ConstraintLayout>
+    <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView
+        android:id="@+id/stamps_sale_order_items_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical" />
+
+    <include layout="@layout/empty_recycler_state_view" />
+
+</RelativeLayout>

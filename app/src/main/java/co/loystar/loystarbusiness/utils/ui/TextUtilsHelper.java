@@ -1,7 +1,9 @@
 package co.loystar.loystarbusiness.utils.ui;
 
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextUtils;
 
 import java.util.Calendar;
 import java.util.regex.Matcher;
@@ -54,5 +56,12 @@ public class TextUtilsHelper {
             if(Character.digit(s.charAt(i),radix) < 0) return false;
         }
         return true;
+    }
+
+    public static String capitalize(@NonNull String text) {
+        if (TextUtils.isEmpty(text)) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 }

@@ -81,6 +81,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private double totalCharge = 0;
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
+    private int mProgramId;
     CustomerAutoCompleteDialog customerAutoCompleteDialog;
 
     /*Views*/
@@ -109,6 +110,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
+        mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
 
         mProductsAdapter = new ProductsAdapter();
         orderSummaryAdapter = new OrderSummaryAdapter();

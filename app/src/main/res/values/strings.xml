@@ -499,4 +499,7 @@
     <string name="order_owner">This order belongs to</string>
     <string name="change_customer">Change Customer</string>
     <string name="product_price">%1$s %2$s</string>
+    <string name="title_activity_add_stamps">Add Stamps</string>
+    <string name="confirm_transaction">Confirm Transaction</string>
+    <string name="total_stamps">Total Stamps: %1$s</string>
 </resources>
