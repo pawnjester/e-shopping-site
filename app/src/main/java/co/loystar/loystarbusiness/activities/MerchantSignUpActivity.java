@@ -34,7 +34,6 @@ import co.loystar.loystarbusiness.auth.api.ApiUtils;
 import co.loystar.loystarbusiness.fragments.MerchantSignUpStepOneFragment;
 import co.loystar.loystarbusiness.fragments.MerchantSignUpStepTwoFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
-import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.Constants;
@@ -132,7 +131,7 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
                 if (response.isSuccessful()) {
                     String authToken = response.headers().get("Access-Token");
                     String client = response.headers().get("Client");
-                    Merchant merchant = response.body().getMerchant();
+                    MerchantWrapper.Merchant merchant = response.body().getMerchant();
                     final MerchantEntity merchantEntity = new MerchantEntity();
                     merchantEntity.setId(merchant.getId());
                     merchantEntity.setFirstName(merchant.getFirst_name());

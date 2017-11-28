@@ -42,8 +42,11 @@
     public ** writeValueAsString(**);
 }
 
+-keepnames class * { *; }
+
 -keep class android.support.v7.widget.SearchView { *; }
 
 -dontwarn org.apache.**
 
--keep class com.beloo.widget.chipslayoutmanager.Orientation { *; }
+-dontwarn com.beloo.widget.chipslayoutmanager.Orientation
+-dontwarn com.roughike.bottombar.**

@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -138,7 +139,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
             createNewCategory();
         });
 
-        ChipsLayoutManager layoutManager = ChipsLayoutManager.newBuilder(mContext).build();
+        ChipsLayoutManager layoutManager = ChipsLayoutManager.newBuilder(mContext).setOrientation(ChipsLayoutManager.HORIZONTAL).build();;
         mRecyclerView = recyclerView;
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(layoutManager);

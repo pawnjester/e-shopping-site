@@ -33,7 +33,6 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
-import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.pojos.BusinessType;
@@ -203,7 +202,7 @@ public class MyAccountProfileActivity extends AppCompatActivity
                     progressDialog.dismiss();
                 }
                 if (response.isSuccessful()) {
-                    Merchant merchant = response.body().getMerchant();
+                    MerchantWrapper.Merchant merchant = response.body().getMerchant();
                     merchantEntity.setBusinessName(merchant.getBusiness_name());
                     merchantEntity.setEmail(merchant.getEmail());
                     merchantEntity.setFirstName(merchant.getFirst_name());

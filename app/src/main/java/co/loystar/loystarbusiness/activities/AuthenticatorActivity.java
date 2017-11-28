@@ -32,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
@@ -50,17 +51,14 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
-import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
-import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import io.requery.BlockingEntityStore;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -417,7 +415,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
                         if (merchantWrapper == null) {
                             showSnackbar(R.string.unknown_error);
                         } else {
-                            Merchant merchant = merchantWrapper.getMerchant();
+                            MerchantWrapper.Merchant merchant = merchantWrapper.getMerchant();
                             final MerchantEntity merchantEntity = new MerchantEntity();
                             merchantEntity.setId(merchant.getId());
                             merchantEntity.setFirstName(merchant.getFirst_name());
@@ -431,15 +429,8 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
                                 merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                             }
 
-                            final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
-                            Completable completable = Completable.fromCallable(() -> {
-                                mDataStore.runInTransaction(() -> {
-                                    mDataStore.upsert(merchantEntity);
-                                    return null;
-                                });
-                                return null;
-                            });
-                            completable.subscribe();
+                            DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+                            databaseManager.insertNewMerchant(merchantEntity);
                             mSessionManager.setMerchantSessionData(
                                     merchant.getId(),
                                     merchant.getEmail(),
@@ -485,7 +476,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
                     if (e instanceof SocketTimeoutException) {
                         intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
                     } else {
-                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.no_internet_connection));
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, e.getMessage());
                     }
                     finishLogin(intent);
                 });
@@ -494,7 +485,8 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
     private void finishLogin(Intent intent) {
         if (intent.hasExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE)) {
             setResult(RESULT_CANCELED);
-            Snackbar.make(mLayout, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Snackbar.LENGTH_LONG).show();
+            Toast.makeText(mContext, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Toast.LENGTH_LONG).show();
+            //Snackbar.make(mLayout, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Snackbar.LENGTH_LONG).show();
         } else {
             String accountPassword = intent.getStringExtra(PARAM_USER_PASS);
             String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
