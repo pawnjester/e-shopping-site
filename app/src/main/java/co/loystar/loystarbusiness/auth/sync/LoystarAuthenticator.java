@@ -11,10 +11,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.concurrent.Callable;
 
@@ -23,10 +28,15 @@ import co.loystar.loystarbusiness.activities.AuthenticatorActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.requery.BlockingEntityStore;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Call;
 import retrofit2.Response;
 
 import static co.loystar.loystarbusiness.auth.sync.AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS;
@@ -109,7 +119,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                 if (response.isSuccessful()) {
                     authToken = response.headers().get("Access-Token");
                     String client = response.headers().get("Client");
-                    @SuppressWarnings("ConstantConditions") MerchantWrapper.Merchant merchant = response.body().getMerchant();
+                    @SuppressWarnings("ConstantConditions") Merchant merchant = response.body().getMerchant();
                     final MerchantEntity merchantEntity = new MerchantEntity();
                     merchantEntity.setId(merchant.getId());
                     merchantEntity.setFirstName(merchant.getFirst_name());

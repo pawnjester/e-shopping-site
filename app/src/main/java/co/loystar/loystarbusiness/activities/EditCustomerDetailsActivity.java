@@ -92,17 +92,14 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
 
         RadioGroup gender_select = findViewById(R.id.gender_select);
         if (gender_select != null) {
-            gender_select.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(RadioGroup group, int checkedId) {
-                    switch (checkedId) {
-                        case R.id.male:
-                            genderSelected = "M";
-                            break;
-                        case R.id.female:
-                            genderSelected = "F";
-                            break;
-                    }
+            gender_select.setOnCheckedChangeListener((group, checkedId) -> {
+                switch (checkedId) {
+                    case R.id.male:
+                        genderSelected = "M";
+                        break;
+                    case R.id.female:
+                        genderSelected = "F";
+                        break;
                 }
             });
         }
@@ -265,7 +262,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<Customer> call, Throwable t) {
+                public void onFailure(@NonNull Call<Customer> call, @NonNull Throwable t) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }

@@ -42,11 +42,19 @@
     public ** writeValueAsString(**);
 }
 
--keepnames class * { *; }
-
 -keep class android.support.v7.widget.SearchView { *; }
 
 -dontwarn org.apache.**
 
 -dontwarn com.beloo.widget.chipslayoutmanager.Orientation
 -dontwarn com.roughike.bottombar.**
+
+-keep class co.loystar.loystarbusiness.models.databinders.** {
+    public <methods>;
+    protected <methods>;
+}
+
+-keepclassmembers class * {
+     @com.fasterxml.jackson.annotation.JsonCreator *;
+     @com.fasterxml.jackson.annotation.JsonProperty *;
+}

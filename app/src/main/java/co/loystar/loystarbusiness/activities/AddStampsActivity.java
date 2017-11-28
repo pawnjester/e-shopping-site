@@ -90,9 +90,7 @@ public class AddStampsActivity extends AppCompatActivity {
         }
 
         BrandButtonNormal addStampsBtn = findViewById(R.id.add_stamps);
-        RxView.clicks(addStampsBtn).subscribe(o -> {
-            addStamps();
-        });
+        RxView.clicks(addStampsBtn).subscribe(o -> addStamps());
 
         RecyclerView recyclerView = findViewById(R.id.stamps_rv);
         LoyaltyProgramEntity loyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mProgramId);

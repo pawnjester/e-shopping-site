@@ -3,17 +3,16 @@ package co.loystar.loystarbusiness.activities;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -210,30 +209,33 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
             mApiClient.getLoystarApi(false).createMerchantLoyaltyProgram(requestBody).enqueue(new Callback<LoyaltyProgram>() {
                 @Override
-                public void onResponse(Call<LoyaltyProgram> call, Response<LoyaltyProgram> response) {
+                public void onResponse(@NonNull Call<LoyaltyProgram> call, @NonNull Response<LoyaltyProgram> response) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
                     if (response.isSuccessful()) {
                         LoyaltyProgram loyaltyProgram = response.body();
+                        if (loyaltyProgram == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            LoyaltyProgramEntity loyaltyProgramEntity = new LoyaltyProgramEntity();
+                            loyaltyProgramEntity.setId(loyaltyProgram.getId());
+                            loyaltyProgramEntity.setName(loyaltyProgram.getName());
+                            loyaltyProgramEntity.setProgramType(loyaltyProgram.getProgram_type());
+                            loyaltyProgramEntity.setReward(loyaltyProgram.getReward());
+                            loyaltyProgramEntity.setThreshold(loyaltyProgram.getThreshold());
+                            loyaltyProgramEntity.setCreatedAt(new Timestamp(loyaltyProgram.getCreated_at().getMillis()));
+                            loyaltyProgramEntity.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
+                            loyaltyProgramEntity.setDeleted(false);
+                            loyaltyProgramEntity.setOwner(merchantEntity);
 
-                        LoyaltyProgramEntity loyaltyProgramEntity = new LoyaltyProgramEntity();
-                        loyaltyProgramEntity.setId(loyaltyProgram.getId());
-                        loyaltyProgramEntity.setName(loyaltyProgram.getName());
-                        loyaltyProgramEntity.setProgramType(loyaltyProgram.getProgram_type());
-                        loyaltyProgramEntity.setReward(loyaltyProgram.getReward());
-                        loyaltyProgramEntity.setThreshold(loyaltyProgram.getThreshold());
-                        loyaltyProgramEntity.setCreatedAt(new Timestamp(loyaltyProgram.getCreated_at().getMillis()));
-                        loyaltyProgramEntity.setUpdatedAt(new Timestamp(loyaltyProgram.getUpdated_at().getMillis()));
-                        loyaltyProgramEntity.setDeleted(false);
-                        loyaltyProgramEntity.setOwner(merchantEntity);
+                            mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
 
-                        mDatabaseManager.insertNewLoyaltyProgram(loyaltyProgramEntity);
-
-                        Intent intent = new Intent();
-                        intent.putExtra(Constants.LOYALTY_PROGRAM_CREATED, true);
-                        setResult(RESULT_OK, intent);
-                        finish();
+                            Intent intent = new Intent();
+                            intent.putExtra(Constants.LOYALTY_PROGRAM_CREATED, true);
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        }
                     }
                     else {
                         if (response.code() == 401) {
@@ -245,7 +247,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<LoyaltyProgram> call, Throwable t) {
+                public void onFailure(@NonNull Call<LoyaltyProgram> call, @NonNull Throwable t) {
                     if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
@@ -285,18 +287,12 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle(R.string.discard_changes);
                     builder.setMessage(R.string.discard_changes_explain)
-                            .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                    setResult(RESULT_CANCELED);
-                                    finish();
-                                }
+                            .setPositiveButton(R.string.discard, (dialog, id) -> {
+                                dialog.dismiss();
+                                setResult(RESULT_CANCELED);
+                                finish();
                             })
-                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
                     builder.show();
                 }
                 else {

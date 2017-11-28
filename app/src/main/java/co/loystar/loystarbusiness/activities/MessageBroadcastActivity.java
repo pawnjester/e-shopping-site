@@ -3,18 +3,16 @@ package co.loystar.loystarbusiness.activities;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,22 +23,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
-import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
-import co.loystar.loystarbusiness.utils.TimeUtils;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -89,39 +86,22 @@ public class MessageBroadcastActivity extends AppCompatActivity {
         TextView noOfRecipients = findViewById(R.id.noOfRecipientsText);
         noOfRecipients.setText(recTempTxt);
 
-        if (insertFname != null) {
-            insertFname.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    msgBox.getText().insert(msgBox.getSelectionStart(), "[CUSTOMER_NAME]");
-                }
-            });
-        }
+        RxView.clicks(insertFname).subscribe(o -> msgBox.getText().insert(msgBox.getSelectionStart(), "[CUSTOMER_NAME]"));
 
-
-        final TextWatcher mTextEditorWatcher = new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                double sms_char_length = 160;
-                int sms_unit = (int) Math.ceil(s.length() / sms_char_length);
-                String char_temp = "%s %s";
-                String char_temp_unit = s.length() == 1 ? "Character" : "Characters";
-                String char_counter_text = String.format(char_temp, s.length(), char_temp_unit);
-                String text_template = "%s %s";
-                String unit_text = sms_unit != 1 ? "Units" : "Unit";
-                String sms_unit_text = String.format(text_template, sms_unit, unit_text);
-                unitCounterView.setText(sms_unit_text);
-                charCounterView.setText(char_counter_text);
-                totalSmsCredits = mCustomerList.size() * sms_unit;
-            }
-
-            public void afterTextChanged(Editable s) {
-            }
-        };
-
-        msgBox.addTextChangedListener(mTextEditorWatcher);
+        RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
+            CharSequence s = textViewTextChangeEvent.text();
+            double sms_char_length = 160;
+            int sms_unit = (int) Math.ceil(s.length() / sms_char_length);
+            String charTemp = "%s %s";
+            String charTempUnit = s.length() == 1 ? "Character" : "Characters";
+            String charCounterText = String.format(charTemp, s.length(), charTempUnit);
+            String textTemplate = "%s %s";
+            String unitText = sms_unit != 1 ? "Units" : "Unit";
+            String smsUnitText = String.format(textTemplate, sms_unit, unitText);
+            unitCounterView.setText(smsUnitText);
+            charCounterView.setText(charCounterText);
+            totalSmsCredits = mCustomerList.size() * sms_unit;
+        });
     }
 
     private void sendMessages() {
@@ -150,79 +130,69 @@ public class MessageBroadcastActivity extends AppCompatActivity {
         alertDialogBuilder.setView(layout);
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton(getString(R.string.send), new DialogInterface.OnClickListener() {
+                .setPositiveButton(getString(R.string.send), (dialog, id) -> {
+                    dialog.dismiss();
+                    progressDialog = new ProgressDialog(mContext);
+                    progressDialog.setMessage(getString(R.string.a_moment));
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.show();
 
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                        progressDialog = new ProgressDialog(mContext);
-                        progressDialog.setMessage(getString(R.string.a_moment));
-                        progressDialog.setIndeterminate(true);
-                        progressDialog.show();
+                    try {
+                        JSONObject req = new JSONObject();
+                        StdDateFormat mDateFormat = new StdDateFormat();
+                        req.put("message_text", msgBox.getText().toString());
+                        req.put("client_initiated_time", mDateFormat.format(new DateTime()));
 
-                        try {
-                            JSONObject req = new JSONObject();
-                            StdDateFormat mDateFormat = new StdDateFormat();
-                            req.put("message_text", msgBox.getText().toString());
-                            req.put("client_initiated_time", mDateFormat.format(new DateTime()));
+                        JSONObject requestData = new JSONObject();
+                        requestData.put("data", req);
 
-                            JSONObject requestData = new JSONObject();
-                            requestData.put("data", req);
+                        RequestBody requestBody = RequestBody.create(
+                                MediaType.parse("application/json; charset=utf-8"),
+                                requestData.toString()
+                        );
 
-                            RequestBody requestBody = RequestBody.create(
-                                    MediaType.parse("application/json; charset=utf-8"),
-                                    requestData.toString()
-                            );
+                        ApiClient apiClient = new ApiClient(mContext);
 
-                            ApiClient apiClient = new ApiClient(mContext);
-
-                            apiClient.getLoystarApi(false).sendSmsBlast(requestBody).enqueue(new Callback<ResponseBody>() {
-                                @Override
-                                public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
-                                    if (progressDialog.isShowing()) {
-                                        progressDialog.dismiss();
-                                    }
-
-                                    if (response.isSuccessful()) {
-                                        Snackbar.make(mLayout, R.string.sms_messages_queued,
-                                                Snackbar.LENGTH_INDEFINITE)
-                                                .setAction(R.string.ok, new View.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(View view) {
-                                                        Intent intent = new Intent(mContext, CustomerListActivity.class);
-                                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                        startActivity(intent);
-                                                    }
-                                                })
-                                                .show();
-                                    }
-                                    else {
-                                        if (response.code() == 401) {
-                                            AccountManager accountManager = AccountManager.get(mContext);
-                                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
-                                        }
-                                        showSnackbar(R.string.error_sending_sms_blast);
-                                    }
+                        apiClient.getLoystarApi(false).sendSmsBlast(requestBody).enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull retrofit2.Response<ResponseBody> response) {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
                                 }
 
-                                @Override
-                                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                    if (progressDialog.isShowing()) {
-                                        progressDialog.dismiss();
-                                    }
-                                    showSnackbar((R.string.error_internet_connection_timed_out));
+                                if (response.isSuccessful()) {
+                                    Snackbar.make(mLayout, R.string.sms_messages_queued,
+                                            Snackbar.LENGTH_INDEFINITE)
+                                            .setAction(R.string.ok, view -> {
+                                                Intent intent = new Intent(mContext, CustomerListActivity.class);
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                startActivity(intent);
+                                            })
+                                            .show();
                                 }
-                            });
+                                else {
+                                    if (response.code() == 401) {
+                                        AccountManager accountManager = AccountManager.get(mContext);
+                                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                                    }
+                                    showSnackbar(R.string.error_sending_sms_blast);
+                                }
+                            }
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                            @Override
+                            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
+                                showSnackbar((R.string.error_internet_connection_timed_out));
+                            }
+                        });
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 })
-                .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
+                .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
@@ -261,18 +231,12 @@ public class MessageBroadcastActivity extends AppCompatActivity {
             new AlertDialog.Builder(mContext)
                     .setTitle("Your Account Is Inactive")
                     .setMessage("SMS communications are disabled until you resubscribe.")
-                    .setPositiveButton(getString(R.string.pay_subscription), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
-                            startActivity(intent);
-                        }
+                    .setPositiveButton(getString(R.string.pay_subscription), (dialog, which) -> {
+                        dialog.dismiss();
+                        Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                        startActivity(intent);
                     })
-                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
+                    .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
 
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
@@ -286,7 +250,6 @@ public class MessageBroadcastActivity extends AppCompatActivity {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         }
-
         sendMessages();
     }
 

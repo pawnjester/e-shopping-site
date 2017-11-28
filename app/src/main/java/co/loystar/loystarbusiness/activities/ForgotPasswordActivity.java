@@ -20,6 +20,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.jakewharton.rxbinding2.view.RxView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,81 +65,66 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         mResetPassFormView = findViewById(R.id.reset_password_email_form);
         mProgressView = findViewById(R.id.password_reset_email_progress);
 
-        findViewById(R.id.i_have_code).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
-                startActivity(intent);
-            }
+        RxView.clicks(findViewById(R.id.i_have_code)).subscribe(o -> {
+            Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
+            startActivity(intent);
         });
 
         Button submit = findViewById(R.id.submit);
         email = findViewById(R.id.email);
-        if (submit != null) {
-            submit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        RxView.clicks(submit).subscribe(o -> {
+            closeKeyBoard();
+            if (!validateEmail()) {
+                return;
+            }
 
-                    closeKeyBoard();
-                    if (!validateEmail()) {
-                        return;
+            showProgress(true);
+
+            try {
+                JSONObject requestData = new JSONObject();
+                requestData.put("email", email.getText().toString());
+                requestData.put("redirect_url", hostname + "new_reset_password");
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+
+                ApiClient apiClient = new ApiClient(mContext);
+
+                apiClient.getLoystarApi(false).sendPasswordResetEmail(requestBody).enqueue(new Callback<PasswordReset>() {
+                    @Override
+                    public void onResponse(@NonNull Call<PasswordReset> call, @NonNull Response<PasswordReset> response) {
+                        showProgress(false);
+
+                        if (response.isSuccessful()) {
+                            new AlertDialog.Builder(mContext)
+                                    .setTitle("Reset Code Sent")
+                                    .setMessage(getString(R.string.reset_code_instructions))
+                                    .setPositiveButton(getString(R.string.enter_code), (dialog, which) -> {
+                                        dialog.dismiss();
+                                        Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
+                                        startActivity(intent);
+                                    })
+                                    .show();
+                        }
+                        else {
+                            new AlertDialog.Builder(mContext)
+                                    .setTitle(getString(R.string.title_invalid_email))
+                                    .setMessage(getString(R.string.feedback_pwdreset_noemail) + email.getText().toString())
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> dialog.dismiss())
+                                    .show();
+                        }
                     }
 
-                    showProgress(true);
-
-                    try {
-                        JSONObject requestData = new JSONObject();
-                        requestData.put("email", email.getText().toString());
-                        requestData.put("redirect_url", hostname + "new_reset_password");
-
-                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-
-                        ApiClient apiClient = new ApiClient(mContext);
-
-                        apiClient.getLoystarApi(false).sendPasswordResetEmail(requestBody).enqueue(new Callback<PasswordReset>() {
-                            @Override
-                            public void onResponse(@NonNull Call<PasswordReset> call, @NonNull Response<PasswordReset> response) {
-                                showProgress(false);
-
-                                if (response.isSuccessful()) {
-                                    new AlertDialog.Builder(mContext)
-                                            .setTitle("Reset Code Sent")
-                                            .setMessage(getString(R.string.reset_code_instructions))
-                                            .setPositiveButton(getString(R.string.enter_code), new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.dismiss();
-                                                    Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
-                                                    startActivity(intent);
-                                                }
-                                            })
-                                            .show();
-                                }
-                                else {
-                                    new AlertDialog.Builder(mContext)
-                                            .setTitle(getString(R.string.title_invalid_email))
-                                            .setMessage(getString(R.string.feedback_pwdreset_noemail) + email.getText().toString())
-                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.dismiss();
-                                                }
-                                            })
-                                            .show();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(@NonNull Call<PasswordReset> call, @NonNull Throwable t) {
-                                showProgress(false);
-                                showSnackbar(R.string.error_internet_connection_timed_out);
-                            }
-                        });
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    @Override
+                    public void onFailure(@NonNull Call<PasswordReset> call, @NonNull Throwable t) {
+                        showProgress(false);
+                        showSnackbar(R.string.error_internet_connection_timed_out);
                     }
-                }
-            });
-        }
+                });
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private boolean validateEmail() {

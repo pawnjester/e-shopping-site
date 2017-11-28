@@ -15,8 +15,6 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 
 public class ProductCategoryDetailActivity extends AppCompatActivity {
 
-    private ProductCategoryEntity mItem;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,7 +25,7 @@ public class ProductCategoryDetailActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             DatabaseManager databaseManager = DatabaseManager.getInstance(this);
-            mItem = databaseManager.getProductCategoryById(getIntent().getIntExtra(ProductCategoryDetailFragment.ARG_ITEM_ID, 0));
+            ProductCategoryEntity mItem = databaseManager.getProductCategoryById(getIntent().getIntExtra(ProductCategoryDetailFragment.ARG_ITEM_ID, 0));
             if (mItem != null) {
                 actionBar.setTitle(mItem.getName());
             }

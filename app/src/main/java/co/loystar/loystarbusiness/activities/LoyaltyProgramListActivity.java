@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -212,37 +211,28 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
             binding.deleteProgramBtn.setTag(binding);
             binding.editProgramBtn.setTag(binding);
 
-            binding.deleteProgramBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
-                    if (loyaltyProgramItemBinding != null) {
-                        final LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
-                        new AlertDialog.Builder(mContext)
-                                .setTitle("Are you sure?")
-                                .setMessage("You won't be able to recover this program.")
-                                .setPositiveButton(mContext.getString(R.string.confirm_delete_positive), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                        LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, loyaltyProgram.getId()).blockingGet();
-                                        if (loyaltyProgramEntity != null) {
-                                            loyaltyProgramEntity.setDeleted(true);
-                                            mDataStore.update(loyaltyProgramEntity).subscribe();
-                                            mAdapter.queryAsync();
-                                            SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+            binding.deleteProgramBtn.setOnClickListener(view -> {
+                LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
+                if (loyaltyProgramItemBinding != null) {
+                    final LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
+                    new AlertDialog.Builder(mContext)
+                            .setTitle("Are you sure?")
+                            .setMessage("You won't be able to recover this program.")
+                            .setPositiveButton(mContext.getString(R.string.confirm_delete_positive), (dialog, which) -> {
+                                dialog.dismiss();
+                                LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, loyaltyProgram.getId()).blockingGet();
+                                if (loyaltyProgramEntity != null) {
+                                    loyaltyProgramEntity.setDeleted(true);
+                                    mDataStore.update(loyaltyProgramEntity).subscribe();
+                                    mAdapter.queryAsync();
+                                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
-                                            showSnackbar(R.string.loyalty_program_deleted);
-                                        }
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-                    }
+                                    showSnackbar(R.string.loyalty_program_deleted);
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }
             });
 

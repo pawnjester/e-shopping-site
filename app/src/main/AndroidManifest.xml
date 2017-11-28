@@ -279,15 +279,6 @@
                 android:value="co.loystar.loystarbusiness.activities.ProductListActivity" />
         </activity>
         <activity
-            android:name=".activities.AddProductCategoryActivity"
-            android:label="@string/title_activity_add_product_category"
-            android:parentActivityName=".activities.ProductCategoryListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.loystar.loystarbusiness.activities.ProductCategoryListActivity" />
-        </activity>
-        <activity
             android:name=".activities.EditProductActivity"
             android:label="@string/title_activity_edit_product"
             android:parentActivityName=".activities.ProductListActivity"
@@ -337,7 +328,7 @@
         <activity
             android:name=".activities.BluetoothDeviseListActivity"
             android:label="@string/title_activity_bluetooth_devise_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

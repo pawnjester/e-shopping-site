@@ -422,12 +422,12 @@ public class CustomerListActivity extends AppCompatActivity
         @Override
         public Filter getFilter() {
             if (filter == null) {
-                filter =  new CustomerFilter<>(new ArrayList<>(mAdapter.performQuery().toList()));
+                filter =  new CustomerFilter(new ArrayList<>(mAdapter.performQuery().toList()));
             }
             return filter;
         }
 
-        private class CustomerFilter<T> extends Filter {
+        private class CustomerFilter extends Filter {
             private ArrayList<CustomerEntity> mCustomers;
 
             CustomerFilter(ArrayList<CustomerEntity> customers) {

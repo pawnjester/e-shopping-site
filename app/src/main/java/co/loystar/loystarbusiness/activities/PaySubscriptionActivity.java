@@ -5,10 +5,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,6 +22,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jakewharton.rxbinding2.view.RxView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,26 +105,19 @@ public class PaySubscriptionActivity extends AppCompatActivity {
         saveMsgView = findViewById(R.id.saveMsg);
         subscriptionSpinner = findViewById(R.id.subscriptionsSpinner);
 
-        payBtn.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-                if (sessionManager.getCurrency().equals("NGN")) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-lite-pay/"));
-                    startActivity(browserIntent);
-                    return;
-                }
-                setupPayChoiceDialog();
-                payChoiceDialog.show();
+        RxView.clicks(payBtn).subscribe(o -> {
+            if (sessionManager.getCurrency().equals("NGN")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-lite-pay/"));
+                startActivity(browserIntent);
+                return;
             }
+            setupPayChoiceDialog();
+            payChoiceDialog.show();
         });
 
-        tryAgainBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                errorView.setVisibility(View.GONE);
-                fetchPricingInfo();
-            }
+        RxView.clicks(tryAgainBtn).subscribe(o -> {
+            errorView.setVisibility(View.GONE);
+            fetchPricingInfo();
         });
 
         fetchPricingInfo();
@@ -141,20 +136,23 @@ public class PaySubscriptionActivity extends AppCompatActivity {
 
             mApiClient.getLoystarApi(false).getPricingPlanPrice(requestBody).enqueue(new Callback<PricingPlan>() {
                 @Override
-                public void onResponse(Call<PricingPlan> call, Response<PricingPlan> response) {
+                public void onResponse(@NonNull Call<PricingPlan> call, @NonNull Response<PricingPlan> response) {
                     if (response.isSuccessful()) {
                         showProgress(false, false);
                         PricingPlan pricingPlan = response.body();
+                        if (pricingPlan == null) {
+                            showProgress(false, true);
+                        } else {
+                            litePlanPriceView.setText(pricingPlan.getPrice());
+                            litePlanSmsBundleView.setText(String.format(Locale.UK, getString(R.string.sms_bundle_lite), pricingPlan.getSmsAllowed()));
+                            currencySymbolView.setText(currencySymbol);
+                            litePlanPrice = Double.parseDouble(pricingPlan.getPrice());
 
-                        litePlanPriceView.setText(pricingPlan.getPrice());
-                        litePlanSmsBundleView.setText(String.format(Locale.UK, getString(R.string.sms_bundle_lite), pricingPlan.getSmsAllowed()));
-                        currencySymbolView.setText(currencySymbol);
-                        litePlanPrice = Double.parseDouble(pricingPlan.getPrice());
+                            String[] subscriptionDurationList = pricingPlan.getSubscriptionDurationList();
+                            List<String> stringList = new ArrayList<>(Arrays.asList(subscriptionDurationList));
 
-                        String[] subscriptionDurationList = pricingPlan.getSubscriptionDurationList();
-                        List<String> stringList = new ArrayList<>(Arrays.asList(subscriptionDurationList));
-
-                        setSubscriptionsDurationSpinner(stringList);
+                            setSubscriptionsDurationSpinner(stringList);
+                        }
                     }
                     else {
                         showProgress(false, true);
@@ -162,7 +160,7 @@ public class PaySubscriptionActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<PricingPlan> call, Throwable t) {
+                public void onFailure(@NonNull Call<PricingPlan> call, @NonNull Throwable t) {
                     showProgress(false, true);
                 }
             });
@@ -224,34 +222,27 @@ public class PaySubscriptionActivity extends AppCompatActivity {
         ImageView mtnMobileMoney = payChoiceDialog.findViewById(R.id.mtn_mobile_money);
         ImageView airtelMoney = payChoiceDialog.findViewById(R.id.airtel_money);
 
-        mtnMobileMoney.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            /*set selected index*/
-                walletProviderSelectedIndex = 1;
-                walletProvider = "MTN";
+        RxView.clicks(mtnMobileMoney).subscribe(o -> {
+          /*set selected index*/
+            walletProviderSelectedIndex = 1;
+            walletProvider = "MTN";
 
-                payChoiceDialog.dismiss();
+            payChoiceDialog.dismiss();
             /*setup second dialog*/
-                setupEnterMobileMoneyNumberDialog();
+            setupEnterMobileMoneyNumberDialog();
             /*then show it*/
-                enterMoMoneyDialog.show();
-
-            }
+            enterMoMoneyDialog.show();
         });
 
-        airtelMoney.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                walletProviderSelectedIndex = 2;
-                walletProvider = "AIRTEL";
+        RxView.clicks(airtelMoney).subscribe(o -> {
+            walletProviderSelectedIndex = 2;
+            walletProvider = "AIRTEL";
 
-                payChoiceDialog.dismiss();
+            payChoiceDialog.dismiss();
             /*setup second dialog*/
-                setupEnterMobileMoneyNumberDialog();
+            setupEnterMobileMoneyNumberDialog();
             /*then show it*/
-                enterMoMoneyDialog.show();
-            }
+            enterMoMoneyDialog.show();
         });
     }
 
@@ -278,52 +269,51 @@ public class PaySubscriptionActivity extends AppCompatActivity {
 
         Button chargePayment = enterMoMoneyDialog.findViewById(R.id.okpay);
 
-        chargePayment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (!editMobileMoneyNumber.isValid()) {
-                    if (editMobileMoneyNumber.getNumber() == null) {
-                        editMobileMoneyNumber.setErrorText(getString(R.string.error_mobile_money_number_required));
-                    }
-                    else {
-                        editMobileMoneyNumber.setErrorText(getString(R.string.error_phone_invalid));
-                    }
-                    return;
+        RxView.clicks(chargePayment).subscribe(o -> {
+            if (!editMobileMoneyNumber.isValid()) {
+                if (editMobileMoneyNumber.getNumber() == null) {
+                    editMobileMoneyNumber.setErrorText(getString(R.string.error_mobile_money_number_required));
                 }
+                else {
+                    editMobileMoneyNumber.setErrorText(getString(R.string.error_phone_invalid));
+                }
+                return;
+            }
 
-                enterMoMoneyDialog.dismiss();
+            enterMoMoneyDialog.dismiss();
 
-                progressDialog = new ProgressDialog(mContext);
-                progressDialog.setTitle("Subscription");
-                progressDialog.setMessage("Please wait! subscription in progress...");
-                progressDialog.show();
+            progressDialog = new ProgressDialog(mContext);
+            progressDialog.setTitle("Subscription");
+            progressDialog.setMessage("Please wait! subscription in progress...");
+            progressDialog.show();
 
-                mobileMoneyNo = editMobileMoneyNumber.getText();
+            mobileMoneyNo = editMobileMoneyNumber.getText();
 
-                try {
-                    JSONObject jsonObjectRequestData = new JSONObject();
-                    jsonObjectRequestData.put("wallet_provider", walletProvider);
-                    jsonObjectRequestData.put("customer_phone", mobileMoneyNo);
-                    jsonObjectRequestData.put("amount", total_amount);
-                    jsonObjectRequestData.put("duration", selectedDuration);
-                    jsonObjectRequestData.put("plan_type", selectedPlan);
+            try {
+                JSONObject jsonObjectRequestData = new JSONObject();
+                jsonObjectRequestData.put("wallet_provider", walletProvider);
+                jsonObjectRequestData.put("customer_phone", mobileMoneyNo);
+                jsonObjectRequestData.put("amount", total_amount);
+                jsonObjectRequestData.put("duration", selectedDuration);
+                jsonObjectRequestData.put("plan_type", selectedPlan);
 
-                    JSONObject requestData =  new JSONObject();
-                    requestData.put("data", jsonObjectRequestData);
+                JSONObject requestData =  new JSONObject();
+                requestData.put("data", jsonObjectRequestData);
 
 
-                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                    mApiClient.getLoystarApi(false).paySubscriptionWithMobileMoney(requestBody).enqueue(new Callback<PaySubscription>() {
-                        @Override
-                        public void onResponse(Call<PaySubscription> call, Response<PaySubscription> response) {
-                            if (progressDialog.isShowing()) {
-                                progressDialog.dismiss();
-                            }
-                            if (response.isSuccessful()) {
-                                PaySubscription paySubscription = response.body();
-
+                mApiClient.getLoystarApi(false).paySubscriptionWithMobileMoney(requestBody).enqueue(new Callback<PaySubscription>() {
+                    @Override
+                    public void onResponse(@NonNull Call<PaySubscription> call, @NonNull Response<PaySubscription> response) {
+                        if (progressDialog.isShowing()) {
+                            progressDialog.dismiss();
+                        }
+                        if (response.isSuccessful()) {
+                            PaySubscription paySubscription = response.body();
+                            if (paySubscription == null) {
+                                Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                            } else {
                                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                         mContext);
 
@@ -331,32 +321,28 @@ public class PaySubscriptionActivity extends AppCompatActivity {
                                 alertDialogBuilder
                                         .setMessage(paySubscription.getDescription())
                                         .setCancelable(false)
-                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                onBackPressed();
-                                            }
-                                        });
+                                        .setPositiveButton("OK", (dialog, id) -> onBackPressed());
 
                                 AlertDialog alertDialog = alertDialogBuilder.create();
                                 alertDialog.show();
+                            }
 
-                            }
-                            else {
-                                Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
-                            }
                         }
-
-                        @Override
-                        public void onFailure(Call<PaySubscription> call, Throwable t) {
-                            if (progressDialog.isShowing()) {
-                                progressDialog.dismiss();
-                            }
+                        else {
                             Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                         }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<PaySubscription> call, @NonNull Throwable t) {
+                        if (progressDialog.isShowing()) {
+                            progressDialog.dismiss();
+                        }
+                        Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         });
     }

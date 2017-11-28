@@ -2,14 +2,12 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.IdRes;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -19,7 +17,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,8 +41,6 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.roughike.bottombar.BottomBar;
-import com.roughike.bottombar.OnTabReselectListener;
-import com.roughike.bottombar.OnTabSelectListener;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -149,17 +144,13 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                             stateWelcomeTextView.setText(getString(R.string.welcome_text, mSessionManager.getFirstName()));
                             stateDescriptionTextView.setText(getString(R.string.start_loyalty_program_empty_state));
                             stateActionBtn.setText(getString(R.string.start_loyalty_program_btn_label));
-                            stateActionBtn.setOnClickListener(view -> {
-                                startLoyaltyProgram();
-                            });
+                            stateActionBtn.setOnClickListener(view -> startLoyaltyProgram());
                         } else {
                             stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_firstsale));
                             stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
                             stateDescriptionTextView.setText(getString(R.string.start_sale_empty_state));
                             stateActionBtn.setText(getString(R.string.start_sale_btn_label));
-                            stateActionBtn.setOnClickListener(view -> {
-                                startSale();
-                            });
+                            stateActionBtn.setOnClickListener(view -> startSale());
                         }
                     } else {
                         chartLayout.setVisibility(View.VISIBLE);

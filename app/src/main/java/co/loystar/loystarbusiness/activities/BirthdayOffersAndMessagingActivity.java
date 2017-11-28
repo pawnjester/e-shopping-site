@@ -56,7 +56,7 @@ public class BirthdayOffersAndMessagingActivity extends AppCompatActivity {
     }
 
     private class BirthdayOffersAndMessagingActivityPagerAdapter extends FragmentStatePagerAdapter {
-        private int mNumOfTabs;;
+        private int mNumOfTabs;
 
         BirthdayOffersAndMessagingActivityPagerAdapter(FragmentManager fm, int numOfTabs) {
             super(fm);

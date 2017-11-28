@@ -51,6 +51,7 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -73,7 +74,6 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
     public final static String PARAM_USER_PASS = "USER_PASS";
-    private static final int RC_SIGN_IN = 100;
     public static final String ARG_ACCOUNT_TYPE = "ARG_ACCOUNT_TYPE";
     public static final String ARG_AUTH_TYPE = "ARG_AUTH_TYPE";
     private final int REQ_SIGN_UP = 101;
@@ -385,7 +385,6 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
         mEmailView.setAdapter(adapter);
     }
 
-
     private interface ProfileQuery {
         String[] PROJECTION = {
                 ContactsContract.CommonDataKinds.Email.ADDRESS,
@@ -393,7 +392,6 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
         };
 
         int ADDRESS = 0;
-        int IS_PRIMARY = 1;
     }
 
     /**
@@ -415,7 +413,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
                         if (merchantWrapper == null) {
                             showSnackbar(R.string.unknown_error);
                         } else {
-                            MerchantWrapper.Merchant merchant = merchantWrapper.getMerchant();
+                            Merchant merchant = merchantWrapper.getMerchant();
                             final MerchantEntity merchantEntity = new MerchantEntity();
                             merchantEntity.setId(merchant.getId());
                             merchantEntity.setFirstName(merchant.getFirst_name());

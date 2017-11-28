@@ -5,12 +5,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,6 +33,7 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.pojos.BusinessType;
@@ -42,6 +43,7 @@ import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPicker;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -90,12 +92,7 @@ public class MyAccountProfileActivity extends AppCompatActivity
         }
         SpinnerButton businessTypeSpinner = findViewById(R.id.business_type_spinner);
         businessTypeSpinner.setEntries(businessTypeEntries);
-        SpinnerButton.OnItemSelectedListener businessTypeSelectedListener = new SpinnerButton.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(int position) {
-                selectedBusinessType = (String) businessTypeEntries[position];
-            }
-        };
+        SpinnerButton.OnItemSelectedListener businessTypeSelectedListener = position -> selectedBusinessType = (String) businessTypeEntries[position];
         businessTypeSpinner.setListener(businessTypeSelectedListener);
 
         fNameView = findViewById(R.id.firstName);
@@ -197,43 +194,53 @@ public class MyAccountProfileActivity extends AppCompatActivity
                 null).enqueue(new Callback<MerchantWrapper>() {
 
             @Override
-            public void onResponse(Call<MerchantWrapper> call, Response<MerchantWrapper> response) {
+            public void onResponse(@NonNull Call<MerchantWrapper> call, @NonNull Response<MerchantWrapper> response) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                 if (response.isSuccessful()) {
-                    MerchantWrapper.Merchant merchant = response.body().getMerchant();
-                    merchantEntity.setBusinessName(merchant.getBusiness_name());
-                    merchantEntity.setEmail(merchant.getEmail());
-                    merchantEntity.setFirstName(merchant.getFirst_name());
-                    merchantEntity.setLastName(merchant.getLast_name());
-                    merchantEntity.setBusinessType(merchant.getBusiness_type());
-                    merchantEntity.setContactNumber(merchant.getContact_number());
-                    merchantEntity.setCurrency(merchant.getCurrency());
-                    mDatabaseManager.updateMerchant(merchantEntity);
+                    MerchantWrapper merchantWrapper =  response.body();
+                    if (merchantWrapper == null) {
+                        showSnackbar(R.string.unknown_error);
+                    } else {
+                        Merchant merchant = merchantWrapper.getMerchant();
+                        merchantEntity.setBusinessName(merchant.getBusiness_name());
+                        merchantEntity.setEmail(merchant.getEmail());
+                        merchantEntity.setFirstName(merchant.getFirst_name());
+                        merchantEntity.setLastName(merchant.getLast_name());
+                        merchantEntity.setBusinessType(merchant.getBusiness_type());
+                        merchantEntity.setContactNumber(merchant.getContact_number());
+                        merchantEntity.setCurrency(merchant.getCurrency());
+                        mDatabaseManager.updateMerchant(merchantEntity);
 
-                    sessionManager.setMerchantSessionData(
-                            merchant.getId(),
-                            merchant.getEmail(),
-                            merchant.getFirst_name(),
-                            merchant.getLast_name(),
-                            merchant.getContact_number(),
-                            merchant.getBusiness_name(),
-                            merchant.getBusiness_type(),
-                            merchant.getCurrency(),
-                            sessionManager.getAccessToken(),
-                            sessionManager.getClientKey()
-                    );
-                    showSnackbar(R.string.profile_update_success);
-                    finish();
+                        sessionManager.setMerchantSessionData(
+                                merchant.getId(),
+                                merchant.getEmail(),
+                                merchant.getFirst_name(),
+                                merchant.getLast_name(),
+                                merchant.getContact_number(),
+                                merchant.getBusiness_name(),
+                                merchant.getBusiness_type(),
+                                merchant.getCurrency(),
+                                sessionManager.getAccessToken(),
+                                sessionManager.getClientKey()
+                        );
+                        showSnackbar(R.string.profile_update_success);
+                        finish();
+                    }
                 } else if (response.code() == 422) {
                     ObjectMapper mapper = ApiUtils.getObjectMapper(false);
                     try {
-                        JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
-                        JSONObject errorObject = new JSONObject(responseObject.toString());
-                        JSONObject errors = errorObject.getJSONObject("errors");
-                        JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
-                        Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                        ResponseBody responseBody = response.errorBody();
+                        if (responseBody == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            JsonNode responseObject = mapper.readTree(responseBody.charStream());
+                            JSONObject errorObject = new JSONObject(responseObject.toString());
+                            JSONObject errors = errorObject.getJSONObject("errors");
+                            JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
+                            Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                        }
                     } catch (IOException | JSONException e) {
                         showSnackbar(R.string.unknown_error);
                         e.printStackTrace();
@@ -249,11 +256,10 @@ public class MyAccountProfileActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(Call<MerchantWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<MerchantWrapper> call, @NonNull Throwable t) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
-                Log.e(TAG, "onFailure: " + t.getMessage() );
                 showSnackbar(R.string.error_internet_connection_timed_out);
             }
         });

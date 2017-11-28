@@ -16,7 +16,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,9 +63,7 @@ import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
@@ -74,9 +71,6 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-
-import static co.loystar.loystarbusiness.utils.Constants.CUSTOMER_PROGRAM_WORTH;
-import static co.loystar.loystarbusiness.utils.Constants.LOYALTY_PROGRAM_TYPE;
 
 public class PointsSaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener {
@@ -166,25 +160,21 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             @Override
             public void onSlide(@NonNull final View bottomSheet, float slideOffset) {
 
-                Runnable draggingStateUpAction = new Runnable() {
-                    public void run() {
-                        //after fully expanded the ony way is down
-                        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                            collapsedToolbar.setVisibility(View.GONE);
-                            collapsedToolbar.setAlpha(0f);
-                            orderSummaryExpandedToolbar.setAlpha(1f);
-                        }
+                Runnable draggingStateUpAction = () -> {
+                    //after fully expanded the ony way is down
+                    if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                        collapsedToolbar.setVisibility(View.GONE);
+                        collapsedToolbar.setAlpha(0f);
+                        orderSummaryExpandedToolbar.setAlpha(1f);
                     }
                 };
 
-                Runnable draggingStateDownAction = new Runnable() {
-                    public void run() {
-                        //after collapsed the only way is up
-                        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                            orderSummaryExpandedToolbar.setVisibility(View.GONE);
-                            collapsedToolbar.setAlpha(1f);
-                            orderSummaryExpandedToolbar.setAlpha(0f);
-                        }
+                Runnable draggingStateDownAction = () -> {
+                    //after collapsed the only way is up
+                    if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                        orderSummaryExpandedToolbar.setVisibility(View.GONE);
+                        collapsedToolbar.setAlpha(1f);
+                        orderSummaryExpandedToolbar.setAlpha(0f);
                     }
                 };
 
@@ -617,9 +607,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     .setIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert))
                     .show());
 
-            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> {
-                setProductCountValue(newValue, binding.getProduct().getId());
-            });
+            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
 
             return new BindingHolder<>(binding);
         }

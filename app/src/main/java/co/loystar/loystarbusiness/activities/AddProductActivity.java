@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -116,10 +117,8 @@ public class AddProductActivity extends AppCompatActivity {
     private SessionManager mSessionManager;
     private DatabaseManager mDatabaseManager;
     private Uri imageUri;
-    private boolean formIsDirty = false;
     private Context mContext;
     private ApiClient mApiClient;
-    private String originalPrice;
     private TextView charCounterView;
     private MerchantEntity merchantEntity;
     private ProductCategoryEntity mProductCategory;
@@ -183,8 +182,9 @@ public class AddProductActivity extends AppCompatActivity {
         List<ProductCategoryEntity> productCategories = mDatabaseManager.getMerchantProductCategories(mSessionManager.getMerchantId());
         if (productCategories.isEmpty()) {
             SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
-                LayoutInflater li = LayoutInflater.from(this);
-                View createCategoryView = li.inflate(R.layout.add_product_category, null);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                LayoutInflater li = LayoutInflater.from(alertDialogBuilder.getContext());
+                @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
                 EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
                 TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
 
@@ -196,7 +196,6 @@ public class AddProductActivity extends AppCompatActivity {
                     charCounterView.setText(char_counter_text);
                 });
 
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
                 alertDialogBuilder.setView(createCategoryView);
                 alertDialogBuilder.setTitle("Create new category");
                 alertDialogBuilder.setPositiveButton("Create", (dialogInterface, i) -> {
@@ -325,12 +324,9 @@ public class AddProductActivity extends AppCompatActivity {
             collapseFabMenu();
             thumbnailView.setImageBitmap(null);
             thumbnailView.destroyDrawingCache();
-            formIsDirty = true;
         });
 
-        takePictureBtn.setOnClickListener(view -> {
-            AddProductActivityPermissionsDispatcher.takePictureWithCheck(this);
-        });
+        takePictureBtn.setOnClickListener(view -> AddProductActivityPermissionsDispatcher.takePictureWithCheck(this));
 
         getAnimations();
     }
@@ -680,7 +676,6 @@ public class AddProductActivity extends AppCompatActivity {
                         .load(imageUri.getPath())
                         .into(thumbnailView);
                 collapseFabMenu();
-                formIsDirty = true;
             }
         } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
