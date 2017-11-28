@@ -107,7 +107,9 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     @Override
     public void onAddPointsFragmentInteraction(Bundle data) {
         Bundle bundle = new Bundle();
+        bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, data.getInt(Constants.TOTAL_CUSTOMER_POINTS, 0));
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
 

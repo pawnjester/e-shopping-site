@@ -114,7 +114,7 @@ public class AddPointsFragment extends Fragment {
         int newTotalPoints = totalCustomerPoints + amountSpent;
 
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.TOTAL_CUSTOMER_POINTS, String.valueOf(newTotalPoints));
+        bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, newTotalPoints);
 
         View view = getActivity().getCurrentFocus();
         if (view != null) {

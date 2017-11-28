@@ -144,6 +144,7 @@ public class AddStampsActivity extends AppCompatActivity {
         int newTotalStamps = initialCustomerStamps + userStampsForThisTransaction;
 
         Bundle bundle = new Bundle();
+        bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
         bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);

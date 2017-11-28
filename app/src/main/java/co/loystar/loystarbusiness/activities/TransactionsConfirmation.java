@@ -46,12 +46,12 @@ import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 public class TransactionsConfirmation extends AppCompatActivity {
 
     private Context mContext;
-    private DatabaseManager mDatabaseManager;
     private CustomerEntity mCustomer;
     private LoyaltyProgramEntity mLoyaltyProgram;
     private SessionManager mSessionManager;
-    private boolean isPrintReceipt;
     private String receiptText = "";
+    private int totalPoints;
+    private int totalStamps;
 
     private View mLayout;
     private TextView programTypeTextView;
@@ -79,13 +79,15 @@ public class TransactionsConfirmation extends AppCompatActivity {
 
         mContext = this;
         mSessionManager = new SessionManager(this);
-        mDatabaseManager = DatabaseManager.getInstance(this);
+        DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
 
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         int mLoyaltyProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         boolean showContinueButton = getIntent().getBooleanExtra(Constants.SHOW_CONTINUE_BUTTON, false);
-        isPrintReceipt = getIntent().getBooleanExtra(Constants.PRINT_RECEIPT, false);
+        boolean isPrintReceipt = getIntent().getBooleanExtra(Constants.PRINT_RECEIPT, false);
         receiptText = getIntent().getStringExtra(Constants.RECEIPT_TEXT);
+        totalPoints = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_POINTS, 0);
+        totalStamps = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_STAMPS, 0);
 
         mLayout = findViewById(R.id.transactions_confirmation_wrapper);
         programTypeTextView = findViewById(R.id.program_type_text);
@@ -105,9 +107,9 @@ public class TransactionsConfirmation extends AppCompatActivity {
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
         mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
 
-        assert mLoyaltyProgram != null;
-        assert mCustomer != null;
-        setupViews(mLoyaltyProgram, mCustomer);
+        if (mLoyaltyProgram != null && mCustomer != null) {
+            setupViews(mLoyaltyProgram, mCustomer);
+        }
     }
 
     private void setupViews(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
@@ -115,7 +117,6 @@ public class TransactionsConfirmation extends AppCompatActivity {
         boolean isStamps = loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program));
         customerNameView.setText(TextUtilsHelper.capitalize(customerEntity.getFirstName() + " now has"));
         if (isPoints) {
-            int totalPoints = mDatabaseManager.getTotalCustomerPointsForProgram(loyaltyProgramEntity.getId(), customerEntity.getId());
             if (totalPoints == 1) {
                 programTypeTextView.setText(getString(R.string.point));
             } else {
@@ -123,7 +124,6 @@ public class TransactionsConfirmation extends AppCompatActivity {
             }
             customerLoyaltyWorthView.setText(String.valueOf(totalPoints));
         } else if (isStamps) {
-            int totalStamps = mDatabaseManager.getTotalCustomerStampsForProgram(loyaltyProgramEntity.getId(), customerEntity.getId());
             if (totalStamps == 1) {
                 programTypeTextView.setText(getString(R.string.stamp));
             } else {

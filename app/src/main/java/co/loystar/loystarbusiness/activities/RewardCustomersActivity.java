@@ -3,7 +3,6 @@ package co.loystar.loystarbusiness.activities;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
@@ -17,7 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -45,8 +43,8 @@ import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.utils.ui.AlphaNumericInputFilter;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.ui.AlphaNumericInputFilter;
 import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
@@ -194,6 +192,18 @@ public class RewardCustomersActivity extends AppCompatActivity {
 
                             Bundle bundle = new Bundle();
 
+                            LoyaltyProgramEntity loyaltyProgramEntity = mDatabaseManager.getLoyaltyProgramById(mSelectedProgramId);
+                            if (loyaltyProgramEntity != null) {
+                                if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
+                                    int totalPoints = mDatabaseManager.getTotalCustomerPointsForProgram(mSelectedProgramId, mSelectedCustomerId);
+                                    bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, totalPoints);
+                                }
+                                else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
+                                    int totalStamps = mDatabaseManager.getTotalCustomerStampsForProgram(mSelectedProgramId, mSelectedCustomerId);
+                                    bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, totalStamps);
+                                }
+                            }
+                            bundle.putBoolean(Constants.PRINT_RECEIPT, true);
                             bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, false);
                             bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mSelectedProgramId);
                             bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomerId);

@@ -517,6 +517,6 @@
     <string name="no_bluetooth_adapter_available">No bluetooth adapter available</string>
     <string name="bluetooth_opened">Bluetooth opened!</string>
     <string name="data_sent_to_printer">Data has been sent to the printer</string>
-    <string name="title_activity_bluetooth_devise_list">Bluetooth Devise List</string>
-    <string name="no_data">No data</string>
+    <string name="title_activity_bluetooth_devise_list">Bluetooth Device List</string>
+    <string name="no_bluetooth_devises_available">No bluetooth devices available</string>
 </resources>

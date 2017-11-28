@@ -35,4 +35,5 @@ public class Constants {
     public static final String ADD_POINTS = "ADD_POINTS";
     public static final String PRINT_RECEIPT = "PRINT_RECEIPT";
     public static final String RECEIPT_TEXT = "RECEIPT_TEXT";
+    public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";
 }
