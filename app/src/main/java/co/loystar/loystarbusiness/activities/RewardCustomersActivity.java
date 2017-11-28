@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -44,11 +45,12 @@ import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.utils.AlphaNumericInputFilter;
+import co.loystar.loystarbusiness.utils.ui.AlphaNumericInputFilter;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -96,14 +98,11 @@ public class RewardCustomersActivity extends AppCompatActivity {
         CustomerAutoCompleteDialogAdapter autoCompleteDialogAdapter = new CustomerAutoCompleteDialogAdapter(mContext, mCustomers);
         customerSelectView.setAdapter(autoCompleteDialogAdapter);
 
-        customerSelectView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mCustomer = (CustomerEntity) adapterView.getItemAtPosition(i);
-                if (mCustomer != null) {
-                    mSelectedCustomerId = mCustomer.getId();
-                    customerSelectView.setText(mCustomer.getFirstName());
-                }
+        customerSelectView.setOnItemClickListener((adapterView, view, i, l) -> {
+            mCustomer = (CustomerEntity) adapterView.getItemAtPosition(i);
+            if (mCustomer != null) {
+                mSelectedCustomerId = mCustomer.getId();
+                customerSelectView.setText(mCustomer.getFirstName());
             }
         });
 
@@ -119,67 +118,65 @@ public class RewardCustomersActivity extends AppCompatActivity {
             programLabels[i] = mLoyaltyPrograms.get(i).getName();
         }
         SpinnerButton selectProgramSpinner = findViewById(R.id.reward_customers_select_program_spinner);
-        SpinnerButton.OnItemSelectedListener programItemSelectedListener = new SpinnerButton.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(int position) {
-                mLoyaltyProgram = mLoyaltyPrograms.get(position);
-                mSelectedProgramId = mLoyaltyProgram.getId();
-            }
+        SpinnerButton.OnItemSelectedListener programItemSelectedListener = position -> {
+            mLoyaltyProgram = mLoyaltyPrograms.get(position);
+            mSelectedProgramId = mLoyaltyProgram.getId();
         };
         selectProgramSpinner.setListener(programItemSelectedListener);
         selectProgramSpinner.setEntries(programLabels);
 
         BrandButtonNormal submitBtn = findViewById(R.id.activity_reward_customers_submit_btn);
-        submitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (redemptionCodeView.getText().toString().isEmpty() || redemptionCodeView.getText().toString().length() != 6) {
-                    if (redemptionCodeView.getText().toString().isEmpty()) {
-                        redemptionCodeView.setError(getString(R.string.error_redemption_code_required));
-                        redemptionCodeView.requestFocus();
-                        return;
+        submitBtn.setOnClickListener(view -> {
+            if (redemptionCodeView.getText().toString().isEmpty() || redemptionCodeView.getText().toString().length() != 6) {
+                if (redemptionCodeView.getText().toString().isEmpty()) {
+                    redemptionCodeView.setError(getString(R.string.error_redemption_code_required));
+                    redemptionCodeView.requestFocus();
+                    return;
+                }
+                else if (redemptionCodeView.getText().toString().length() != 6) {
+                    redemptionCodeView.setError(getString(R.string.error_redemption_code_length));
+                    redemptionCodeView.requestFocus();
+                    return;
+                }
+            }
+            if (mCustomer == null) {
+                customerSelectView.setError(getString(R.string.error_select_customer));
+                customerSelectView.requestFocus();
+                return;
+            }
+            if (mLoyaltyProgram == null) {
+                showSnackbar(R.string.error_loyalty_program_required);
+                return;
+            }
+
+
+            if (mCustomer == null) {
+                return;
+            }
+
+            progressDialog = new ProgressDialog(mContext);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMessage(getString(R.string.a_moment));
+            progressDialog.show();
+
+            ApiClient apiClient = new ApiClient(mContext);
+            apiClient.getLoystarApi(false).redeemReward(
+                    redemptionCodeView.getText().toString(),
+                    mSelectedCustomerId,
+                    mSelectedProgramId).enqueue(new Callback<Transaction>() {
+                @Override
+                public void onResponse(@NonNull Call<Transaction> call, @NonNull Response<Transaction> response) {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
                     }
-                    else if (redemptionCodeView.getText().toString().length() != 6) {
-                        redemptionCodeView.setError(getString(R.string.error_redemption_code_length));
-                        redemptionCodeView.requestFocus();
-                        return;
-                    }
-                }
-                if (mCustomer == null) {
-                    customerSelectView.setError(getString(R.string.error_select_customer));
-                    customerSelectView.requestFocus();
-                    return;
-                }
-                if (mLoyaltyProgram == null) {
-                    showSnackbar(R.string.error_loyalty_program_required);
-                    return;
-                }
 
+                    if (response.isSuccessful()) {
+                        Transaction transaction = response.body();
 
-                if (mCustomer == null) {
-                    return;
-                }
-
-                progressDialog = new ProgressDialog(mContext);
-                progressDialog.setIndeterminate(true);
-                progressDialog.setMessage(getString(R.string.a_moment));
-                progressDialog.show();
-
-                ApiClient apiClient = new ApiClient(mContext);
-                apiClient.getLoystarApi(false).redeemReward(
-                        redemptionCodeView.getText().toString(),
-                        mSelectedCustomerId,
-                        mSelectedProgramId).enqueue(new Callback<Transaction>() {
-                    @Override
-                    public void onResponse(Call<Transaction> call, Response<Transaction> response) {
-                        if (progressDialog.isShowing()) {
-                            progressDialog.dismiss();
-                        }
-
-                        if (response.isSuccessful()) {
-                            Transaction transaction = response.body();
-
-                            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                        SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                        if (transaction == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
                             transactionEntity.setId(transaction.getId());
                             transactionEntity.setAmount(transaction.getAmount());
                             transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
@@ -195,38 +192,26 @@ public class RewardCustomersActivity extends AppCompatActivity {
                             transactionEntity.setMerchant(mDatabaseManager.getMerchant(mSessionManager.getMerchantId()));
                             mDatabaseManager.insertNewSalesTransaction(transactionEntity);
 
-                            Bundle arguments = new Bundle();
+                            Bundle bundle = new Bundle();
 
-                            arguments.putBoolean(Constants.SHOW_CONTINUE_BUTTON, false);
-                            arguments.putLong(Constants.LOYALTY_PROGRAM_ID, mSelectedProgramId);
-                            arguments.putLong(Constants.CUSTOMER_ID, mSelectedCustomerId);
-                            arguments.putString(Constants.CUSTOMER_NAME, mCustomer.getFirstName());
-
-                            if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
-                                int totalPoints = mDatabaseManager.getTotalCustomerPointsForProgram(
-                                        mSelectedProgramId, mSelectedCustomerId);
-
-                                arguments.putString(Constants.LOYALTY_PROGRAM_TYPE, getString(R.string.simple_points));
-                                arguments.putString(Constants.CUSTOMER_PROGRAM_WORTH, String.valueOf(totalPoints));
-
-                            }
-                            else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
-                                int totalStamps = mDatabaseManager.getTotalCustomerStampsForProgram(
-                                        mSelectedProgramId, mSelectedCustomerId);
-
-                                arguments.putString(Constants.LOYALTY_PROGRAM_TYPE, getString(R.string.stamps_program));
-                                arguments.putString(Constants.CUSTOMER_PROGRAM_WORTH, String.valueOf(totalStamps));
-                            }
+                            bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, false);
+                            bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mSelectedProgramId);
+                            bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomerId);
 
                             Intent intent = new Intent(mContext, TransactionsConfirmation.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            intent.putExtras(arguments);
+                            intent.putExtras(bundle);
                             startActivity(intent);
+                        }
 
-                        } else if (response.code() == 412) {
-                            ObjectMapper mapper = ApiUtils.getObjectMapper(false);
-                            try {
-                                JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+                    } else if (response.code() == 412) {
+                        ObjectMapper mapper = ApiUtils.getObjectMapper(false);
+                        try {
+                            ResponseBody responseBody = response.errorBody();
+                            if (responseBody == null) {
+                                showSnackbar(R.string.unknown_error);
+                            } else {
+                                JsonNode responseObject = mapper.readTree(responseBody.charStream());
                                 JSONObject errorObject = new JSONObject(responseObject.toString());
                                 JSONObject error = errorObject.getJSONObject("error");
 
@@ -254,53 +239,53 @@ public class RewardCustomersActivity extends AppCompatActivity {
                                 alertDialogBuilder.setTitle(error.getString("message"));
                                 alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
 
-                                alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                });
+                                alertDialogBuilder.setPositiveButton(android.R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss());
 
                                 alertDialogBuilder.create().show();
-
-                            } catch (IOException | JSONException e) {
-                                showSnackbar(R.string.unknown_error);
-                                e.printStackTrace();
                             }
-                        } else if (response.code() == 404) {
-                            redemptionCodeView.setError(getString(R.string.error_redemption_code_incorrect));
-                            redemptionCodeView.requestFocus();
-                        } else if (response.code() == 422) {
-                            ObjectMapper mapper = ApiUtils.getObjectMapper(false);
-                            try {
-                                JsonNode responseObject = mapper.readTree(response.errorBody().charStream());
+
+                        } catch (IOException | JSONException e) {
+                            showSnackbar(R.string.unknown_error);
+                            e.printStackTrace();
+                        }
+                    } else if (response.code() == 404) {
+                        redemptionCodeView.setError(getString(R.string.error_redemption_code_incorrect));
+                        redemptionCodeView.requestFocus();
+                    } else if (response.code() == 422) {
+                        ObjectMapper mapper = ApiUtils.getObjectMapper(false);
+                        try {
+                            ResponseBody responseBody = response.errorBody();
+                            if (responseBody == null) {
+                                showSnackbar(R.string.unknown_error);
+                            } else {
+                                JsonNode responseObject = mapper.readTree(responseBody.charStream());
                                 JSONObject errorObject = new JSONObject(responseObject.toString());
                                 JSONObject errors = errorObject.getJSONObject("errors");
                                 JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
                                 Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
-                            } catch (IOException | JSONException e) {
-                                showSnackbar(R.string.unknown_error);
-                                e.printStackTrace();
                             }
-                        } else {
-                            if (response.code() == 401) {
-                                AccountManager accountManager = AccountManager.get(mContext);
-                                accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
-                            }
+                        } catch (IOException | JSONException e) {
                             showSnackbar(R.string.unknown_error);
+                            e.printStackTrace();
                         }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Transaction> call, Throwable t) {
-                        if (progressDialog.isShowing()) {
-                            progressDialog.dismiss();
+                    } else {
+                        if (response.code() == 401) {
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                         }
-                        showSnackbar(R.string.error_internet_connection_timed_out);
+                        showSnackbar(R.string.unknown_error);
                     }
-                });
+                }
 
-            }
+                @Override
+                public void onFailure(@NonNull Call<Transaction> call, @NonNull Throwable t) {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+                    showSnackbar(R.string.error_internet_connection_timed_out);
+                }
+            });
+
         });
     }
 

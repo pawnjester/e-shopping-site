@@ -1,30 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:card_view="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="co.loystar.loystarbusiness.activities.AddStampsActivity"
-    tools:showIn="@layout/activity_add_stamps">
+    tools:context="co.loystar.loystarbusiness.fragments.AddPointsFragment">
+
 
     <android.support.v7.widget.CardView
-        android:id="@+id/stamps_count_cv"
+        android:id="@+id/addPointsCardView"
         android:layout_width="match_parent"
-        android:layout_margin="1dp"
         android:layout_height="50dp"
+        android:layout_margin="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         card_view:cardElevation="4dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <TextView
-                android:id="@+id/total_stamps"
+                android:id="@+id/total_points"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -40,23 +42,23 @@
 
     </android.support.v7.widget.CardView>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/stamps_rv"
-        android:layout_below="@+id/stamps_count_cv"
-        android:layout_above="@+id/add_stamps"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:scrollbars="vertical" />
-
-    <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
-        android:id="@+id/add_stamps"
+    <co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText
+        android:id="@+id/currencyEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/confirm_transaction"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:textSize="@dimen/login_button_text_size" />
+        android:layout_marginTop="8dp"
+        app:formatWithTextFormatter="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addPointsCardView"/>
 
-</RelativeLayout>
+    <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+        android:id="@+id/addPoints"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:text="@string/action_add_points"
+        app:layout_constraintTop_toBottomOf="@+id/currencyEditText"/>
+
+
+</android.support.constraint.ConstraintLayout>

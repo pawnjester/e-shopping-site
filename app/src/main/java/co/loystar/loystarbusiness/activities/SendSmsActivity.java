@@ -181,7 +181,7 @@ public class SendSmsActivity extends AppCompatActivity {
                                     }
 
                                     if (response.isSuccessful()) {
-                                        Snackbar.make(mLayout, R.string.sms_sent_notice,
+                                        Snackbar.make(mLayout, R.string.message_sent_notice,
                                                 Snackbar.LENGTH_INDEFINITE)
                                                 .setAction(R.string.ok, new View.OnClickListener() {
                                                     @Override

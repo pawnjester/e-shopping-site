@@ -1,10 +1,9 @@
 package co.loystar.loystarbusiness.fragments;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -26,6 +25,7 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.CustomerDetailActivityEventBus;
 import co.loystar.loystarbusiness.utils.TimeUtils;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
@@ -42,7 +42,6 @@ public class CustomerDetailFragment extends Fragment {
     private CustomerEntity mItem;
     private boolean mTwoPane;
     private String last_visit;
-    private MerchantEntity merchantEntity;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
 
@@ -93,10 +92,10 @@ public class CustomerDetailFragment extends Fragment {
                     mSessionManager.getMerchantId(),
                     mItem.getId()
             );
-            merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
+            MerchantEntity merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
             assert merchantEntity != null;
             SalesTransactionEntity lastTransaction = mDatabaseManager.getCustomerLastTransaction(
-                 merchantEntity,
+                    merchantEntity,
                     mItem
             );
 
@@ -165,6 +164,12 @@ public class CustomerDetailFragment extends Fragment {
                 Intent redeemIntent = new Intent(getActivity(), RewardCustomersActivity.class);
                 redeemIntent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
                 startActivity(redeemIntent);
+            });
+
+            rootView.findViewById(R.id.sellBtn).setOnClickListener(v -> {
+                CustomerDetailActivityEventBus
+                        .getInstance()
+                        .postFragmentAction(CustomerDetailActivityEventBus.ACTION_START_SALE);
             });
         }
         return rootView;

@@ -10,7 +10,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -124,6 +123,7 @@ public class AddStampsActivity extends AppCompatActivity {
             transactionEntity.setId(lastTransactionRecord.getId() + 1);
         }
         transactionEntity.setSynced(false);
+        transactionEntity.setSendSms(true);
         transactionEntity.setAmount(amountSpent);
         transactionEntity.setMerchantLoyaltyProgramId(mProgramId);
         transactionEntity.setPoints(0);
@@ -144,15 +144,13 @@ public class AddStampsActivity extends AppCompatActivity {
         int newTotalStamps = initialCustomerStamps + userStampsForThisTransaction;
 
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.LOYALTY_PROGRAM_TYPE, getString(R.string.stamps_program));
-        bundle.putString(Constants.CUSTOMER_NAME, mCustomer.getFirstName());
-        bundle.putString(Constants.CUSTOMER_PROGRAM_WORTH, String.valueOf(newTotalStamps));
+        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-        bundle.putLong(Constants.LOYALTY_PROGRAM_ID, mProgramId);
-        bundle.putLong(Constants.CUSTOMER_ID, mCustomerId);
+        bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
+        bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
 
         Intent intent = new Intent(mContext, TransactionsConfirmation.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtras(bundle);
         startActivity(intent);
     }

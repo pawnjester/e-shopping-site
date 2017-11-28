@@ -16,8 +16,8 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 78
+        versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
@@ -131,6 +131,7 @@ dependencies {
     compile 'com.trello.rxlifecycle2:rxlifecycle:2.2.1'
     compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.1'
     compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.2.1'
+    compile group: 'com.mixpanel.android', name: 'mixpanel-android', version: '5.2.1'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.roughike:bottom-bar:2.3.1'

@@ -31,4 +31,8 @@ public class Constants {
     public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
     public static final String PRODUCT_ID = "PRODUCT_ID";
     public static final String AMOUNT_SPENT = "AMOUNT_SPENT";
+    public static final String TOTAL_CUSTOMER_POINTS = "TOTAL_CUSTOMER_POINTS";
+    public static final String ADD_POINTS = "ADD_POINTS";
+    public static final String PRINT_RECEIPT = "PRINT_RECEIPT";
+    public static final String RECEIPT_TEXT = "RECEIPT_TEXT";
 }

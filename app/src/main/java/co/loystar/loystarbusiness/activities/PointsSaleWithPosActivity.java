@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -29,13 +30,18 @@ import com.bumptech.glide.request.RequestOptions;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
+import org.joda.time.DateTime;
+
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -43,6 +49,7 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
@@ -64,6 +71,9 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+
+import static co.loystar.loystarbusiness.utils.Constants.CUSTOMER_PROGRAM_WORTH;
+import static co.loystar.loystarbusiness.utils.Constants.LOYALTY_PROGRAM_TYPE;
 
 public class PointsSaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener {
@@ -302,7 +312,71 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         });
 
         RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
+            ArrayList<Integer> ids = new ArrayList<>();
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                ids.add(mSelectedProducts.keyAt(i));
+            }
+            Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(ids))
+                    .orderBy(ProductEntity.UPDATED_AT.desc())
+                    .get();
 
+            List<ProductEntity> productEntities = result.toList();
+            for (int i = 0; i < productEntities.size(); i ++) {
+                ProductEntity product = productEntities.get(i);
+                String template = "%.2f";
+                double tc = product.getPrice() * mSelectedProducts.get(product.getId());
+                int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
+
+                SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                SalesTransactionEntity lastTransactionRecord = mDataStore.select(SalesTransactionEntity.class)
+                        .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesTransactionEntity.CREATED_AT.desc()).get().first();
+
+                /* set temporary id*/
+                if (lastTransactionRecord == null) {
+                    transactionEntity.setId(1);
+                } else {
+                    transactionEntity.setId(lastTransactionRecord.getId() + 1);
+                }
+                transactionEntity.setSynced(false);
+                transactionEntity.setAmount(totalCost);
+                transactionEntity.setMerchantLoyaltyProgramId(mProgramId);
+                transactionEntity.setPoints(totalCost);
+                transactionEntity.setStamps(0);
+                transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+                transactionEntity.setProductId(product.getId());
+                transactionEntity.setProgramType(getString(R.string.simple_points));
+                if (mSelectedCustomer != null) {
+                    transactionEntity.setUserId(mSelectedCustomer.getUserId());
+                }
+
+                transactionEntity.setMerchant(merchantEntity);
+                transactionEntity.setCustomer(mSelectedCustomer);
+
+                if (i + 1 == productEntities.size()) {
+                    transactionEntity.setSendSms(true);
+                    mDataStore.insert(transactionEntity).subscribe(/*no-op*/);
+                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(() -> {
+                        Bundle bundle = new Bundle();
+                        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+                        bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
+                        bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
+                        bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+
+                        Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtras(bundle);
+                        startActivity(intent);
+                    }, 200);
+                } else {
+                    transactionEntity.setSendSms(false);
+                    mDataStore.insert(transactionEntity).subscribe(/*no-op*/);
+                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                }
+            }
         });
 
         if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {

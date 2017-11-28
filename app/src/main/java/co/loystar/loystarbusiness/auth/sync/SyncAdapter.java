@@ -398,7 +398,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // Upload transactions that have not been synced with the server
                 for (final SalesTransactionEntity transactionEntity : unsyncedTransactions) {
                     LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
-                    final CustomerEntity customer = mDatabaseManager.getCustomerById(transactionEntity.getCustomer().getId());
+                    final CustomerEntity customer = transactionEntity.getCustomer();
+                    Log.e(TAG, "syncTransactions: " + customer );
                     if (customer != null) {
 
                         try {
@@ -408,7 +409,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             jsonObjectData.put("merchant_id", merchantEntity.getId());
                             jsonObjectData.put("amount", transactionEntity.getAmount());
 
-                            jsonObjectData.put("product_id", transactionEntity.getProductId());
+                            jsonObjectData.put("send_sms", transactionEntity.isSendSms());
+
+                            if (transactionEntity.getProductId() > 0) {
+                                jsonObjectData.put("product_id", transactionEntity.getProductId());
+                            }
 
                             if (programEntity != null) {
 
@@ -458,6 +463,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     @Override
                                     public void onFailure(@NonNull Call<Transaction> call, @NonNull Throwable t) {
                                         t.printStackTrace();
+                                        Log.e(TAG, "onFailure: " + t.getMessage() );
                                     }
                                 });
 

@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils;
+package co.loystar.loystarbusiness.utils.ui;
 
 import android.text.InputFilter;
 import android.text.Spanned;

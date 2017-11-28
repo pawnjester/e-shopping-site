@@ -23,7 +23,6 @@
         <attr name="formatWithTextFormatter" format="boolean"/>
     </declare-styleable>
 
-
     <declare-styleable name="IncrementDecrementButton">
         <attr name="backGroundColor" />
         <attr name="initialNumber" format="integer"/>
@@ -35,6 +34,10 @@
 
     <declare-styleable name="CartCountButton">
         <attr name="backGroundColor" />
+    </declare-styleable>
+
+    <declare-styleable name="BrandButtonTransparent">
+        <attr name="backgroundDrawable"/>
     </declare-styleable>
 
 </resources>

@@ -5,7 +5,9 @@ import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +31,11 @@ public class TextUtilsHelper {
         String m = (calendar.get(Calendar.MONTH) + 1) < 10 ? ("0" + (calendar.get(Calendar.MONTH) + 1)) : String.valueOf(calendar.get(Calendar.MONTH) + 1);
         String d = calendar.get(Calendar.DATE) < 10 ? ("0" + calendar.get(Calendar.DATE)) : String.valueOf(calendar.get(Calendar.DATE));
         return  calendar.get(Calendar.YEAR) + "-" + m + "-" + d;
+    }
+
+    public static String getFormattedDateTimeString(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa", Locale.UK);
+        return dateFormat.format(calendar.getTime());
     }
 
     public static boolean isValidEmailAddress(String emailAddress) {
@@ -60,7 +67,7 @@ public class TextUtilsHelper {
 
     public static String capitalize(@NonNull String text) {
         if (TextUtils.isEmpty(text)) {
-            return text;
+            return "";
         }
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }

@@ -209,7 +209,7 @@
 
         <Button
             style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/button16"
+            android:id="@+id/sellBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/record_sale"
@@ -225,8 +225,8 @@
             android:text="@string/message"
             app:layout_constraintEnd_toStartOf="@+id/redeemBtn"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/button16"
-            app:layout_constraintTop_toTopOf="@+id/button16" />
+            app:layout_constraintStart_toEndOf="@+id/sellBtn"
+            app:layout_constraintTop_toTopOf="@+id/sellBtn" />
 
         <Button
             style="?android:attr/buttonBarButtonStyle"

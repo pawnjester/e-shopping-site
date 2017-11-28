@@ -230,7 +230,9 @@
     <string name="send">Send</string>
     <string name="enter_message">Enter message</string>
     <string name="image">Image</string>
-    <string name="sms_sent_notice">Message successfully sent.</string>
+    <string name="message_sent_notice">Message successfully sent.</string>
+    <string name="sms_would_be_sent_notice">SMS would be sent shortly.</string>
+    <string name="sms_sent_notice">SMS has been successfully sent.</string>
     <string name="error_sending_sms">Sorry! we coudn\'t send your message. Please try again.</string>
     <string name="sms_messages_queued">Your Messages have been queued for immediate delivery. Thank You.</string>
     <string name="customer_name_placeholder_explanation">By clicking on \'INSERT CUSTOMER NAME\', [CUSTOMER_NAME] will be inserted. This will be replaced with customers\' name.</string>
@@ -332,7 +334,6 @@
     <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
     <string name="pos_turn_off_notice">POS  has been disabled.</string>
     <string name="pos_turn_on_notice">POS has been enabled.</string>
-
 
     <string name="account">Account</string>
     <string name="title_activity_my_account_profile">My Profile</string>
@@ -502,4 +503,20 @@
     <string name="title_activity_add_stamps">Add Stamps</string>
     <string name="confirm_transaction">Confirm Transaction</string>
     <string name="total_stamps">Total Stamps: %1$s</string>
+    <string name="total_points">Total Points: %1$s</string>
+    <string name="action_add_points">Add points</string>
+    <string name="error_amount_required">Please enter amount spent</string>
+    <string name="sales_belongs_to">This sale belongs to</string>
+    <string name="amount_spent_hint">Amount spent by customer</string>
+    <string name="continue_label">Continue</string>
+    <string name="points">Points</string>
+    <string name="point">Point</string>
+    <string name="stamps">Stamps</string>
+    <string name="stamp">Stamp</string>
+    <string name="print_receipt">Print Receipt</string>
+    <string name="no_bluetooth_adapter_available">No bluetooth adapter available</string>
+    <string name="bluetooth_opened">Bluetooth opened!</string>
+    <string name="data_sent_to_printer">Data has been sent to the printer</string>
+    <string name="title_activity_bluetooth_devise_list">Bluetooth Devise List</string>
+    <string name="no_data">No data</string>
 </resources>
