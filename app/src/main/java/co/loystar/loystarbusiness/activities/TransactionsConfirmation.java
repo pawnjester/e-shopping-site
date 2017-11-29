@@ -19,6 +19,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -42,13 +43,13 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 
 public class TransactionsConfirmation extends AppCompatActivity {
-
+    private static final String TAG = TransactionsConfirmation.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
     @SuppressLint("UseSparseArrays")
@@ -345,13 +346,30 @@ public class TransactionsConfirmation extends AppCompatActivity {
     // this will send text data to be printed by the bluetooth printer
     void sendData(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
         try {
-            String currency = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
+            PrintTextFormatter formatter = new PrintTextFormatter();
             String td = "%.2f";
             double totalCharge = 0;
             StringBuilder BILL = new StringBuilder();
-            BILL.append("\n").append(mSessionManager.getBusinessName()).append("\n");
-            BILL.append("      ").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())).append("\n");
-            BILL.append("-----------------------------------------").append("\n\n");
+
+            /*print business name start*/
+            BILL.append("\n").append(mSessionManager.getBusinessName());
+            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.centerAlign());
+            BILL = new StringBuilder();
+            /* print business name end*/
+
+            /*print timestamp start*/
+            BILL.append("\n").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()));
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
+            BILL = new StringBuilder();
+            /*print timestamp end*/
+
+            BILL.append("\n").append("-----------------------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
+
+            BILL.append("\n\n");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
 
             for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
                 ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
@@ -359,23 +377,43 @@ public class TransactionsConfirmation extends AppCompatActivity {
                     double tc = productEntity.getPrice() * orderItem.getValue();
                     totalCharge += tc;
                     int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
-                    BILL.append(productEntity.getName()).append("\n");
-                    BILL.append(orderItem.getValue())
+
+                    BILL.append("\n").append(productEntity.getName());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+                    BILL = new StringBuilder();
+
+                    BILL.append("\n").append(orderItem.getValue())
                             .append(" ")
                             .append("x")
                             .append(" ")
                             .append(productEntity.getPrice())
                             .append("      ")
-                            .append(currency)
-                            .append(tcv).append("\n\n");
+                            .append(tcv);
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+                    BILL = new StringBuilder();
+
+                    BILL.append("\n\n");
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+                    BILL = new StringBuilder();
                 }
             }
 
-            BILL.append("-----------------------------------------").append("\n");
+            BILL.append("\n").append("-----------------------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
 
             totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-            BILL.append("TOTAL").append("         ").append(currency).append(totalCharge).append("\n\n");
-            BILL.append("-----------------------------------------").append("\n");
+            BILL.append("\n").append("TOTAL").append("         ").append(totalCharge);
+            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.get());
+            BILL = new StringBuilder();
+
+            BILL.append("\n\n");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
+
+            BILL.append("\n").append("-----------------------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
 
             String pTxt;
             if (totalPoints == 1) {
@@ -384,24 +422,35 @@ public class TransactionsConfirmation extends AppCompatActivity {
                 pTxt = getString(R.string.points);
             }
             int pointsDiff = loyaltyProgramEntity.getThreshold() - totalPoints;
-            BILL.append(customerEntity.getFirstName())
+            BILL.append("\n").append(customerEntity.getFirstName())
                     .append(" you now have ")
                     .append(totalPoints)
                     .append(" ")
                     .append(pTxt)
                     .append(", spend ")
-                    .append(currency)
                     .append(pointsDiff)
                     .append(" more to get your ")
-                    .append(loyaltyProgramEntity.getReward()).append("\n");
-            BILL.append("Than you for your patronage.").append("\n\n");
-            BILL.append("    POWERED BY LOYSTAR     ");
+                    .append(loyaltyProgramEntity.getReward());
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
 
+            BILL.append("Thank you for your patronage.");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
+
+            BILL.append("\n\n");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL = new StringBuilder();
+
+            BILL.append("\nPOWERED BY LOYSTAR");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
+            BILL = new StringBuilder();
+
+            byte[] mFormat = new byte[]{27, 33, 0};
+            mmOutputStream.write(mFormat);
             mmOutputStream.write(BILL.toString().getBytes());
-            mmOutputStream.write(0x0D);
-            mmOutputStream.write(0x0D);
-            mmOutputStream.write(0x0D);
             mmOutputStream.flush();
+            mmSocket.close();
         } catch (Exception e) {
             showSnackbar(e.getMessage());
             e.printStackTrace();
@@ -417,6 +466,30 @@ public class TransactionsConfirmation extends AppCompatActivity {
             mmSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method to write with a given format
+     *
+     * @param buffer     the array of bytes to actually write
+     * @param pFormat    The format byte array
+     * @param pAlignment The alignment byte array
+     * @return true on successful write, false otherwise
+     */
+    private boolean writeWithFormat(byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
+        try {
+            // Notify printer it should be printed with given alignment:
+            mmOutputStream.write(pAlignment);
+            // Notify printer it should be printed in the given format:
+            mmOutputStream.write(pFormat);
+            // Write the actual data:
+            mmOutputStream.write(buffer, 0, buffer.length);
+
+            return true;
+        } catch (IOException e) {
+            Log.e(TAG, "Exception during write", e);
+            return false;
         }
     }
 
