@@ -34,6 +34,7 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -74,6 +75,7 @@ import io.requery.reactivex.ReactiveResult;
 
 public class PointsSaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener {
+
     private static final String TAG = PointsSaleWithPosActivity.class.getSimpleName();
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
@@ -361,6 +363,12 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                             bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
                             bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
                             bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+
+                            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                            for (int x = 0; x < mSelectedProducts.size(); x++) {
+                                orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+                            }
+                            bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
 
                             Intent intent = new Intent(mContext, TransactionsConfirmation.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -15,14 +16,12 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.view.RxView;
 
@@ -30,6 +29,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,7 +40,9 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
@@ -46,12 +50,12 @@ import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 public class TransactionsConfirmation extends AppCompatActivity {
 
     private Context mContext;
-    private CustomerEntity mCustomer;
-    private LoyaltyProgramEntity mLoyaltyProgram;
     private SessionManager mSessionManager;
-    private String receiptText = "";
+    @SuppressLint("UseSparseArrays")
+    private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
     private int totalPoints;
     private int totalStamps;
+    private DatabaseManager mDatabaseManager;
 
     private View mLayout;
     private TextView programTypeTextView;
@@ -61,10 +65,20 @@ public class TransactionsConfirmation extends AppCompatActivity {
     private BrandButtonTransparent printReceiptBtn;
 
     /*bluetooth print*/
-    BluetoothSocket mBluetoothSocket;
     OutputStream mBtOutputStream;
-    private byte FONT_TYPE;
+    BluetoothAdapter mBluetoothAdapter;
+    BluetoothSocket mmSocket;
+    BluetoothDevice mmDevice;
 
+    OutputStream mmOutputStream;
+    InputStream mmInputStream;
+    Thread workerThread;
+
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
+
+    @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,13 +93,13 @@ public class TransactionsConfirmation extends AppCompatActivity {
 
         mContext = this;
         mSessionManager = new SessionManager(this);
-        DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
+        mDatabaseManager = DatabaseManager.getInstance(this);
 
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         int mLoyaltyProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         boolean showContinueButton = getIntent().getBooleanExtra(Constants.SHOW_CONTINUE_BUTTON, false);
         boolean isPrintReceipt = getIntent().getBooleanExtra(Constants.PRINT_RECEIPT, false);
-        receiptText = getIntent().getStringExtra(Constants.RECEIPT_TEXT);
+        mOrderSummaryItems = (HashMap<Integer, Integer>) getIntent().getSerializableExtra(Constants.ORDER_SUMMARY_ITEMS);
         totalPoints = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_POINTS, 0);
         totalStamps = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_STAMPS, 0);
 
@@ -104,8 +118,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
             printReceiptBtn.setVisibility(View.VISIBLE);
         }
 
-        mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
-        mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
+        CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        LoyaltyProgramEntity mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
 
         if (mLoyaltyProgram != null && mCustomer != null) {
             setupViews(mLoyaltyProgram, mCustomer);
@@ -156,7 +170,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
         });
 
         RxView.clicks(printReceiptBtn).subscribe(o -> {
-            connect();
+            establishBluetoothConnection();
+            sendData(loyaltyProgramEntity, customerEntity);
         });
     }
 
@@ -216,88 +231,194 @@ public class TransactionsConfirmation extends AppCompatActivity {
         }
     };
 
-    protected void connect() {
-        if(mBluetoothSocket == null){
-            Intent BTIntent = new Intent(TransactionsConfirmation.this, BluetoothDeviseListActivity.class);
-            startActivityForResult(BTIntent, BluetoothDeviseListActivity.REQUEST_CONNECT_BT);
-        }
-        else{
-            OutputStream outputStream = null;
-            try {
-                outputStream = mBluetoothSocket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mBtOutputStream = outputStream;
-            printBt();
-        }
-    }
-
-    private void printBt() {
-        try {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            mBtOutputStream = mBluetoothSocket.getOutputStream();
-
-            byte[] printFormat = { 0x1B, 0x21, FONT_TYPE };
-            mBtOutputStream.write(printFormat);
-            String BILL = "";
-
-            BILL = "\n" + mSessionManager.getBusinessName() + "    "
-                    + TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()) +"\n";
-            BILL = BILL
-                    + "-----------------------------------------";
-            BILL = BILL + "\n\n";
-            BILL = BILL + "Total Qty:" + "      " + "2.0\n";
-            BILL = BILL + "Total Value:" + "     "
-                    + "17625.0\n";
-            BILL = BILL
-                    + "-----------------------------------------\n";
-            mBtOutputStream.write(BILL.getBytes());
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.flush();
-        } catch (IOException e) {
-            Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
-            if(mBluetoothSocket!= null){
-                mBtOutputStream.close();
-                mBluetoothSocket.close();
-                mBluetoothSocket = null;
-            }
+            closeBT();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == BluetoothDeviseListActivity.REQUEST_CONNECT_BT) {
-            if (resultCode == RESULT_OK) {
-                try {
-                    mBluetoothSocket = BluetoothDeviseListActivity.getSocket();
-                    if(mBluetoothSocket != null){
-                        printBt();
-                    }
+    void establishBluetoothConnection() {
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-                } catch (Exception e) {
-                    Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
+            if(mBluetoothAdapter == null) {
+                showSnackbar(R.string.no_bluetooth_adapter_available);
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            for (BluetoothDevice device : pairedDevices) {
+                // RPP300 is the name of the bluetooth printer device
+                // we got this name from the list of paired devices
+                if (device.getName().equals("Wari P1 BT")) {
+                    mmDevice = device;
+                    String txt = "Connecting to " + mmDevice.getName() + "...";
+                    Snackbar.make(mLayout, txt, Snackbar.LENGTH_LONG).show();
+                    openBT();
+                    break;
                 }
             }
+            if (mmDevice  == null) {
+                showSnackbar(R.string.no_paired_bluetooth_devises_available);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // tries to open a connection to the bluetooth printer device
+    void openBT() throws IOException {
+        try {
+
+            // Standard SerialPortService ID
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+            mmSocket.connect();
+            mmOutputStream = mmSocket.getOutputStream();
+            mmInputStream = mmSocket.getInputStream();
+            String txt = "Connected to " + mmDevice.getName() + "...";
+            Snackbar.make(mLayout, txt, Snackbar.LENGTH_LONG).show();
+            beginListenForData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+* after opening a connection to bluetooth printer device,
+* we have to listen and check if a data were sent to be printed.
+*/
+    void beginListenForData() {
+        try {
+            final Handler handler = new Handler();
+            // this is the ASCII code for a newline character
+            final byte delimiter = 10;
+
+            stopWorker = false;
+            readBufferPosition = 0;
+            readBuffer = new byte[1024];
+
+            workerThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+                    try {
+                        int bytesAvailable = mmInputStream.available();
+                        if (bytesAvailable > 0) {
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            //noinspection unused
+                            int read = mmInputStream.read(packetBytes);
+
+                            for (int i = 0; i < bytesAvailable; i++) {
+                                byte b = packetBytes[i];
+                                if (b == delimiter) {
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(
+                                            readBuffer, 0,
+                                            encodedBytes, 0,
+                                            encodedBytes.length
+                                    );
+                                    readBufferPosition = 0;
+
+                                    // tell the user data were sent to bluetooth printer device
+                                    handler.post(() -> showSnackbar(R.string.data_sent_to_printer));
+                                } else {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+
+                    } catch (IOException ex) {
+                        stopWorker = true;
+                    }
+                }
+            });
+            workerThread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // this will send text data to be printed by the bluetooth printer
+    void sendData(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
+        try {
+            String currency = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
+            String td = "%.2f";
+            double totalCharge = 0;
+            StringBuilder BILL = new StringBuilder();
+            BILL.append("\n").append(mSessionManager.getBusinessName()).append("\n");
+            BILL.append("      ").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())).append("\n");
+            BILL.append("-----------------------------------------").append("\n\n");
+
+            for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+                ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+                if (productEntity != null) {
+                    double tc = productEntity.getPrice() * orderItem.getValue();
+                    totalCharge += tc;
+                    int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
+                    BILL.append(productEntity.getName()).append("\n");
+                    BILL.append(orderItem.getValue())
+                            .append(" ")
+                            .append("x")
+                            .append(" ")
+                            .append(productEntity.getPrice())
+                            .append("      ")
+                            .append(currency)
+                            .append(tcv).append("\n\n");
+                }
+            }
+
+            BILL.append("-----------------------------------------").append("\n");
+
+            totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+            BILL.append("TOTAL").append("         ").append(currency).append(totalCharge).append("\n\n");
+            BILL.append("-----------------------------------------").append("\n");
+
+            String pTxt;
+            if (totalPoints == 1) {
+                pTxt = getString(R.string.point);
+            } else {
+                pTxt = getString(R.string.points);
+            }
+            int pointsDiff = loyaltyProgramEntity.getThreshold() - totalPoints;
+            BILL.append(customerEntity.getFirstName())
+                    .append(" you now have ")
+                    .append(totalPoints)
+                    .append(" ")
+                    .append(pTxt)
+                    .append(", spend ")
+                    .append(currency)
+                    .append(pointsDiff)
+                    .append(" more to get your ")
+                    .append(loyaltyProgramEntity.getReward()).append("\n");
+            BILL.append("Than you for your patronage.").append("\n\n");
+            BILL.append("    POWERED BY LOYSTAR     ");
+
+            mBtOutputStream.write(BILL.toString().getBytes());
+            mBtOutputStream.write(0x0D);
+            mBtOutputStream.write(0x0D);
+            mBtOutputStream.write(0x0D);
+            mBtOutputStream.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // close the connection to bluetooth printer.
+    void closeBT() throws IOException {
+        try {
+            stopWorker = true;
+            mmOutputStream.close();
+            mmInputStream.close();
+            mmSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

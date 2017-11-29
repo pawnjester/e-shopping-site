@@ -23,6 +23,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
+
 import java.util.ArrayList;
 
 import co.loystar.loystarbusiness.App;
@@ -60,12 +62,7 @@ public class MerchantSignUpStepTwoFragment extends Fragment
         }
         SpinnerButton businessTypeSpinner = rootView.findViewById(R.id.businessCategorySpinner);
         businessTypeSpinner.setEntries(businessTypeEntries);
-        SpinnerButton.OnItemSelectedListener businessTypeSelectedListener = new SpinnerButton.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(int position) {
-                selectedBusinessType = (String) businessTypeEntries[position];
-            }
-        };
+        SpinnerButton.OnItemSelectedListener businessTypeSelectedListener = position -> selectedBusinessType = (String) businessTypeEntries[position];
         businessTypeSpinner.setListener(businessTypeSelectedListener);
 
         if (sharedPref.contains(Constants.BUSINESS_CATEGORY)) {
@@ -95,12 +92,7 @@ public class MerchantSignUpStepTwoFragment extends Fragment
             merchantConfirmPasswordView.setText(sharedPref.getString(Constants.PASSWORD, ""));
         }
 
-        rootView.findViewById(R.id.signUpStepTwoSubmit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                submitForm();
-            }
-        });
+        RxView.clicks(rootView.findViewById(R.id.signUpStepTwoSubmit)).subscribe(o -> submitForm());
 
         TextView policyText = rootView.findViewById(R.id.privacyPolicyText);
         SpannableString spannableString = new SpannableString(getString(R.string.privacy_policy_txt));

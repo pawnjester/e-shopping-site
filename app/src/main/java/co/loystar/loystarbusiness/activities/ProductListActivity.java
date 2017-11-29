@@ -126,7 +126,7 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
 
         mRecyclerView = recyclerView;
         mRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);;
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
@@ -156,19 +156,17 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
                     new AlertDialog.Builder(ProductListActivity.this)
                             .setTitle("Are you sure?")
                             .setMessage("You won't be able to recover this product.")
-                            .setPositiveButton(getString(R.string.confirm_delete_positive), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, product.getId()).blockingGet();
-                                    if (productEntity != null) {
-                                        productEntity.setDeleted(true);
-                                        mDataStore.update(productEntity).subscribe(/*no-op*/);
-                                        mAdapter.queryAsync();
-                                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                            .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
+                                dialog.dismiss();
+                                ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, product.getId()).blockingGet();
+                                if (productEntity != null) {
+                                    productEntity.setDeleted(true);
+                                    mDataStore.update(productEntity).subscribe(/*no-op*/);
+                                    mAdapter.queryAsync();
+                                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
-                                        String deleteText =  product.getName() + " has been deleted!";
-                                        Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
-                                    }
+                                    String deleteText =  product.getName() + " has been deleted!";
+                                    Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
                                 }
                             })
                             .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())

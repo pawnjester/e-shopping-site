@@ -203,7 +203,6 @@ public class RewardCustomersActivity extends AppCompatActivity {
                                     bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, totalStamps);
                                 }
                             }
-                            bundle.putBoolean(Constants.PRINT_RECEIPT, true);
                             bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, false);
                             bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mSelectedProgramId);
                             bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomerId);

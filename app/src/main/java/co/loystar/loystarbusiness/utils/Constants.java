@@ -15,7 +15,6 @@ public class Constants {
     public static final String LOYALTY_PROGRAM_ID = "LOYALTY_PROGRAM_ID";
     public static final String CUSTOMER_NAME = "CUSTOMER_NAME";
     public static final String LOYALTY_PROGRAM_TYPE = "LOYALTY_PROGRAM_TYPE";
-    public static final String CUSTOMER_PROGRAM_WORTH = "CUSTOMER_PROGRAM_WORTH";
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String LOYALTY_PROGRAM_CREATED = "LOYALTY_PROGRAM_CREATED";
     public static final String LOYALTY_PROGRAM_UPDATED = "LOYALTY_PROGRAM_UPDATED";
@@ -25,9 +24,6 @@ public class Constants {
     public static final String BUSINESS_CATEGORY = "BUSINESS_CATEGORY";
     public static final String CURRENCY = "CURRENCY";
     public static final String PASSWORD = "PASSWORD";
-    public static final String NO_LOYALTY_PROGRAM = "NO_LOYALTY_PROGRAM";
-    public static final String NO_SALES_TRANSACTIONS = "NO_SALES_TRANSACTIONS";
-    public static final String STATE_TYPE = "STATE_TYPE";
     public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
     public static final String PRODUCT_ID = "PRODUCT_ID";
     public static final String AMOUNT_SPENT = "AMOUNT_SPENT";
@@ -36,4 +32,6 @@ public class Constants {
     public static final String PRINT_RECEIPT = "PRINT_RECEIPT";
     public static final String RECEIPT_TEXT = "RECEIPT_TEXT";
     public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";
+    public static final String SKIP_INTRO = "SKIP_INTRO";
+    public static final String ORDER_SUMMARY_ITEMS = "ORDER_SUMMARY_ITEMS";
 }

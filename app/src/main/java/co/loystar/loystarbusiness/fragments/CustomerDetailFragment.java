@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.view.RxView;
+
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.CustomerDetailActivity;
 import co.loystar.loystarbusiness.activities.CustomerListActivity;
@@ -111,13 +113,11 @@ public class CustomerDetailFragment extends Fragment {
             if (mTwoPane) {
                 String name = mItem.getFirstName() + " " + mItem.getLastName();
                 ((TextView) rootView.findViewById(R.id.nameView)).setText(name);
-                rootView.findViewById(R.id.editCustomerDetailBtn).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getActivity(), EditCustomerDetailsActivity.class);
-                        intent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
-                        startActivity(intent);
-                    }
+
+                RxView.clicks(rootView.findViewById(R.id.editCustomerDetailBtn)).subscribe(o -> {
+                    Intent intent = new Intent(getActivity(), EditCustomerDetailsActivity.class);
+                    intent.putExtra(Constants.CUSTOMER_ID, mItem.getId());
+                    startActivity(intent);
                 });
             }
 
@@ -166,11 +166,10 @@ public class CustomerDetailFragment extends Fragment {
                 startActivity(redeemIntent);
             });
 
-            rootView.findViewById(R.id.sellBtn).setOnClickListener(v -> {
-                CustomerDetailActivityEventBus
-                        .getInstance()
-                        .postFragmentAction(CustomerDetailActivityEventBus.ACTION_START_SALE);
-            });
+            RxView.clicks(rootView.findViewById(R.id.sellBtn)).subscribe(o ->
+                    CustomerDetailActivityEventBus
+                    .getInstance()
+                    .postFragmentAction(CustomerDetailActivityEventBus.ACTION_START_SALE));
         }
         return rootView;
     }

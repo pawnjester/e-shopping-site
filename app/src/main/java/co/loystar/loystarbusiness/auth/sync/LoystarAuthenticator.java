@@ -11,17 +11,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.concurrent.Callable;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.AuthenticatorActivity;
@@ -31,12 +22,6 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.requery.BlockingEntityStore;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import retrofit2.Call;
 import retrofit2.Response;
 
 import static co.loystar.loystarbusiness.auth.sync.AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS;
@@ -52,13 +37,15 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
     private Context mContext;
     private ApiClient mApiClient;
     private SessionManager mSessionManager;
+    private DatabaseManager mDatabaseManager;
     private static final String TAG = LoystarAuthenticator.class.getSimpleName();
 
-    public LoystarAuthenticator(Context context) {
+    LoystarAuthenticator(Context context) {
         super(context);
         this.mContext = context;
         mApiClient = new ApiClient(context);
         mSessionManager = new SessionManager(context);
+        mDatabaseManager = DatabaseManager.getInstance(context);
     }
 
     @Override
@@ -133,22 +120,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                         merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                     }
 
-                    final BlockingEntityStore mDataStore = DatabaseManager.getDataStore(mContext).toBlocking();
-                    Completable completable = Completable.fromCallable(new Callable<Void>() {
-
-                        @Override
-                        public Void call() throws Exception {
-                            mDataStore.runInTransaction(new Callable() {
-                                @Override
-                                public Void call() throws Exception {
-                                    mDataStore.upsert(merchantEntity);
-                                    return null;
-                                }
-                            });
-                            return null;
-                        }
-                    });
-                    completable.subscribe();
+                    mDatabaseManager.insertNewMerchant(merchantEntity);
                     mSessionManager.setMerchantSessionData(
                             merchant.getId(),
                             merchant.getEmail(),
@@ -168,43 +140,6 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                     editor.apply();
                 }
 
-            } else {
-                // authenticate merchant by phone number and firebase_uid
-                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                /*if (firebaseUser != null) {
-                    Call<User> call = mApiClient.getLoystarApi().LoginUserByPhone(mSessionManager.getPhoneNumber(), firebaseUser.getUid());
-                    Response<User> response = null;
-                    try {
-                        response = call.execute();
-                        if (response.isSuccessful()) {
-                            User user = response.body();
-                            UserEntity userEntity = new UserEntity();
-                            userEntity.setId(user.getId());
-                            userEntity.setEmail(user.getEmail());
-                            userEntity.setFirstName(user.getFirst_name());
-                            userEntity.setLastName(user.getLast_name());
-                            userEntity.setPhoneNumber(user.getPhone_number());
-                            userEntity.setSex(user.getGender());
-                            userEntity.setCreatedAt(user.getCreated_at().toDate());
-                            userEntity.setDateOfBirth(user.getDate_of_birth());
-
-                            DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-                            databaseManager.addUser(userEntity);
-
-                            authToken = response.headers().get("Access-Token");
-                            mSessionManager.setUserSessionData(
-                                    user.getId(),
-                                    user.getEmail(),
-                                    user.getFirst_name(),
-                                    user.getLast_name(),
-                                    user.getPhone_number(),
-                                    authToken
-                            );
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }*/
             }
         }
 

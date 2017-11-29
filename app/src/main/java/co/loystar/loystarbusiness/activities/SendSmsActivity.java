@@ -3,17 +3,15 @@ package co.loystar.loystarbusiness.activities;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -21,6 +19,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,48 +85,36 @@ public class SendSmsActivity extends AppCompatActivity {
         msgBox = findViewById(R.id.msgBox);
         Button sendBtn = findViewById(R.id.send);
 
-        final TextWatcher mTextEditorWatcher = new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
+           CharSequence s = textViewTextChangeEvent.text();
+            double sms_char_length = 160;
+            int sms_unit = (int) Math.ceil(s.length() / sms_char_length);
+            String charTemp = "%s %s";
+            String charTempUnit = s.length() == 1 ? "Character" : "Characters";
+            String charCounterText = String.format(charTemp, s.length(), charTempUnit);
+            String textTemplate = "%s %s";
+            String unitText = sms_unit != 1 ? "Units" : "Unit";
+            String smsUnitText = String.format(textTemplate, sms_unit, unitText);
+            unitCounterView.setText(smsUnitText);
+            charCounterView.setText(charCounterText);
+            totalSmsCredits = sms_unit;
+        });
+
+        RxView.clicks(sendBtn).subscribe(o -> {
+            if (msgBox.getText().toString().isEmpty()) {
+                msgBox.setError(getString(R.string.error_message_required));
+                msgBox.requestFocus();
+                return;
             }
 
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                double sms_char_length = 160;
-                int sms_unit = (int) Math.ceil(s.length() / sms_char_length);
-                String charTemp = "%s %s";
-                String charTempUnit = s.length() == 1 ? "Character" : "Characters";
-                String charCounterText = String.format(charTemp, s.length(), charTempUnit);
-                String textTemplate = "%s %s";
-                String unitText = sms_unit != 1 ? "Units" : "Unit";
-                String smsUnitText = String.format(textTemplate, sms_unit, unitText);
-                unitCounterView.setText(smsUnitText);
-                charCounterView.setText(charCounterText);
-                totalSmsCredits = sms_unit;
-            }
-
-            public void afterTextChanged(Editable s) {
-            }
-        };
-
-        msgBox.addTextChangedListener(mTextEditorWatcher);
-
-        sendBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (msgBox.getText().toString().isEmpty()) {
-                    msgBox.setError(getString(R.string.error_message_required));
-                    msgBox.requestFocus();
-                    return;
+            View view = getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
-
-                View view = getCurrentFocus();
-                if (view != null) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (imm != null) {
-                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    }
-                }
-                sendMessage();
             }
+            sendMessage();
         });
     }
 
@@ -152,81 +141,72 @@ public class SendSmsActivity extends AppCompatActivity {
         alertDialogBuilder.setView(layout);
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton(getString(R.string.send), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
+                .setPositiveButton(getString(R.string.send), (dialog, id) -> {
+                    dialog.dismiss();
 
-                        progressDialog = new ProgressDialog(mContext);
-                        progressDialog.setTitle("Please wait...");
-                        progressDialog.setMessage("Sending Message...");
-                        progressDialog.show();
+                    progressDialog = new ProgressDialog(mContext);
+                    progressDialog.setTitle("Please wait...");
+                    progressDialog.setMessage("Sending Message...");
+                    progressDialog.show();
 
-                        try {
-                            JSONObject req = new JSONObject();
-                            req.put("phone_number", customerNumber);
-                            req.put("message_text", msgBox.getText().toString());
+                    try {
+                        JSONObject req = new JSONObject();
+                        req.put("phone_number", customerNumber);
+                        req.put("message_text", msgBox.getText().toString());
 
-                            JSONObject requestData = new JSONObject();
-                            requestData.put("data", req);
+                        JSONObject requestData = new JSONObject();
+                        requestData.put("data", req);
 
-                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                            ApiClient apiClient = new ApiClient(mContext);
+                        ApiClient apiClient = new ApiClient(mContext);
 
-                            apiClient.getLoystarApi(false).sendSms(requestBody).enqueue(new Callback<ResponseBody>() {
-                                @Override
-                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                    if (progressDialog.isShowing()) {
-                                        progressDialog.dismiss();
-                                    }
-
-                                    if (response.isSuccessful()) {
-                                        Snackbar.make(mLayout, R.string.message_sent_notice,
-                                                Snackbar.LENGTH_INDEFINITE)
-                                                .setAction(R.string.ok, new View.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(View view) {
-                                                        DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-                                                        CustomerEntity customer = databaseManager.getCustomerByPhone(customerNumber);
-                                                        Intent intent = new Intent(mContext, CustomerListActivity.class);
-                                                        if (customer != null) {
-                                                            intent.putExtra(Constants.CUSTOMER_ID, customer.getId());
-                                                        }
-                                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                        startActivity(intent);
-                                                    }
-                                                })
-                                                .show();
-                                    }
-                                    else {
-                                        if (response.code() == 401) {
-                                            SessionManager sessionManager = new SessionManager(mContext);
-                                            AccountManager accountManager = AccountManager.get(mContext);
-                                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                                        }
-                                        showSnackbar(R.string.error_sending_sms);
-                                    }
+                        apiClient.getLoystarApi(false).sendSms(requestBody).enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
                                 }
 
-                                @Override
-                                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                    if (progressDialog.isShowing()) {
-                                        progressDialog.dismiss();
-                                    }
-                                    showSnackbar(R.string.error_internet_connection_timed_out);
+                                if (response.isSuccessful()) {
+                                    Snackbar.make(mLayout, R.string.message_sent_notice,
+                                            Snackbar.LENGTH_INDEFINITE)
+                                            .setAction(R.string.ok, view -> {
+                                                DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+                                                CustomerEntity customer = databaseManager.getCustomerByPhone(customerNumber);
+                                                Intent intent = new Intent(mContext, CustomerListActivity.class);
+                                                if (customer != null) {
+                                                    intent.putExtra(Constants.CUSTOMER_ID, customer.getId());
+                                                }
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                startActivity(intent);
+                                            })
+                                            .show();
                                 }
-                            });
+                                else {
+                                    if (response.code() == 401) {
+                                        SessionManager sessionManager = new SessionManager(mContext);
+                                        AccountManager accountManager = AccountManager.get(mContext);
+                                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
+                                    }
+                                    showSnackbar(R.string.error_sending_sms);
+                                }
+                            }
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                            @Override
+                            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
+                                showSnackbar(R.string.error_internet_connection_timed_out);
+                            }
+                        });
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 })
-                .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
+                .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();

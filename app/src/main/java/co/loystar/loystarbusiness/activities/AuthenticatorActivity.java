@@ -211,7 +211,6 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
             /*Verification failed*/
             if (idpResponse == null) {
                 /*User pressed back button*/
-                showSnackbar(R.string.sign_up_cancelled);
                 return;
             }
 

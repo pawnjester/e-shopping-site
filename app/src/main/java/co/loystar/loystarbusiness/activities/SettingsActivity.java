@@ -3,7 +3,6 @@ package co.loystar.loystarbusiness.activities;
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -15,19 +14,18 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.TwoStatePreference;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.preference.TwoStatePreference;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -65,77 +63,74 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            SessionManager sessionManager = new SessionManager(preference.getContext());
-            DatabaseManager mDatabaseManager = DatabaseManager.getInstance(preference.getContext());
-            MerchantEntity merchant = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
-            String stringValue = value.toString();
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value) -> {
+        SessionManager sessionManager = new SessionManager(preference.getContext());
+        DatabaseManager mDatabaseManager = DatabaseManager.getInstance(preference.getContext());
+        MerchantEntity merchant = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
+        String stringValue = value.toString();
 
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
+        if (preference instanceof ListPreference) {
+            // For list preferences, look up the correct display value in
+            // the preference's 'entries' list.
+            ListPreference listPreference = (ListPreference) preference;
+            int index = listPreference.findIndexOfValue(stringValue);
 
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
+            // Set the summary to reflect the new value.
+            preference.setSummary(
+                    index >= 0
+                            ? listPreference.getEntries()[index]
+                            : null);
 
-            } else if (preference instanceof RingtonePreference) {
-                // For ringtone preferences, look up the correct display value
-                // using RingtoneManager.
-                if (TextUtils.isEmpty(stringValue)) {
-                    // Empty values correspond to 'silent' (no ringtone).
-                    preference.setSummary(R.string.pref_ringtone_silent);
+        } else if (preference instanceof RingtonePreference) {
+            // For ringtone preferences, look up the correct display value
+            // using RingtoneManager.
+            if (TextUtils.isEmpty(stringValue)) {
+                // Empty values correspond to 'silent' (no ringtone).
+                preference.setSummary(R.string.pref_ringtone_silent);
 
-                } else {
-                    Ringtone ringtone = RingtoneManager.getRingtone(
-                            preference.getContext(), Uri.parse(stringValue));
-
-                    if (ringtone == null) {
-                        // Clear the summary if there was a lookup error.
-                        preference.setSummary(null);
-                    } else {
-                        // Set the summary to reflect the new ringtone display
-                        // name.
-                        String name = ringtone.getTitle(preference.getContext());
-                        preference.setSummary(name);
-                    }
-                }
-
-            } else if (preference.getKey().equals(preference.getContext().getString(R.string.pref_pay_subscription_key))) {
-                if (merchant != null) {
-                    DateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
-                    Date expiryDate = AccountGeneral.accountExpiry(preference.getContext());
-                    if (expiryDate == null) {
-                        String inActiveTxt = "Your account has expired. Click to pay subscription and unlock the full features of Loystar.";
-                        preference.setSummary(inActiveTxt);
-                    } else {
-                        if (AccountGeneral.isAccountActive(preference.getContext())) {
-                            String tmt = "Your account is active and will expire on %s.";
-                            String activeTxt = String.format(
-                                    tmt,
-                                    df.format(expiryDate)
-                            );
-                            preference.setSummary(activeTxt);
-                        } else {
-                            String tmt = "Your account has expired since %s. Click to pay subscription and unlock the full features of Loystar.";
-                            String inActiveTxt = String.format(tmt, df.format(expiryDate));
-                            preference.setSummary(inActiveTxt);
-                        }
-                    }
-                }
             } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
+                Ringtone ringtone = RingtoneManager.getRingtone(
+                        preference.getContext(), Uri.parse(stringValue));
+
+                if (ringtone == null) {
+                    // Clear the summary if there was a lookup error.
+                    preference.setSummary(null);
+                } else {
+                    // Set the summary to reflect the new ringtone display
+                    // name.
+                    String name = ringtone.getTitle(preference.getContext());
+                    preference.setSummary(name);
+                }
             }
-            return true;
+
+        } else if (preference.getKey().equals(preference.getContext().getString(R.string.pref_pay_subscription_key))) {
+            if (merchant != null) {
+                DateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
+                Date expiryDate = AccountGeneral.accountExpiry(preference.getContext());
+                if (expiryDate == null) {
+                    String inActiveTxt = "Your account has expired. Click to pay subscription and unlock the full features of Loystar.";
+                    preference.setSummary(inActiveTxt);
+                } else {
+                    if (AccountGeneral.isAccountActive(preference.getContext())) {
+                        String tmt = "Your account is active and will expire on %s.";
+                        String activeTxt = String.format(
+                                tmt,
+                                df.format(expiryDate)
+                        );
+                        preference.setSummary(activeTxt);
+                    } else {
+                        String tmt = "Your account has expired since %s. Click to pay subscription and unlock the full features of Loystar.";
+                        String inActiveTxt = String.format(tmt, df.format(expiryDate));
+                        preference.setSummary(inActiveTxt);
+                    }
+                }
+            }
+        } else {
+            // For all other preferences, set the summary to the value's
+            // simple string representation.
+            preference.setSummary(stringValue);
         }
+        return true;
     };
 
     /**
@@ -232,13 +227,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_app_version_key)));
             Preference prefPrivacyPolicy = findPreference(getString(R.string.pref_privacy_policy_key));
-            prefPrivacyPolicy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-privacy-policy/"));
-                    startActivity(browserIntent);
-                    return true;
-                }
+            prefPrivacyPolicy.setOnPreferenceClickListener(preference -> {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-privacy-policy/"));
+                startActivity(browserIntent);
+                return true;
             });
         }
 
@@ -324,65 +316,42 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             final SessionManager sessionManager = new SessionManager(getActivity());
 
             Preference paySubscriptionPreference = findPreference(getString(R.string.pref_pay_subscription_key));
-            paySubscriptionPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent subsIntent = new Intent(getActivity(), PaySubscriptionActivity.class);
-                    startActivity(subsIntent);
-                    return true;
-                }
+            paySubscriptionPreference.setOnPreferenceClickListener(preference -> {
+                Intent subsIntent = new Intent(getActivity(), PaySubscriptionActivity.class);
+                startActivity(subsIntent);
+                return true;
             });
 
             bindPreferenceSummaryToValue(paySubscriptionPreference);
 
             Preference prefEditAccountPref = findPreference(getString(R.string.pref_edit_account_key));
-            prefEditAccountPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent editAccountIntent = new Intent(getActivity(), MyAccountProfileActivity.class);
-                    startActivity(editAccountIntent);
-                    return true;
-                }
+            prefEditAccountPref.setOnPreferenceClickListener(preference -> {
+                Intent editAccountIntent = new Intent(getActivity(), MyAccountProfileActivity.class);
+                startActivity(editAccountIntent);
+                return true;
             });
 
 
             Preference prefCheckSmsBal = findPreference(getString(R.string.pref_check_sms_bal_key));
-            prefCheckSmsBal.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    checkSmsBalance(getActivity());
-                    return true;
-                }
+            prefCheckSmsBal.setOnPreferenceClickListener(preference -> {
+                checkSmsBalance(getActivity());
+                return true;
             });
 
             Preference prefSignOut = findPreference(getString(R.string.pref_sign_out_key));
-            prefSignOut.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle("Are you sure you want to sign out?")
-                            .setPositiveButton(getString(R.string.sign_out), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    sessionManager.signOutMerchant();
-                                }
-                            })
-                            .setNeutralButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .show();
-                    return true;
-                }
+            prefSignOut.setOnPreferenceClickListener(preference -> {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Are you sure you want to sign out?")
+                        .setPositiveButton(getString(R.string.sign_out), (dialog, which) -> sessionManager.signOutMerchant(getActivity()))
+                        .setNeutralButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                        .show();
+                return true;
             });
 
             Preference prefSupport = findPreference(getString(R.string.pref_support_key));
-            prefSupport.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    ConversationActivity.show(getActivity());
-                    return true;
-                }
+            prefSupport.setOnPreferenceClickListener(preference -> {
+                ConversationActivity.show(getActivity());
+                return true;
             });
         }
 
@@ -413,80 +382,62 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
             }
 
-            turnOnPosPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(final Preference preference, Object newValue) {
-                    boolean isTurnedOn = (Boolean) newValue;
-                    SessionManager sessionManager = new SessionManager(getActivity());
-                    final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
-                    final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
+            turnOnPosPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                boolean isTurnedOn1 = (Boolean) newValue;
+                SessionManager sessionManager = new SessionManager(getActivity());
+                final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
+                final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
 
-                    if (!isTurnedOn) {
-                        new AlertDialog.Builder(getActivity())
-                                .setTitle("Are you sure?")
-                                .setMessage("Loystar won't capture product information when recording sales.")
-                                .setPositiveButton(getString(R.string.turn_off), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        TwoStatePreference statePreference = (TwoStatePreference) turnOnPosPref;
-                                        statePreference.setChecked(false);
+                if (!isTurnedOn1) {
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Are you sure?")
+                            .setMessage("Loystar won't capture product information when recording sales.")
+                            .setPositiveButton(getString(R.string.turn_off), (dialog, which) -> {
+                                TwoStatePreference statePreference = (TwoStatePreference) turnOnPosPref;
+                                statePreference.setChecked(false);
 
-                                        if (merchantEntity != null) {
-                                            merchantEntity.setPosTurnedOn(false);
-                                            merchantEntity.setUpdateRequired(true);
-                                            databaseManager.updateMerchant(merchantEntity);
-                                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
-                                        }
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-                    } else {
-                        if (merchantEntity != null) {
-                            merchantEntity.setPosTurnedOn(true);
-                            merchantEntity.setUpdateRequired(true);
-                            databaseManager.updateMerchant(merchantEntity);
-                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
-                        }
-                        Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
-                        turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
+                                if (merchantEntity != null) {
+                                    merchantEntity.setPosTurnedOn(false);
+                                    merchantEntity.setUpdateRequired(true);
+                                    databaseManager.updateMerchant(merchantEntity);
+                                    SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                } else {
+                    if (merchantEntity != null) {
+                        merchantEntity.setPosTurnedOn(true);
+                        merchantEntity.setUpdateRequired(true);
+                        databaseManager.updateMerchant(merchantEntity);
+                        SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
                     }
-                    return isTurnedOn;
+                    Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
+                    turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
                 }
+                return isTurnedOn1;
             });
 
             Preference prefMyProducts = findPreference(getString(R.string.pref_my_products_key));
-            prefMyProducts.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent ProductsViewIntent = new Intent(getActivity(), ProductListActivity.class);
-                    startActivity(ProductsViewIntent);
-                    return true;
-                }
+            prefMyProducts.setOnPreferenceClickListener(preference -> {
+                Intent ProductsViewIntent = new Intent(getActivity(), ProductListActivity.class);
+                startActivity(ProductsViewIntent);
+                return true;
             });
 
             Preference prefProductCategories = findPreference(getString(R.string.pref_product_categories_key));
-            prefProductCategories.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent categoriesIntent = new Intent(getActivity(), ProductCategoryListActivity.class);
-                    startActivity(categoriesIntent);
-                    return true;
-                }
+            prefProductCategories.setOnPreferenceClickListener(preference -> {
+                Intent categoriesIntent = new Intent(getActivity(), ProductCategoryListActivity.class);
+                startActivity(categoriesIntent);
+                return true;
             });
 
             Preference offersAndMessaging = findPreference(getString(R.string.pref_birthday_messages_and_offers_key));
-            offersAndMessaging.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent offersAndMessagingIntent = new Intent(getActivity(), BirthdayOffersAndMessagingActivity.class);
-                    startActivity(offersAndMessagingIntent);
-                    return true;
-                }
+            offersAndMessaging.setOnPreferenceClickListener(preference -> {
+                Intent offersAndMessagingIntent = new Intent(getActivity(), BirthdayOffersAndMessagingActivity.class);
+                startActivity(offersAndMessagingIntent);
+                return true;
             });
         }
 
@@ -510,33 +461,33 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         mApiClient.getLoystarApi(false).getSmsBalance().enqueue(new Callback<SmsBalance>() {
             @Override
-            public void onResponse(Call<SmsBalance> call, Response<SmsBalance> response) {
+            public void onResponse(@NonNull Call<SmsBalance> call, @NonNull Response<SmsBalance> response) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                 if (response.isSuccessful()) {
                     SmsBalance smsBalance = response.body();
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
-
-                    String tmt = "Your Total SMS Balance is: %s ";
-                    String message_text = String.format(tmt, smsBalance.getBalance());
-                    alertDialogBuilder
-                            .setMessage(message_text)
-                            .setCancelable(false)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                }
-                            });
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
-
+                    if (smsBalance == null) {
+                        Toast.makeText(mContext, mContext.getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                    } else {
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+                        String tmt = "Your Total SMS Balance is: %s ";
+                        String message_text = String.format(tmt, smsBalance.getBalance());
+                        alertDialogBuilder
+                                .setMessage(message_text)
+                                .setCancelable(false)
+                                .setPositiveButton("OK", (dialog, id) -> {
+                                });
+                        AlertDialog alertDialog = alertDialogBuilder.create();
+                        alertDialog.show();
+                    }
                 } else {
-                    Toast.makeText(mContext, mContext.getString(R.string.something_went_wrong), Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, mContext.getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<SmsBalance> call, Throwable t) {
+            public void onFailure(@NonNull Call<SmsBalance> call, @NonNull Throwable t) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }

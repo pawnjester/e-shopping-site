@@ -6,17 +6,19 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+
+import com.jakewharton.rxbinding2.view.RxView;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
@@ -70,20 +72,11 @@ public class MerchantSignUpStepOneFragment extends Fragment {
             businessEmailView.setText(sharedPref.getString(Constants.BUSINESS_EMAIL, ""));
         }
 
-        rootView.findViewById(R.id.haveAccountView).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getActivity().setResult(Activity.RESULT_CANCELED);
-                getActivity().finish();
-            }
+        RxView.clicks(rootView.findViewById(R.id.haveAccountView)).subscribe(o -> {
+            getActivity().setResult(Activity.RESULT_CANCELED);
+            getActivity().finish();
         });
-
-        rootView.findViewById(R.id.signUpStepOneSubmit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                submitForm();
-            }
-        });
+        RxView.clicks(rootView.findViewById(R.id.signUpStepOneSubmit)).subscribe(o -> submitForm());
         return rootView;
     }
 
@@ -117,23 +110,28 @@ public class MerchantSignUpStepOneFragment extends Fragment {
         checkEmailSpinner.setVisibility(View.VISIBLE);
         apiClient.getLoystarApi(false).checkMerchantEmailAvailability(businessEmail).enqueue(new Callback<EmailAvailability>() {
             @Override
-            public void onResponse(Call<EmailAvailability> call, Response<EmailAvailability> response) {
+            public void onResponse(@NonNull Call<EmailAvailability> call, @NonNull Response<EmailAvailability> response) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                 checkEmailSpinner.setVisibility(View.GONE);
                 if (response.isSuccessful()) {
-                    if (response.body().isEmailAvailable()) {
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(Constants.BUSINESS_NAME, businessName);
-                        editor.putString(Constants.BUSINESS_EMAIL, businessEmail);
-                        editor.putString(Constants.PHONE_NUMBER, businessPhone);
-                        editor.putString(Constants.FIRST_NAME, firstName);
-                        editor.apply();
-                        mListener.onMerchantSignUpStepOneFragmentInteraction();
+                    EmailAvailability emailAvailability = response.body();
+                    if (emailAvailability == null) {
+                        showSnackbar(R.string.unknown_error);
                     } else {
-                        businessEmailView.setError(getString(R.string.error_email_not_unique));
-                        businessEmailView.requestFocus();
+                        if (emailAvailability.isEmailAvailable()) {
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putString(Constants.BUSINESS_NAME, businessName);
+                            editor.putString(Constants.BUSINESS_EMAIL, businessEmail);
+                            editor.putString(Constants.PHONE_NUMBER, businessPhone);
+                            editor.putString(Constants.FIRST_NAME, firstName);
+                            editor.apply();
+                            mListener.onMerchantSignUpStepOneFragmentInteraction();
+                        } else {
+                            businessEmailView.setError(getString(R.string.error_email_not_unique));
+                            businessEmailView.requestFocus();
+                        }
                     }
                 } else {
                     showSnackbar(R.string.unknown_error);
@@ -141,7 +139,7 @@ public class MerchantSignUpStepOneFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<EmailAvailability> call, Throwable t) {
+            public void onFailure(@NonNull Call<EmailAvailability> call, @NonNull Throwable t) {
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }

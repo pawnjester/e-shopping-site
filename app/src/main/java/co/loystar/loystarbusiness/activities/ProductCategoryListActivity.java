@@ -16,7 +16,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -114,9 +113,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
         mAdapter.setExecutor(executor);
 
         FloatingActionButton fab = findViewById(R.id.activity_product_category_list_fab);
-        fab.setOnClickListener(view -> {
-            createNewCategory();
-        });
+        fab.setOnClickListener(view -> createNewCategory());
 
         EmptyRecyclerView recyclerView = findViewById(R.id.product_category_list_rv);
         assert recyclerView != null;
@@ -135,11 +132,9 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
         stateDescriptionTextView.setText(getString(R.string.no_product_categories_found));
 
         stateActionBtn.setText(getString(R.string.start_adding_product_categories_label));
-        stateActionBtn.setOnClickListener(view -> {
-            createNewCategory();
-        });
+        stateActionBtn.setOnClickListener(view -> createNewCategory());
 
-        ChipsLayoutManager layoutManager = ChipsLayoutManager.newBuilder(mContext).setOrientation(ChipsLayoutManager.HORIZONTAL).build();;
+        ChipsLayoutManager layoutManager = ChipsLayoutManager.newBuilder(mContext).setOrientation(ChipsLayoutManager.HORIZONTAL).build();
         mRecyclerView = recyclerView;
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(layoutManager);

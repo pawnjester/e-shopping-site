@@ -1,22 +1,19 @@
 package co.loystar.loystarbusiness.auth;
 
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 
 import co.loystar.loystarbusiness.R;
-import co.loystar.loystarbusiness.activities.AppIntro;
 import co.loystar.loystarbusiness.activities.SplashActivity;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
-import co.loystar.loystarbusiness.models.entities.SalesTransaction;
+import co.loystar.loystarbusiness.utils.Constants;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -128,59 +125,30 @@ public class SessionManager {
     /**
      * Clear session details
      * */
-    public void signOutMerchant() {
-        new ClearSessionData(mContext).execute();
-    }
+    public void signOutMerchant(Context context) {
+        ProgressDialog dialog = new ProgressDialog(context);
+        dialog.setMessage("Signing out...");
 
-    private class ClearSessionData extends AsyncTask<Void, Void, Void> {
-        private ProgressDialog dialog;
-        private Context mContext;
-
-
-        ClearSessionData(Context mContext) {
-            this.mContext = mContext;
-            dialog = new ProgressDialog(mContext);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
+        Observable.fromCallable(() -> {
             FirebaseAuth.getInstance().signOut();
             sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), PRIVATE_MODE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
             editor.apply();
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setMessage("Signing out...");
-            dialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(Void v) {
+            return true;
+        })
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnSubscribe(disposable -> dialog.show())
+        .subscribe(o -> {
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-
-            AppCompatActivity activity = scanForActivity(mContext);
-            if (activity == null) {
-                Intent intent = new Intent(mContext, SplashActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                mContext.startActivity(intent);
-            } else {
-                AccountManager.get(mContext).addAccount(
-                        AccountGeneral.ACCOUNT_TYPE,
-                        AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS,
-                        null,
-                        null,
-                        activity,
-                        accountManagerFuture -> activity.finish(),
-                        null
-                );
-            }
-        }
+            Intent intent = new Intent(context, SplashActivity.class);
+            intent.putExtra(Constants.SKIP_INTRO, true);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
+        });
     }
 
     /**
@@ -189,16 +157,5 @@ public class SessionManager {
      * **/
     public boolean isLoggedIn(){
         return sharedPreferences.getBoolean(IS_LOGGED_IN, false);
-    }
-
-    private AppCompatActivity scanForActivity(Context context) {
-        if (context == null)
-            return null;
-        else if (context instanceof AppCompatActivity)
-            return (AppCompatActivity) context;
-        else if (context instanceof ContextWrapper)
-            return scanForActivity(((ContextWrapper) context).getBaseContext());
-
-        return null;
     }
 }
