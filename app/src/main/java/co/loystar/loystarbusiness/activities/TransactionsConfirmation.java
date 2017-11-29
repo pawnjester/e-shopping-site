@@ -10,14 +10,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -25,9 +24,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.jakewharton.rxbinding2.view.RxView;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -47,8 +46,11 @@ import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
-public class TransactionsConfirmation extends AppCompatActivity {
+public class TransactionsConfirmation extends RxAppCompatActivity {
     private static final String TAG = TransactionsConfirmation.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
@@ -69,14 +71,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mmSocket;
     BluetoothDevice mmDevice;
-
     OutputStream mmOutputStream;
-    InputStream mmInputStream;
-    Thread workerThread;
-
-    byte[] readBuffer;
-    int readBufferPosition;
-    volatile boolean stopWorker;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -170,9 +165,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
         });
 
         RxView.clicks(printReceiptBtn).subscribe(o -> {
-            findBT();
-            openBT();
-            sendData(loyaltyProgramEntity, customerEntity);
+            printViaBT(loyaltyProgramEntity, customerEntity);
         });
     }
 
@@ -237,18 +230,20 @@ public class TransactionsConfirmation extends AppCompatActivity {
         }
     }
 
-    // this will find a bluetooth printer device
-    void findBT() {
-        try {
+    // this will print to a bluetooth printer device
+    void printViaBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
+        Observable.fromCallable(() -> {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
             if(mBluetoothAdapter == null) {
                 showSnackbar(R.string.no_bluetooth_adapter_available);
+                return false;
             }
 
             if(!mBluetoothAdapter.isEnabled()) {
                 Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBluetooth, 0);
+                return false;
             }
 
             Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -263,105 +258,56 @@ public class TransactionsConfirmation extends AppCompatActivity {
             }
             if (mmDevice  == null) {
                 showSnackbar(R.string.no_paired_bluetooth_devises_available);
+                return false;
             }
-        }catch(Exception e){
-            showSnackbar(e.getMessage());
-            e.printStackTrace();
-        }
+
+            return true;
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .doOnError(throwable -> showSnackbar(throwable.getMessage()))
+                .subscribe(o -> openBT(loyaltyProgramEntity, customerEntity));
     }
 
     // tries to open a connection to the bluetooth printer device
-    void openBT() throws IOException {
-        try {
-
-            // Standard SerialPortService ID
-            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-            mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
-            mmSocket.connect();
-            mmOutputStream = mmSocket.getOutputStream();
-            mmInputStream = mmSocket.getInputStream();
-            String txt = "Connected to " + mmDevice.getName();
-            showSnackbar(txt);
-            beginListenForData();
-        } catch (Exception e) {
-            showSnackbar(e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /*
-* after opening a connection to bluetooth printer device,
-* we have to listen and check if a data were sent to be printed.
-*/
-    void beginListenForData() {
-        try {
-            final Handler handler = new Handler();
-            // this is the ASCII code for a newline character
-            final byte delimiter = 10;
-
-            stopWorker = false;
-            readBufferPosition = 0;
-            readBuffer = new byte[1024];
-
-            workerThread = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted() && !stopWorker) {
-                    try {
-                        int bytesAvailable = mmInputStream.available();
-                        if (bytesAvailable > 0) {
-                            byte[] packetBytes = new byte[bytesAvailable];
-                            //noinspection unused
-                            int read = mmInputStream.read(packetBytes);
-
-                            for (int i = 0; i < bytesAvailable; i++) {
-                                byte b = packetBytes[i];
-                                if (b == delimiter) {
-                                    byte[] encodedBytes = new byte[readBufferPosition];
-                                    System.arraycopy(
-                                            readBuffer, 0,
-                                            encodedBytes, 0,
-                                            encodedBytes.length
-                                    );
-                                    readBufferPosition = 0;
-
-                                    // tell the user data were sent to bluetooth printer device
-                                    handler.post(() -> showSnackbar(R.string.data_sent_to_printer));
-                                } else {
-                                    readBuffer[readBufferPosition++] = b;
-                                }
-                            }
-                        }
-
-                    } catch (IOException ex) {
-                        stopWorker = true;
-                    }
-                }
-            });
-            workerThread.start();
-        } catch (Exception e) {
-            showSnackbar(e.getMessage());
-            e.printStackTrace();
-        }
+    void openBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
+        Observable.fromCallable(() -> {
+            ParcelUuid[] parcelUuid = mmDevice.getUuids();
+            if (parcelUuid != null) {
+                UUID uuid = parcelUuid[0].getUuid();
+                mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+                mmSocket.connect();
+                mmOutputStream = mmSocket.getOutputStream();
+                return true;
+            }
+            return false;
+        }).subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(bindToLifecycle())
+            .doOnSubscribe(disposable -> showSnackbar(R.string.openining_bluetooth_connection))
+            .doOnError(throwable -> showSnackbar(throwable.getMessage()))
+            .subscribe(o -> sendData(loyaltyProgramEntity, customerEntity));
     }
 
     // this will send text data to be printed by the bluetooth printer
     void sendData(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
-        try {
+        Observable.fromCallable(() -> {
             PrintTextFormatter formatter = new PrintTextFormatter();
             String td = "%.2f";
             double totalCharge = 0;
             StringBuilder BILL = new StringBuilder();
 
-            /*print business name start*/
+                /*print business name start*/
             BILL.append("\n").append(mSessionManager.getBusinessName());
             writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.centerAlign());
             BILL = new StringBuilder();
-            /* print business name end*/
+                /* print business name end*/
 
-            /*print timestamp start*/
+                /*print timestamp start*/
             BILL.append("\n").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()));
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
             BILL = new StringBuilder();
-            /*print timestamp end*/
+                /*print timestamp end*/
 
             BILL.append("\n").append("-------------------------");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
@@ -450,21 +396,19 @@ public class TransactionsConfirmation extends AppCompatActivity {
 
             BILL.append("POWERED BY LOYSTAR");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
-
             mmOutputStream.flush();
-            closeBT();
-        } catch (Exception e) {
-            showSnackbar(e.getMessage());
-            e.printStackTrace();
-        }
+            return true;
+        }).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(bindToLifecycle())
+            .doOnError(throwable -> showSnackbar(throwable.getMessage()))
+            .subscribe(o -> closeBT());
     }
 
     // close the connection to bluetooth printer.
     void closeBT() throws IOException {
         try {
-            stopWorker = true;
             mmOutputStream.close();
-            mmInputStream.close();
             mmSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -477,9 +421,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
      * @param buffer     the array of bytes to actually write
      * @param pFormat    The format byte array
      * @param pAlignment The alignment byte array
-     * @return true on successful write, false otherwise
      */
-    private boolean writeWithFormat(byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
+    private void writeWithFormat(byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
         try {
             // Notify printer it should be printed with given alignment:
             mmOutputStream.write(pAlignment);
@@ -488,10 +431,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
             // Write the actual data:
             mmOutputStream.write(buffer, 0, buffer.length);
 
-            return true;
         } catch (IOException e) {
             Log.e(TAG, "Exception during write", e);
-            return false;
         }
     }
 

@@ -520,4 +520,5 @@
     <string name="no_bluetooth_devises_available">No bluetooth devices available</string>
     <string name="no_paired_bluetooth_devises_available">No paired bluetooth devices available</string>
     <string name="bluetooth_device_found">Printer devise found!</string>
+    <string name="openining_bluetooth_connection">Opening connection to printer.</string>
 </resources>

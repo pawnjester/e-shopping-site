@@ -32,7 +32,6 @@ public class SessionManager {
     private static final String CURRENCY = "currency";
     private static final String BUSINESS_TYPE = "businessType";
     private static final int PRIVATE_MODE = 0;
-    private static final String TAG = SessionManager.class.getSimpleName();
 
     private static SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
