@@ -282,9 +282,15 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
         }).subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .compose(bindToLifecycle())
-            .doOnSubscribe(disposable -> showSnackbar(R.string.openining_bluetooth_connection))
+            .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
             .doOnError(throwable -> showSnackbar(throwable.getMessage()))
-            .subscribe(o -> sendData(loyaltyProgramEntity, customerEntity));
+            .subscribe(o -> {
+                if (mmOutputStream == null) {
+                    showSnackbar(R.string.error_printer_connection);
+                } else {
+                    sendData(loyaltyProgramEntity, customerEntity);
+                }
+            });
     }
 
     // this will send text data to be printed by the bluetooth printer
