@@ -363,8 +363,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
             BILL = new StringBuilder();
             /*print timestamp end*/
 
-            BILL.append("\n").append("-----------------------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL.append("\n").append("-------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             BILL.append("\n\n");
@@ -379,17 +379,19 @@ public class TransactionsConfirmation extends AppCompatActivity {
                     int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
 
                     BILL.append("\n").append(productEntity.getName());
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
                     BILL = new StringBuilder();
 
                     BILL.append("\n").append(orderItem.getValue())
                             .append(" ")
                             .append("x")
                             .append(" ")
-                            .append(productEntity.getPrice())
-                            .append("      ")
-                            .append(tcv);
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+                            .append(productEntity.getPrice());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+
+                    BILL.append(tcv);
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.rightAlign());
                     BILL = new StringBuilder();
 
                     BILL.append("\n\n");
@@ -398,21 +400,25 @@ public class TransactionsConfirmation extends AppCompatActivity {
                 }
             }
 
-            BILL.append("\n").append("-----------------------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL.append("\n").append("-------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+            BILL = new StringBuilder();
+
+            BILL.append("\n").append("TOTAL");
+            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-            BILL.append("\n").append("TOTAL").append("         ").append(totalCharge);
-            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.get());
+            BILL.append(totalCharge);
+            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.rightAlign());
             BILL = new StringBuilder();
 
             BILL.append("\n\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
             BILL = new StringBuilder();
 
-            BILL.append("\n").append("-----------------------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL.append("\n").append("-------------------------");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             String pTxt;
@@ -431,26 +437,22 @@ public class TransactionsConfirmation extends AppCompatActivity {
                     .append(pointsDiff)
                     .append(" more to get your ")
                     .append(loyaltyProgramEntity.getReward());
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("Thank you for your patronage.");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
+            BILL.append("\nThank you for your patronage.");
+            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             BILL.append("\n\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
             BILL = new StringBuilder();
 
-            BILL.append("\nPOWERED BY LOYSTAR");
+            BILL.append("POWERED BY LOYSTAR");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
-            BILL = new StringBuilder();
 
-            byte[] mFormat = new byte[]{27, 33, 0};
-            mmOutputStream.write(mFormat);
-            mmOutputStream.write(BILL.toString().getBytes());
             mmOutputStream.flush();
-            mmSocket.close();
+            closeBT();
         } catch (Exception e) {
             showSnackbar(e.getMessage());
             e.printStackTrace();
