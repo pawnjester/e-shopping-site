@@ -192,11 +192,6 @@ public class TransactionsConfirmation extends AppCompatActivity {
         navigateUpTo(new Intent(mContext, MerchantBackOfficeActivity.class));
     }
 
-    @MainThread
-    private void showSnackbar(@StringRes int errorMessageRes) {
-        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -270,6 +265,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
                 showSnackbar(R.string.no_paired_bluetooth_devises_available);
             }
         }catch(Exception e){
+            showSnackbar(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -285,9 +281,10 @@ public class TransactionsConfirmation extends AppCompatActivity {
             mmOutputStream = mmSocket.getOutputStream();
             mmInputStream = mmSocket.getInputStream();
             String txt = "Connected to " + mmDevice.getName();
-            Snackbar.make(mLayout, txt, Snackbar.LENGTH_LONG).show();
+            showSnackbar(txt);
             beginListenForData();
         } catch (Exception e) {
+            showSnackbar(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -341,6 +338,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
             });
             workerThread.start();
         } catch (Exception e) {
+            showSnackbar(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -406,6 +404,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
             mBtOutputStream.write(0x0D);
             mBtOutputStream.flush();
         } catch (Exception e) {
+            showSnackbar(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -420,5 +419,15 @@ public class TransactionsConfirmation extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    @MainThread
+    private void showSnackbar(String message) {
+        Snackbar.make(mLayout, message, Snackbar.LENGTH_LONG).show();
     }
 }
