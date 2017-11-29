@@ -19,11 +19,11 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:textSize="30sp"
-            android:id="@+id/customer_name_value"
+            android:textSize="18sp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
             android:layout_marginTop="50dp"
             android:layout_marginBottom="8dp"
-            android:textColor="@color/colorPrimary"
+            android:text="@string/transaction_complete"
             android:layout_height="wrap_content"
             android:gravity="center" />
 

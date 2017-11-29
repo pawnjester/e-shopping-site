@@ -62,7 +62,6 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
 
     private View mLayout;
     private TextView programTypeTextView;
-    private TextView customerNameView;
     private TextView customerLoyaltyWorthView;
     private BrandButtonNormal continueBtn;
     private BrandButtonTransparent printReceiptBtn;
@@ -100,7 +99,6 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
 
         mLayout = findViewById(R.id.transactions_confirmation_wrapper);
         programTypeTextView = findViewById(R.id.program_type_text);
-        customerNameView = findViewById(R.id.customer_name_value);
         customerLoyaltyWorthView = findViewById(R.id.customer_loyalty_worth);
         continueBtn = findViewById(R.id.activity_transactions_confirmation_continue_btn);
         printReceiptBtn = findViewById(R.id.printReceipt);
@@ -124,7 +122,6 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     private void setupViews(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
         boolean isPoints = loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points));
         boolean isStamps = loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program));
-        customerNameView.setText(TextUtilsHelper.capitalize(customerEntity.getFirstName() + " now has"));
         if (isPoints) {
             if (totalPoints == 1) {
                 programTypeTextView.setText(getString(R.string.point));
@@ -164,9 +161,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             }
         });
 
-        RxView.clicks(printReceiptBtn).subscribe(o -> {
-            printViaBT(loyaltyProgramEntity, customerEntity);
-        });
+        RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT(loyaltyProgramEntity, customerEntity));
     }
 
     @Override
