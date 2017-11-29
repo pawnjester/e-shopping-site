@@ -48,6 +48,7 @@ import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.exceptions.Exceptions;
 import io.reactivex.schedulers.Schedulers;
 
 public class TransactionsConfirmation extends RxAppCompatActivity {
@@ -228,54 +229,56 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     // this will print to a bluetooth printer device
     void printViaBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
         Observable.fromCallable(() -> {
-            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-            if(mBluetoothAdapter == null) {
-                showSnackbar(R.string.no_bluetooth_adapter_available);
-                return false;
-            }
-
-            if(!mBluetoothAdapter.isEnabled()) {
-                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBluetooth, 0);
-                return false;
-            }
-
-            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-            for (BluetoothDevice device : pairedDevices) {
-                // RPP300 is the name of the bluetooth printer device
-                // we got this name from the list of paired devices
-                if (device.getName().equals("Wari P1 BT")) {
-                    mmDevice = device;
-                    showSnackbar(R.string.bluetooth_device_found);
-                    break;
+            try {
+                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                if(mBluetoothAdapter == null) {
+                    showSnackbar(R.string.no_bluetooth_adapter_available);
                 }
+                if(!mBluetoothAdapter.isEnabled()) {
+                    Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBluetooth, 0);
+                }
+                Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+                for (BluetoothDevice device : pairedDevices) {
+                    // Wari P1 BT is the name of the bluetooth printer device
+                    // we got this name from the list of paired devices
+                    if (device.getName().equals("Wari P1 BT")) {
+                        mmDevice = device;
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                throw Exceptions.propagate(e);
             }
-            if (mmDevice  == null) {
-                showSnackbar(R.string.no_paired_bluetooth_devises_available);
-                return false;
-            }
-
             return true;
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(bindToLifecycle())
                 .doOnError(throwable -> showSnackbar(throwable.getMessage()))
-                .subscribe(o -> openBT(loyaltyProgramEntity, customerEntity));
+                .subscribe(o -> {
+                    if (mmDevice == null) {
+                        showSnackbar(R.string.no_printer_devises_available);
+                    } else {
+                        openBT(loyaltyProgramEntity, customerEntity);
+                    }
+                });
     }
 
     // tries to open a connection to the bluetooth printer device
     void openBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
         Observable.fromCallable(() -> {
-            ParcelUuid[] parcelUuid = mmDevice.getUuids();
-            if (parcelUuid != null) {
-                UUID uuid = parcelUuid[0].getUuid();
-                mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
-                mmSocket.connect();
-                mmOutputStream = mmSocket.getOutputStream();
-                return true;
+            try {
+                ParcelUuid[] parcelUuid = mmDevice.getUuids();
+                if (parcelUuid != null) {
+                    UUID uuid = parcelUuid[0].getUuid();
+                    mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+                    mmSocket.connect();
+                    mmOutputStream = mmSocket.getOutputStream();
+                }
+            } catch (Exception e) {
+                throw Exceptions.propagate(e);
             }
-            return false;
+            return true;
         }).subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .compose(bindToLifecycle())
