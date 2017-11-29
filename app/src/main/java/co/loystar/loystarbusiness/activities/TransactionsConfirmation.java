@@ -170,7 +170,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
         });
 
         RxView.clicks(printReceiptBtn).subscribe(o -> {
-            establishBluetoothConnection();
+            findBT();
+            openBT();
             sendData(loyaltyProgramEntity, customerEntity);
         });
     }
@@ -241,7 +242,8 @@ public class TransactionsConfirmation extends AppCompatActivity {
         }
     }
 
-    void establishBluetoothConnection() {
+    // this will find a bluetooth printer device
+    void findBT() {
         try {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -260,9 +262,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
                 // we got this name from the list of paired devices
                 if (device.getName().equals("Wari P1 BT")) {
                     mmDevice = device;
-                    String txt = "Connecting to " + mmDevice.getName() + "...";
-                    Snackbar.make(mLayout, txt, Snackbar.LENGTH_LONG).show();
-                    openBT();
+                    showSnackbar(R.string.bluetooth_device_found);
                     break;
                 }
             }
@@ -284,7 +284,7 @@ public class TransactionsConfirmation extends AppCompatActivity {
             mmSocket.connect();
             mmOutputStream = mmSocket.getOutputStream();
             mmInputStream = mmSocket.getInputStream();
-            String txt = "Connected to " + mmDevice.getName() + "...";
+            String txt = "Connected to " + mmDevice.getName();
             Snackbar.make(mLayout, txt, Snackbar.LENGTH_LONG).show();
             beginListenForData();
         } catch (Exception e) {
