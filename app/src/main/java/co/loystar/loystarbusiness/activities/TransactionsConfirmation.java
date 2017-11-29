@@ -65,7 +65,6 @@ public class TransactionsConfirmation extends AppCompatActivity {
     private BrandButtonTransparent printReceiptBtn;
 
     /*bluetooth print*/
-    OutputStream mBtOutputStream;
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mmSocket;
     BluetoothDevice mmDevice;
@@ -398,11 +397,11 @@ public class TransactionsConfirmation extends AppCompatActivity {
             BILL.append("Than you for your patronage.").append("\n\n");
             BILL.append("    POWERED BY LOYSTAR     ");
 
-            mBtOutputStream.write(BILL.toString().getBytes());
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.write(0x0D);
-            mBtOutputStream.flush();
+            mmOutputStream.write(BILL.toString().getBytes());
+            mmOutputStream.write(0x0D);
+            mmOutputStream.write(0x0D);
+            mmOutputStream.write(0x0D);
+            mmOutputStream.flush();
         } catch (Exception e) {
             showSnackbar(e.getMessage());
             e.printStackTrace();
