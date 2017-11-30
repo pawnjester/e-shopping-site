@@ -480,9 +480,8 @@
     <string name="enter_name">Enter name</string>
     <string name="create_product_in_progress">creating your product…</string>
     <string name="product_category_create_success">Product Category successfully created!</string>
+    <string name="product_category_update_success">Product Category successfully updated!</string>
     <string name="error_delete_failed">Sorry! delete failed. Please try again.</string>
-
-    <!--POS-->
     <string name="title_activity_points_sale_with_pos">Sell</string>
     <string name="title_activity_stamps_sale_with_pos">Sell</string>
     <string name="title_activity_sale_without_pos">Sell</string>

@@ -14,10 +14,12 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +51,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategory;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
+import co.loystar.loystarbusiness.utils.ui.EditTextUtils;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
@@ -150,12 +153,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                 ProductCategoryItemBinding productCategoryItemBinding = (ProductCategoryItemBinding) view.getTag();
                 if (productCategoryItemBinding != null) {
                     mSelectedCategory = productCategoryItemBinding.getProductCategory();
-                    myAlertDialog.setTitle("Are you sure?");
-                    myAlertDialog.setMessage("All products associated with this category will be deleted as well. ");
-                    myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), ProductCategoryListActivity.this);
-                    myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
-                    myAlertDialog.setDialogIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert));
-                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+                    showContextMenu(view);
                 }
             }
 
@@ -164,6 +162,36 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
             }
         }));
+    }
+
+    private void showContextMenu(View v) {
+        PopupMenu popup = new PopupMenu(mContext, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.delete_or_edit_menu, popup.getMenu());
+        popup.setOnMenuItemClickListener(new ContextMenuClickListener());
+        popup.setGravity(Gravity.END);
+        popup.show();
+    }
+
+    private class ContextMenuClickListener implements PopupMenu.OnMenuItemClickListener {
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.editItem:
+                    updateProductCategory();
+                    return true;
+                case R.id.deleteItem:
+                    myAlertDialog.setTitle("Are you sure?");
+                    myAlertDialog.setMessage("All products associated with this category will be deleted as well. ");
+                    myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), ProductCategoryListActivity.this);
+                    myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
+                    myAlertDialog.setDialogIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert));
+                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+                    return true;
+            }
+            return false;
+        }
     }
 
     @Override
@@ -247,9 +275,6 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
             Selection<ReactiveResult<ProductCategoryEntity>> selection = mDataStore.select(ProductCategoryEntity.class);
             selection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
             selection.where(ProductCategoryEntity.DELETED.notEqual(true));
-
-            Log.e(TAG, "performQuery: " + selection.get().toList() );
-
             return selection.orderBy(ProductCategoryEntity.UPDATED_AT.desc()).get();
         }
 
@@ -349,8 +374,8 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                         if (progressDialog.isShowing()) {
                             progressDialog.dismiss();
                         }
-                        dialogInterface.cancel();
                         if (response.isSuccessful()) {
+                            dialogInterface.cancel();
                             co.loystar.loystarbusiness.models.databinders.ProductCategory productCategory = response.body();
                             if (productCategory == null) {
                                 Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
@@ -390,8 +415,84 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
             }
         });
         alertDialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-        alertDialogBuilder.setCancelable(false);
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
 
+    private void updateProductCategory() {
+        LayoutInflater li = LayoutInflater.from(this);
+        View createCategoryView = li.inflate(R.layout.add_product_category, null);
+        EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
+        TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
+
+        RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
+            CharSequence s = textViewTextChangeEvent.text();
+            String char_temp = "%s %s / %s";
+            String char_temp_unit = s.length() == 1 ? "Character" : "Characters";
+            String char_counter_text = String.format(char_temp, s.length(), char_temp_unit, 30);
+            charCounterView.setText(char_counter_text);
+        });
+
+        msgBox.setText(mSelectedCategory.getName());
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(createCategoryView);
+        alertDialogBuilder.setTitle("Edit category");
+
+        alertDialogBuilder.setPositiveButton("Save", (dialogInterface, i) -> {
+            if (!EditTextUtils.getText(msgBox).equals(mSelectedCategory.getName())) {
+                ProgressDialog progressDialog = new ProgressDialog(this);
+                progressDialog.setMessage(getString(R.string.a_moment));
+                progressDialog.setIndeterminate(true);
+                progressDialog.show();
+
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("name", msgBox.getText().toString());
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("data", jsonObject);
+
+                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                    mApiClient.getLoystarApi(false).updateProductCategory(requestBody, mSelectedCategory.getId()).enqueue(new Callback<co.loystar.loystarbusiness.models.databinders.ProductCategory>() {
+                        @Override
+                        public void onResponse(@NonNull Call<co.loystar.loystarbusiness.models.databinders.ProductCategory> call, @NonNull Response<co.loystar.loystarbusiness.models.databinders.ProductCategory> response) {
+                            if (progressDialog.isShowing()) {
+                                progressDialog.dismiss();
+                            }
+                            if (response.isSuccessful()) {
+                                dialogInterface.cancel();
+                                co.loystar.loystarbusiness.models.databinders.ProductCategory productCategory = response.body();
+                                if (productCategory == null) {
+                                    Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                } else {
+                                    ProductCategoryEntity productCategoryEntity = mDataStore.findByKey(ProductCategoryEntity.class, mSelectedCategory.getId()).blockingGet();
+                                    if (productCategoryEntity == null) {
+                                        Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                    } else {
+                                        productCategoryEntity.setName(productCategory.getName());
+                                        mDataStore.upsert(productCategoryEntity).subscribe();
+                                        mAdapter.queryAsync();
+                                        Toast.makeText(mContext, getString(R.string.product_category_update_success), Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<co.loystar.loystarbusiness.models.databinders.ProductCategory> call, @NonNull Throwable t) {
+                            if (progressDialog.isShowing()) {
+                                progressDialog.dismiss();
+                            }
+                            Toast.makeText(mContext, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        alertDialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }

@@ -61,6 +61,7 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
+import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
@@ -121,6 +122,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String originalPrice;
     private TextView charCounterView;
     private ProductEntity mProductItem;
+    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +147,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
+        merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
         mLayout = findViewById(R.id.activity_product_detail_container);
         mProgressView = findViewById(R.id.productEditProgressView);
@@ -390,6 +393,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 mProductItem.setName(product.getName());
                                 mProductItem.setPrice(product.getPrice());
                                 mProductItem.setPicture(product.getPicture());
+                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                                if (productCategoryEntity != null) {
+                                    mProductItem.setCategory(productCategoryEntity);
+                                }
                                 mDatabaseManager.updateProduct(mProductItem);
 
                                 Intent intent = new Intent(ProductDetailActivity.this, ProductListActivity.class);
@@ -464,7 +471,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                                mProductItem.setPicture(product.getPicture());
                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
                                if (productCategoryEntity != null) {
-                                   mProductItem.setCategory(null);
+                                   mProductItem.setCategory(productCategoryEntity);
                                }
                                mDatabaseManager.updateProduct(mProductItem);
 

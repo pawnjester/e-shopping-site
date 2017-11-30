@@ -134,6 +134,9 @@ public interface LoystarApi {
     @PATCH("products/{id}")
     Call<Product> updateProduct(@Body RequestBody requestBody, @Path("id") int id);
 
+    @PATCH("merchant_product_categories/{id}")
+    Call<ProductCategory> updateProductCategory(@Body RequestBody requestBody, @Path("id") int id);
+
     @DELETE("birthday_offers/{id}")
     Call<ResponseBody> deleteBirthdayOffer(@Path("id") int id);
 
