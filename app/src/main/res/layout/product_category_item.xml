@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <com.robertlevonyan.views.chip.Chip
+        <co.loystar.loystarbusiness.utils.ui.buttons.ProductCategoryChip
             android:id="@+id/categoryChip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

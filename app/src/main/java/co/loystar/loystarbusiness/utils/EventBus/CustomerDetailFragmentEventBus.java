@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils;
+package co.loystar.loystarbusiness.utils.EventBus;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
@@ -7,19 +7,19 @@ import io.reactivex.subjects.PublishSubject;
  * Created by ordgen on 11/28/17.
  */
 
-public class CustomerDetailActivityEventBus {
+public class CustomerDetailFragmentEventBus {
     public static final int ACTION_START_SALE = 103;
 
-    private static CustomerDetailActivityEventBus mInstance;
+    private static CustomerDetailFragmentEventBus mInstance;
 
-    public static CustomerDetailActivityEventBus getInstance() {
+    public static CustomerDetailFragmentEventBus getInstance() {
         if (mInstance == null) {
-            mInstance = new CustomerDetailActivityEventBus();
+            mInstance = new CustomerDetailFragmentEventBus();
         }
         return mInstance;
     }
 
-    private CustomerDetailActivityEventBus() {}
+    private CustomerDetailFragmentEventBus() {}
 
     private PublishSubject<Integer> fragmentEventSubject = PublishSubject.create();
 

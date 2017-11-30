@@ -17,6 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -444,7 +445,15 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
 
     private void showProceedToCheckoutBtn(boolean show) {
         if (show) {
-            orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+            if (proceedToCheckoutBtnHeight == 0) {
+                orderSummaryBottomSheetBehavior.setPeekHeight(
+                        (int) TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP, 80,
+                                getResources().getDisplayMetrics())
+                );
+            } else {
+                orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+            }
         } else {
             orderSummaryBottomSheetBehavior.setPeekHeight(0);
         }

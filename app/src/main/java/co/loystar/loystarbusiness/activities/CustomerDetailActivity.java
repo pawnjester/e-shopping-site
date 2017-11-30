@@ -6,15 +6,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
@@ -26,13 +21,9 @@ import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
-import co.loystar.loystarbusiness.models.entities.Merchant;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.CustomerDetailActivityEventBus;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
@@ -110,12 +101,6 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
             navigateUpTo(new Intent(this, CustomerListActivity.class));
             return true;
         }
@@ -126,31 +111,15 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        CustomerDetailActivityEventBus
+        CustomerDetailFragmentEventBus
                 .getInstance()
-                .getFragmentEventObservable().subscribe(new Observer<Integer>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(Integer integer) {
-                if (integer == CustomerDetailActivityEventBus.ACTION_START_SALE) {
-                    startSale();
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
+                .getFragmentEventObservable()
+                .compose(bindToLifecycle())
+                .subscribe(integer -> {
+                    if (integer == CustomerDetailFragmentEventBus.ACTION_START_SALE) {
+                        startSale();
+                    }
+                });
     }
 
     private void startSale() {
@@ -158,39 +127,22 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
                 .get()
                 .single()
                 .toObservable()
-                .subscribe(new Observer<Integer>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
-                        if (integer == 0) {
-                            new AlertDialog.Builder(mContext)
-                                    .setTitle("No Loyalty Program Found!")
-                                    .setMessage("To record a sale, you would have to start a loyalty program.")
-                                    .setPositiveButton(mContext.getString(R.string.start_loyalty_program_btn_label), (dialog, which) -> {
-                                        dialog.dismiss();
-                                        startLoyaltyProgram();
-                                    })
-                                    .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
-                        } else if (integer == 1) {
-                            LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
-                            initiateSalesProcess(loyaltyProgramEntity);
-                        } else {
-                            chooseProgram();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
+                .compose(bindToLifecycle())
+                .subscribe(integer -> {
+                    if (integer == 0) {
+                        new AlertDialog.Builder(mContext)
+                                .setTitle("No Loyalty Program Found!")
+                                .setMessage("To record a sale, you would have to start a loyalty program.")
+                                .setPositiveButton(mContext.getString(R.string.start_loyalty_program_btn_label), (dialog, which) -> {
+                                    dialog.dismiss();
+                                    startLoyaltyProgram();
+                                })
+                                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
+                    } else if (integer == 1) {
+                        LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
+                        initiateSalesProcess(loyaltyProgramEntity);
+                    } else {
+                        chooseProgram();
                     }
                 });
     }

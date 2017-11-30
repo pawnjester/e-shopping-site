@@ -40,6 +40,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.roughike.bottombar.BottomBar;
 
 import java.text.DateFormat;
@@ -91,6 +92,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +123,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         setupView();
         setupGraph();
         setupBottomNavigation();
+
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
     }
 
     private void setupView() {

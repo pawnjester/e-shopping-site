@@ -27,7 +27,7 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.CustomerDetailActivityEventBus;
+import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.TimeUtils;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
@@ -68,11 +68,9 @@ public class CustomerDetailFragment extends Fragment {
             }
 
             View multiPaneView = activity.findViewById(R.id.customer_detail_container);
-            if (multiPaneView != null && multiPaneView.getTag() != null && multiPaneView.getTag().toString().equals("multiPaneCustomerDetail")) {
-                // The multiPaneView container view will be present only in the
-                // large-screen layouts (res/values-w900dp).
-                mTwoPane = true;
-            }
+            // The multiPaneView container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            mTwoPane = multiPaneView != null && multiPaneView.getTag() != null && multiPaneView.getTag().toString().equals("multiPaneCustomerDetail");
         }
     }
 
@@ -167,9 +165,9 @@ public class CustomerDetailFragment extends Fragment {
             });
 
             RxView.clicks(rootView.findViewById(R.id.sellBtn)).subscribe(o ->
-                    CustomerDetailActivityEventBus
+                    CustomerDetailFragmentEventBus
                     .getInstance()
-                    .postFragmentAction(CustomerDetailActivityEventBus.ACTION_START_SALE));
+                    .postFragmentAction(CustomerDetailFragmentEventBus.ACTION_START_SALE));
         }
         return rootView;
     }

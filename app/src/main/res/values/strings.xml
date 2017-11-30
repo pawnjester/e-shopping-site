@@ -468,13 +468,13 @@
     <string name="error_picture_required">Please add picture</string>
     <string name="error_name_required">Please enter name</string>
     <string name="error_price_cant_be_zero">Price can not be zero</string>
-    <string name="product_edit_success">Product has been successfully updated.</string>
+    <string name="product_edit_success">Product successfully updated!.</string>
     <string name="update_in_progress">Update in progress…</string>
     <string name="uploading">Uploading…</string>
     <string name="creating_product">Creating your product</string>
     <string name="delete">Delete</string>
-    <string name="product_delete_success">Product was successfully deleted!</string>
-    <string name="product_category_delete_success">Category was successfully deleted!</string>
+    <string name="product_delete_success">Product successfully deleted!</string>
+    <string name="product_category_delete_success">Category successfully deleted!</string>
     <string name="error_upload_failed">Sorry! upload failed, please try again.</string>
     <string name="error_product_update">Error! product update failed, please try again.</string>
     <string name="enter_name">Enter name</string>
@@ -521,6 +521,6 @@
     <string name="no_printer_devises_available">No printer devices available</string>
     <string name="bluetooth_device_found">Printer devise found!</string>
     <string name="opening_printer_connection">Opening connection to printer.</string>
-    <string name="error_printer_connection">Sorry! connection to printer failed.</string>
+    <string name="error_printer_connection">Cannot establish connection with printer</string>
     <string name="transaction_complete">Transaction Complete</string>
 </resources>

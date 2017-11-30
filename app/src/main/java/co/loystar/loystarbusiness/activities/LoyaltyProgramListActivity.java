@@ -10,7 +10,6 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +22,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +57,7 @@ import io.requery.reactivex.ReactiveResult;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class LoyaltyProgramListActivity extends AppCompatActivity {
+public class LoyaltyProgramListActivity extends RxAppCompatActivity {
     private final String KEY_RECYCLER_STATE = "recycler_state";
     public static final int REQ_CREATE_PROGRAM = 110;
     private Bundle mBundleRecyclerViewState;
@@ -74,6 +75,7 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
     private LoyaltyProgramListAdapter mAdapter;
     private EmptyRecyclerView mRecyclerView;
     private ReactiveEntityStore<Persistable> mDataStore;
+    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,7 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
+        merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         mLayout = findViewById(R.id.loyalty_program_list_wrapper);
 
         mAdapter = new LoyaltyProgramListAdapter();
@@ -113,6 +116,19 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
             // If this view is present, then the
             // activity should be in two-pane mode.
             mTwoPane = true;
+        }
+
+        if (mTwoPane) {
+            Result<LoyaltyProgramEntity> loyaltyProgramEntities = mAdapter.performQuery();
+            if (!loyaltyProgramEntities.toList().isEmpty()) {
+                Bundle arguments = new Bundle();
+                arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgramEntities.first().getId());
+                LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
+                fragment.setArguments(arguments);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.loyalty_program_detail_container, fragment, LoyaltyProgramDetailFragment.TAG)
+                        .commit();
+            }
         }
 
         EmptyRecyclerView recyclerView = findViewById(R.id.loyalty_programs_rv);
@@ -163,11 +179,6 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
 
         @Override
         public Result<LoyaltyProgramEntity> performQuery() {
-            MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-                    .where(MerchantEntity.ID.eq(mSessionManager.getMerchantId()))
-                    .get()
-                    .firstOrNull();
-
             if (merchantEntity == null) {
                 return null;
             }
@@ -281,7 +292,6 @@ public class LoyaltyProgramListActivity extends AppCompatActivity {
             Parcelable listState = mBundleRecyclerViewState.getParcelable(KEY_RECYCLER_STATE);
             mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
         }
-
         mAdapter.queryAsync();
     }
 

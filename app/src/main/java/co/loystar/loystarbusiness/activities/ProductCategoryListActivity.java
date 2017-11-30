@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -247,14 +248,15 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
             selection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
             selection.where(ProductCategoryEntity.DELETED.notEqual(true));
 
+            Log.e(TAG, "performQuery: " + selection.get().toList() );
+
             return selection.orderBy(ProductCategoryEntity.UPDATED_AT.desc()).get();
         }
 
         @Override
         public void onBindViewHolder(ProductCategoryEntity item, BindingHolder<ProductCategoryItemBinding> holder, int position) {
             holder.binding.setProductCategory(item);
-            holder.binding.categoryChip.setClosable(true);
-            holder.binding.categoryChip.setChipText(item.getName());
+            holder.binding.categoryChip.setText(item.getName());
         }
 
         @Override

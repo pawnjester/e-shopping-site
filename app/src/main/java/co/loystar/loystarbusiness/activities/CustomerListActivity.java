@@ -4,9 +4,11 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -15,7 +17,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import org.joda.time.DateTime;
 
@@ -54,11 +56,13 @@ import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.DownloadCustomerList;
+import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
@@ -91,7 +95,7 @@ import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
  * item details side-by-side using two vertical panes.
  */
 @RuntimePermissions
-public class CustomerListActivity extends AppCompatActivity
+public class CustomerListActivity extends RxAppCompatActivity
         implements DialogInterface.OnClickListener, SearchView.OnQueryTextListener {
 
     /**
@@ -100,6 +104,7 @@ public class CustomerListActivity extends AppCompatActivity
      */
     private boolean mTwoPane;
     public static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 104;
+    private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private static final String TAG = CustomerListActivity.class.getSimpleName();
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;
@@ -115,6 +120,7 @@ public class CustomerListActivity extends AppCompatActivity
     private Customer mSelectedCustomer;
     private Toolbar toolbar;
     private String searchFilterText;
+    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +135,7 @@ public class CustomerListActivity extends AppCompatActivity
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
+        merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
 
         mAdapter = new CustomerListAdapter();
         executor = Executors.newSingleThreadExecutor();
@@ -169,8 +176,8 @@ public class CustomerListActivity extends AppCompatActivity
         }
         else {
             if (mTwoPane) {
-                if (mDataStore.count(CustomerEntity.class).get().value() > 0) {
-                    Result<CustomerEntity> customerEntities = mAdapter.performQuery();
+                Result<CustomerEntity> customerEntities = mAdapter.performQuery();
+                if (!customerEntities.toList().isEmpty()) {
                     Bundle arguments = new Bundle();
                     arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, customerEntities.first().getId());
                     CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
@@ -348,11 +355,6 @@ public class CustomerListActivity extends AppCompatActivity
 
         @Override
         public Result<CustomerEntity> performQuery() {
-            MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-                    .where(MerchantEntity.ID.eq(mSessionManager.getMerchantId()))
-                    .get()
-                    .firstOrNull();
-
             if (merchantEntity == null) {
                 return null;
             }
@@ -496,6 +498,15 @@ public class CustomerListActivity extends AppCompatActivity
         }
 
         mAdapter.queryAsync();
+        CustomerDetailFragmentEventBus
+                .getInstance()
+                .getFragmentEventObservable()
+                .compose(bindToLifecycle())
+                .subscribe(integer -> {
+                    if (integer == CustomerDetailFragmentEventBus.ACTION_START_SALE) {
+                        startSale();
+                    }
+                });
     }
 
     @Override
@@ -640,6 +651,80 @@ public class CustomerListActivity extends AppCompatActivity
                     }
                 }
             }
+        } else if (requestCode == REQUEST_CHOOSE_PROGRAM) {
+           if (resultCode == RESULT_OK) {
+               int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
+               LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
+               initiateSalesProcess(loyaltyProgramEntity);
+           }
         }
+    }
+
+    private void startSale() {
+        mDataStore.count(LoyaltyProgramEntity.class)
+                .get()
+                .single()
+                .toObservable()
+                .compose(bindToLifecycle())
+                .subscribe(integer -> {
+                    if (integer == 0) {
+                        new AlertDialog.Builder(mContext)
+                                .setTitle("No Loyalty Program Found!")
+                                .setMessage("To record a sale, you would have to start a loyalty program.")
+                                .setPositiveButton(mContext.getString(R.string.start_loyalty_program_btn_label), (dialog, which) -> {
+                                    dialog.dismiss();
+                                    startLoyaltyProgram();
+                                })
+                                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
+                    } else if (integer == 1) {
+                        LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
+                        initiateSalesProcess(loyaltyProgramEntity);
+                    } else {
+                        chooseProgram();
+                    }
+                });
+    }
+
+    private void initiateSalesProcess(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+        if (isPosTurnedOn) {
+            if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
+                startPointsSaleWithPos(loyaltyProgramEntity.getId());
+            } else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
+                startStampsSaleWithPos(loyaltyProgramEntity.getId());
+            }
+        } else {
+            startSaleWithoutPos(loyaltyProgramEntity.getId());
+        }
+    }
+
+    private void chooseProgram() {
+        Intent intent = new Intent(this, ChooseProgramActivity.class);
+        startActivityForResult(intent, REQUEST_CHOOSE_PROGRAM);
+    }
+
+    private void startPointsSaleWithPos(int programId) {
+        Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startStampsSaleWithPos(int programId) {
+        Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startSaleWithoutPos(int programId) {
+        Intent intent = new Intent(this, SaleWithoutPosActivity.class);
+        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+        startActivity(intent);
+    }
+
+    private void startLoyaltyProgram() {
+        Intent intent = new Intent(mContext, LoyaltyProgramListActivity.class);
+        intent.putExtra(Constants.CREATE_LOYALTY_PROGRAM, true);
+        startActivity(intent);
     }
 }

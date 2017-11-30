@@ -25,6 +25,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -461,6 +462,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                                mProductItem.setName(product.getName());
                                mProductItem.setPrice(product.getPrice());
                                mProductItem.setPicture(product.getPicture());
+                               ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                               if (productCategoryEntity != null) {
+                                   mProductItem.setCategory(null);
+                               }
                                mDatabaseManager.updateProduct(mProductItem);
 
                                Intent intent = new Intent(ProductDetailActivity.this, ProductListActivity.class);

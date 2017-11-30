@@ -41,6 +41,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -91,6 +92,11 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
         mAdapter = new ProductsListAdapter();
         executor = Executors.newSingleThreadExecutor();
         mAdapter.setExecutor(executor);
+
+        boolean productUpdatedIntent = getIntent().getBooleanExtra(getString(R.string.product_edit_success), false);
+        if (productUpdatedIntent) {
+            Snackbar.make(mLayout, getString(R.string.product_edit_success), Snackbar.LENGTH_LONG).show();
+        }
 
         EmptyRecyclerView recyclerView = findViewById(R.id.products_list_rv);
         assert recyclerView != null;

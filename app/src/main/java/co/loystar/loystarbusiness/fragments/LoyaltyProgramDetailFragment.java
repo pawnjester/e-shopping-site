@@ -3,21 +3,14 @@ package co.loystar.loystarbusiness.fragments;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -25,7 +18,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Api;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.trello.rxlifecycle2.components.support.RxFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +38,7 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
+import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -56,13 +51,14 @@ import retrofit2.Response;
  * in two-pane mode (on tablets) or a {@link LoyaltyProgramDetailActivity}
  * on handsets.
  */
-public class LoyaltyProgramDetailFragment extends Fragment {
+public class LoyaltyProgramDetailFragment extends RxFragment {
     public static final String ARG_ITEM_ID = "item_id";
-    private static final String TAG = LoyaltyProgramDetailFragment.class.getSimpleName();
+    public static final String TAG = LoyaltyProgramDetailFragment.class.getSimpleName();
 
     private LoyaltyProgramEntity mItem;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
+    private boolean mTwoPane;
 
     /*views*/
     private View rootView = null;
@@ -90,9 +86,13 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                 if (mItem != null) {
                     actionBar.setTitle(mItem.getName());
                 }
-                actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(activity, R.drawable.ic_close_white_24px));
                 actionBar.setDisplayHomeAsUpEnabled(true);
             }
+
+            View multiPaneView = activity.findViewById(R.id.loyalty_program_detail_container);
+            // The multiPaneView container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            mTwoPane = multiPaneView != null && multiPaneView.getTag() != null && multiPaneView.getTag().toString().equals("multiPaneLoyaltyDetail");
         }
         setHasOptionsMenu(true);
     }
@@ -141,6 +141,15 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                 else {
                     rewardExplanation.setText(getString(R.string.discount_on_next_purchase));
                 }
+
+                BrandButtonNormal updateBtn = rootView.findViewById(R.id.points_program_update_btn);
+                updateBtn.setVisibility(View.VISIBLE);
+                RxView.clicks(updateBtn).subscribe(o -> {
+                    if (formIsDirty()) {
+                        closeKeyBoard();
+                        submitForm();
+                    }
+                });
             } else if (mItem.getProgramType().equals(getString(R.string.stamps_program))) {
                 rootView = inflater.inflate(R.layout.stamps_program_layout, container, false);
                 programNameView = rootView.findViewById(R.id.program_name);
@@ -178,6 +187,15 @@ public class LoyaltyProgramDetailFragment extends Fragment {
                 else {
                     rewardExplanation.setText(getString(R.string.next_purchase_free));
                 }
+
+                BrandButtonNormal updateBtn = rootView.findViewById(R.id.stamps_program_update_btn);
+                updateBtn.setVisibility(View.VISIBLE);
+                RxView.clicks(updateBtn).subscribe(o -> {
+                    if (formIsDirty()) {
+                        closeKeyBoard();
+                        submitForm();
+                    }
+                });
             }
         }
 
@@ -253,10 +271,14 @@ public class LoyaltyProgramDetailFragment extends Fragment {
 
                             mDatabaseManager.updateLoyaltyProgram(mItem);
 
-                            Intent intent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
-                            intent.putExtra(Constants.LOYALTY_PROGRAM_UPDATED, true);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
+                            if (mTwoPane) {
+                                Snackbar.make(rootView, getString(R.string.program_update_success), Snackbar.LENGTH_LONG).show();
+                            } else {
+                                Intent intent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
+                                intent.putExtra(Constants.LOYALTY_PROGRAM_UPDATED, true);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                            }
                         }
                     }
                     else {
@@ -285,43 +307,6 @@ public class LoyaltyProgramDetailFragment extends Fragment {
             if (imm != null) {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(
-            Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.save_with_icon, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (formIsDirty()) {
-                    closeKeyBoard();
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle(R.string.discard_changes);
-                    builder.setMessage(R.string.discard_changes_explain)
-                            .setPositiveButton(R.string.discard, (dialog, id) -> {
-                                dialog.dismiss();
-                                getActivity().navigateUpTo(new Intent(getActivity(), LoyaltyProgramListActivity.class));
-                            })
-                            .setNegativeButton(getString(R.string.cancel), (dialog, id) -> dialog.dismiss());
-                    builder.show();
-                }
-                else {
-                    getActivity().navigateUpTo(new Intent(getActivity(), LoyaltyProgramListActivity.class));
-                }
-                return true;
-            case R.id.action_done:
-                if (formIsDirty()) {
-                    closeKeyBoard();
-                    submitForm();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
         }
     }
 }

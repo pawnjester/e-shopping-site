@@ -78,5 +78,13 @@
             android:id="@+id/reward_text_explanation"
             android:layout_gravity="center_horizontal" />
 
+        <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+            android:visibility="gone"
+            android:id="@+id/stamps_program_update_btn"
+            android:layout_width="match_parent"
+            android:layout_marginTop="24dp"
+            android:text="@string/save"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 </ScrollView>

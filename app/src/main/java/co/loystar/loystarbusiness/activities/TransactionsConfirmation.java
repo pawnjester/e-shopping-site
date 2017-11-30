@@ -259,13 +259,17 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                     if (mmDevice == null) {
                         showSnackbar(R.string.no_printer_devises_available);
                     } else {
-                        openBT(loyaltyProgramEntity, customerEntity);
+                        try {
+                            openBT(loyaltyProgramEntity, customerEntity);
+                        } catch (IOException e) {
+                            showSnackbar(R.string.error_printer_connection);
+                        }
                     }
                 });
     }
 
     // tries to open a connection to the bluetooth printer device
-    void openBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
+    void openBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
         Observable.fromCallable(() -> {
             try {
                 ParcelUuid[] parcelUuid = mmDevice.getUuids();
@@ -275,7 +279,10 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                     mmSocket.connect();
                     mmOutputStream = mmSocket.getOutputStream();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
+                try {
+                    mmSocket.close();
+                } catch (IOException ignored){}
                 throw Exceptions.propagate(e);
             }
             return true;
@@ -313,12 +320,8 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             BILL = new StringBuilder();
                 /*print timestamp end*/
 
-            BILL.append("\n").append("-------------------------");
+            BILL.append("\n").append("---------------------------------").append("\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
-
-            BILL.append("\n\n");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
             BILL = new StringBuilder();
 
             for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
@@ -350,25 +353,13 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 }
             }
 
-            BILL.append("\n").append("-------------------------");
+            BILL.append("\n").append("---------------------------------");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
-
-            BILL.append("\n").append("TOTAL");
-            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-            BILL.append(totalCharge);
-            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.rightAlign());
-            BILL = new StringBuilder();
-
-            BILL.append("\n\n");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
-            BILL = new StringBuilder();
-
-            BILL.append("\n").append("-------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+            BILL.append("\n").append("TOTAL").append("                ").append(totalCharge).append("\n");
+            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             String pTxt;
@@ -390,17 +381,12 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("\nThank you for your patronage.");
+            BILL.append("\nThank you for your patronage.").append("\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("\n\n");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
-            BILL = new StringBuilder();
-
-            BILL.append("POWERED BY LOYSTAR");
+            BILL.append("\nPOWERED BY LOYSTAR");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
-            mmOutputStream.flush();
             return true;
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

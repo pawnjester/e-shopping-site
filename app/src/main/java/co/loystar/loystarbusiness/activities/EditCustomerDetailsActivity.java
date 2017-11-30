@@ -112,7 +112,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             if (mCustomer.getDateOfBirth() != null) {
                 datePicker.setDateSelection(mCustomer.getDateOfBirth());
             }
-            if (TextUtils.isEmpty(mCustomer.getSex())) {
+            if (!TextUtils.isEmpty(mCustomer.getSex())) {
                 String sex = mCustomer.getSex();
                 switch (sex) {
                     case "M":
