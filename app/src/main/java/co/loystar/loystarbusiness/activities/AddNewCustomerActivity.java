@@ -4,7 +4,6 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -17,7 +16,6 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -29,8 +27,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import com.google.firebase.crash.FirebaseCrash;
 import com.jakewharton.rxbinding2.view.RxView;
-import com.jakewharton.rxbinding2.widget.RxCheckedTextView;
 import com.jakewharton.rxbinding2.widget.RxRadioGroup;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
@@ -372,6 +370,7 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
                 }
             });
         } catch (JSONException e) {
+            FirebaseCrash.report(e);
             e.printStackTrace();
         }
     }

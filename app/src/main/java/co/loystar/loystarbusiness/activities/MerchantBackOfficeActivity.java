@@ -41,12 +41,15 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
+import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,6 +60,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import co.loystar.loystarbusiness.App;
+import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -73,6 +77,8 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
+import io.smooch.core.Smooch;
+import io.smooch.core.User;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity implements OnChartValueSelectedListener {
@@ -93,6 +99,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
     private FirebaseAnalytics mFirebaseAnalytics;
+    private MixpanelAPI mixpanelAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,8 +130,45 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         setupView();
         setupGraph();
         setupBottomNavigation();
+        initializePlugins();
+    }
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+    private void initializePlugins() {
+        if (!BuildConfig.DEBUG) {
+            List<String> debugEmails = new ArrayList<>(Arrays.asList("loystarapp@gmail.com", "niinyarko1@gmail.com", "boxxy@gmail.com"));
+            if (!debugEmails.contains(mSessionManager.getEmail())) {
+                mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+                mFirebaseAnalytics.setUserProperty("BusinessName", mSessionManager.getBusinessName());
+                mFirebaseAnalytics.setUserProperty("ContactNumber", mSessionManager.getContactNumber());
+                mFirebaseAnalytics.setUserProperty("BusinessType", mSessionManager.getBusinessType());
+                mFirebaseAnalytics.setUserProperty("FirstName", mSessionManager.getFirstName());
+                mFirebaseAnalytics.setUserProperty("LastName", mSessionManager.getLastName());
+
+                mixpanelAPI = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
+                mixpanelAPI.identify(mSessionManager.getEmail());
+                mixpanelAPI.getPeople().identify(mixpanelAPI.getDistinctId());
+                mixpanelAPI.getPeople().identify(mSessionManager.getEmail());
+                mixpanelAPI.getPeople().set("BusinessType", mSessionManager.getBusinessType());
+                mixpanelAPI.getPeople().set("ContactNumber", mSessionManager.getContactNumber());
+                mixpanelAPI.getPeople().set("BusinessName", mSessionManager.getBusinessName());
+                mixpanelAPI.getPeople().showNotificationIfAvailable(this);
+
+                Smooch.login(mSessionManager.getEmail(), "jwt", null);
+                User.getCurrentUser().setEmail(mSessionManager.getEmail());
+                User.getCurrentUser().setFirstName(mSessionManager.getFirstName());
+                final Map<String, Object> customProperties = new HashMap<>();
+                customProperties.put("BusinessName", mSessionManager.getBusinessName());
+                customProperties.put("ContactNumber", mSessionManager.getContactNumber());
+                customProperties.put("BusinessType", mSessionManager.getBusinessType());
+                boolean isProgramCreated = mDataStore.count(LoyaltyProgramEntity.class)
+                        .where(LoyaltyProgramEntity.OWNER.eq(merchantEntity)).get().single().blockingGet() > 0;
+                customProperties.put("createdLoyaltyProgram", isProgramCreated);
+                User.getCurrentUser().addProperties(customProperties);
+
+                OneSignal.sendTag("user", mSessionManager.getEmail());
+                OneSignal.syncHashedEmail(mSessionManager.getEmail());
+            }
+        }
     }
 
     private void setupView() {

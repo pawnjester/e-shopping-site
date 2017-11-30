@@ -19,6 +19,7 @@ import android.view.View;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -164,6 +165,10 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
                                 authToken,
                                 client
                         );
+
+                        Bundle params = new Bundle();
+                        params.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, "email");
+                        FirebaseAnalytics.getInstance(mContext).logEvent(FirebaseAnalytics.Event.SIGN_UP, params);
 
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                         SharedPreferences.Editor editor = sharedPreferences.edit();

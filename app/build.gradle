@@ -1,6 +1,16 @@
+plugins {
+    id 'com.onesignal.androidsdk.onesignal-gradle-plugin' version '0.7.0'
+}
 apply plugin: 'com.android.application'
+apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
+apply plugin: 'com.google.firebase.firebase-crash'
+
 def requeryVersion = "1.4.0"
 def permissionsDispatcherVersion = "2.4.0"
+
+repositories {
+    maven { url 'https://maven.google.com' }
+}
 
 Properties props = new Properties()
 try {
@@ -19,6 +29,8 @@ android {
         versionCode 78
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
+                                onesignal_google_project_number: "REMOTE"]
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
@@ -94,58 +106,60 @@ android {
 dependencies {
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.android.support:recyclerview-v7:26.1.0'
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "io.requery:requery:$requeryVersion"
-    compile "io.requery:requery-android:$requeryVersion"
+    implementation "io.requery:requery:$requeryVersion"
+    implementation "io.requery:requery-android:$requeryVersion"
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:exifinterface:26.1.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.android.support:support-vector-drawable:26.1.0'
-    compile 'com.google.android.gms:play-services-auth:11.6.0'
-    compile 'com.google.android.gms:play-services-location:11.6.0'
-    compile 'com.google.firebase:firebase-messaging:11.6.0'
-    compile 'com.google.firebase:firebase-core:11.6.0'
-    compile 'com.google.firebase:firebase-auth:11.6.0'
-    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
-    compile 'io.smooch:core:5.4.0'
-    compile 'io.smooch:ui:5.4.0'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
-    compile 'com.github.armcha:Vertical-Intro:2.0.0'
-    compile 'com.github.bumptech.glide:glide:4.3.1'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:exifinterface:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.android.support:support-vector-drawable:26.1.0'
+    implementation 'com.google.android.gms:play-services-auth:11.6.2'
+    implementation 'com.google.android.gms:play-services-location:11.6.2'
+    implementation 'com.google.firebase:firebase-messaging:11.6.2'
+    implementation 'com.google.firebase:firebase-core:11.6.2'
+    implementation 'com.google.firebase:firebase-auth:11.6.2'
+    implementation 'com.google.firebase:firebase-crash:11.6.2'
+    implementation 'com.firebaseui:firebase-ui-auth:3.1.0'
+    implementation 'io.smooch:core:5.4.0'
+    implementation 'io.smooch:ui:5.4.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.8.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+    implementation 'com.github.armcha:Vertical-Intro:2.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.3.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
-    compile 'com.theartofdev.edmodo:android-image-cropper:2.5.0'
-    compile 'com.squareup.retrofit2:converter-jackson:2.3.0'
-    compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.5'
-    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
-    compile 'com.trello.rxlifecycle2:rxlifecycle:2.2.1'
-    compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.1'
-    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.2.1'
-    compile group: 'com.mixpanel.android', name: 'mixpanel-android', version: '5.2.1'
-    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
-    compile 'com.github.clans:fab:1.6.4'
-    compile 'com.roughike:bottom-bar:2.3.1'
-    compile 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
-    compile 'id.zelory:compressor:2.1.0'
-    compile 'de.hdodenhof:circleimageview:2.2.0'
-    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
-    compile 'net.sourceforge.jexcelapi:jxl:2.6.12'
-    compile("com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion") {
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-jackson:2.3.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+    implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    implementation 'com.trello.rxlifecycle2:rxlifecycle:2.2.1'
+    implementation 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.1'
+    implementation 'com.trello.rxlifecycle2:rxlifecycle-android:2.2.1'
+    implementation group: 'com.mixpanel.android', name: 'mixpanel-android', version: '5.2.1'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+    implementation 'com.github.clans:fab:1.6.4'
+    implementation 'com.roughike:bottom-bar:2.3.1'
+    implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
+    implementation 'com.onesignal:OneSignal:3.6.5'
+    implementation 'id.zelory:compressor:2.1.0'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
+    implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
+    implementation("com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion") {
         exclude module: "support-v13"
     }
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 apply plugin: 'com.google.gms.google-services'
