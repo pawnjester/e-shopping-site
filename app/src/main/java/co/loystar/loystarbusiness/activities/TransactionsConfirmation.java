@@ -6,16 +6,19 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -27,6 +30,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -37,6 +41,7 @@ import java.util.UUID;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
@@ -74,7 +79,11 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     BluetoothSocket mmSocket;
     BluetoothDevice mmDevice;
     OutputStream mmOutputStream;
-    private boolean mDeviceIsConnected = false;
+    InputStream mmInputStream;
+    Thread workerThread;
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -123,6 +132,22 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
         }
 
         setupViews();
+
+        if (!AccountGeneral.isAccountActive(this)) {
+            new AlertDialog.Builder(mContext)
+                    .setTitle("Your Account Is Inactive")
+                    .setMessage("Please note that all SMS communications are disabled until you resubscribe.")
+                    .setPositiveButton(getString(R.string.pay_subscription), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
     }
 
     private void setupViews() {
@@ -276,12 +301,14 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     void openBT() {
         Observable.fromCallable(() -> {
             try {
+                mmDevice.fetchUuidsWithSdp();
                 ParcelUuid[] parcelUuid = mmDevice.getUuids();
                 if (parcelUuid != null) {
                     UUID uuid = parcelUuid[0].getUuid();
                     mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
                     mmSocket.connect();
                     mmOutputStream = mmSocket.getOutputStream();
+                    mmInputStream = mmSocket.getInputStream();
                 }
             } catch (IOException e) {
                 try {
@@ -297,11 +324,77 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
                 .subscribe(t -> {
                     if (mmOutputStream != null) {
+                        beginListenForData();
                         sendData();
                     } else {
                         Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
                     }
         }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+    }
+
+    /*
+* after opening a connection to bluetooth printer device,
+* we have to listen and check if a data were sent to be printed.
+*/
+    void beginListenForData() {
+        try {
+            final Handler handler = new Handler();
+
+            // this is the ASCII code for a newline character
+            final byte delimiter = 10;
+
+            stopWorker = false;
+            readBufferPosition = 0;
+            readBuffer = new byte[1024];
+
+            workerThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+                    try {
+                        int bytesAvailable = mmInputStream.available();
+
+                        if (bytesAvailable > 0) {
+
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            //noinspection ResultOfMethodCallIgnored
+                            mmInputStream.read(packetBytes);
+
+                            for (int i = 0; i < bytesAvailable; i++) {
+
+                                byte b = packetBytes[i];
+                                if (b == delimiter) {
+
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(
+                                            readBuffer, 0,
+                                            encodedBytes, 0,
+                                            encodedBytes.length
+                                    );
+
+                                    // specify US-ASCII encoding
+                                    final String data = new String(encodedBytes, "US-ASCII");
+                                    readBufferPosition = 0;
+
+                                    // tell the user data were sent to bluetooth printer device
+                                    handler.post(() -> {});
+
+                                } else {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+
+                    } catch (IOException ex) {
+                        stopWorker = true;
+                    }
+
+                }
+            });
+
+            workerThread.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // this will send text data to be printed by the bluetooth printer
@@ -324,7 +417,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             BILL = new StringBuilder();
                 /*print timestamp end*/
 
-            BILL.append("\n").append("-------------------------------").append("\n");
+            BILL.append("\n").append("-------------------------------");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
@@ -346,10 +439,6 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                             .append(productEntity.getPrice())
                             .append("          ").append(tcv);
                     writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-
-                    BILL.append("\n\n");
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.get());
                     BILL = new StringBuilder();
                 }
             }
@@ -382,13 +471,12 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("\nThank you for your patronage.");
+            BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
 
-            BILL.append("\n\nPOWERED BY LOYSTAR");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
-            BILL = new StringBuilder();
+            mmOutputStream.write(0x0D);
+            mmOutputStream.write(0x0D);
+            mmOutputStream.write(0x0D);
             return true;
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -400,7 +488,9 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     // close the connection to bluetooth printer.
     void closeBT() throws IOException {
         try {
+            stopWorker = true;
             mmOutputStream.close();
+            mmInputStream.close();
             mmSocket.close();
         } catch (Exception e) {
             e.printStackTrace();

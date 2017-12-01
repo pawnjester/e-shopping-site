@@ -58,7 +58,7 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     @OneToOne
     BirthdayOfferPresetSmsEntity getBirthdayOfferPresetSms();
 
-    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
+    @OneToMany(mappedBy = "owner")
     List<CustomerEntity> getCustomers();
 
     @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})

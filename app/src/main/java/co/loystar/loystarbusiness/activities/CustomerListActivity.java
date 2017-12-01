@@ -141,15 +141,6 @@ public class CustomerListActivity extends RxAppCompatActivity
         executor = Executors.newSingleThreadExecutor();
         mAdapter.setExecutor(executor);
 
-        if (toolbar != null) {
-            toolbar.setTitle(getString(R.string.customers_count, String.valueOf(mDataStore.count(CustomerEntity.class).get().value())));
-        }
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
         if (findViewById(R.id.customer_detail_container) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -211,6 +202,17 @@ public class CustomerListActivity extends RxAppCompatActivity
         if (customerUpdated) {
             showSnackbar(R.string.customer_update_success);
             mAdapter.queryAsync();
+        }
+
+        if (toolbar != null) {
+            Result<CustomerEntity> result = mAdapter.performQuery();
+            toolbar.setTitle(getString(R.string.customers_count, String.valueOf(result.toList().size()))
+            );
+        }
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 
