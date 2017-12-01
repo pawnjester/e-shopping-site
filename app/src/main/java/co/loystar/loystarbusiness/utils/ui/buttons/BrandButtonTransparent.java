@@ -1,9 +1,6 @@
 package co.loystar.loystarbusiness.utils.ui.buttons;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatButton;
 import android.util.AttributeSet;
@@ -20,32 +17,23 @@ public class BrandButtonTransparent extends AppCompatButton {
     public BrandButtonTransparent(Context context) {
         super(context);
         this.context = context;
-        init(null);
+        init();
     }
     public BrandButtonTransparent(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        init(attrs);
+        init();
     }
 
     public BrandButtonTransparent(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.context = context;
-        init(attrs);
+        init();
     }
 
-    private void init(AttributeSet attrs) {
+    private void init() {
         if (isInEditMode()){
             return;
-        }
-        if (attrs != null) {
-            TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BrandButtonTransparent);
-            Drawable drawable = typedArray.getDrawable(R.styleable.BrandButtonTransparent_backgroundDrawable);
-            if (drawable != null) {
-                drawable.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
-                setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-            }
-            typedArray.recycle();
         }
 
         setBackgroundResource(R.drawable.brand_button_transparent);

@@ -20,7 +20,6 @@
         <TextView
             android:layout_width="match_parent"
             android:textSize="18sp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
             android:layout_marginTop="50dp"
             android:layout_marginBottom="8dp"
             android:text="@string/transaction_complete"
@@ -73,7 +72,7 @@
             android:layout_gravity="center_horizontal"
             android:textAppearance="?android:textAppearanceMedium" />
 
-        <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent
+        <co.loystar.loystarbusiness.utils.ui.buttons.PrintButton
             android:id="@+id/printReceipt"
             android:visibility="gone"
             android:layout_marginTop="20dp"
@@ -83,7 +82,6 @@
             android:paddingStart="10dp"
             android:paddingLeft="10dp"
             android:paddingEnd="10dp"
-            app:backgroundDrawable="@drawable/ic_print_white_24px"
             android:paddingRight="10dp"/>
     </LinearLayout>
 

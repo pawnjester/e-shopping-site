@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
@@ -143,9 +145,14 @@ public class AddStampsActivity extends AppCompatActivity {
 
         Bundle bundle = new Bundle();
         bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
+
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(1);
+        orderSummaryItems.put(mProductId, userStampsForThisTransaction);
+        bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
 
         Intent intent = new Intent(mContext, TransactionsConfirmation.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -128,6 +128,8 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         orderSummaryAdapter.setExecutor(executor);
         mProductsAdapter.setExecutor(executor);
 
+        findViewById(R.id.order_summary_bs_wrapper).bringToFront();
+
         mOrderSummaryBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -445,15 +447,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
 
     private void showProceedToCheckoutBtn(boolean show) {
         if (show) {
-            if (proceedToCheckoutBtnHeight == 0) {
-                orderSummaryBottomSheetBehavior.setPeekHeight(
-                        (int) TypedValue.applyDimension(
-                                TypedValue.COMPLEX_UNIT_DIP, 80,
-                                getResources().getDisplayMetrics())
-                );
-            } else {
-                orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
-            }
+            orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
         } else {
             orderSummaryBottomSheetBehavior.setPeekHeight(0);
         }

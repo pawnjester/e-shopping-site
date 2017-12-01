@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
-import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -22,6 +21,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
@@ -45,7 +45,7 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
-import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
+import co.loystar.loystarbusiness.utils.ui.buttons.PrintButton;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -60,18 +60,21 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     private int totalPoints;
     private int totalStamps;
     private DatabaseManager mDatabaseManager;
+    private CustomerEntity mCustomer;
+    private LoyaltyProgramEntity mLoyaltyProgram;
 
     private View mLayout;
     private TextView programTypeTextView;
     private TextView customerLoyaltyWorthView;
     private BrandButtonNormal continueBtn;
-    private BrandButtonTransparent printReceiptBtn;
+    private PrintButton printReceiptBtn;
 
     /*bluetooth print*/
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mmSocket;
     BluetoothDevice mmDevice;
     OutputStream mmOutputStream;
+    private boolean mDeviceIsConnected = false;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -112,17 +115,19 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             printReceiptBtn.setVisibility(View.VISIBLE);
         }
 
-        CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
-        LoyaltyProgramEntity mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
+        mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
 
-        if (mLoyaltyProgram != null && mCustomer != null) {
-            setupViews(mLoyaltyProgram, mCustomer);
+        if (mLoyaltyProgram == null || mCustomer == null) {
+            return;
         }
+
+        setupViews();
     }
 
-    private void setupViews(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
-        boolean isPoints = loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points));
-        boolean isStamps = loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program));
+    private void setupViews() {
+        boolean isPoints = mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points));
+        boolean isStamps = mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program));
         if (isPoints) {
             if (totalPoints == 1) {
                 programTypeTextView.setText(getString(R.string.point));
@@ -146,23 +151,23 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 if (isPoints) {
                     Intent intent = new Intent(mContext, PointsSaleWithPosActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, loyaltyProgramEntity.getId());
+                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
                     startActivity(intent);
                 } else if (isStamps) {
                     Intent intent = new Intent(mContext, StampsSaleWithPosActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, loyaltyProgramEntity.getId());
+                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
                     startActivity(intent);
                 }
             } else {
                 Intent intent = new Intent(mContext, SaleWithoutPosActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra(Constants.LOYALTY_PROGRAM_ID, loyaltyProgramEntity.getId());
+                intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
                 startActivity(intent);
             }
         });
 
-        RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT(loyaltyProgramEntity, customerEntity));
+        RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());
     }
 
     @Override
@@ -226,50 +231,49 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
         }
     }
 
-    // this will print to a bluetooth printer device
-    void printViaBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) {
-        Observable.fromCallable(() -> {
-            try {
-                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-                if(mBluetoothAdapter == null) {
-                    showSnackbar(R.string.no_bluetooth_adapter_available);
-                }
-                if(!mBluetoothAdapter.isEnabled()) {
-                    Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBluetooth, 0);
-                }
-                Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+    void printViaBT() {
+
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if(mBluetoothAdapter == null) {
+                showSnackbar(R.string.no_bluetooth_adapter_available);
+                return;
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+                return;
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+            if(pairedDevices.size() > 0) {
                 for (BluetoothDevice device : pairedDevices) {
-                    // Wari P1 BT is the name of the bluetooth printer device
+
+                    // RPP300 is the name of the bluetooth printer device
                     // we got this name from the list of paired devices
                     if (device.getName().equals("Wari P1 BT")) {
                         mmDevice = device;
                         break;
                     }
                 }
-            } catch (Exception e) {
-                throw Exceptions.propagate(e);
             }
-            return true;
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(bindToLifecycle())
-                .doOnError(throwable -> showSnackbar(throwable.getMessage()))
-                .subscribe(o -> {
-                    if (mmDevice == null) {
-                        showSnackbar(R.string.no_printer_devises_available);
-                    } else {
-                        try {
-                            openBT(loyaltyProgramEntity, customerEntity);
-                        } catch (IOException e) {
-                            showSnackbar(R.string.error_printer_connection);
-                        }
-                    }
-                });
+
+            if (mmDevice == null) {
+                showSnackbar(R.string.no_printer_devises_available);
+            } else {
+                openBT();
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     // tries to open a connection to the bluetooth printer device
-    void openBT(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
+    void openBT() {
         Observable.fromCallable(() -> {
             try {
                 ParcelUuid[] parcelUuid = mmDevice.getUuids();
@@ -283,25 +287,25 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 try {
                     mmSocket.close();
                 } catch (IOException ignored){}
+
                 throw Exceptions.propagate(e);
             }
             return true;
-        }).subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .compose(bindToLifecycle())
-            .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
-            .doOnError(throwable -> showSnackbar(throwable.getMessage()))
-            .subscribe(o -> {
-                if (mmOutputStream == null) {
-                    showSnackbar(R.string.error_printer_connection);
-                } else {
-                    sendData(loyaltyProgramEntity, customerEntity);
-                }
-            });
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
+                .subscribe(t -> {
+                    if (mmOutputStream != null) {
+                        sendData();
+                    } else {
+                        Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
+                    }
+        }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
     }
 
     // this will send text data to be printed by the bluetooth printer
-    void sendData(@NonNull LoyaltyProgramEntity loyaltyProgramEntity, @NonNull CustomerEntity customerEntity) throws IOException {
+    void sendData() {
         Observable.fromCallable(() -> {
             PrintTextFormatter formatter = new PrintTextFormatter();
             String td = "%.2f";
@@ -320,7 +324,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             BILL = new StringBuilder();
                 /*print timestamp end*/
 
-            BILL.append("\n").append("---------------------------------").append("\n");
+            BILL.append("\n").append("-------------------------------").append("\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
@@ -339,12 +343,9 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                             .append(" ")
                             .append("x")
                             .append(" ")
-                            .append(productEntity.getPrice());
+                            .append(productEntity.getPrice())
+                            .append("          ").append(tcv);
                     writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-
-                    BILL.append(tcv);
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.rightAlign());
                     BILL = new StringBuilder();
 
                     BILL.append("\n\n");
@@ -353,12 +354,12 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 }
             }
 
-            BILL.append("\n").append("---------------------------------");
+            BILL.append("\n").append("-------------------------------");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
             totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-            BILL.append("\n").append("TOTAL").append("                ").append(totalCharge).append("\n");
+            BILL.append("\n").append("TOTAL").append("          ").append(totalCharge).append("\n");
             writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
             BILL = new StringBuilder();
 
@@ -368,8 +369,8 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             } else {
                 pTxt = getString(R.string.points);
             }
-            int pointsDiff = loyaltyProgramEntity.getThreshold() - totalPoints;
-            BILL.append("\n").append(customerEntity.getFirstName())
+            int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
+            BILL.append("\n").append(mCustomer.getFirstName())
                     .append(" you now have ")
                     .append(totalPoints)
                     .append(" ")
@@ -377,16 +378,17 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                     .append(", spend ")
                     .append(pointsDiff)
                     .append(" more to get your ")
-                    .append(loyaltyProgramEntity.getReward());
+                    .append(mLoyaltyProgram.getReward());
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("\nThank you for your patronage.").append("\n");
+            BILL.append("\nThank you for your patronage.");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
             BILL = new StringBuilder();
 
-            BILL.append("\nPOWERED BY LOYSTAR");
+            BILL.append("\n\nPOWERED BY LOYSTAR");
             writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
+            BILL = new StringBuilder();
             return true;
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

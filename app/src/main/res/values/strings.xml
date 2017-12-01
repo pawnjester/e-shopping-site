@@ -520,6 +520,6 @@
     <string name="no_printer_devises_available">No printer devices available</string>
     <string name="bluetooth_device_found">Printer devise found!</string>
     <string name="opening_printer_connection">Opening connection to printer.</string>
-    <string name="error_printer_connection">Cannot establish connection with printer</string>
+    <string name="error_printer_connection">Cannot establish connection with printer. Please ensure your phone and the printer are connected together.</string>
     <string name="transaction_complete">Transaction Complete</string>
 </resources>

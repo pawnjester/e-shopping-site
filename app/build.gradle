@@ -16,7 +16,7 @@ Properties props = new Properties()
 try {
     props.load(file('loystar.properties').newDataInputStream())
 } catch (Exception ignored) {
-    throw new GradleException("Missing loystar.properties, check the loystar.properties file.");
+    throw new GradleException("Missing loystar.properties, check the loystar.properties file.")
 }
 
 android {
