@@ -25,7 +25,6 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 public class CountryPhoneSpinner extends AppCompatSpinner implements
         View.OnTouchListener, CountryPhoneSpinnerDialog.OnItemSelectedListener {
     private static final String TAG = CountryPhoneSpinner.class.getSimpleName();
-    public String defaultCountry = "us";
     private CountriesFetcher.CountryList mCountries;
     private CountryPhoneSpinnerDialog countryPhoneSpinnerDialog;
     private Context mContext;
@@ -84,26 +83,19 @@ public class CountryPhoneSpinner extends AppCompatSpinner implements
 
     public void setCountrySelection(String iso) {
         if (iso == null || iso.isEmpty()) {
-            iso = defaultCountry;
+            // set default country iso to US
+            iso = "us";
         }
         int defaultIdx = mCountries.indexOfIso(iso);
         try {
             mSelectedCountry = mCountries.get(defaultIdx);
             setSelection(defaultIdx);
-
-            if (mListener != null) {
-                mListener.onCountrySelected(mSelectedCountry);
-            }
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             //set default to the US if device network iso is not in the list
             mSelectedCountry = mCountries.get(6);
             setSelection(6);
-
-            if (mListener != null) {
-                mListener.onCountrySelected(mSelectedCountry);
-            }
         }
     }
 
@@ -134,6 +126,9 @@ public class CountryPhoneSpinner extends AppCompatSpinner implements
     public void onItemSelected(Country country) {
         mSelectedCountry = country;
         setSelection(mCountries.indexOf(country));
+        if (mListener != null) {
+            mListener.onCountrySelected(mSelectedCountry);
+        }
     }
 
     private class CountryPhoneSpinnerAdapter extends ArrayAdapter<Country> implements SpinnerAdapter {

@@ -50,7 +50,7 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
-import co.loystar.loystarbusiness.utils.ui.buttons.PrintButton;
+import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -72,7 +72,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     private TextView programTypeTextView;
     private TextView customerLoyaltyWorthView;
     private BrandButtonNormal continueBtn;
-    private PrintButton printReceiptBtn;
+    private BrandButtonTransparent printReceiptBtn;
 
     /*bluetooth print*/
     BluetoothAdapter mBluetoothAdapter;
@@ -323,11 +323,11 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 .compose(bindToLifecycle())
                 .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
                 .subscribe(t -> {
-                    if (mmOutputStream != null) {
+                    if (mmOutputStream == null) {
+                        Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
+                    } else {
                         beginListenForData();
                         sendData();
-                    } else {
-                        Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
                     }
         }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
     }
@@ -398,91 +398,102 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     }
 
     // this will send text data to be printed by the bluetooth printer
-    void sendData() {
+    void sendData() throws IOException{
         Observable.fromCallable(() -> {
-            PrintTextFormatter formatter = new PrintTextFormatter();
-            String td = "%.2f";
-            double totalCharge = 0;
-            StringBuilder BILL = new StringBuilder();
+            try {
+                PrintTextFormatter formatter = new PrintTextFormatter();
+                String td = "%.2f";
+                double totalCharge = 0;
+                StringBuilder BILL = new StringBuilder();
 
                 /*print business name start*/
-            BILL.append("\n").append(mSessionManager.getBusinessName());
-            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.centerAlign());
-            BILL = new StringBuilder();
+                BILL.append("\n").append(mSessionManager.getBusinessName());
+                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.centerAlign());
+                BILL = new StringBuilder();
                 /* print business name end*/
 
                 /*print timestamp start*/
-            BILL.append("\n").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()));
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
-            BILL = new StringBuilder();
+                BILL.append("\n").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()));
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
+                BILL = new StringBuilder();
                 /*print timestamp end*/
 
-            BILL.append("\n").append("-------------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
+                BILL.append("\n").append("-------------------------------");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
 
-            for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
-                ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
-                if (productEntity != null) {
-                    double tc = productEntity.getPrice() * orderItem.getValue();
-                    totalCharge += tc;
-                    int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
+                for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+                    ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+                    if (productEntity != null) {
+                        double tc = productEntity.getPrice() * orderItem.getValue();
+                        totalCharge += tc;
+                        int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
 
-                    BILL.append("\n").append(productEntity.getName());
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
+                        BILL.append("\n").append(productEntity.getName());
+                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                        BILL = new StringBuilder();
 
-                    BILL.append("\n").append(orderItem.getValue())
-                            .append(" ")
-                            .append("x")
-                            .append(" ")
-                            .append(productEntity.getPrice())
-                            .append("          ").append(tcv);
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
+                        BILL.append("\n").append(orderItem.getValue())
+                                .append(" ")
+                                .append("x")
+                                .append(" ")
+                                .append(productEntity.getPrice())
+                                .append("          ").append(tcv);
+                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                        BILL = new StringBuilder();
+                    }
                 }
+
+                BILL.append("\n").append("-------------------------------");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+                BILL.append("\n").append("TOTAL").append("          ").append(totalCharge).append("\n");
+                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                String pTxt;
+                if (totalPoints == 1) {
+                    pTxt = getString(R.string.point);
+                } else {
+                    pTxt = getString(R.string.points);
+                }
+                int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
+                BILL.append("\n").append(mCustomer.getFirstName())
+                        .append(" you now have ")
+                        .append(totalPoints)
+                        .append(" ")
+                        .append(pTxt)
+                        .append(", spend ")
+                        .append(pointsDiff)
+                        .append(" more to get your ")
+                        .append(mLoyaltyProgram.getReward());
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+
+                mmOutputStream.write(0x0D);
+                mmOutputStream.write(0x0D);
+                mmOutputStream.write(0x0D);
+                return true;
+            } catch (IOException e) {
+                try {
+                    closeBT();
+                } catch (IOException ignored){}
+                throw Exceptions.propagate(e);
             }
-
-            BILL.append("\n").append("-------------------------------");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
-
-            totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-            BILL.append("\n").append("TOTAL").append("          ").append(totalCharge).append("\n");
-            writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
-            BILL = new StringBuilder();
-
-            String pTxt;
-            if (totalPoints == 1) {
-                pTxt = getString(R.string.point);
-            } else {
-                pTxt = getString(R.string.points);
-            }
-            int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
-            BILL.append("\n").append(mCustomer.getFirstName())
-                    .append(" you now have ")
-                    .append(totalPoints)
-                    .append(" ")
-                    .append(pTxt)
-                    .append(", spend ")
-                    .append(pointsDiff)
-                    .append(" more to get your ")
-                    .append(mLoyaltyProgram.getReward());
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-            BILL = new StringBuilder();
-
-            BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
-            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-
-            mmOutputStream.write(0x0D);
-            mmOutputStream.write(0x0D);
-            mmOutputStream.write(0x0D);
-            return true;
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .compose(bindToLifecycle())
             .doOnError(throwable -> showSnackbar(throwable.getMessage()))
-            .subscribe(o -> closeBT());
+            .subscribe(o -> {
+                try {
+                    closeBT();
+                } catch (IOException ignored){}
+            }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
     }
 
     // close the connection to bluetooth printer.

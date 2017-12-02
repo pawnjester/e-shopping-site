@@ -99,12 +99,10 @@
                 android:id="@+id/deleteProgramBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:layout_marginTop="24dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/programRewardLabel"
-                app:backgroundDrawable="@drawable/ic_delete_forever_white_24px"/>
+                app:backgroundDrawable="@drawable/ic_delete_forever_white_24dp"/>
 
         </android.support.constraint.ConstraintLayout>
 

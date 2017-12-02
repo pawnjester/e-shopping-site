@@ -49,7 +49,7 @@ public class ActionButton extends AppCompatButton {
         }
         if (drawableToUse != null) {
             drawableToUse.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
-            setCompoundDrawablesWithIntrinsicBounds(null, drawableToUse, null, null);
+            setCompoundDrawablesWithIntrinsicBounds(drawableToUse, null, null, null);
         }
         setBackgroundResource(R.drawable.brand_button_transparent);
     }

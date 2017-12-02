@@ -1,9 +1,8 @@
 package co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
-import android.telephony.PhoneNumberFormattingTextWatcher;
+import android.support.annotation.NonNull;
+import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -13,8 +12,10 @@ import android.widget.RelativeLayout;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -28,7 +29,6 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
     private CountryPhoneSpinner mCountrySpinner;
     private EditText mPhoneEdit;
     private PhoneNumberUtil mPhoneUtil = PhoneNumberUtil.getInstance();
-    public PhoneNumberWatcher mPhoneNumberWatcher;
     private InternationalPhoneInputListener internationalPhoneInputListener;
     private CountriesFetcher.CountryList mCountries;
     private Country mSelectedCountry;
@@ -57,40 +57,31 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
         mCountries = CountriesFetcher.getCountries(getContext());
         mCountrySpinner = findViewById(R.id.country_phone_spinner);
         mCountrySpinner.setListener(this);
-        mPhoneNumberWatcher = new PhoneNumberWatcher(mCountrySpinner.defaultCountry);
         mPhoneEdit = findViewById(R.id.international_phone_edit_text);
-        mPhoneEdit.addTextChangedListener(mPhoneNumberWatcher);
-    }
 
-    @Override
-    public void onCountrySelected(Country country) {
-        mSelectedCountry = country;
-    }
-
-    /**
-     * Phone number watcher
-     */
-    private class PhoneNumberWatcher extends PhoneNumberFormattingTextWatcher {
-        private boolean lastValidity;
-
-        @SuppressWarnings("unused")
-        public PhoneNumberWatcher() {
-            super();
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager != null) {
+                String iso = telephonyManager.getNetworkCountryIso();
+                setSelectedCountry(iso);
+            }
+        } catch (SecurityException e) {
+            SessionManager sessionManager = new SessionManager(mContext);
+            String merchantCurrency = sessionManager.getCurrency();
+            if (merchantCurrency == null) {
+                // set default country to US
+                setSelectedCountry("us");
+            } else {
+                String iso = merchantCurrency.substring(0, 2);
+                mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
+                setSelectedCountry(iso);
+            }
         }
 
-        //TODO solve it! support for android kitkat
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        private PhoneNumberWatcher(String countryCode) {
-            super(countryCode);
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            super.onTextChanged(s, start, before, count);
+        RxTextView.textChangeEvents(mPhoneEdit).subscribe(textViewTextChangeEvent -> {
+            CharSequence s = textViewTextChangeEvent.text();
             try {
                 String iso = null;
-                mSelectedCountry = (Country) mCountrySpinner.getSelectedItem();
                 if (mSelectedCountry != null) {
                     iso = mSelectedCountry.getIso();
                 }
@@ -105,18 +96,26 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
             }
 
             if (internationalPhoneInputListener != null) {
-                boolean validity = isValid();
-                boolean isUnique = isUnique();
-
-                if (validity != lastValidity) {
-                    internationalPhoneInputListener.done(
-                            InternationalPhoneInput.this,
-                            validity,
-                            isUnique);
-                }
-                lastValidity = validity;
+                internationalPhoneInputListener.done(
+                        InternationalPhoneInput.this,
+                        isValid(),
+                        isUnique());
             }
-        }
+        });
+    }
+
+    /**
+    * Set selected country
+    * @param iso iso of selected country
+    */
+    private void setSelectedCountry(@NonNull String iso) {
+        int countryIdx = mCountries.indexOfIso(iso);
+        mSelectedCountry = mCountries.get(countryIdx);
+    }
+
+    @Override
+    public void onCountrySelected(Country country) {
+        mSelectedCountry = country;
     }
 
     /**

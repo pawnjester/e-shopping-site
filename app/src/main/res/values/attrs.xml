@@ -35,4 +35,8 @@
     <declare-styleable name="CartCountButton">
         <attr name="backGroundColor" />
     </declare-styleable>
+
+    <declare-styleable name="BrandButtonTransparent">
+        <attr name="backgroundDrawable"/>
+    </declare-styleable>
 </resources>
