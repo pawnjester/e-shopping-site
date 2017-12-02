@@ -112,93 +112,87 @@
         app:layout_constraintTop_toBottomOf="@+id/lastVisitWrapper"
         card_view:cardElevation="4dp">
 
-        <android.support.constraint.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:padding="@dimen/card_list_padding"
             android:layout_height="wrap_content"
-            android:padding="@dimen/card_list_padding">
+            android:baselineAligned="false">
 
-            <LinearLayout
-                android:id="@+id/linearLayout2"
+            <RelativeLayout
                 android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toStartOf="@+id/linearLayout"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent">
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textStyle="bold"
                     android:id="@+id/total_stamps_value"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textStyle="bold" />
+                    android:gravity="center" />
 
                 <TextView
+                    android:layout_below="@+id/total_stamps_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:id="@+id/total_stamps_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="@string/stamps_txt"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/stamps_txt" />
 
-            </LinearLayout>
+            </RelativeLayout>
 
-            <LinearLayout
-                android:id="@+id/linearLayout"
+            <RelativeLayout
                 android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/linearLayout2">
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textStyle="bold"
                     android:id="@+id/total_points_value"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textStyle="bold" />
+                    android:gravity="center" />
 
                 <TextView
+                    android:layout_below="@+id/total_points_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:id="@+id/total_points_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/points_txt"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout3"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/linearLayout">
-
-                <TextView
-                    android:id="@+id/total_amount_spent_value"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:gravity="center"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textStyle="bold" />
+                    android:text="@string/points_txt" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <TextView
-                    android:id="@+id/amount_spent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/spent_txt"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textStyle="bold"
+                    android:id="@+id/total_amount_spent_value"
+                    android:gravity="center" />
 
-            </LinearLayout>
-        </android.support.constraint.ConstraintLayout>
+                <TextView
+                    android:layout_below="@+id/total_amount_spent_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/amount_spent"
+                    android:gravity="center"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/spent_txt" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
 
     </android.support.v7.widget.CardView>
 

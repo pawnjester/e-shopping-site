@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.Gravity;
 
@@ -16,7 +17,7 @@ import co.loystar.loystarbusiness.R;
  * Created by ordgen on 11/15/17.
  */
 
-public class ActionButton extends AppCompatButton {
+public class ActionButton extends AppCompatImageButton {
     private Context mContext;
     public ActionButton(Context context) {
         super(context);
@@ -49,7 +50,7 @@ public class ActionButton extends AppCompatButton {
         }
         if (drawableToUse != null) {
             drawableToUse.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
-            setCompoundDrawablesWithIntrinsicBounds(drawableToUse, null, null, null);
+            setImageDrawable(drawableToUse);
         }
         setBackgroundResource(R.drawable.brand_button_transparent);
     }

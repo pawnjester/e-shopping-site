@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="co.loystar.loystarbusiness">
 
     <uses-permission
@@ -48,7 +49,8 @@
             android:name=".auth.sync.AuthenticatorService"
             android:enabled="true"
             android:permission=""
-            android:process=":auth">
+            android:process=":auth"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -61,7 +63,8 @@
             android:name=".auth.sync.SyncService"
             android:enabled="true"
             android:exported="true"
-            android:process=":sync">
+            android:process=":sync"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -131,6 +134,7 @@
         <activity
             android:name=".activities.CustomerDetailActivity"
             android:label="@string/title_customer_detail"
+            android:screenOrientation="portrait"
             android:parentActivityName=".activities.CustomerListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -243,15 +247,6 @@
             android:label="@string/title_productcategory_list"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.ProductCategoryDetailActivity"
-            android:label="@string/title_productcategory_detail"
-            android:parentActivityName=".activities.ProductCategoryListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.loystar.loystarbusiness.activities.ProductCategoryListActivity" />
-        </activity>
-        <activity
             android:name=".activities.BirthdayOffersAndMessagingActivity"
             android:label="@string/title_activity_birthday_offers_and_messaging"
             android:parentActivityName=".activities.SettingsActivity"
@@ -272,15 +267,6 @@
         <activity
             android:name=".activities.AddProductActivity"
             android:label="@string/title_activity_add_product"
-            android:parentActivityName=".activities.ProductListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.loystar.loystarbusiness.activities.ProductListActivity" />
-        </activity>
-        <activity
-            android:name=".activities.EditProductActivity"
-            android:label="@string/title_activity_edit_product"
             android:parentActivityName=".activities.ProductListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

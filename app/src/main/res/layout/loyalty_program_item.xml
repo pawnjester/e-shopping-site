@@ -15,19 +15,19 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_height="wrap_content">
+            android:layout_marginTop="@dimen/activity_vertical_margin">
 
             <TextView
                 android:id="@+id/programTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{loyaltyProgram.name}"
-                android:textSize="18sp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
+                android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -62,8 +62,8 @@
                 android:id="@+id/programTarget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 app:layout_constraintBaseline_toBaselineOf="@+id/programTargetLabel"
                 app:layout_constraintStart_toEndOf="@+id/programTargetLabel" />
 
@@ -80,29 +80,35 @@
                 android:id="@+id/programReward"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@{loyaltyProgram.reward}"
                 app:layout_constraintBaseline_toBaselineOf="@+id/programRewardLabel"
                 app:layout_constraintStart_toEndOf="@+id/programRewardLabel" />
 
-            <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
-                android:id="@+id/editProgramBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/deleteProgramBtn"
-                app:layout_constraintEnd_toStartOf="@+id/deleteProgramBtn" />
-
-            <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
-                android:id="@+id/deleteProgramBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:gravity="end"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/programReward"
                 android:layout_marginTop="24dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/programRewardLabel"
-                app:backgroundDrawable="@drawable/ic_delete_forever_white_24dp"/>
+                android:layout_height="wrap_content">
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
+                    android:id="@+id/editProgramBtn"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp" />
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
+                    android:id="@+id/deleteProgramBtn"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:backgroundDrawable="@drawable/ic_delete_forever_white_24dp" />
+
+            </LinearLayout>
 
         </android.support.constraint.ConstraintLayout>
 
