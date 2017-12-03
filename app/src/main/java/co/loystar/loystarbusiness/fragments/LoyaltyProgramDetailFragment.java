@@ -117,6 +117,9 @@ public class LoyaltyProgramDetailFragment extends RxFragment {
                 programNameView.setText(mItem.getName());
                 rewardView.setText(mItem.getReward());
 
+                String defaultProgramName = mSessionManager.getBusinessName() + " " + "Points Rewards";
+                programNameView.setText(defaultProgramName);
+
                 TextView rewardExplanation = rootView.findViewById(R.id.reward_text_explanation);
                 String merchantBusinessType = mSessionManager.getBusinessType();
 
@@ -165,6 +168,9 @@ public class LoyaltyProgramDetailFragment extends RxFragment {
 
                 TextView rewardExplanation = rootView.findViewById(R.id.reward_text_explanation);
                 String merchantBusinessType = mSessionManager.getBusinessType();
+
+                String defaultProgramName = mSessionManager.getBusinessName() + " " + "Stamps Rewards";
+                programNameView.setText(defaultProgramName);
 
                 if (merchantBusinessType.equals(getString(R.string.beverages_and_deserts))) {
                     rewardExplanation.setText(getString(R.string.beverages_and_deserts_reward));

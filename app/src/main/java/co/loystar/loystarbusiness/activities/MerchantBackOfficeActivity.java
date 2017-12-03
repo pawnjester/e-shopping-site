@@ -98,8 +98,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
-    private FirebaseAnalytics mFirebaseAnalytics;
-    private MixpanelAPI mixpanelAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,14 +135,14 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         if (!BuildConfig.DEBUG) {
             List<String> debugEmails = new ArrayList<>(Arrays.asList("loystarapp@gmail.com", "niinyarko1@gmail.com", "boxxy@gmail.com"));
             if (!debugEmails.contains(mSessionManager.getEmail())) {
-                mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+                FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
                 mFirebaseAnalytics.setUserProperty("BusinessName", mSessionManager.getBusinessName());
                 mFirebaseAnalytics.setUserProperty("ContactNumber", mSessionManager.getContactNumber());
                 mFirebaseAnalytics.setUserProperty("BusinessType", mSessionManager.getBusinessType());
                 mFirebaseAnalytics.setUserProperty("FirstName", mSessionManager.getFirstName());
                 mFirebaseAnalytics.setUserProperty("LastName", mSessionManager.getLastName());
 
-                mixpanelAPI = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
+                MixpanelAPI mixpanelAPI = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
                 mixpanelAPI.identify(mSessionManager.getEmail());
                 mixpanelAPI.getPeople().identify(mixpanelAPI.getDistinctId());
                 mixpanelAPI.getPeople().identify(mSessionManager.getEmail());
