@@ -170,7 +170,7 @@
     <string name="permissions_not_granted">Permissions were not granted.</string>
     <string name="permission_write_external_storage_rationale">Storage permission is needed to store this file.</string>
     <string name="permission_get_accounts_rationale">Accounts permission is needed to sync your records with our servers.</string>
-    <string name="permission_contacts_rationale">Contacts permission is needed to pick contacts.</string>
+    <string name="permission_contacts_rationale">This app needs Contacts permission, please accept to access contacts on your phone.</string>
     <string name="title_activity_add_new_customer">Add New Customer</string>
     <string name="add_customer_from_contacts">Add from contacts</string>
     <string name="fname">First name</string>
@@ -181,7 +181,7 @@
     <string name="discard_changes">Discard Changes</string>
     <string name="discard">Discard</string>
     <string name="discard_changes_explain">Are you sure you want to discard all changes?</string>
-    <string name="permission_read_contacts_neverask">Contacts permission was denied with never ask again.</string>
+    <string name="permission_read_contacts_never_ask">Permission denied! can\'t access contacts.</string>
     <string name="permission_read_contacts_denied">Contacts permission is denied.</string>
     <string name="female">Female</string>
     <string name="date_of_birth">Date of birth</string>

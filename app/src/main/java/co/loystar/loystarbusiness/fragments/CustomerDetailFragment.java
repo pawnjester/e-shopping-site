@@ -63,7 +63,13 @@ public class CustomerDetailFragment extends Fragment {
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.customer_toolbar_layout);
             if (appBarLayout != null && mItem != null) {
-                String fullCustomerName = mItem.getFirstName() + " " + mItem.getLastName();
+                String lastName;
+                if (mItem.getLastName() == null) {
+                    lastName = "";
+                } else {
+                    lastName = mItem.getLastName();
+                }
+                String fullCustomerName = mItem.getFirstName() + " " + lastName;
                 appBarLayout.setTitle(fullCustomerName);
             }
 
@@ -109,7 +115,13 @@ public class CustomerDetailFragment extends Fragment {
 
             String total_amount_text = String.format(tmt, currencySymbol, Math.round(amount_spent));
             if (mTwoPane) {
-                String name = mItem.getFirstName() + " " + mItem.getLastName();
+                String lastName;
+                if (mItem.getLastName() == null) {
+                    lastName = "";
+                } else {
+                    lastName = mItem.getLastName();
+                }
+                String name = mItem.getFirstName() + " " + lastName;
                 ((TextView) rootView.findViewById(R.id.nameView)).setText(name);
 
                 RxView.clicks(rootView.findViewById(R.id.editCustomerDetailBtn)).subscribe(o -> {

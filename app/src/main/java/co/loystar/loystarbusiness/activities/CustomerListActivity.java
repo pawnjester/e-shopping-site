@@ -25,6 +25,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -413,6 +414,14 @@ public class CustomerListActivity extends RxAppCompatActivity
         @Override
         public void onBindViewHolder(CustomerEntity item, BindingHolder<CustomerItemBinding> holder, int position) {
             holder.binding.setCustomer(item);
+            String lastName;
+            if (item.getLastName() == null) {
+                lastName = "";
+            } else {
+                lastName = item.getLastName();
+            }
+            String name = item.getFirstName() + " " + lastName;
+            holder.binding.customerName.setText(name);
         }
 
         @Override
@@ -639,7 +648,7 @@ public class CustomerListActivity extends RxAppCompatActivity
                     if (customer != null) {
                         if (mTwoPane) {
                             Bundle arguments = new Bundle();
-                            arguments.putLong(CustomerDetailFragment.ARG_ITEM_ID, customer.getId());
+                            arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, customer.getId());
                             CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
                             customerDetailFragment.setArguments(arguments);
                             getSupportFragmentManager().beginTransaction()

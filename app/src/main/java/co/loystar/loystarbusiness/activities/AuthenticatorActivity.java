@@ -87,8 +87,6 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
     private FirebaseAuth mAuth;
 
     private static final int REQUEST_READ_CONTACTS = 0;
-
-    //private UserLoginTask mAuthTask = null;
     private SessionManager mSessionManager;
 
     // UI references.

@@ -610,6 +610,7 @@ public class AddProductActivity extends AppCompatActivity {
                 .setMessage(R.string.permission_camera_rationale)
                 .setPositiveButton(R.string.ok, (dialogInterface, i) -> request.proceed())
                 .setNegativeButton(R.string.cancel, (dialogInterface, i) -> request.cancel())
+                .setCancelable(false)
                 .show();
     }
 

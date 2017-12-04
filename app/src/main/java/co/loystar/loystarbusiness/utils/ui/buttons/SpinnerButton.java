@@ -156,7 +156,7 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
 
     /**
      * set multi-mode for spinner
-     * @param mAllowMultipleSelection
+     * @param mAllowMultipleSelection set mode to allow multiple selection
      * */
     public void setAllowMultipleSelection(boolean mAllowMultipleSelection) {
         this.mAllowMultipleSelection = mAllowMultipleSelection;
@@ -207,6 +207,7 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
             int mDay = c.get(Calendar.DAY_OF_MONTH);
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(mContext,
+                    android.R.style.Theme_Holo_Panel,
                     (view1, year, monthOfYear, dayOfMonth) -> {
                         String m = (monthOfYear + 1) < 10 ? ("0" + (monthOfYear + 1)) : String.valueOf(monthOfYear + 1);
                         String d = dayOfMonth < 10 ? ("0" + dayOfMonth) : String.valueOf(dayOfMonth);

@@ -19,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -71,6 +72,7 @@ import retrofit2.Response;
 
 @RuntimePermissions
 public class AddNewCustomerActivity extends RxAppCompatActivity {
+    private static final String TAG = AddNewCustomerActivity.class.getSimpleName();
     /*Views*/
     private View mLayout;
     private AddCustomerButton addFromContactsBtn;
@@ -148,9 +150,7 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
             customerFnameView.setText(getIntent().getStringExtra(Constants.CUSTOMER_NAME));
         }
 
-        RxView.clicks(addFromContactsBtn).subscribe(o -> {
-            AddNewCustomerActivityPermissionsDispatcher.pickContactsWithCheck(AddNewCustomerActivity.this);
-        });
+        RxView.clicks(addFromContactsBtn).subscribe(o -> AddNewCustomerActivityPermissionsDispatcher.pickContactsWithCheck(AddNewCustomerActivity.this));
 
         RxRadioGroup.checkedChanges(genderSelect).subscribe(checkedId -> {
             switch (checkedId) {
@@ -165,10 +165,10 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
 
         RxRadioGroup.checkedChanges(getGenderSelectFromContacts).subscribe(checkedId -> {
             switch (checkedId) {
-                case R.id.male:
+                case R.id.male_1:
                     genderSelected = "M";
                     break;
-                case R.id.female:
+                case R.id.female_1:
                     genderSelected = "F";
                     break;
             }
@@ -187,9 +187,10 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         startActivityForResult(contactPickerIntent, REQUEST_PICK_CONTACT);
     }
 
-    @OnShowRationale(Manifest.permission.GET_ACCOUNTS)
-    void showRationaleForGetContacts(final PermissionRequest request) {
+    @OnShowRationale(Manifest.permission.READ_CONTACTS)
+    void showRationaleForReadContacts(final PermissionRequest request) {
         new AlertDialog.Builder(mContext)
+                .setTitle(getString(R.string.runtime_permission_is_needed, "Contacts"))
                 .setMessage(R.string.permission_contacts_rationale)
                 .setPositiveButton(R.string.button_allow, (dialogInterface, i) -> request.proceed())
                 .setNegativeButton(R.string.button_deny, (dialogInterface, i) -> request.cancel())
@@ -197,14 +198,14 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
                 .show();
     }
 
-    @OnPermissionDenied(Manifest.permission.GET_ACCOUNTS)
+    @OnPermissionDenied(Manifest.permission.READ_CONTACTS)
     void showDeniedForGetContacts() {
         Snackbar.make(mLayout, R.string.permission_read_contacts_denied, Snackbar.LENGTH_LONG).show();
     }
 
-    @OnNeverAskAgain(Manifest.permission.GET_ACCOUNTS)
+    @OnNeverAskAgain(Manifest.permission.READ_CONTACTS)
     void showNeverAskForGetContacts() {
-        Snackbar.make(mLayout, R.string.permission_read_contacts_neverask,
+        Snackbar.make(mLayout, R.string.permission_read_contacts_never_ask,
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.button_allow, view -> {
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -270,14 +271,18 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         }
         if (!customerPhoneViewFromContacts.isValid()) {
             if (customerPhoneViewFromContacts.getNumber() == null) {
-                Snackbar.make(mLayout, R.string.error_phone_required, Snackbar.LENGTH_LONG).show();
+                customerPhoneViewFromContacts.setErrorText(getString(R.string.error_phone_required));
             }
             else {
-                Snackbar.make(mLayout, R.string.error_phone_invalid, Snackbar.LENGTH_LONG).show();
+                customerPhoneViewFromContacts.setErrorText(getString(R.string.error_phone_invalid));
             }
             return;
         }
-        if (genderSelected.isEmpty()) {
+        if (!customerPhoneViewFromContacts.isUnique()) {
+            customerPhoneViewFromContacts.setErrorText(getString(R.string.error_phone_not_unique));
+            return;
+        }
+        if (TextUtils.isEmpty(genderSelected)) {
             Snackbar.make(mLayout, R.string.error_gender_required, Snackbar.LENGTH_LONG).show();
             return;
         }
@@ -402,7 +407,7 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         if (!validateEmail()) {
             return;
         }
-        if (genderSelected.isEmpty()) {
+        if (TextUtils.isEmpty(genderSelected)) {
             Snackbar.make(mLayout, R.string.error_gender_required, Snackbar.LENGTH_LONG).show();
             return;
         }
