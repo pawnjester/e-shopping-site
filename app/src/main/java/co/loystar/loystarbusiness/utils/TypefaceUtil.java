@@ -13,15 +13,15 @@ import java.lang.reflect.Field;
 public class TypefaceUtil {
     private static final String TAG = TypefaceUtil.class.getSimpleName();
 
-    public static void overrideFont(Context context, String defaultFontNameToOverride, String customFontFileNameInAssets) {
+    public static void overrideFont(Context context) {
         try {
-            final Typeface customFontTypeface = Typeface.createFromAsset(context.getAssets(), customFontFileNameInAssets);
+            final Typeface customFontTypeface = Typeface.createFromAsset(context.getAssets(), "fonts/Lato.ttf");
 
-            final Field defaultFontTypefaceField = Typeface.class.getDeclaredField(defaultFontNameToOverride);
+            final Field defaultFontTypefaceField = Typeface.class.getDeclaredField("SERIF");
             defaultFontTypefaceField.setAccessible(true);
             defaultFontTypefaceField.set(null, customFontTypeface);
         } catch (Exception e) {
-            Log.e(TAG, "Can not set custom font to: " + defaultFontNameToOverride);
+            Log.e(TAG, "Can not set custom font to: " + "SERIF");
         }
     }
 }

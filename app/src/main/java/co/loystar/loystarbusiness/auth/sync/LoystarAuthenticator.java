@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.sql.Timestamp;
 
@@ -105,6 +106,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                 Response<MerchantWrapper> response = mApiClient.getLoystarApi(false).signInMerchant(account.name, password).blockingSingle();
                 if (response.isSuccessful()) {
                     authToken = response.headers().get("Access-Token");
+                    Log.e(TAG, "getAuthToken: " + authToken );
                     String client = response.headers().get("Client");
                     @SuppressWarnings("ConstantConditions") Merchant merchant = response.body().getMerchant();
                     final MerchantEntity merchantEntity = new MerchantEntity();

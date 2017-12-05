@@ -5,7 +5,6 @@ import android.support.multidex.MultiDexApplication;
 
 import com.google.firebase.FirebaseApp;
 
-import co.loystar.loystarbusiness.utils.SalesTransactionsSyncObserver;
 import co.loystar.loystarbusiness.utils.TypefaceUtil;
 import io.smooch.core.Settings;
 import io.smooch.core.Smooch;
@@ -18,7 +17,6 @@ import io.smooch.core.SmoochCallback;
 public class App extends MultiDexApplication{
     private static App singleton;
     private Typeface latoFont;
-    private SalesTransactionsSyncObserver salesTransactionsSyncObserver;
 
     public static App getInstance() {
         return singleton;
@@ -40,9 +38,7 @@ public class App extends MultiDexApplication{
         FirebaseApp.initializeApp(this);
     }
 
-    protected void initializeInstance() {
-        salesTransactionsSyncObserver = new SalesTransactionsSyncObserver();
-    }
+    protected void initializeInstance() {}
 
     private void extractLato() {
         latoFont = Typeface.createFromAsset(getAssets(), "fonts/Lato.ttf");
@@ -59,10 +55,6 @@ public class App extends MultiDexApplication{
      * Using reflection to override default typeface
      */
     private void setGlobalFontType() {
-        TypefaceUtil.overrideFont(getApplicationContext(), "SERIF", "fonts/Lato.ttf");
-    }
-
-    public SalesTransactionsSyncObserver getSalesTransactionsSyncObserver() {
-        return salesTransactionsSyncObserver;
+        TypefaceUtil.overrideFont(getApplicationContext());
     }
 }

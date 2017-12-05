@@ -53,7 +53,7 @@ public class InternationalPhoneInput extends RelativeLayout implements CountryPh
     }
 
     private void init() {
-        inflate(getContext(), R.layout.international_phone_input, this);
+        inflate(mContext, R.layout.international_phone_input, this);
         mCountries = CountriesFetcher.getCountries(getContext());
         mCountrySpinner = findViewById(R.id.country_phone_spinner);
         mCountrySpinner.setListener(this);
