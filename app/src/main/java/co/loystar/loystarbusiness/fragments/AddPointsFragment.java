@@ -2,10 +2,10 @@ package co.loystar.loystarbusiness.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +38,7 @@ public class AddPointsFragment extends Fragment {
     private CustomerEntity mCustomer;
     private MerchantEntity merchantEntity;
     private int mProgramId;
-    private int totalCustomerPoints;
+    private int totalCustomerPoints = 0;
 
     private OnAddPointsFragmentInteractionListener mListener;
 
@@ -46,32 +46,37 @@ public class AddPointsFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mSessionManager = new SessionManager(getActivity());
-        mDatabaseManager = DatabaseManager.getInstance(getActivity());
-        merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
+        int mCustomerId = 0;
+        int amountSpent = 0;
         View rootView = inflater.inflate(R.layout.fragment_add_points, container, false);
-        int mCustomerId = getArguments().getInt(Constants.CUSTOMER_ID, 0);
-        mProgramId = getArguments().getInt(Constants.LOYALTY_PROGRAM_ID, 0);
 
-        Log.e(TAG, "onCreateView: " + mCustomerId );
+        if (getActivity() != null && getArguments() != null) {
+            mDatabaseManager = DatabaseManager.getInstance(getActivity());
+            merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
+
+            mCustomerId = getArguments().getInt(Constants.CUSTOMER_ID, 0);
+            mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+            mProgramId = getArguments().getInt(Constants.LOYALTY_PROGRAM_ID, 0);
+            amountSpent = getArguments().getInt(Constants.CASH_SPENT, 0);
+            totalCustomerPoints = mDatabaseManager.getTotalCustomerPointsForProgram(mProgramId, mCustomerId);
+
+
+            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            if (actionBar != null && mCustomer != null) {
+                String title = "Add Points " + "(" + TextUtilsHelper.capitalize(mCustomer.getFirstName()) + ")";
+                actionBar.setTitle(title);
+            }
+        }
 
         mCurrencyEditText = rootView.findViewById(R.id.currencyEditText);
         RxView.clicks(rootView.findViewById(R.id.addPoints)).subscribe(o -> addPoints());
 
-        mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (actionBar != null && mCustomer != null) {
-            String title = "Add Points " + "(" + TextUtilsHelper.capitalize(mCustomer.getFirstName()) + ")";
-            actionBar.setTitle(title);
-        }
-
-        totalCustomerPoints = mDatabaseManager.getTotalCustomerPointsForProgram(mProgramId, mCustomerId);
         TextView totalPointsView = rootView.findViewById(R.id.total_points);
         totalPointsView.setText(getString(R.string.total_points, String.valueOf(totalCustomerPoints)));
 
-        int amountSpent = getArguments().getInt(Constants.AMOUNT_SPENT, 0);
         mCurrencyEditText.setText(String.valueOf(amountSpent));
         return rootView;
     }
@@ -114,13 +119,16 @@ public class AddPointsFragment extends Fragment {
         int newTotalPoints = totalCustomerPoints + amountSpent;
 
         Bundle bundle = new Bundle();
+        bundle.putInt(Constants.CASH_SPENT, amountSpent);
         bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, newTotalPoints);
 
-        View view = getActivity().getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        if (getActivity() != null) {
+            View view = getActivity().getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
             }
         }
         mListener.onAddPointsFragmentInteraction(bundle);

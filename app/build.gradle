@@ -5,9 +5,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 apply plugin: 'com.google.firebase.firebase-crash'
 
-def requeryVersion = "1.4.0"
-def permissionsDispatcherVersion = "2.4.0"
-
 repositories {
     maven { url 'https://maven.google.com' }
 }
@@ -20,12 +17,11 @@ try {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
     defaultConfig {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 78
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -103,9 +99,18 @@ android {
     }
 }
 
+ext {
+    supportLibVersion = "27.0.2"
+    espressoVersion = "3.0.1"
+    androidTestVersion = "1.0.1"
+    junitVersion = "4.12"
+    requeryVersion = "1.4.0"
+    permissionsDispatcherVersion = "2.4.0"
+}
+
 dependencies {
-    implementation 'com.android.support:support-v4:26.1.0'
-    implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -113,11 +118,11 @@ dependencies {
     implementation "io.requery:requery:$requeryVersion"
     implementation "io.requery:requery-android:$requeryVersion"
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
-    implementation 'com.android.support:exifinterface:26.1.0'
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
+    implementation "com.android.support:exifinterface:${supportLibVersion}"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.android.support:support-vector-drawable:26.1.0'
+    implementation "com.android.support:support-vector-drawable:${supportLibVersion}"
     implementation 'com.google.android.gms:play-services-auth:11.6.2'
     implementation 'com.google.android.gms:play-services-location:11.6.2'
     implementation 'com.google.firebase:firebase-messaging:11.6.2'
@@ -129,7 +134,7 @@ dependencies {
     implementation 'io.smooch:ui:5.4.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.8.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     implementation 'com.github.armcha:Vertical-Intro:2.0.0'
     implementation 'com.github.bumptech.glide:glide:4.3.1'

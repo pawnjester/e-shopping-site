@@ -29,11 +29,8 @@ public class App extends MultiDexApplication{
         extractLato();
         setGlobalFontType();
         singleton.initializeInstance();
-        Smooch.init(this, new Settings(BuildConfig.SMOOCH_TOKEN), new SmoochCallback() {
-            @Override
-            public void run(Response response) {
+        Smooch.init(this, new Settings(BuildConfig.SMOOCH_TOKEN), response -> {
 
-            }
         });
         FirebaseApp.initializeApp(this);
     }

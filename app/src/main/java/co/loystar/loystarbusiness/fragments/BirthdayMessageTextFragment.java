@@ -70,7 +70,7 @@ public class BirthdayMessageTextFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_birthday_message_text, container, false);
         sessionManager = new SessionManager(getActivity());

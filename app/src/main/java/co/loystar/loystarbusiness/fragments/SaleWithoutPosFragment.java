@@ -2,6 +2,7 @@ package co.loystar.loystarbusiness.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +37,7 @@ public class SaleWithoutPosFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sale_without_pos, container, false);
         SessionManager mSessionManager = new SessionManager(getActivity());
@@ -85,7 +86,7 @@ public class SaleWithoutPosFragment extends Fragment {
             Bundle bundle = new Bundle();
             bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
             bundle.putString(
-                    Constants.AMOUNT_SPENT,
+                    Constants.CASH_SPENT,
                     mCurrencyEditText.getFormattedValue(mCurrencyEditText.getRawValue()));
             mListener.onSaleWithoutPosFragmentInteraction(bundle);
         });

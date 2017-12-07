@@ -56,7 +56,7 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
                 Bundle data = new Bundle();
                 data.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
                 data.putInt(Constants.CUSTOMER_ID, mCustomerId);
-                data.putInt(Constants.AMOUNT_SPENT, 0 );
+                data.putInt(Constants.CASH_SPENT, 0 );
 
                 mFragment = new AddPointsFragment();
                 mFragment.setArguments(data);
@@ -82,7 +82,7 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
 
     private void addStamps(Bundle data) {
         Intent addStampsIntent = new Intent(mContext, AddStampsActivity.class);
-        addStampsIntent.putExtra(Constants.AMOUNT_SPENT, Integer.parseInt(data.getString(Constants.AMOUNT_SPENT, "0")));
+        addStampsIntent.putExtra(Constants.CASH_SPENT, Integer.parseInt(data.getString(Constants.CASH_SPENT, "0")));
         addStampsIntent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
         addStampsIntent.putExtra(Constants.CUSTOMER_ID, data.getInt(Constants.CUSTOMER_ID, 0));
         startActivity(addStampsIntent);
@@ -95,8 +95,8 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
         bundle.putInt(
-                Constants.AMOUNT_SPENT,
-                Integer.parseInt(data.getString(Constants.AMOUNT_SPENT, "0"))
+                Constants.CASH_SPENT,
+                Integer.parseInt(data.getString(Constants.CASH_SPENT, "0"))
         );
 
         mFragment = new AddPointsFragment();
@@ -107,6 +107,8 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     @Override
     public void onAddPointsFragmentInteraction(Bundle data) {
         Bundle bundle = new Bundle();
+        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+        bundle.putInt(Constants.CASH_SPENT, data.getInt(Constants.CASH_SPENT, 0));
         bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, data.getInt(Constants.TOTAL_CUSTOMER_POINTS, 0));
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);

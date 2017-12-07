@@ -58,3 +58,13 @@
      @com.fasterxml.jackson.annotation.JsonCreator *;
      @com.fasterxml.jackson.annotation.JsonProperty *;
 }
+
+ ## UXCAM
+ -keep class com.uxcam.** { *; }
+ -dontwarn com.uxcam.**
+
+ ## Smooch
+-dontwarn okio.**
+-keep class com.google.gson.** { *; }
+-keepclassmembers enum * { *; }
+-keepclassmembers enum io.smooch.core.model.** { *; }

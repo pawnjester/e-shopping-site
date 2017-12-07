@@ -141,7 +141,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
                         JSONObject req = new JSONObject();
                         StdDateFormat mDateFormat = new StdDateFormat();
                         req.put("message_text", msgBox.getText().toString());
-                        req.put("client_initiated_time", mDateFormat.format(new DateTime()));
+                        req.put("client_initiated_time", mDateFormat.format(new DateTime().toDate()));
 
                         JSONObject requestData = new JSONObject();
                         requestData.put("data", req);
@@ -227,7 +227,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
             return;
         }
 
-        if (!AccountGeneral.isAccountActive(mContext)) {
+        /*if (!AccountGeneral.isAccountActive(mContext)) {
             new AlertDialog.Builder(mContext)
                     .setTitle("Your Account Is Inactive")
                     .setMessage("SMS communications are disabled until you resubscribe.")
@@ -241,7 +241,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
             return;
-        }
+        }*/
 
         View view = getCurrentFocus();
         if (view != null) {

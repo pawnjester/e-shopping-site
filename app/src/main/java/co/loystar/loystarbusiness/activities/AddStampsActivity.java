@@ -77,7 +77,7 @@ public class AddStampsActivity extends AppCompatActivity {
 
         mProductId = getIntent().getIntExtra(Constants.PRODUCT_ID, 0);
         mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
-        amountSpent = getIntent().getIntExtra(Constants.AMOUNT_SPENT, 0);
+        amountSpent = getIntent().getIntExtra(Constants.CASH_SPENT, 0);
         mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
 
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);

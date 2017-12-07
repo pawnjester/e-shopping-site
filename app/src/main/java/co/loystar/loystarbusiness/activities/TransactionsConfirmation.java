@@ -64,6 +64,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
     private int totalPoints;
     private int totalStamps;
+    private int cashSpent = 0;
     private DatabaseManager mDatabaseManager;
     private CustomerEntity mCustomer;
     private LoyaltyProgramEntity mLoyaltyProgram;
@@ -109,6 +110,7 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
         mOrderSummaryItems = (HashMap<Integer, Integer>) getIntent().getSerializableExtra(Constants.ORDER_SUMMARY_ITEMS);
         totalPoints = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_POINTS, 0);
         totalStamps = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_STAMPS, 0);
+        cashSpent = getIntent().getIntExtra(Constants.CASH_SPENT, 0);
 
         mLayout = findViewById(R.id.transactions_confirmation_wrapper);
         programTypeTextView = findViewById(R.id.program_type_text);
@@ -422,55 +424,83 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
                 BILL = new StringBuilder();
 
-                for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
-                    ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
-                    if (productEntity != null) {
-                        double tc = productEntity.getPrice() * orderItem.getValue();
-                        totalCharge += tc;
-                        int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
-
-                        BILL.append("\n").append(productEntity.getName());
-                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                        BILL = new StringBuilder();
-
-                        BILL.append("\n").append(orderItem.getValue())
-                                .append(" ")
-                                .append("x")
-                                .append(" ")
-                                .append(productEntity.getPrice())
-                                .append("          ").append(tcv);
-                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                        BILL = new StringBuilder();
-                    }
-                }
-
-                BILL.append("\n").append("-------------------------------");
-                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                BILL = new StringBuilder();
-
-                totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-                BILL.append("\n").append("TOTAL").append("          ").append(totalCharge).append("\n");
-                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
-                BILL = new StringBuilder();
-
-                String pTxt;
-                if (totalPoints == 1) {
-                    pTxt = getString(R.string.point);
+                if (mOrderSummaryItems == null || mOrderSummaryItems.isEmpty()) {
+                    totalCharge = Double.valueOf(String.format(Locale.UK, td, cashSpent));
+                    BILL.append("\n").append("TOTAL").append("             ").append(totalCharge).append("\n");
+                    writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
+                    BILL = new StringBuilder();
                 } else {
-                    pTxt = getString(R.string.points);
+                    for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+                        ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+                        if (productEntity != null) {
+                            double tc = productEntity.getPrice() * orderItem.getValue();
+                            totalCharge += tc;
+                            int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
+
+                            BILL.append("\n").append(productEntity.getName());
+                            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                            BILL = new StringBuilder();
+
+                            BILL.append("\n").append(orderItem.getValue())
+                                    .append(" ")
+                                    .append("x")
+                                    .append(" ")
+                                    .append(productEntity.getPrice())
+                                    .append("          ").append(tcv);
+                            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                            BILL = new StringBuilder();
+                        }
+                    }
+
+                    BILL.append("\n").append("-------------------------------");
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+
+                    totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+                    BILL.append("\n").append("TOTAL").append("               ").append(totalCharge).append("\n");
+                    writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
+                    BILL = new StringBuilder();
                 }
-                int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
-                BILL.append("\n").append(mCustomer.getFirstName())
-                        .append(" you now have ")
-                        .append(totalPoints)
-                        .append(" ")
-                        .append(pTxt)
-                        .append(", spend ")
-                        .append(pointsDiff)
-                        .append(" more to get your ")
-                        .append(mLoyaltyProgram.getReward());
-                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                BILL = new StringBuilder();
+
+                if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                    String pTxt;
+                    if (totalPoints == 1) {
+                        pTxt = getString(R.string.point);
+                    } else {
+                        pTxt = getString(R.string.points);
+                    }
+                    int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
+                    BILL.append("\n").append(mCustomer.getFirstName())
+                            .append(" you now have ")
+                            .append(totalPoints)
+                            .append(" ")
+                            .append(pTxt)
+                            .append(", spend ")
+                            .append(pointsDiff)
+                            .append(" more to get your ")
+                            .append(mLoyaltyProgram.getReward());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+                } else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                    String sTxt;
+                    if (totalStamps == 1) {
+                        sTxt = getString(R.string.stamp);
+                    } else {
+                        sTxt = getString(R.string.stamps);
+                    }
+                    int stampsDiff = mLoyaltyProgram.getThreshold() - totalStamps;
+                    BILL.append("\n").append(mCustomer.getFirstName())
+                            .append(" you now have ")
+                            .append(totalStamps)
+                            .append(" ")
+                            .append(sTxt)
+                            .append(", earn ")
+                            .append(stampsDiff)
+                            .append(" more to get your ")
+                            .append(mLoyaltyProgram.getReward());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+                }
 
                 BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
                 writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
