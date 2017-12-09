@@ -207,8 +207,15 @@ public class CustomerListActivity extends RxAppCompatActivity
 
         if (toolbar != null) {
             Result<CustomerEntity> result = mAdapter.performQuery();
-            toolbar.setTitle(getString(R.string.customers_count, String.valueOf(result.toList().size()))
-            );
+            if (result.toList().size() == 1) {
+                toolbar.setTitle(
+                    getString(R.string.customer_count, "1")
+                );
+            } else {
+                toolbar.setTitle(
+                    getString(R.string.customers_count, String.valueOf(result.toList().size()))
+                );
+            }
         }
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();

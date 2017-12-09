@@ -30,25 +30,29 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
-                android:id="@+id/editBirthdayOffer"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/deleteBirthdayOffer"
-                app:layout_constraintEnd_toStartOf="@+id/deleteBirthdayOffer" />
-
-            <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
-                android:id="@+id/deleteBirthdayOffer"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:gravity="end"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/birthdayOfferText"
                 android:layout_marginTop="24dp"
-                app:backgroundDrawable="@drawable/ic_delete_forever_white_24px"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/birthdayOfferText" />
+                android:layout_height="wrap_content">
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
+                    android:id="@+id/editBirthdayOffer"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp" />
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.ActionButton
+                    android:id="@+id/deleteBirthdayOffer"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:backgroundDrawable="@drawable/ic_delete_forever_white_24dp" />
+
+            </LinearLayout>
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>

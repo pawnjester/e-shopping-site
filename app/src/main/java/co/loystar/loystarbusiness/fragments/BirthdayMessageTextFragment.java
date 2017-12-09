@@ -2,6 +2,7 @@ package co.loystar.loystarbusiness.fragments;
 
 
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -73,6 +74,11 @@ public class BirthdayMessageTextFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_birthday_message_text, container, false);
+
+        if (getActivity() == null) {
+            return rootView;
+        }
+
         sessionManager = new SessionManager(getActivity());
         mDatabaseManager = DatabaseManager.getInstance(getActivity());
         merchantEntity = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
@@ -99,7 +105,7 @@ public class BirthdayMessageTextFragment extends Fragment {
 
         birthdayMessageActionBtn.setOnClickListener(view -> {
             LayoutInflater li = LayoutInflater.from(getContext());
-            View promptsView = li.inflate(R.layout.birthday_preset_sms, null);
+            @SuppressLint("InflateParams") View promptsView = li.inflate(R.layout.birthday_preset_sms, null);
 
             msgBox = promptsView.findViewById(R.id.msg_box);
             insertCustomerView = promptsView.findViewById(R.id.insertCustomerName);
@@ -149,8 +155,7 @@ public class BirthdayMessageTextFragment extends Fragment {
                 charCounterView.setText(charUnitText);
             });
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                    getContext());
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
             alertDialogBuilder.setView(promptsView);
 
             if (offerPresetSmsEntity == null) {
@@ -332,6 +337,9 @@ public class BirthdayMessageTextFragment extends Fragment {
     }
 
     private void closeKeyboard() {
+        if (getActivity() == null) {
+            return;
+        }
         View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);

@@ -2,6 +2,7 @@ package co.loystar.loystarbusiness.fragments;
 
 
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -64,9 +65,14 @@ public class BirthdayOffersFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_birthday_offers, container, false);
+
+        if (getActivity() == null) {
+            return rootView;
+        }
+
         sessionManager = new SessionManager(getActivity());
         mDatabaseManager = DatabaseManager.getInstance(getActivity());
         merchantEntity = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
@@ -92,7 +98,7 @@ public class BirthdayOffersFragment extends Fragment {
             mOfferText.setText(mBirthdayOffer.getOfferDescription());
         }
 
-        mDeleteOffer.setOnClickListener(view -> new AlertDialog.Builder(getContext())
+        mDeleteOffer.setOnClickListener(view -> new AlertDialog.Builder(getActivity())
             .setTitle("Are you sure?")
             .setMessage("This offer will be deleted permanently.")
             .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
@@ -143,11 +149,10 @@ public class BirthdayOffersFragment extends Fragment {
 
         mEditOffer.setOnClickListener(view -> {
 
-            LayoutInflater li = LayoutInflater.from(getContext());
-            View promptsView = li.inflate(R.layout.edit_birthday_offer, null);
+            LayoutInflater li = LayoutInflater.from(getActivity());
+            @SuppressLint("InflateParams") View promptsView = li.inflate(R.layout.edit_birthday_offer, null);
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                getContext());
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
             alertDialogBuilder.setView(promptsView);
 
@@ -222,10 +227,9 @@ public class BirthdayOffersFragment extends Fragment {
 
         mCreateOffer.setOnClickListener(view -> {
             LayoutInflater li = LayoutInflater.from(getContext());
-            View promptsView = li.inflate(R.layout.create_birthday_offer, null);
+            @SuppressLint("InflateParams") View promptsView = li.inflate(R.layout.create_birthday_offer, null);
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                getContext());
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
             alertDialogBuilder.setView(promptsView);
 
@@ -314,6 +318,9 @@ public class BirthdayOffersFragment extends Fragment {
     }
 
     private void closeKeyboard() {
+        if (getActivity() == null) {
+            return;
+        }
         View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
