@@ -3,7 +3,6 @@ package co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput;
 import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -12,7 +11,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +25,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import co.loystar.loystarbusiness.R;
-import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPickerDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -90,7 +87,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             @Override
             public void onClick(View view, int position) {
                 if (mListener != null) {
-                    mListener.onItemSelected(mAdapter.mCountries.get(position));
+                    mListener.onCountryItemSelected(mAdapter.mCountries.get(position));
                 }
                 ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
                 getDialog().cancel();
@@ -104,13 +101,10 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
         alertDialog.setView(rootView);
         alertDialog.setTitle("Select country");
-        alertDialog.setPositiveButton("CLOSE", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-                ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
-                getDialog().cancel();
-            }
+        alertDialog.setPositiveButton("CLOSE", (dialogInterface, i) -> {
+            dialogInterface.cancel();
+            ((CountryPhoneSpinnerDialogAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+            getDialog().cancel();
         });
 
         final AlertDialog dialog = alertDialog.create();
@@ -138,7 +132,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     }
 
     public interface OnItemSelectedListener {
-        void onItemSelected(Country country);
+        void onCountryItemSelected(Country country);
     }
 
     public void setListener(OnItemSelectedListener listener) {
@@ -189,7 +183,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         @Override
         public Filter getFilter() {
             if (filter == null) {
-                filter =  new CountryFilter<>(mCountryList);
+                filter =  new CountryFilter(mCountryList);
             }
             return filter;
         }
@@ -201,10 +195,10 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
          * @return int of resource | 0 value if not exists
          */
         private int getFlagResource(Country country) {
-            return getContext().getResources().getIdentifier("country_" + country.getIso().toLowerCase(), "drawable", getContext().getPackageName());
+            return getResources().getIdentifier("country_" + country.getIso().toLowerCase(), "drawable", getActivity().getPackageName());
         }
 
-        private class CountryFilter<T> extends Filter {
+        private class CountryFilter extends Filter {
 
             private ArrayList<Country> mCountries;
 

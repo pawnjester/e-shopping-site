@@ -471,7 +471,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
                     if (e instanceof SocketTimeoutException) {
                         intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
                     } else {
-                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, e.getMessage());
+                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.unknown_error));
                     }
                     finishLogin(intent);
                 });

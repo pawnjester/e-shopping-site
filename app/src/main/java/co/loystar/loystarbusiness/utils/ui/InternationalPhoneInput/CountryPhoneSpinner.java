@@ -123,7 +123,7 @@ public class CountryPhoneSpinner extends AppCompatSpinner implements
     }
 
     @Override
-    public void onItemSelected(Country country) {
+    public void onCountryItemSelected(Country country) {
         mSelectedCountry = country;
         setSelection(mCountries.indexOf(country));
         if (mListener != null) {
