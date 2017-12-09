@@ -9,10 +9,17 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +28,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,7 +58,9 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-public class StampsSaleWithPosActivity extends RxAppCompatActivity implements CustomerAutoCompleteDialog.SelectedCustomerListener {
+public class StampsSaleWithPosActivity
+    extends RxAppCompatActivity implements CustomerAutoCompleteDialog.SelectedCustomerListener,
+    SearchView.OnQueryTextListener{
     private static final String TAG = StampsSaleWithPosActivity.class.getCanonicalName();
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
@@ -63,6 +73,8 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
     private ProductEntity mSelectedProduct;
     private int mProgramId;
     private String merchantCurrencySymbol;
+    private String searchFilterText;
+    private EmptyRecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,18 +133,19 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
             startActivity(intent);
         });
 
-        recyclerView.setHasFixedSize(true);
+        mRecyclerView = recyclerView;
+        mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(mProductsAdapter);
-        recyclerView.addItemDecoration(new SpacingItemDecoration(
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mProductsAdapter);
+        mRecyclerView.addItemDecoration(new SpacingItemDecoration(
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
         );
-        recyclerView.setEmptyView(emptyView);
+        mRecyclerView.setEmptyView(emptyView);
 
-        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(mContext, recyclerView, new RecyclerTouchListener.ClickListener() {
+        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(mContext, recyclerView, new RecyclerTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
                 PosProductItemBinding posProductItemBinding = (PosProductItemBinding) view.getTag();
@@ -162,7 +175,28 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
         goToAddStampsView(customerEntity, mSelectedProduct);
     }
 
-    private class ProductsAdapter extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> {
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            searchFilterText = null;
+            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+        }
+        else {
+            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+        }
+        mRecyclerView.scrollToPosition(0);
+        return true;
+    }
+
+    private class ProductsAdapter
+        extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> implements Filterable {
+
+        private Filter filter;
 
         ProductsAdapter() {
             super(ProductEntity.$TYPE);
@@ -174,11 +208,21 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
                 return null;
             }
 
-            Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
-            productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
-            productsSelection.where(ProductEntity.DELETED.notEqual(true));
+            if (searchFilterText == null || TextUtils.isEmpty(searchFilterText)) {
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
-            return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            } else {
+                String query = "%" + searchFilterText.toLowerCase() + "%";
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.NAME.like(query));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
+
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            }
         }
 
         @SuppressLint("CheckResult")
@@ -197,7 +241,9 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
                     .load(item.getPicture())
                     .apply(options)
                     .into(holder.binding.productImageCopy);
+
             holder.binding.productName.setText(item.getName());
+            holder.binding.productDecrementWrapper.setVisibility(View.GONE);
 
             holder.binding.productPrice.setText(getString(R.string.product_price, merchantCurrencySymbol, String.valueOf(item.getPrice())));
             holder.binding.addImage.bringToFront();
@@ -209,6 +255,48 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
             final PosProductItemBinding binding = PosProductItemBinding.inflate(inflater);
             binding.getRoot().setTag(binding);
             return new BindingHolder<>(binding);
+        }
+
+        @Override
+        public Filter getFilter() {
+            if (filter == null) {
+                filter = new ProductsFilter(new ArrayList<>(mProductsAdapter.performQuery().toList()));
+            }
+            return filter;
+        }
+
+        private class ProductsFilter extends Filter {
+
+            private ArrayList<ProductEntity> productEntities;
+
+            ProductsFilter(ArrayList<ProductEntity> productEntities) {
+                this.productEntities = new ArrayList<>();
+                synchronized (this) {
+                    this.productEntities.addAll(productEntities);
+                }
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults result = new FilterResults();
+                String searchString = charSequence.toString();
+                if (TextUtils.isEmpty(searchString)) {
+                    synchronized (this) {
+                        result.count = productEntities.size();
+                        result.values = productEntities;
+                    }
+                } else {
+                    searchFilterText = searchString;
+                    result.count = 0;
+                    result.values = new ArrayList<>();
+                }
+                return result;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                mProductsAdapter.queryAsync();
+            }
         }
     }
 
@@ -257,5 +345,17 @@ public class StampsSaleWithPosActivity extends RxAppCompatActivity implements Cu
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.search, menu);
+
+        final MenuItem item = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(this);
+
+        return true;
     }
 }

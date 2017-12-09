@@ -17,7 +17,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +32,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,7 +57,8 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-public class ProductListActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class ProductListActivity
+    extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private ReactiveEntityStore<Persistable> mDataStore;
     private final String KEY_RECYCLER_STATE = "recycler_state";
@@ -62,6 +67,7 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
     private EmptyRecyclerView mRecyclerView;
     private Context mContext;
     private View mLayout;
+    private String searchFilterText;
     private ProductsListAdapter mAdapter;
     private ExecutorService executor;
     private SessionManager mSessionManager;
@@ -191,7 +197,15 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        return false;
+        if (TextUtils.isEmpty(newText)) {
+            searchFilterText = null;
+            ((ProductsListAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+        }
+        else {
+            ((ProductsListAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+        }
+        mRecyclerView.scrollToPosition(0);
+        return true;
     }
 
     private class ProductsListAdapter extends QueryRecyclerAdapter<ProductEntity, BindingHolder<ProductItemBinding>> implements Filterable {
@@ -212,11 +226,21 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
                 return null;
             }
 
-            Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
-            productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
-            productsSelection.where(ProductEntity.DELETED.notEqual(true));
+            if (searchFilterText == null || TextUtils.isEmpty(searchFilterText)) {
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
-            return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            } else {
+                String query = "%" + searchFilterText.toLowerCase() + "%";
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.NAME.like(query));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
+
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            }
         }
 
         @Override
@@ -240,7 +264,44 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
 
         @Override
         public Filter getFilter() {
-            return null;
+            if (filter == null) {
+                filter = new ProductsFilter(new ArrayList<>(mAdapter.performQuery().toList()));
+            }
+            return filter;
+        }
+
+        private class ProductsFilter extends Filter {
+
+            private ArrayList<ProductEntity> productEntities;
+
+            ProductsFilter(ArrayList<ProductEntity> productEntities) {
+                this.productEntities = new ArrayList<>();
+                synchronized (this) {
+                    this.productEntities.addAll(productEntities);
+                }
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults result = new FilterResults();
+                String searchString = charSequence.toString();
+                if (TextUtils.isEmpty(searchString)) {
+                    synchronized (this) {
+                        result.count = productEntities.size();
+                        result.values = productEntities;
+                    }
+                } else {
+                    searchFilterText = searchString;
+                    result.count = 0;
+                    result.values = new ArrayList<>();
+                }
+                return result;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                mAdapter.queryAsync();
+            }
         }
     }
 
@@ -281,5 +342,17 @@ public class ProductListActivity extends AppCompatActivity implements SearchView
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.search, menu);
+
+        final MenuItem item = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(this);
+
+        return true;
     }
 }
