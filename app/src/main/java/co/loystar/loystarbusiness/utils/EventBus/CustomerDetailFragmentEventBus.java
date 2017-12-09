@@ -1,5 +1,7 @@
 package co.loystar.loystarbusiness.utils.EventBus;
 
+import android.os.Bundle;
+
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -21,13 +23,13 @@ public class CustomerDetailFragmentEventBus {
 
     private CustomerDetailFragmentEventBus() {}
 
-    private PublishSubject<Integer> fragmentEventSubject = PublishSubject.create();
+    private PublishSubject<Bundle> fragmentEventSubject = PublishSubject.create();
 
-    public Observable<Integer> getFragmentEventObservable() {
+    public Observable<Bundle> getFragmentEventObservable() {
         return fragmentEventSubject;
     }
 
-    public void postFragmentAction(Integer actionId) {
-        fragmentEventSubject.onNext(actionId);
+    public void postFragmentAction(Bundle data) {
+        fragmentEventSubject.onNext(data);
     }
 }

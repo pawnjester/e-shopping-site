@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,7 +19,6 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.SparseIntArray;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -87,6 +85,10 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     SearchView.OnQueryTextListener {
 
     private static final String TAG = PointsSaleWithPosActivity.class.getSimpleName();
+
+    // intent params
+    private int mProgramId;
+
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
     private ProductsAdapter mProductsAdapter;
@@ -100,10 +102,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private double totalCharge = 0;
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
-    private int mProgramId;
-    private String searchFilterText;
-    private EmptyRecyclerView mRecyclerView;
-    CustomerAutoCompleteDialog customerAutoCompleteDialog;
+    private CustomerEntity mSelectedCustomer;
 
     /*Views*/
     private View collapsedToolbar;
@@ -111,8 +110,10 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private FullRectangleButton orderSummaryCheckoutBtn;
     private CartCountButton proceedToCheckoutBtn;
     private View orderSummaryCheckoutWrapper;
-    private CustomerEntity mSelectedCustomer;
     private ImageView cartCountImageView;
+    private String searchFilterText;
+    private EmptyRecyclerView mRecyclerView;
+    private CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private int proceedToCheckoutBtnHeight = 0;
 
     @Override
@@ -132,6 +133,8 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
         mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
+        int customerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
+        mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
         mProductsAdapter = new ProductsAdapter();
         orderSummaryAdapter = new OrderSummaryAdapter();
@@ -229,6 +232,9 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
 
         setUpBottomSheetView();
+        if (mSelectedCustomer != null) {
+            setOrderSummaryView(mSelectedCustomer, false);
+        }
     }
 
     private void setupProductsRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -318,7 +324,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
                 }
             } else {
-                showOrderSummaryView(mSelectedCustomer);
+                setOrderSummaryView(mSelectedCustomer, true);
             }
         });
 
@@ -422,7 +428,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         orderSummaryExpandedToolbar.setNavigationOnClickListener(view -> orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED));
     }
 
-    private void showOrderSummaryView(@Nullable CustomerEntity customerEntity) {
+    private void setOrderSummaryView(@Nullable CustomerEntity customerEntity, boolean show) {
         View customerDetailWrapper = findViewById(R.id.customerDetailWrapper);
         View AddCustomerWrapper = findViewById(R.id.addCustomerWrapper);
         AddCustomerButton addCustomerButton = AddCustomerWrapper.findViewById(R.id.addCustomerButton);
@@ -447,7 +453,9 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                 customerDetailWrapper.setVisibility(View.GONE);
             });
         }
-        orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        if (show) {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
     }
 
     private void showCheckoutBtn(boolean show) {
@@ -469,7 +477,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     @Override
     public void onCustomerSelected(@NonNull CustomerEntity customerEntity) {
         mSelectedCustomer = customerEntity;
-        showOrderSummaryView(mSelectedCustomer);
+        setOrderSummaryView(mSelectedCustomer, true);
     }
 
     @Override
@@ -813,7 +821,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                                 if (customerEntity == null) {
                                     Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 } else {
-                                    showOrderSummaryView(customerEntity);
+                                    setOrderSummaryView(customerEntity, true);
                                 }
                             });
                 }

@@ -33,4 +33,5 @@ public class Constants {
     public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";
     public static final String SKIP_INTRO = "SKIP_INTRO";
     public static final String ORDER_SUMMARY_ITEMS = "ORDER_SUMMARY_ITEMS";
+    public static final String FRAGMENT_EVENT_ID = "FRAGMENT_EVENT_ID";
 }

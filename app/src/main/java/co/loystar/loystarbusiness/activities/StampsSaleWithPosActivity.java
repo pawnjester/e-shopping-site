@@ -93,6 +93,8 @@ public class StampsSaleWithPosActivity
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
         mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
+        int customerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
+        mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
         mProductsAdapter = new ProductsAdapter();
         executor = Executors.newSingleThreadExecutor();

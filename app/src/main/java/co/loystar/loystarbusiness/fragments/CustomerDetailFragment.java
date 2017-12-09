@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -53,12 +54,15 @@ public class CustomerDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (getActivity() == null) {
+            return;
+        }
+
         mDatabaseManager = DatabaseManager.getInstance(getActivity());
         mSessionManager = new SessionManager(getActivity());
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
-            mItem = databaseManager.getCustomerById(getArguments().getInt(ARG_ITEM_ID, 0));
+        if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
+            mItem = mDatabaseManager.getCustomerById(getArguments().getInt(ARG_ITEM_ID, 0));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.customer_toolbar_layout);
@@ -81,9 +85,14 @@ public class CustomerDetailFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.customer_detail, container, false);
+
+        if (getActivity() == null) {
+            return rootView;
+        }
+
         if (mItem != null) {
             int customer_stamps = mDatabaseManager.getTotalCustomerStamps(
                     mSessionManager.getMerchantId(),
@@ -176,10 +185,14 @@ public class CustomerDetailFragment extends Fragment {
                 startActivity(redeemIntent);
             });
 
-            RxView.clicks(rootView.findViewById(R.id.sellBtn)).subscribe(o ->
-                    CustomerDetailFragmentEventBus
+            RxView.clicks(rootView.findViewById(R.id.sellBtn)).subscribe(o -> {
+                Bundle bundle = new Bundle();
+                bundle.putInt(Constants.FRAGMENT_EVENT_ID, CustomerDetailFragmentEventBus.ACTION_START_SALE);
+                bundle.putInt(Constants.CUSTOMER_ID, mItem.getId());
+                CustomerDetailFragmentEventBus
                     .getInstance()
-                    .postFragmentAction(CustomerDetailFragmentEventBus.ACTION_START_SALE));
+                    .postFragmentAction(bundle);
+            });
         }
         return rootView;
     }

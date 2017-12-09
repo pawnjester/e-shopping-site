@@ -120,6 +120,7 @@ public class CustomerListActivity extends RxAppCompatActivity
     private MyAlertDialog myAlertDialog;
     private Customer mSelectedCustomer;
     private Toolbar toolbar;
+    private int customerId;
     private String searchFilterText;
     private MerchantEntity merchantEntity;
 
@@ -520,8 +521,9 @@ public class CustomerListActivity extends RxAppCompatActivity
                 .getInstance()
                 .getFragmentEventObservable()
                 .compose(bindToLifecycle())
-                .subscribe(integer -> {
-                    if (integer == CustomerDetailFragmentEventBus.ACTION_START_SALE) {
+                .subscribe(bundle -> {
+                    if (bundle.getInt(Constants.FRAGMENT_EVENT_ID, 0) == CustomerDetailFragmentEventBus.ACTION_START_SALE) {
+                        customerId = bundle.getInt(Constants.CUSTOMER_ID, 0);
                         startSale();
                     }
                 });
@@ -724,18 +726,21 @@ public class CustomerListActivity extends RxAppCompatActivity
 
     private void startPointsSaleWithPos(int programId) {
         Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
+        intent.putExtra(Constants.CUSTOMER_ID, customerId);
         intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
         startActivity(intent);
     }
 
     private void startStampsSaleWithPos(int programId) {
         Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
+        intent.putExtra(Constants.CUSTOMER_ID, customerId);
         intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
         startActivity(intent);
     }
 
     private void startSaleWithoutPos(int programId) {
         Intent intent = new Intent(this, SaleWithoutPosActivity.class);
+        intent.putExtra(Constants.CUSTOMER_ID, customerId);
         intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
         startActivity(intent);
     }
