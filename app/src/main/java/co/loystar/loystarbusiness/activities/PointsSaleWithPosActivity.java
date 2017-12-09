@@ -9,19 +9,27 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,7 +83,8 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
 public class PointsSaleWithPosActivity extends RxAppCompatActivity
-        implements CustomerAutoCompleteDialog.SelectedCustomerListener {
+        implements CustomerAutoCompleteDialog.SelectedCustomerListener,
+    SearchView.OnQueryTextListener {
 
     private static final String TAG = PointsSaleWithPosActivity.class.getSimpleName();
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -92,6 +101,8 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
     private int mProgramId;
+    private String searchFilterText;
+    private EmptyRecyclerView mRecyclerView;
     CustomerAutoCompleteDialog customerAutoCompleteDialog;
 
     /*Views*/
@@ -247,16 +258,18 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             startActivity(intent);
         });
 
-        recyclerView.setHasFixedSize(true);
+        mRecyclerView = recyclerView;
+
+        mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(mProductsAdapter);
-        recyclerView.addItemDecoration(new SpacingItemDecoration(
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mProductsAdapter);
+        mRecyclerView.addItemDecoration(new SpacingItemDecoration(
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
         );
-        recyclerView.setEmptyView(emptyView);
+        mRecyclerView.setEmptyView(emptyView);
     }
 
     private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -459,7 +472,28 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         showOrderSummaryView(mSelectedCustomer);
     }
 
-    private class ProductsAdapter extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> {
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            searchFilterText = null;
+            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+        }
+        else {
+            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+        }
+        mRecyclerView.scrollToPosition(0);
+        return true;
+    }
+
+    private class ProductsAdapter
+        extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> implements Filterable {
+
+        private Filter filter;
 
         ProductsAdapter() {
             super(ProductEntity.$TYPE);
@@ -471,11 +505,21 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                 return null;
             }
 
-            Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
-            productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
-            productsSelection.where(ProductEntity.DELETED.notEqual(true));
+            if (searchFilterText == null || TextUtils.isEmpty(searchFilterText)) {
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
-            return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            } else {
+                String query = "%" + searchFilterText.toLowerCase() + "%";
+                Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.NAME.like(query));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
+
+                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            }
         }
 
         @SuppressLint("CheckResult")
@@ -552,6 +596,48 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                 }
             });
             return new BindingHolder<>(binding);
+        }
+
+        @Override
+        public Filter getFilter() {
+            if (filter == null) {
+                filter = new ProductsFilter(new ArrayList<>(mProductsAdapter.performQuery().toList()));
+            }
+            return filter;
+        }
+
+        private class ProductsFilter extends Filter {
+
+            private ArrayList<ProductEntity> productEntities;
+
+            ProductsFilter(ArrayList<ProductEntity> productEntities) {
+                this.productEntities = new ArrayList<>();
+                synchronized (this) {
+                    this.productEntities.addAll(productEntities);
+                }
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults result = new FilterResults();
+                String searchString = charSequence.toString();
+                if (TextUtils.isEmpty(searchString)) {
+                    synchronized (this) {
+                        result.count = productEntities.size();
+                        result.values = productEntities;
+                    }
+                } else {
+                    searchFilterText = searchString;
+                    result.count = 0;
+                    result.values = new ArrayList<>();
+                }
+                return result;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                mProductsAdapter.queryAsync();
+            }
         }
     }
 
@@ -736,5 +822,17 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.search, menu);
+
+        final MenuItem item = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(this);
+
+        return true;
     }
 }
