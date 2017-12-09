@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -50,7 +51,11 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mCountryList = CountriesFetcher.getCountries(getActivity());
         final LayoutInflater inflater = LayoutInflater.from(getActivity());
-        View rootView = inflater.inflate(R.layout.searchable_list_dialog, null);
+        @SuppressLint("InflateParams") View rootView = inflater.inflate(R.layout.searchable_list_dialog, null);
+
+        if (getActivity() == null) {
+            return getDialog();
+        }
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context
                 .SEARCH_SERVICE);
@@ -69,7 +74,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
             mgr.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
         }
 
-        mAdapter = new CountryPhoneSpinnerDialogAdapter(mCountryList);
+        mAdapter = new CountryPhoneSpinnerDialogAdapter(getActivity(), mCountryList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView = rootView.findViewById(R.id.items_rv);
         mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -142,9 +147,11 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
     private class CountryPhoneSpinnerDialogAdapter extends RecyclerView.Adapter<CountryPhoneSpinnerDialogAdapter.ViewHolder> implements Filterable {
         private ArrayList<Country> mCountries;
         private Filter filter;
+        private Context context;
 
-        CountryPhoneSpinnerDialogAdapter(ArrayList<Country> countries) {
+        CountryPhoneSpinnerDialogAdapter(Context context, ArrayList<Country> countries) {
             mCountries = countries;
+            this.context = context;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
@@ -170,7 +177,7 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         @Override
         public void onBindViewHolder(CountryPhoneSpinnerDialogAdapter.ViewHolder holder, int position) {
             Country country = mCountries.get(position);
-            holder.mImageView.setImageResource(getFlagResource(country));
+            holder.mImageView.setImageResource(getFlagResource(context, country));
             holder.mNameView.setText(country.getName());
             holder.mDialCode.setText(String.format("+%s", country.getDialCode()));
         }
@@ -191,11 +198,12 @@ public class CountryPhoneSpinnerDialog extends AppCompatDialogFragment implement
         /**
          * Fetch flag resource by Country
          *
+         * @param context Context
          * @param country Country
          * @return int of resource | 0 value if not exists
          */
-        private int getFlagResource(Country country) {
-            return getResources().getIdentifier("country_" + country.getIso().toLowerCase(), "drawable", getActivity().getPackageName());
+        private int getFlagResource(Context context, Country country) {
+            return getResources().getIdentifier("country_" + country.getIso().toLowerCase(), "drawable", context.getPackageName());
         }
 
         private class CountryFilter extends Filter {

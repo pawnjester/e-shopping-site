@@ -93,53 +93,53 @@ public class BirthdayOffersFragment extends Fragment {
         }
 
         mDeleteOffer.setOnClickListener(view -> new AlertDialog.Builder(getContext())
-                .setTitle("Are you sure?")
-                .setMessage("This offer will be deleted permanently.")
-                .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
-                    dialog.dismiss();
-                    closeKeyboard();
+            .setTitle("Are you sure?")
+            .setMessage("This offer will be deleted permanently.")
+            .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
+                dialog.dismiss();
+                closeKeyboard();
 
-                    mProgressDialog.show();
+                mProgressDialog.show();
 
-                    mApiClient.getLoystarApi(false).deleteBirthdayOffer(mBirthdayOffer.getId()).enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                mApiClient.getLoystarApi(false).deleteBirthdayOffer(mBirthdayOffer.getId()).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
 
-                            if (mProgressDialog.isShowing()) {
-                                mProgressDialog.dismiss();
-                            }
-
-                            if (response.isSuccessful() || response.code() == 404) {
-                                assert merchantEntity != null;
-
-                                merchantEntity.setBirthdayOffer(null);
-                                mDatabaseManager.updateMerchant(merchantEntity);
-
-                                birthdayOfferView.setVisibility(View.GONE);
-                                noBirthdayOfferView.setVisibility(View.VISIBLE);
-                                showSnackbar(R.string.birthday_offer_delete_success);
-                            }
-                            else {
-                                if (response.code() == 401) {
-                                    AccountManager accountManager = AccountManager.get(getActivity());
-                                    accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                                }
-                                showSnackbar(R.string.error_birthday_offer_delete);
-                            }
+                        if (mProgressDialog.isShowing()) {
+                            mProgressDialog.dismiss();
                         }
 
-                        @Override
-                        public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                            if (mProgressDialog.isShowing()) {
-                                mProgressDialog.dismiss();
-                            }
-                            showSnackbar(R.string.error_internet_connection_timed_out);
+                        if (response.isSuccessful() || response.code() == 404) {
+                            assert merchantEntity != null;
+
+                            merchantEntity.setBirthdayOffer(null);
+                            mDatabaseManager.updateMerchant(merchantEntity);
+
+                            birthdayOfferView.setVisibility(View.GONE);
+                            noBirthdayOfferView.setVisibility(View.VISIBLE);
+                            showSnackbar(R.string.birthday_offer_delete_success);
                         }
-                    });
-                })
-                .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show());
+                        else {
+                            if (response.code() == 401) {
+                                AccountManager accountManager = AccountManager.get(getActivity());
+                                accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
+                            }
+                            showSnackbar(R.string.error_birthday_offer_delete);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                        if (mProgressDialog.isShowing()) {
+                            mProgressDialog.dismiss();
+                        }
+                        showSnackbar(R.string.error_internet_connection_timed_out);
+                    }
+                });
+            })
+            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show());
 
         mEditOffer.setOnClickListener(view -> {
 
@@ -147,74 +147,74 @@ public class BirthdayOffersFragment extends Fragment {
             View promptsView = li.inflate(R.layout.edit_birthday_offer, null);
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                    getContext());
+                getContext());
 
             alertDialogBuilder.setView(promptsView);
 
             final EditText userInput = promptsView
-                    .findViewById(R.id.birthday_offer_input);
+                .findViewById(R.id.birthday_offer_input);
 
             userInput.setText(mBirthdayOffer.getOfferDescription());
 
             alertDialogBuilder
-                    .setPositiveButton(getString(R.string.update_offer),
-                            (dialog, id) -> {
-                                if (userInput.getText().toString().isEmpty()) {
-                                    userInput.setError(getString(R.string.error_birthday_offer_text_required));
-                                    userInput.requestFocus();
-                                    return;
+                .setPositiveButton(getString(R.string.update_offer),
+                    (dialog, id) -> {
+                        if (userInput.getText().toString().isEmpty()) {
+                            userInput.setError(getString(R.string.error_birthday_offer_text_required));
+                            userInput.requestFocus();
+                            return;
+                        }
+
+                        closeKeyboard();
+                        mProgressDialog.show();
+
+                        try {
+                            JSONObject req = new JSONObject();
+                            req.put("offer_description", userInput.getText().toString());
+                            JSONObject requestData = new JSONObject();
+                            requestData.put("data", req);
+
+                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                            mApiClient.getLoystarApi(false).updateBirthdayOffer(mBirthdayOffer.getId(), requestBody).enqueue(new Callback<BirthdayOffer>() {
+                                @Override
+                                public void onResponse(@NonNull Call<BirthdayOffer> call, @NonNull Response<BirthdayOffer> response) {
+                                    if (mProgressDialog.isShowing()) {
+                                        mProgressDialog.dismiss();
+                                    }
+
+                                    if (response.isSuccessful()) {
+                                        BirthdayOffer birthdayOffer = response.body();
+                                        if (birthdayOffer != null) {
+                                            BirthdayOfferEntity birthdayOfferEntity = merchantEntity.getBirthdayOffer();
+                                            birthdayOffer.setOffer_description(birthdayOffer.getOffer_description());
+                                            birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
+                                            mDatabaseManager.updateBirthdayOffer(birthdayOfferEntity);
+
+                                            mOfferText.setText(birthdayOffer.getOffer_description());
+                                            showSnackbar(R.string.birthday_offer_update_success);
+                                        }
+                                    }
+                                    else {
+                                        showSnackbar(R.string.error_birthday_offer_update);
+                                    }
                                 }
 
-                                closeKeyboard();
-                                mProgressDialog.show();
-
-                                try {
-                                    JSONObject req = new JSONObject();
-                                    req.put("offer_description", userInput.getText().toString());
-                                    JSONObject requestData = new JSONObject();
-                                    requestData.put("data", req);
-
-                                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                                    mApiClient.getLoystarApi(false).updateBirthdayOffer(mBirthdayOffer.getId(), requestBody).enqueue(new Callback<BirthdayOffer>() {
-                                        @Override
-                                        public void onResponse(@NonNull Call<BirthdayOffer> call, @NonNull Response<BirthdayOffer> response) {
-                                            if (mProgressDialog.isShowing()) {
-                                                mProgressDialog.dismiss();
-                                            }
-
-                                            if (response.isSuccessful()) {
-                                                BirthdayOffer birthdayOffer = response.body();
-                                                if (birthdayOffer != null) {
-                                                    BirthdayOfferEntity birthdayOfferEntity = merchantEntity.getBirthdayOffer();
-                                                    birthdayOffer.setOffer_description(birthdayOffer.getOffer_description());
-                                                    birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
-                                                    mDatabaseManager.updateBirthdayOffer(birthdayOfferEntity);
-
-                                                    mOfferText.setText(birthdayOffer.getOffer_description());
-                                                    showSnackbar(R.string.birthday_offer_update_success);
-                                                }
-                                            }
-                                            else {
-                                                showSnackbar(R.string.error_birthday_offer_update);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onFailure(@NonNull Call<BirthdayOffer> call, @NonNull Throwable t) {
-                                            if (mProgressDialog.isShowing()) {
-                                                mProgressDialog.dismiss();
-                                            }
-                                            showSnackbar(R.string.error_internet_connection_timed_out);
-                                        }
-                                    });
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                @Override
+                                public void onFailure(@NonNull Call<BirthdayOffer> call, @NonNull Throwable t) {
+                                    if (mProgressDialog.isShowing()) {
+                                        mProgressDialog.dismiss();
+                                    }
+                                    showSnackbar(R.string.error_internet_connection_timed_out);
                                 }
+                            });
 
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog, id) -> dialog.cancel());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    })
+                .setNegativeButton(android.R.string.no,
+                    (dialog, id) -> dialog.cancel());
 
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
@@ -225,86 +225,86 @@ public class BirthdayOffersFragment extends Fragment {
             View promptsView = li.inflate(R.layout.create_birthday_offer, null);
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                    getContext());
+                getContext());
 
             alertDialogBuilder.setView(promptsView);
 
             final EditText userInput = promptsView
-                    .findViewById(R.id.birthday_offer_input);
+                .findViewById(R.id.birthday_offer_input);
 
 
             alertDialogBuilder
-                    .setPositiveButton(getString(R.string.create_offer),
-                            (dialog, id) -> {
-                                if (userInput.getText().toString().isEmpty()) {
-                                    userInput.setError(getString(R.string.error_birthday_offer_text_required));
-                                    userInput.requestFocus();
-                                    return;
+                .setPositiveButton(getString(R.string.create_offer),
+                    (dialog, id) -> {
+                        if (userInput.getText().toString().isEmpty()) {
+                            userInput.setError(getString(R.string.error_birthday_offer_text_required));
+                            userInput.requestFocus();
+                            return;
+                        }
+
+                        closeKeyboard();
+                        mProgressDialog.show();
+
+                        try {
+                            JSONObject req = new JSONObject();
+                            req.put("offer_description", userInput.getText().toString());
+                            JSONObject requestData = new JSONObject();
+                            requestData.put("data", req);
+
+                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                            mApiClient.getLoystarApi(false).createBirthdayOffer(requestBody).enqueue(new Callback<BirthdayOffer>() {
+                                @Override
+                                public void onResponse(@NonNull Call<BirthdayOffer> call, @NonNull Response<BirthdayOffer> response) {
+                                    if (mProgressDialog.isShowing()) {
+                                        mProgressDialog.dismiss();
+                                    }
+
+                                    if (response.isSuccessful()) {
+                                        BirthdayOffer birthdayOffer = response.body();
+                                        if (birthdayOffer == null) {
+                                            showSnackbar(R.string.unknown_error);
+                                        } else {
+                                            BirthdayOfferEntity birthdayOfferEntity = new BirthdayOfferEntity();
+                                            birthdayOfferEntity.setId(birthdayOffer.getId());
+                                            birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
+                                            birthdayOfferEntity.setOfferDescription(birthdayOffer.getOffer_description());
+                                            birthdayOfferEntity.setUpdatedAt(new Timestamp(birthdayOffer.getUpdated_at().getMillis()));
+
+                                            assert merchantEntity != null;
+                                            merchantEntity.setBirthdayOffer(birthdayOfferEntity);
+                                            mDatabaseManager.updateMerchant(merchantEntity);
+                                            mBirthdayOffer = merchantEntity.getBirthdayOffer();
+
+                                            noBirthdayOfferView.setVisibility(View.GONE);
+                                            birthdayOfferView.setVisibility(View.VISIBLE);
+                                            mOfferText.setText(birthdayOffer.getOffer_description());
+
+                                            showSnackbar(R.string.birthday_offer_create_success);
+                                        }
+                                    }
+
+                                    else {
+                                        showSnackbar(R.string.error_birthday_offer_create);
+                                    }
                                 }
 
-                                closeKeyboard();
-                                mProgressDialog.show();
-
-                                try {
-                                    JSONObject req = new JSONObject();
-                                    req.put("offer_description", userInput.getText().toString());
-                                    JSONObject requestData = new JSONObject();
-                                    requestData.put("data", req);
-
-                                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                                    mApiClient.getLoystarApi(false).createBirthdayOffer(requestBody).enqueue(new Callback<BirthdayOffer>() {
-                                        @Override
-                                        public void onResponse(@NonNull Call<BirthdayOffer> call, @NonNull Response<BirthdayOffer> response) {
-                                            if (mProgressDialog.isShowing()) {
-                                                mProgressDialog.dismiss();
-                                            }
-
-                                            if (response.isSuccessful()) {
-                                                BirthdayOffer birthdayOffer = response.body();
-                                                if (birthdayOffer == null) {
-                                                    showSnackbar(R.string.unknown_error);
-                                                } else {
-                                                    BirthdayOfferEntity birthdayOfferEntity = new BirthdayOfferEntity();
-                                                    birthdayOfferEntity.setId(birthdayOffer.getId());
-                                                    birthdayOfferEntity.setCreatedAt(new Timestamp(birthdayOffer.getCreated_at().getMillis()));
-                                                    birthdayOfferEntity.setOfferDescription(birthdayOffer.getOffer_description());
-                                                    birthdayOfferEntity.setUpdatedAt(new Timestamp(birthdayOffer.getUpdated_at().getMillis()));
-
-                                                    assert merchantEntity != null;
-                                                    merchantEntity.setBirthdayOffer(birthdayOfferEntity);
-                                                    mDatabaseManager.updateMerchant(merchantEntity);
-                                                    mBirthdayOffer = merchantEntity.getBirthdayOffer();
-
-                                                    noBirthdayOfferView.setVisibility(View.GONE);
-                                                    birthdayOfferView.setVisibility(View.VISIBLE);
-                                                    mOfferText.setText(birthdayOffer.getOffer_description());
-
-                                                    showSnackbar(R.string.birthday_offer_create_success);
-                                                }
-                                            }
-
-                                            else {
-                                                showSnackbar(R.string.error_birthday_offer_create);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onFailure(@NonNull Call<BirthdayOffer> call, @NonNull Throwable t) {
-                                            if (mProgressDialog.isShowing()) {
-                                                mProgressDialog.dismiss();
-                                            }
-                                            showSnackbar(R.string.error_internet_connection_timed_out);
-                                        }
-                                    });
-
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                @Override
+                                public void onFailure(@NonNull Call<BirthdayOffer> call, @NonNull Throwable t) {
+                                    if (mProgressDialog.isShowing()) {
+                                        mProgressDialog.dismiss();
+                                    }
+                                    showSnackbar(R.string.error_internet_connection_timed_out);
                                 }
+                            });
 
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog, id) -> dialog.cancel());
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    })
+                .setNegativeButton(android.R.string.no,
+                    (dialog, id) -> dialog.cancel());
 
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
