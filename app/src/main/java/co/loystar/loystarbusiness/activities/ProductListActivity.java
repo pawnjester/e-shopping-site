@@ -60,7 +60,7 @@ import io.requery.reactivex.ReactiveResult;
 public class ProductListActivity
     extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
-    private static final String TAG = ProductListActivity.class.getSimpleName();
+    public static final String TAG = ProductListActivity.class.getSimpleName();
     private ReactiveEntityStore<Persistable> mDataStore;
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;

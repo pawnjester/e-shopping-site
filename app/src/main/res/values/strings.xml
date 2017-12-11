@@ -293,7 +293,7 @@
     <string name="error_program_update_connection">Sorry we couldn\'t update your program. Please check your network and try again.</string>
     <string name="error_program_update">Sorry we couldn\'t update your program. Please try again.</string>
     <string name="program_update_success">Program successfully updated!</string>
-    <string name="error_stamps_threshold">Stamps threshold should be between 1 and 10</string>
+    <string name="error_stamps_threshold">Please enter stamps target</string>
     <string name="error_program_create_connection">Sorry we couldn\'t create your program. Please check your connection and try again.</string>
     <string name="error_program_create">Sorry we couldn\'t create your program. Please try again.</string>
     <string name="title_activity_new_loyalty_program_list">Choose program type</string>

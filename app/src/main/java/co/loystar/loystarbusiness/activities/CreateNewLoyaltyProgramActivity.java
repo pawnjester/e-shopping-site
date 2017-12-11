@@ -38,6 +38,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
+import co.loystar.loystarbusiness.utils.ui.EditTextUtils;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -169,7 +170,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
     }
 
     private void submitForm() {
-        if (programNameView.getText().toString().trim().isEmpty()) {
+        if (EditTextUtils.isEmpty(programNameView)) {
             programNameView.setError(getString(R.string.error_program_name_required));
             programNameView.requestFocus();
             return;
@@ -179,12 +180,12 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
             spendingTargetView.requestFocus();
             return;
         }
-        if (programType.equals(getString(R.string.stamps_program)) && stampsTarget.getText().toString().trim().isEmpty()) {
+        if (programType.equals(getString(R.string.stamps_program)) && EditTextUtils.isEmpty(stampsTarget)) {
             stampsTarget.setError(getString(R.string.error_stamps_threshold));
             stampsTarget.requestFocus();
             return;
         }
-        if (rewardView.getText().toString().trim().isEmpty()) {
+        if (EditTextUtils.isEmpty(rewardView)) {
             rewardView.setError(getString(R.string.error_reward_required));
             rewardView.requestFocus();
             return;

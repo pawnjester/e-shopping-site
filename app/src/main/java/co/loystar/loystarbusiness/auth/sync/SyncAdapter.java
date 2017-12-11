@@ -279,7 +279,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             } else {
                                 CustomerEntity customerEntity = new CustomerEntity();
                                 customerEntity.setId(customer.getId());
-                                if (!customer.getEmail().contains("yopmail.com")) {
+                                if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
                                     customerEntity.setEmail(customer.getEmail());
                                 }
                                 customerEntity.setFirstName(customer.getFirst_name());

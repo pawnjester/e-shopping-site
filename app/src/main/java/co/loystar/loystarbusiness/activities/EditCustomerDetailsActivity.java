@@ -108,7 +108,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             userFnameField.setText(mCustomer.getFirstName());
             userLnameField.setText(mCustomer.getLastName());
             userPhoneField.setNumber(mCustomer.getPhoneNumber());
-            if (!mCustomer.getEmail().contains("yopmail.com")) {
+            if (mCustomer.getEmail() != null && !mCustomer.getEmail().contains("yopmail.com")) {
                 userEmailField.setText(mCustomer.getEmail());
             }
             if (mCustomer.getDateOfBirth() != null) {

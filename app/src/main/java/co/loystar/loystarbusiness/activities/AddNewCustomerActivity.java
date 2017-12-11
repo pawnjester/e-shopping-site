@@ -533,7 +533,7 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
                             showSnackbar(R.string.unknown_error);
                         } else {
                             customerEntity.setId(customer.getId());
-                            if (!customer.getEmail().contains("yopmail.com")) {
+                            if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
                                 customerEntity.setEmail(customer.getEmail());
                             }
                             customerEntity.setFirstName(customer.getFirst_name());

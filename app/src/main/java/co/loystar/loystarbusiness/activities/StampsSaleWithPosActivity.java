@@ -62,7 +62,7 @@ public class StampsSaleWithPosActivity
     extends RxAppCompatActivity implements CustomerAutoCompleteDialog.SelectedCustomerListener,
     SearchView.OnQueryTextListener{
 
-    private static final String TAG = StampsSaleWithPosActivity.class.getSimpleName();
+    public static final String TAG = StampsSaleWithPosActivity.class.getSimpleName();
 
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
@@ -143,6 +143,7 @@ public class StampsSaleWithPosActivity
         stateActionBtn.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
             intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+            intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mProgramId);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
