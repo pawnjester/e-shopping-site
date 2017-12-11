@@ -53,13 +53,14 @@ import retrofit2.Response;
 
 public class EditCustomerDetailsActivity extends AppCompatActivity {
     private DatabaseManager mDatabaseManager;
+    private CustomerEntity mCustomer;
+    /*Views*/
     private EditText userFnameField;
     private EditText userLnameField;
     private EditText userEmailField;
     private String genderSelected;
     private InternationalPhoneInput userPhoneField;
     private View mLayout;
-    private CustomerEntity mCustomer;
     private SpinnerButton datePicker;
     private Context mContext;
     private ProgressDialog progressDialog;
@@ -108,7 +109,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             userFnameField.setText(mCustomer.getFirstName());
             userLnameField.setText(mCustomer.getLastName());
             userPhoneField.setNumber(mCustomer.getPhoneNumber());
-            if (mCustomer.getEmail() != null && !mCustomer.getEmail().contains("yopmail.com")) {
+            if (!mCustomer.getEmail().contains("yopmail.com")) {
                 userEmailField.setText(mCustomer.getEmail());
             }
             if (mCustomer.getDateOfBirth() != null) {

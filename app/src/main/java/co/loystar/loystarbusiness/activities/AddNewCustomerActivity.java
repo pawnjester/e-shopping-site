@@ -528,37 +528,44 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
                     dismissProgressDialog();
                     if (response.isSuccessful()) {
                         Customer customer = response.body();
-                        CustomerEntity customerEntity = new CustomerEntity();
+
                         if (customer == null) {
                             showSnackbar(R.string.unknown_error);
                         } else {
-                            customerEntity.setId(customer.getId());
-                            if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
-                                customerEntity.setEmail(customer.getEmail());
-                            }
-                            customerEntity.setFirstName(customer.getFirst_name());
-                            customerEntity.setDeleted(false);
-                            customerEntity.setLastName(customer.getLast_name());
-                            customerEntity.setSex(customer.getSex());
-                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
-                            customerEntity.setPhoneNumber(customer.getPhone_number());
-                            customerEntity.setUserId(customer.getUser_id());
-                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
-                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
-                            customerEntity.setOwner(merchantEntity);
-
                             ReactiveEntityStore<Persistable> dataStore = DatabaseManager.getDataStore(mContext);
-                            dataStore.insert(customerEntity)
-                                .toObservable()
-                                .compose(bindToLifecycle())
-                                .subscribeOn(Schedulers.newThread())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(newCustomer -> {
-                                    Intent intent = new Intent();
-                                    intent.putExtra(Constants.CUSTOMER_ID, newCustomer.getId());
-                                    setResult(RESULT_OK, intent);
-                                    finish();
-                                });
+                            /*check for unique id constraint*/
+                            CustomerEntity oldRecord = dataStore.findByKey(CustomerEntity.class, customer.getId()).blockingGet();
+                            if (oldRecord == null) {
+                                CustomerEntity customerEntity = new CustomerEntity();
+                                customerEntity.setId(customer.getId());
+                                if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
+                                    customerEntity.setEmail(customer.getEmail());
+                                }
+                                customerEntity.setFirstName(customer.getFirst_name());
+                                customerEntity.setDeleted(false);
+                                customerEntity.setLastName(customer.getLast_name());
+                                customerEntity.setSex(customer.getSex());
+                                customerEntity.setDateOfBirth(customer.getDate_of_birth());
+                                customerEntity.setPhoneNumber(customer.getPhone_number());
+                                customerEntity.setUserId(customer.getUser_id());
+                                customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                                customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                                customerEntity.setOwner(merchantEntity);
+
+                                dataStore.insert(customerEntity)
+                                    .toObservable()
+                                    .compose(bindToLifecycle())
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(newCustomer -> {
+                                        Intent intent = new Intent();
+                                        intent.putExtra(Constants.CUSTOMER_ID, newCustomer.getId());
+                                        setResult(RESULT_OK, intent);
+                                        finish();
+                                    });
+                            } else {
+                                showSnackbar(R.string.unknown_error);
+                            }
                         }
                     }
                     else {
