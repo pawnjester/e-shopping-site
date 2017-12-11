@@ -227,7 +227,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
             return;
         }
 
-        /*if (!AccountGeneral.isAccountActive(mContext)) {
+        if (!AccountGeneral.isAccountActive(mContext)) {
             new AlertDialog.Builder(mContext)
                     .setTitle("Your Account Is Inactive")
                     .setMessage("SMS communications are disabled until you resubscribe.")
@@ -241,7 +241,7 @@ public class MessageBroadcastActivity extends AppCompatActivity {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
             return;
-        }*/
+        }
 
         View view = getCurrentFocus();
         if (view != null) {

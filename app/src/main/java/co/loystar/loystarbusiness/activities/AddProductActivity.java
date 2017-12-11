@@ -27,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -66,6 +67,7 @@ import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.FileUtils;
 import co.loystar.loystarbusiness.utils.RequestBodyWithProgress;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
@@ -109,7 +111,7 @@ public class AddProductActivity extends AppCompatActivity {
     private View mProgressView;
     private ProgressBar mProgressBar;
     private View createProductFormView;
-
+    private ProgressDialog progressDialog;
 
     /*shared variables*/
     private boolean isFabMenuOpen = false;
@@ -122,6 +124,7 @@ public class AddProductActivity extends AppCompatActivity {
     private TextView charCounterView;
     private MerchantEntity merchantEntity;
     private ProductCategoryEntity mProductCategory;
+    private String getActivityInitiator = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +137,10 @@ public class AddProductActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
         }
+
+        getActivityInitiator = getIntent().getStringExtra(Constants.ACTIVITY_INITIATOR);
+
+        Log.e(TAG, "onCreate: " + getActivityInitiator );
 
         contentResolver = this.getContentResolver();
         mContext = this;
@@ -204,11 +211,7 @@ public class AddProductActivity extends AppCompatActivity {
                         msgBox.requestFocus();
                         return;
                     }
-
-                    ProgressDialog progressDialog = new ProgressDialog(this);
-                    progressDialog.setMessage(getString(R.string.a_moment));
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.show();
+                    showProgressDialog();
 
                     try {
                         JSONObject jsonObject = new JSONObject();
@@ -220,10 +223,7 @@ public class AddProductActivity extends AppCompatActivity {
                         mApiClient.getLoystarApi(false).addProductCategory(requestBody).enqueue(new Callback<ProductCategory>() {
                             @Override
                             public void onResponse(@NonNull Call<ProductCategory> call, @NonNull Response<ProductCategory> response) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
-                                dialogInterface.cancel();
+                                dismissProgressDialog();
                                 if (response.isSuccessful()) {
                                     ProductCategory productCategory = response.body();
                                     if (productCategory == null) {
@@ -258,13 +258,12 @@ public class AddProductActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(@NonNull Call<ProductCategory> call, @NonNull Throwable t) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
+                                dismissProgressDialog();
                                 Toast.makeText(mContext, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                             }
                         });
                     } catch (JSONException e) {
+                        dismissProgressDialog();
                         e.printStackTrace();
                     }
                 });
@@ -421,6 +420,28 @@ public class AddProductActivity extends AppCompatActivity {
         }
     }
 
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage(getString(R.string.a_moment));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (this.isFinishing()) {
+            return;
+        }
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgressDialog();
+        super.onDestroy();
+    }
+
     private void submitForm() {
         if (imageUri == null) {
             expandFabMenu();
@@ -496,8 +517,13 @@ public class AddProductActivity extends AppCompatActivity {
                             mDatabaseManager.insertNewProduct(productEntity);
 
                             Intent intent = new Intent(AddProductActivity.this, ProductListActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            intent.putExtra(getString(R.string.product_edit_success), true);
+                            if (getActivityInitiator.equals(ProductListActivity.class.getSimpleName())) {
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                intent.putExtra(getString(R.string.product_create_success), true);
+                            } else {
+                                intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+                                intent.putExtra(getString(R.string.product_create_success), true);
+                            }
                             startActivity(intent);
                         }
                     } else if (response.code() == 401) {

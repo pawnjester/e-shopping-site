@@ -523,4 +523,5 @@
     <string name="opening_printer_connection">Opening connection to printer.</string>
     <string name="error_printer_connection">Cannot establish connection with printer. Please ensure your phone and the printer are connected together.</string>
     <string name="transaction_complete">Transaction Complete</string>
+    <string name="product_create_success">New product added!</string>
 </resources>

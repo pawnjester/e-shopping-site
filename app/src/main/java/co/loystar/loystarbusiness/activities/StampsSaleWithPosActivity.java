@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -35,7 +36,6 @@ import java.util.concurrent.Executors;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
-import co.loystar.loystarbusiness.databinding.ProductItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -61,19 +61,23 @@ import io.requery.reactivex.ReactiveResult;
 public class StampsSaleWithPosActivity
     extends RxAppCompatActivity implements CustomerAutoCompleteDialog.SelectedCustomerListener,
     SearchView.OnQueryTextListener{
-    private static final String TAG = StampsSaleWithPosActivity.class.getCanonicalName();
+
+    private static final String TAG = StampsSaleWithPosActivity.class.getSimpleName();
+
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
     private ProductsAdapter mProductsAdapter;
     private ExecutorService executor;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
-    CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private CustomerEntity mSelectedCustomer;
     private ProductEntity mSelectedProduct;
     private int mProgramId;
     private String merchantCurrencySymbol;
     private String searchFilterText;
+
+    /*Views*/
+    CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private EmptyRecyclerView mRecyclerView;
 
     @Override
@@ -85,6 +89,12 @@ public class StampsSaleWithPosActivity
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        View mLayout = findViewById(R.id.activity_stamps_sale_with_pos_container);
+        boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
+        if (productCreatedIntent) {
+            Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();
         }
 
         mContext = this;
@@ -132,6 +142,8 @@ public class StampsSaleWithPosActivity
         stateActionBtn.setText(getString(R.string.start_adding_products_label));
         stateActionBtn.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
+            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
 

@@ -60,6 +60,7 @@ import io.requery.reactivex.ReactiveResult;
 public class ProductListActivity
     extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
+    private static final String TAG = ProductListActivity.class.getSimpleName();
     private ReactiveEntityStore<Persistable> mDataStore;
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;
@@ -99,6 +100,11 @@ public class ProductListActivity
         executor = Executors.newSingleThreadExecutor();
         mAdapter.setExecutor(executor);
 
+        boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
+        if (productCreatedIntent) {
+            Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();
+        }
+
         boolean productUpdatedIntent = getIntent().getBooleanExtra(getString(R.string.product_edit_success), false);
         if (productUpdatedIntent) {
             Snackbar.make(mLayout, getString(R.string.product_edit_success), Snackbar.LENGTH_LONG).show();
@@ -133,6 +139,8 @@ public class ProductListActivity
         stateActionBtn.setText(getString(R.string.start_adding_products_label));
         stateActionBtn.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
+            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
 

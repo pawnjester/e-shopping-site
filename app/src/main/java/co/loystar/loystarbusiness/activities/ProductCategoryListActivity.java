@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -91,6 +92,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
     private ProductCategory mSelectedCategory;
     private ApiClient mApiClient;
     private MerchantEntity merchantEntity;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,17 +207,12 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                 if (mSelectedCategory != null) {
                     ProductCategoryEntity productCategoryEntity = mDataStore.findByKey(ProductCategoryEntity.class, mSelectedCategory.getId()).blockingGet();
                     if (productCategoryEntity != null) {
-                        ProgressDialog progressDialog = new ProgressDialog(this);
-                        progressDialog.setMessage(getString(R.string.a_moment));
-                        progressDialog.setIndeterminate(true);
-                        progressDialog.show();
+                        showProgressDialog();
 
                         mApiClient.getLoystarApi(false).setMerchantProductCategoryDeleteFlagToTrue(productCategoryEntity.getId()).enqueue(new Callback<ResponseBody>() {
                             @Override
                             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
+                                dismissProgressDialog();
 
                                 if (response.isSuccessful()) {
                                     mDataStore.delete(productCategoryEntity)
@@ -249,9 +246,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
                             @Override
                             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                                if (progressDialog.isShowing()) {
-                                    progressDialog.dismiss();
-                                }
+                                dismissProgressDialog();
                                 showSnackbar(R.string.unknown_error);
                             }
                         });
@@ -318,6 +313,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
     protected void onDestroy() {
         executor.shutdown();
         mAdapter.close();
+        dismissProgressDialog();
         super.onDestroy();
     }
 
@@ -334,7 +330,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
     private void createNewCategory() {
         LayoutInflater li = LayoutInflater.from(this);
-        View createCategoryView = li.inflate(R.layout.add_product_category, null);
+        @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
         EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
         TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
 
@@ -355,11 +351,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                 msgBox.requestFocus();
                 return;
             }
-
-            ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage(getString(R.string.a_moment));
-            progressDialog.setIndeterminate(true);
-            progressDialog.show();
+            showProgressDialog();
 
             try {
                 JSONObject jsonObject = new JSONObject();
@@ -371,9 +363,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                 mApiClient.getLoystarApi(false).addProductCategory(requestBody).enqueue(new Callback<co.loystar.loystarbusiness.models.databinders.ProductCategory>() {
                     @Override
                     public void onResponse(@NonNull Call<co.loystar.loystarbusiness.models.databinders.ProductCategory> call, @NonNull Response<co.loystar.loystarbusiness.models.databinders.ProductCategory> response) {
-                        if (progressDialog.isShowing()) {
-                            progressDialog.dismiss();
-                        }
+                        dismissProgressDialog();
                         if (response.isSuccessful()) {
                             dialogInterface.cancel();
                             co.loystar.loystarbusiness.models.databinders.ProductCategory productCategory = response.body();
@@ -404,13 +394,12 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
                     @Override
                     public void onFailure(@NonNull Call<co.loystar.loystarbusiness.models.databinders.ProductCategory> call, @NonNull Throwable t) {
-                        if (progressDialog.isShowing()) {
-                            progressDialog.dismiss();
-                        }
+                        dismissProgressDialog();
                         Toast.makeText(mContext, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (JSONException e) {
+                dismissProgressDialog();
                 e.printStackTrace();
             }
         });
@@ -421,7 +410,7 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
     private void updateProductCategory() {
         LayoutInflater li = LayoutInflater.from(this);
-        View createCategoryView = li.inflate(R.layout.add_product_category, null);
+        @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
         EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
         TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
 
@@ -500,5 +489,21 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage(getString(R.string.a_moment));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (this.isFinishing()) {
+            return;
+        }
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

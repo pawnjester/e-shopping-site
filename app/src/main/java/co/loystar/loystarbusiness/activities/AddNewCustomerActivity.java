@@ -19,7 +19,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -295,91 +294,6 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         completeNewCustomerRegistration(customerFromContacts);
     }
 
-    private void completeNewCustomerRegistration(CustomerEntity customerEntity) {
-        progressDialog = new ProgressDialog(mContext);
-        progressDialog.setMessage(getString(R.string.a_moment));
-        progressDialog.setIndeterminate(true);
-        progressDialog.show();
-
-        ApiClient mAPiClient = new ApiClient(mContext);
-
-        try {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("email", customerEntity.getEmail());
-            jsonObject.put("first_name", customerEntity.getFirstName());
-            jsonObject.put("last_name", customerEntity.getLastName());
-            jsonObject.put("phone_number", customerEntity.getPhoneNumber());
-            jsonObject.put("sex", genderSelected);
-            jsonObject.put("merchant_id", mSessionManager.getMerchantId());
-            jsonObject.put("android_app_version_code", BuildConfig.VERSION_CODE);
-            jsonObject.put("date_of_birth", dateOfBirth);
-
-            JSONObject requestData = new JSONObject();
-            requestData.put("data", jsonObject);
-
-            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-            mAPiClient.getLoystarApi(false).addUserDirect(requestBody).enqueue(new Callback<Customer>() {
-                @Override
-                public void onResponse(@NonNull Call<Customer> call, @NonNull Response<Customer> response) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
-                    if (response.isSuccessful()) {
-                        Customer customer = response.body();
-                        CustomerEntity customerEntity = new CustomerEntity();
-                        if (customer == null) {
-                            showSnackbar(R.string.unknown_error);
-                        } else {
-                            customerEntity.setId(customer.getId());
-                            customerEntity.setEmail(customer.getEmail());
-                            customerEntity.setFirstName(customer.getFirst_name());
-                            customerEntity.setDeleted(false);
-                            customerEntity.setLastName(customer.getLast_name());
-                            customerEntity.setSex(customer.getSex());
-                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
-                            customerEntity.setPhoneNumber(customer.getPhone_number());
-                            customerEntity.setUserId(customer.getUser_id());
-                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
-                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
-                            customerEntity.setOwner(merchantEntity);
-
-                            ReactiveEntityStore<Persistable> dataStore = DatabaseManager.getDataStore(mContext);
-                            dataStore.insert(customerEntity)
-                                    .toObservable()
-                                    .compose(bindToLifecycle())
-                                    .subscribeOn(Schedulers.newThread())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(newCustomer -> {
-                                Intent intent = new Intent();
-                                intent.putExtra(Constants.CUSTOMER_ID, newCustomer.getId());
-                                setResult(RESULT_OK, intent);
-                                finish();
-                            });
-                        }
-                    }
-                    else {
-                        if (response.code() == 401) {
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
-                        }
-                        showSnackbar(R.string.error_add_user);
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<Customer> call, @NonNull Throwable t) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
-                    showSnackbar(R.string.error_internet_connection_timed_out);
-                }
-            });
-        } catch (JSONException e) {
-            FirebaseCrash.report(e);
-            e.printStackTrace();
-        }
-    }
-
     private void registerCustomer() {
         String fname = customerFnameView.getText().toString();
         String lname = customerLnameView.getText().toString();
@@ -498,37 +412,37 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         Cursor cPhone = clPhone.loadInBackground();
         Cursor cEmail = clEmail.loadInBackground();
 
-        final int nameIndex = cName.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-        final int phoneIndex = cPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-        final int emailIndex = cEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
-
-        if (cName.moveToFirst()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            String names = cName.getString(nameIndex);
-            if (!names.trim().isEmpty()) {
-                String[] namesArray = names.split("\\s+");
-                fname = namesArray[0];
-                if (namesArray.length > 1) {
-                    for (int i = 1; i < namesArray.length; i++) {
-                        stringBuilder.append(" ").append(namesArray[i]);
+        if (cName != null) {
+            final int nameIndex = cName.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            if (cName.moveToFirst()) {
+                StringBuilder stringBuilder = new StringBuilder();
+                String names = cName.getString(nameIndex);
+                if (!names.trim().isEmpty()) {
+                    String[] namesArray = names.split("\\s+");
+                    fname = namesArray[0];
+                    if (namesArray.length > 1) {
+                        for (int i = 1; i < namesArray.length; i++) {
+                            stringBuilder.append(" ").append(namesArray[i]);
+                        }
+                        lname = stringBuilder.toString();
                     }
-                    lname = stringBuilder.toString();
                 }
             }
+            cName.close();
         }
 
-        if (cPhone.moveToFirst()) {
+        if (cPhone != null && cPhone.moveToFirst()) {
+            final int phoneIndex = cPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
             phone = cPhone.getString(phoneIndex);
+            cPhone.close();
         }
 
         // This only could be true if selected contact has at least one email
-        if (cEmail.moveToFirst()) {
+        if (cEmail != null && cEmail.moveToFirst()) {
+            final int emailIndex = cEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
             email = cEmail.getString(emailIndex);
+            cEmail.close();
         }
-
-        cName.close();
-        cPhone.close();
-        cEmail.close();
 
         CustomerEntity dbCustomer = new CustomerEntity();
         dbCustomer.setEmail(email);
@@ -564,5 +478,108 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage(getString(R.string.a_moment));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (this.isFinishing()) {
+            return;
+        }
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgressDialog();
+        super.onDestroy();
+    }
+
+    private void completeNewCustomerRegistration(CustomerEntity customerEntity) {
+        showProgressDialog();
+
+        ApiClient mAPiClient = new ApiClient(mContext);
+
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("email", customerEntity.getEmail());
+            jsonObject.put("first_name", customerEntity.getFirstName());
+            jsonObject.put("last_name", customerEntity.getLastName());
+            jsonObject.put("phone_number", customerEntity.getPhoneNumber());
+            jsonObject.put("sex", genderSelected);
+            jsonObject.put("merchant_id", mSessionManager.getMerchantId());
+            jsonObject.put("android_app_version_code", BuildConfig.VERSION_CODE);
+            jsonObject.put("date_of_birth", dateOfBirth);
+
+            JSONObject requestData = new JSONObject();
+            requestData.put("data", jsonObject);
+
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+            mAPiClient.getLoystarApi(false).addUserDirect(requestBody).enqueue(new Callback<Customer>() {
+                @Override
+                public void onResponse(@NonNull Call<Customer> call, @NonNull Response<Customer> response) {
+                    dismissProgressDialog();
+                    if (response.isSuccessful()) {
+                        Customer customer = response.body();
+                        CustomerEntity customerEntity = new CustomerEntity();
+                        if (customer == null) {
+                            showSnackbar(R.string.unknown_error);
+                        } else {
+                            customerEntity.setId(customer.getId());
+                            if (!customer.getEmail().contains("yopmail.com")) {
+                                customerEntity.setEmail(customer.getEmail());
+                            }
+                            customerEntity.setFirstName(customer.getFirst_name());
+                            customerEntity.setDeleted(false);
+                            customerEntity.setLastName(customer.getLast_name());
+                            customerEntity.setSex(customer.getSex());
+                            customerEntity.setDateOfBirth(customer.getDate_of_birth());
+                            customerEntity.setPhoneNumber(customer.getPhone_number());
+                            customerEntity.setUserId(customer.getUser_id());
+                            customerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                            customerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                            customerEntity.setOwner(merchantEntity);
+
+                            ReactiveEntityStore<Persistable> dataStore = DatabaseManager.getDataStore(mContext);
+                            dataStore.insert(customerEntity)
+                                .toObservable()
+                                .compose(bindToLifecycle())
+                                .subscribeOn(Schedulers.newThread())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(newCustomer -> {
+                                    Intent intent = new Intent();
+                                    intent.putExtra(Constants.CUSTOMER_ID, newCustomer.getId());
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                });
+                        }
+                    }
+                    else {
+                        if (response.code() == 401) {
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
+                        }
+                        showSnackbar(R.string.error_add_user);
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Customer> call, @NonNull Throwable t) {
+                    dismissProgressDialog();
+                    showSnackbar(R.string.error_internet_connection_timed_out);
+                }
+            });
+        } catch (JSONException e) {
+            dismissProgressDialog();
+            FirebaseCrash.report(e);
+            e.printStackTrace();
+        }
     }
 }

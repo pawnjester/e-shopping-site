@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -125,6 +126,12 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        View mLayout = findViewById(R.id.activity_points_sale_with_pos_container);
+        boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
+        if (productCreatedIntent) {
+            Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();
         }
 
         mContext = this;
@@ -261,6 +268,8 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         stateActionBtn.setText(getString(R.string.start_adding_products_label));
         stateActionBtn.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
+            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
 
@@ -821,6 +830,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                                 if (customerEntity == null) {
                                     Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 } else {
+                                    mSelectedCustomer = customerEntity;
                                     setOrderSummaryView(customerEntity, true);
                                 }
                             });

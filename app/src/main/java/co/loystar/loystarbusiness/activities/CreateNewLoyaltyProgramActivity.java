@@ -95,6 +95,9 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
                             merchantCurrencySymbol)
             );
 
+            String defaultProgramName = mSessionManager.getBusinessName() + " " + "Points Rewards";
+            programNameView.setText(defaultProgramName);
+
             TextView rewardExplanation = findViewById(R.id.reward_text_explanation);
             String merchantBusinessType = mSessionManager.getBusinessType();
 
@@ -127,6 +130,9 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
 
             TextView rewardExplanation = findViewById(R.id.reward_text_explanation);
             String merchantBusinessType = mSessionManager.getBusinessType();
+
+            String defaultProgramName = mSessionManager.getBusinessName() + " " + "Stamps Rewards";
+            programNameView.setText(defaultProgramName);
 
             if (merchantBusinessType.equals(getString(R.string.beverages_and_deserts))) {
                 rewardExplanation.setText(getString(R.string.beverages_and_deserts_reward));
@@ -183,11 +189,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
             rewardView.requestFocus();
             return;
         }
-
-        progressDialog = new ProgressDialog(mContext);
-        progressDialog.setMessage(getString(R.string.creating_loyalty_wait));
-        progressDialog.show();
-
+        showProgressDialog();
 
         try {
             JSONObject jsonObjectRequestData = new JSONObject();
@@ -210,9 +212,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
             mApiClient.getLoystarApi(false).createMerchantLoyaltyProgram(requestBody).enqueue(new Callback<LoyaltyProgram>() {
                 @Override
                 public void onResponse(@NonNull Call<LoyaltyProgram> call, @NonNull Response<LoyaltyProgram> response) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
+                    dismissProgressDialog();
                     if (response.isSuccessful()) {
                         LoyaltyProgram loyaltyProgram = response.body();
                         if (loyaltyProgram == null) {
@@ -248,15 +248,14 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(@NonNull Call<LoyaltyProgram> call, @NonNull Throwable t) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
+                    dismissProgressDialog();
                     showSnackbar(R.string.error_internet_connection_timed_out);
                 }
             });
 
         } catch (JSONException e) {
             e.printStackTrace();
+            dismissProgressDialog();
         }
     }
 
@@ -314,5 +313,27 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage(getString(R.string.a_moment));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (this.isFinishing()) {
+            return;
+        }
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgressDialog();
+        super.onDestroy();
     }
 }
