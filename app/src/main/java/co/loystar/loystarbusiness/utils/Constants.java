@@ -36,4 +36,6 @@ public class Constants {
     public static final String FRAGMENT_EVENT_ID = "FRAGMENT_EVENT_ID";
     public static final String ACTIVITY_INITIATOR = "ACTIVITY_INITIATOR";
     public static final String FIREBASE_REGISTRATION_TOKEN = "FIREBASE_REGISTRATION_TOKEN";
+    public static final int NOTIFICATION_ID = 100;
+    public static final int NOTIFICATION_ID_BIG_IMAGE = 101;
 }
