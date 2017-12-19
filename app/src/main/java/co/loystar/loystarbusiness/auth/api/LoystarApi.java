@@ -194,4 +194,7 @@ public interface LoystarApi {
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
             @Part MultipartBody.Part file
     );
+
+    @POST("merchants/set_firebase_registration_token")
+    Call<ResponseBody> setFirebaseRegistrationToken(@Body RequestBody requestBody);
 }

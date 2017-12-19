@@ -1,11 +1,14 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
@@ -105,6 +108,18 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         setContentView(R.layout.activity_merchant_back_office);
         Toolbar toolbar = findViewById(R.id.activity_merchant_back_office_toolbar);
         setSupportActionBar(toolbar);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create channel to show notifications.
+            String channelId  = getString(R.string.default_notification_channel_id);
+            String channelName = getString(R.string.default_notification_channel_name);
+            NotificationManager notificationManager =
+                getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(new NotificationChannel(channelId,
+                    channelName, NotificationManager.IMPORTANCE_LOW));
+            }
+        }
 
         mLayout = findViewById(R.id.merchant_back_office_wrapper);
         chartLayout = findViewById(R.id.chartLayout);

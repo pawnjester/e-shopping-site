@@ -16,7 +16,7 @@
     <string name="sign_up_cancelled">Sign up cancelled</string>
     <string name="unknown_error">Sorry! An unknown error occurred. Please again.</string>
     <string name="no_internet_connection">Connection failed! please check your connection and try again.</string>
-    <string name="error_internet_connection_timed_out">Error connection timed out. Please check your connection and try again.</string>
+    <string name="error_internet_connection_timed_out">Connection timed out. Please check your connection and try again.</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -524,4 +524,8 @@
     <string name="error_printer_connection">Cannot establish connection with printer. Please ensure your phone and the printer are connected together.</string>
     <string name="transaction_complete">Transaction Complete</string>
     <string name="product_create_success">New product added!</string>
+
+    <!--FCM-->
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="default_notification_channel_name">Orders</string>
 </resources>

@@ -101,16 +101,15 @@ android {
 
 ext {
     supportLibVersion = "27.0.2"
-    espressoVersion = "3.0.1"
-    androidTestVersion = "1.0.1"
     junitVersion = "4.12"
+    firebaseVersion = "11.6.2"
     requeryVersion = "1.4.0"
     permissionsDispatcherVersion = "2.4.0"
 }
 
 dependencies {
-    implementation "com.android.support:support-v4:${supportLibVersion}"
-    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:$supportLibVersion"
+    implementation "com.android.support:recyclerview-v7:$supportLibVersion"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -118,17 +117,18 @@ dependencies {
     implementation "io.requery:requery:$requeryVersion"
     implementation "io.requery:requery-android:$requeryVersion"
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
-    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
-    implementation "com.android.support:design:${supportLibVersion}"
-    implementation "com.android.support:exifinterface:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:$supportLibVersion"
+    implementation "com.android.support:design:$supportLibVersion"
+    implementation "com.android.support:exifinterface:$supportLibVersion"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation "com.android.support:support-vector-drawable:${supportLibVersion}"
-    implementation 'com.google.android.gms:play-services-auth:11.6.2'
-    implementation 'com.google.android.gms:play-services-location:11.6.2'
-    implementation 'com.google.firebase:firebase-messaging:11.6.2'
-    implementation 'com.google.firebase:firebase-core:11.6.2'
-    implementation 'com.google.firebase:firebase-auth:11.6.2'
-    implementation 'com.google.firebase:firebase-crash:11.6.2'
+    implementation "com.android.support:support-vector-drawable:$supportLibVersion"
+    implementation "com.google.android.gms:play-services-auth:$firebaseVersion"
+    implementation "com.google.android.gms:play-services-location:$firebaseVersion"
+    implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
+    implementation "com.google.firebase:firebase-core:$firebaseVersion"
+    implementation "com.google.firebase:firebase-auth:$firebaseVersion"
+    implementation "com.google.firebase:firebase-crash:$firebaseVersion"
+    implementation 'com.firebase:firebase-jobdispatcher:0.6.0'
     implementation 'com.firebaseui:firebase-ui-auth:3.1.0'
     implementation 'io.smooch:core:5.4.0'
     implementation 'io.smooch:ui:5.4.0'
@@ -164,7 +164,7 @@ dependencies {
         exclude module: "support-v13"
     }
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$junitVersion"
 }
 
 apply plugin: 'com.google.gms.google-services'
