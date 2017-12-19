@@ -6,6 +6,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="autoCompleteTextViewStyle">@style/myAutoCompleteTextViewStyle</item>
+        <item name="textAppearanceSearchResultTitle">@style/mySearchSuggestionResultTitle</item>
+        <item name="textAppearanceSearchResultSubtitle">
+            @style/mySearchSuggestionResultSubTitle
+        </item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -37,6 +43,19 @@
         <item name="fab_colorNormal">@color/colorPrimary</item>
         <item name="fab_colorPressed">@color/colorAccent</item>
         <item name="fab_colorRipple">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="myAutoCompleteTextViewStyle" parent="Widget.AppCompat.Light.AutoCompleteTextView">
+        <item name="android:popupBackground">#ffffff</item>
+    </style>
+    <style name="mySearchSuggestionResultTitle" parent="TextAppearance.AppCompat.SearchResult.Title">
+        <item name="android:textColor">@color/title</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="mySearchSuggestionResultSubTitle" parent="TextAppearance.AppCompat.Light.SearchResult.Subtitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/dark_grayish_blue</item>
     </style>
 
     <style name="Divider">

@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
@@ -125,6 +126,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }
                 }
             }
+        } else if (preference.getKey().equals(preference.getContext().getString(R.string.pref_app_version_key))) {
+            preference.setSummary(BuildConfig.VERSION_NAME);
         } else {
             // For all other preferences, set the summary to the value's
             // simple string representation.

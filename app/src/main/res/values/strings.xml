@@ -348,10 +348,10 @@
     </string>
     <string name="title_activity_main">MainActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="search_customer_hint">Search customer</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="no_birthday_offer">No Birthday offer found!</string>
+    <string name="no_search_results">No search results found! Please modify your search and try again.</string>
     <string name="birthday_offer_reason">Setting a birthday offer allows customers to receive this offer via SMS on their birthday.</string>
     <string name="create_offer">Create offer</string>
     <string name="birthday_offer_create_success">Birthday offer created successfully.</string>
@@ -528,4 +528,5 @@
     <!--FCM-->
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="default_notification_channel_name">Orders</string>
+    <string name="title_activity_searchable">Search Customer</string>
 </resources>
