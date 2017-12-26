@@ -346,10 +346,6 @@
             android:label="@string/title_activity_add_stamps"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.BluetoothDeviseListActivity"
-            android:label="@string/title_activity_bluetooth_devise_list"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".activities.SearchableActivity"
             android:label="@string/title_activity_searchable"
             android:launchMode="singleTop"
