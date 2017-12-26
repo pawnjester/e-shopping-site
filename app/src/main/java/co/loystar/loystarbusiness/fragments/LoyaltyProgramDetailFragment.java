@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,10 +73,14 @@ public class LoyaltyProgramDetailFragment extends RxFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (getActivity() == null) {
+            return;
+        }
+
         mDatabaseManager = DatabaseManager.getInstance(getActivity());
         mSessionManager = new SessionManager(getActivity());
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
+        if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
             mItem = mDatabaseManager.getLoyaltyProgramById(getArguments().getInt(ARG_ITEM_ID, 0));
 
             Activity activity = this.getActivity();
@@ -98,7 +101,7 @@ public class LoyaltyProgramDetailFragment extends RxFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(getContext()).getCurrency(
                 mSessionManager.getCurrency()
@@ -307,6 +310,9 @@ public class LoyaltyProgramDetailFragment extends RxFragment {
     }
 
     private void closeKeyBoard() {
+        if (getActivity() == null) {
+            return;
+        }
         View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);

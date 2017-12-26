@@ -106,24 +106,25 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                 Response<MerchantWrapper> response = mApiClient.getLoystarApi(false).signInMerchant(account.name, password).blockingSingle();
                 if (response.isSuccessful()) {
                     authToken = response.headers().get("Access-Token");
-                    Log.e(TAG, "getAuthToken: " + authToken );
                     String client = response.headers().get("Client");
-                    @SuppressWarnings("ConstantConditions") Merchant merchant = response.body().getMerchant();
-                    final MerchantEntity merchantEntity = new MerchantEntity();
-                    merchantEntity.setId(merchant.getId());
-                    merchantEntity.setFirstName(merchant.getFirst_name());
-                    merchantEntity.setLastName(merchant.getLast_name());
-                    merchantEntity.setBusinessName(merchant.getBusiness_name());
-                    merchantEntity.setEmail(merchant.getEmail());
-                    merchantEntity.setBusinessType(merchant.getBusiness_type());
-                    merchantEntity.setContactNumber(merchant.getContact_number());
-                    merchantEntity.setCurrency(merchant.getCurrency());
-                    if (merchant.getSubscription_expires_on() != null) {
-                        merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
-                    }
+                    MerchantWrapper merchantWrapper = response.body();
+                    if (merchantWrapper != null) {
+                        Merchant merchant = merchantWrapper.getMerchant();
+                        final MerchantEntity merchantEntity = new MerchantEntity();
+                        merchantEntity.setId(merchant.getId());
+                        merchantEntity.setFirstName(merchant.getFirst_name());
+                        merchantEntity.setLastName(merchant.getLast_name());
+                        merchantEntity.setBusinessName(merchant.getBusiness_name());
+                        merchantEntity.setEmail(merchant.getEmail());
+                        merchantEntity.setBusinessType(merchant.getBusiness_type());
+                        merchantEntity.setContactNumber(merchant.getContact_number());
+                        merchantEntity.setCurrency(merchant.getCurrency());
+                        if (merchant.getSubscription_expires_on() != null) {
+                            merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
+                        }
 
-                    mDatabaseManager.insertNewMerchant(merchantEntity);
-                    mSessionManager.setMerchantSessionData(
+                        mDatabaseManager.insertNewMerchant(merchantEntity);
+                        mSessionManager.setMerchantSessionData(
                             merchant.getId(),
                             merchant.getEmail(),
                             merchant.getFirst_name(),
@@ -134,12 +135,13 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                             merchant.getCurrency(),
                             authToken,
                             client
-                    );
+                        );
 
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
-                    editor.apply();
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                        editor.apply();
+                    }
                 }
 
             }

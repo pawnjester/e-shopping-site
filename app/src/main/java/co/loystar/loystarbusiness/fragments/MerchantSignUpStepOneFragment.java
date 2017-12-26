@@ -48,16 +48,21 @@ public class MerchantSignUpStepOneFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        sharedPref = getActivity().getSharedPreferences(getString(R.string.merchant_sign_up_pref), Context.MODE_PRIVATE);
         rootView = inflater.inflate(R.layout.fragment_merchant_sign_up_step_one, container, false);
+        if (getActivity() == null) {
+            return rootView;
+        }
+        sharedPref = getActivity().getSharedPreferences(getString(R.string.merchant_sign_up_pref), Context.MODE_PRIVATE);
         firstNameView = rootView.findViewById(R.id.firstName);
         businessNameView = rootView.findViewById(R.id.businessName);
         businessPhoneView = rootView.findViewById(R.id.businessPhone);
         businessEmailView = rootView.findViewById(R.id.businessEmail);
         checkEmailSpinner = rootView.findViewById(R.id.checkEmailProgress);
-        businessPhoneView.setNumber(getArguments().getString(Constants.PHONE_NUMBER, ""));
+        if (getArguments() != null) {
+            businessPhoneView.setNumber(getArguments().getString(Constants.PHONE_NUMBER, ""));
+        }
         businessPhoneView.setEnabled(false);
 
         if (sharedPref.contains(Constants.FIRST_NAME)) {
@@ -182,6 +187,9 @@ public class MerchantSignUpStepOneFragment extends Fragment {
     }
 
     private void closeKeyBoard() {
+        if (getActivity() == null) {
+            return;
+        }
         View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);

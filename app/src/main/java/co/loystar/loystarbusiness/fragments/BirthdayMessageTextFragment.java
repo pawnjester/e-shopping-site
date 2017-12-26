@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.fragments;
 
 
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -33,7 +32,6 @@ import java.util.regex.Pattern;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
@@ -209,10 +207,6 @@ public class BirthdayMessageTextFragment extends Fragment {
                                                     }
                                                 }
                                                 else {
-                                                    if (response.code() == 401) {
-                                                        AccountManager accountManager = AccountManager.get(getActivity());
-                                                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                                                    }
                                                     Toast.makeText(getContext(), getString(R.string.error_birthday_offer_preset_sms_create), Toast.LENGTH_LONG).show();
                                                 }
                                             }

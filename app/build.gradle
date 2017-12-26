@@ -128,7 +128,7 @@ dependencies {
     implementation "com.google.firebase:firebase-core:$firebaseVersion"
     implementation "com.google.firebase:firebase-auth:$firebaseVersion"
     implementation "com.google.firebase:firebase-crash:$firebaseVersion"
-    implementation 'com.firebase:firebase-jobdispatcher:0.6.0'
+    implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation 'com.firebaseui:firebase-ui-auth:3.1.0'
     implementation 'io.smooch:core:5.4.0'
     implementation 'io.smooch:ui:5.4.0'

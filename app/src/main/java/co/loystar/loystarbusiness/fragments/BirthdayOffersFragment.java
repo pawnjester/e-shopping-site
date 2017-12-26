@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.fragments;
 
 
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -27,7 +26,6 @@ import java.sql.Timestamp;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
@@ -55,7 +53,6 @@ public class BirthdayOffersFragment extends Fragment {
     ActionButton mDeleteOffer;
     ActionButton mEditOffer;
     private View rootView;
-    private SessionManager sessionManager;
 
     public BirthdayOffersFragment() {}
 
@@ -73,7 +70,7 @@ public class BirthdayOffersFragment extends Fragment {
             return rootView;
         }
 
-        sessionManager = new SessionManager(getActivity());
+        SessionManager sessionManager = new SessionManager(getActivity());
         mDatabaseManager = DatabaseManager.getInstance(getActivity());
         merchantEntity = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
 
@@ -126,10 +123,6 @@ public class BirthdayOffersFragment extends Fragment {
                             showSnackbar(R.string.birthday_offer_delete_success);
                         }
                         else {
-                            if (response.code() == 401) {
-                                AccountManager accountManager = AccountManager.get(getActivity());
-                                accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                            }
                             showSnackbar(R.string.error_birthday_offer_delete);
                         }
                     }

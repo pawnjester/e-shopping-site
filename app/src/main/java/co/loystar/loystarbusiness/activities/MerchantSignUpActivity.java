@@ -184,7 +184,7 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
 
                         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, merchant.getEmail());
                         bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-                        bundle.putString(AuthenticatorActivity.PARAM_USER_PASS, mPassword);
+                        bundle.putString(AccountManager.KEY_PASSWORD, mPassword);
                         intent.putExtras(bundle);
 
                         setResult(RESULT_OK, intent);

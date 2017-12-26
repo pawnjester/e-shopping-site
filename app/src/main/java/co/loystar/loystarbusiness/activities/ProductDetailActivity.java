@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
@@ -25,7 +24,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,10 +56,8 @@ import java.util.Locale;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
-import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
@@ -112,7 +108,6 @@ public class ProductDetailActivity extends AppCompatActivity {
     /*shared variables*/
     private boolean isFabMenuOpen = false;
     private ContentResolver contentResolver;
-    private SessionManager mSessionManager;
     private DatabaseManager mDatabaseManager;
     private Uri imageUri;
     private boolean formIsDirty = false;
@@ -122,7 +117,6 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String originalPrice;
     private TextView charCounterView;
     private ProductEntity mProductItem;
-    private MerchantEntity merchantEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,10 +138,9 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         contentResolver = this.getContentResolver();
         mContext = this;
-        mSessionManager = new SessionManager(this);
+        SessionManager mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
-        merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
         mLayout = findViewById(R.id.activity_product_detail_container);
         mProgressView = findViewById(R.id.productEditProgressView);
@@ -251,9 +244,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 formIsDirty = true;
             });
 
-            takePictureBtn.setOnClickListener(view -> {
-                ProductDetailActivityPermissionsDispatcher.takePictureWithCheck(ProductDetailActivity.this);
-            });
+            takePictureBtn.setOnClickListener(view -> ProductDetailActivityPermissionsDispatcher.takePictureWithCheck(ProductDetailActivity.this));
 
             getAnimations();
         }
@@ -404,9 +395,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 intent.putExtra(getString(R.string.product_edit_success), true);
                                 startActivity(intent);
                             }
-                        } else if (response.code() == 401) {
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                         } else {
                             Snackbar.make(mLayout, getString(R.string.error_product_update), Snackbar.LENGTH_LONG).show();
                         }
@@ -480,9 +468,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                                intent.putExtra(getString(R.string.product_edit_success), true);
                                startActivity(intent);
                            }
-                       } else if (response.code() == 401) {
-                           AccountManager accountManager = AccountManager.get(mContext);
-                           accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                        } else {
                            showSnackbar(R.string.unknown_error);
                        }

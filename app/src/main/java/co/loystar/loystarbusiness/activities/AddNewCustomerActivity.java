@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
-import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -42,7 +41,6 @@ import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -569,10 +567,6 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
                         }
                     }
                     else {
-                        if (response.code() == 401) {
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
-                        }
                         showSnackbar(R.string.error_add_user);
                     }
                 }

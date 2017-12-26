@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -44,7 +43,6 @@ import java.util.concurrent.Executors;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.ProductCategoryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -236,9 +234,6 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
                                             showSnackbar(R.string.error_delete_failed);
                                         }
                                     });
-                                } else if (response.code() == 401){
-                                    AccountManager accountManager = AccountManager.get(mContext);
-                                    accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                                 } else {
                                     showSnackbar(R.string.error_delete_failed);
                                 }
@@ -383,9 +378,6 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
                                 Toast.makeText(mContext, getString(R.string.product_category_create_success), Toast.LENGTH_LONG).show();
                             }
-                        } else if (response.code() == 401) {
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                         } else {
                             Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                         }

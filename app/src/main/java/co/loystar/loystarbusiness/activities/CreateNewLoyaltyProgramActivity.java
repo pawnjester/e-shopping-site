@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +29,6 @@ import java.util.Locale;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
@@ -59,7 +57,6 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
     private MerchantEntity merchantEntity;
     private DatabaseManager mDatabaseManager;
     private ProgressDialog progressDialog;
-    private SessionManager mSessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +71,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
         }
 
         mContext = this;
-        mSessionManager = new SessionManager(this);
+        SessionManager mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
         merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
@@ -239,10 +236,6 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
                         }
                     }
                     else {
-                        if (response.code() == 401) {
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
-                        }
                         showSnackbar(R.string.error_program_create);
                     }
                 }

@@ -73,7 +73,6 @@ import static android.Manifest.permission.READ_CONTACTS;
 public class AuthenticatorActivity extends RxAppCompatActivity implements LoaderCallbacks<Cursor> {
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
-    public final static String PARAM_USER_PASS = "USER_PASS";
     public static final String ARG_ACCOUNT_TYPE = "ARG_ACCOUNT_TYPE";
     public static final String ARG_AUTH_TYPE = "ARG_AUTH_TYPE";
     private final int REQ_SIGN_UP = 101;
@@ -449,7 +448,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
 
                             bundle.putString(AccountManager.KEY_ACCOUNT_NAME, merchant.getEmail());
                             bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-                            bundle.putString(PARAM_USER_PASS, password);
+                            bundle.putString(AccountManager.KEY_PASSWORD, password);
 
                             intent.putExtras(bundle);
                             finishLogin(intent);
@@ -481,23 +480,18 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
         if (intent.hasExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE)) {
             setResult(RESULT_CANCELED);
             Toast.makeText(mContext, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Toast.LENGTH_LONG).show();
-            //Snackbar.make(mLayout, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Snackbar.LENGTH_LONG).show();
         } else {
-            String accountPassword = intent.getStringExtra(PARAM_USER_PASS);
+            String accountPassword = intent.getStringExtra(AccountManager.KEY_PASSWORD);
             String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
             // Creating the account on the device and setting the auth token we got
-            final Account account = AccountGeneral.getAccount(mContext, accountName);
-            AccountGeneral.createSyncAccount(mContext, account);
+            final Account account = AccountGeneral.addOrFindAccount(mContext, accountName, accountPassword);
+            AccountGeneral.SetSyncAccount(mContext, account);
             if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
                 String authToken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
-                String authTokenType = AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS;
-
-                mAccountManager.setPassword(account, accountPassword);
                 // (Not setting the auth token will cause another call to the server to authenticate the user)
-                mAccountManager.setAuthToken(account, authTokenType, authToken);
-            } else {
-                mAccountManager.setPassword(account, accountPassword);
+                mAccountManager.setAuthToken(account, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, authToken);
             }
+
             setResult(RESULT_OK, intent);
             Intent homeIntent = new Intent(mContext, MerchantBackOfficeActivity.class);
             startActivity(homeIntent);

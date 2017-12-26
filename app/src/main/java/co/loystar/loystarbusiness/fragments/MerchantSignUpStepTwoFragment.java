@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
@@ -51,10 +52,13 @@ public class MerchantSignUpStepTwoFragment extends Fragment
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        sharedPref = getActivity().getSharedPreferences(getString(R.string.merchant_sign_up_pref), Context.MODE_PRIVATE);
         rootView = inflater.inflate(R.layout.fragment_merchant_sign_up_step_two, container, false);
+        if (getActivity() == null) {
+            return rootView;
+        }
+        sharedPref = getActivity().getSharedPreferences(getString(R.string.merchant_sign_up_pref), Context.MODE_PRIVATE);
         ArrayList<BusinessType> getBusinessTypes = BusinessTypesFetcher.getBusinessTypes(getActivity());
         final CharSequence[] businessTypeEntries = new CharSequence[getBusinessTypes.size()];
         for (int i = 0; i < getBusinessTypes.size(); i++) {
@@ -190,6 +194,9 @@ public class MerchantSignUpStepTwoFragment extends Fragment
     }
 
     private void closeKeyBoard() {
+        if (getActivity() == null) {
+            return;
+        }
         View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);

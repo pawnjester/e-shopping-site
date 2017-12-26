@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -31,7 +30,6 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
@@ -247,10 +245,6 @@ public class MyAccountProfileActivity extends AppCompatActivity
                     }
                 }
                 else {
-                    if (response.code() == 401) {
-                        AccountManager accountManager = AccountManager.get(mContext);
-                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                    }
                     showSnackbar(R.string.unknown_error);
                 }
             }

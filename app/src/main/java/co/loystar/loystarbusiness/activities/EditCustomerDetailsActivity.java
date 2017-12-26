@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -30,13 +29,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
 
 import co.loystar.loystarbusiness.R;
-import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -255,11 +251,6 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                         }
                     }
                     else {
-                        if (response.code() == 401) {
-                            SessionManager sessionManager = new SessionManager(mContext);
-                            AccountManager accountManager = AccountManager.get(mContext);
-                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
-                        }
                         showSnackbar(R.string.unknown_error);
                     }
                 }

@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.Manifest;
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
@@ -27,7 +26,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -60,7 +58,6 @@ import java.util.List;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
-import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
@@ -89,7 +86,6 @@ import retrofit2.Response;
 @RuntimePermissions
 public class AddProductActivity extends AppCompatActivity {
     /*static fields*/
-    public static final String ARG_ITEM_ID = "item_id";
     private static final String TAG = AddProductActivity.class.getCanonicalName();
     private static final int REQUEST_IMAGE_CAPTURE = 111;
     private static final int REQUEST_IMAGE_FROM_GALLERY = 133;
@@ -116,7 +112,6 @@ public class AddProductActivity extends AppCompatActivity {
     /*shared variables*/
     private boolean isFabMenuOpen = false;
     private ContentResolver contentResolver;
-    private SessionManager mSessionManager;
     private DatabaseManager mDatabaseManager;
     private Uri imageUri;
     private Context mContext;
@@ -141,11 +136,9 @@ public class AddProductActivity extends AppCompatActivity {
 
         getActivityInitiator = getIntent().getStringExtra(Constants.ACTIVITY_INITIATOR);
 
-        Log.e(TAG, "onCreate: " + getActivityInitiator );
-
         contentResolver = this.getContentResolver();
         mContext = this;
-        mSessionManager = new SessionManager(this);
+        SessionManager mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
         merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
@@ -249,9 +242,6 @@ public class AddProductActivity extends AppCompatActivity {
 
                                         Toast.makeText(mContext, getString(R.string.product_category_create_success), Toast.LENGTH_LONG).show();
                                     }
-                                } else if (response.code() == 401) {
-                                    AccountManager accountManager = AccountManager.get(mContext);
-                                    accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                                 } else {
                                     Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 }
@@ -537,9 +527,6 @@ public class AddProductActivity extends AppCompatActivity {
                                 startActivity(intent);
                             }
                         }
-                    } else if (response.code() == 401) {
-                        AccountManager accountManager = AccountManager.get(mContext);
-                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mSessionManager.getAccessToken());
                     } else {
                         showSnackbar(R.string.unknown_error);
                     }

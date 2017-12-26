@@ -40,6 +40,9 @@ public class SaleWithoutPosFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sale_without_pos, container, false);
+        if (getActivity() == null) {
+            return rootView;
+        }
         SessionManager mSessionManager = new SessionManager(getActivity());
         DatabaseManager mDatabaseManager = DatabaseManager.getInstance(getActivity());
         if (getArguments() != null) {

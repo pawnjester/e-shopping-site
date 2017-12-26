@@ -60,7 +60,6 @@ import retrofit2.Response;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private final AccountManager mAccountManager;
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    private String mAuthToken;
     private ApiClient mApiClient;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
@@ -83,7 +82,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             SyncResult syncResult
     ) {
         try {
-            mAuthToken = mAccountManager.blockingGetAuthToken(account, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
+            String mAuthToken = mAccountManager.blockingGetAuthToken(account, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
             merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
             if (merchantEntity == null) {
                 mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
@@ -131,10 +130,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         if (response.isSuccessful()) {
                             merchantEntity.setUpdateRequired(false);
                             mDatabaseManager.updateMerchant(merchantEntity);
-                        } else {
-                            if (response.code() == 401) {
-                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                            }
                         }
                     }
 
@@ -168,10 +163,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 mDatabaseManager.updateMerchant(merchant);
                             }
                         }
-                    } else {
-                        if (response.code() == 401) {
-                            mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                        }
                     }
                 }
 
@@ -200,15 +191,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 mDatabaseManager.updateMerchant(merchantEntity);
                             }
                         }
-                    } else {
-                        if (response.code() == 401) {
-                            mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                        } else if (response.code() == 404) {
-                            BirthdayOfferEntity existingOffer = merchantEntity.getBirthdayOffer();
-                            if (existingOffer != null) {
-                                merchantEntity.setBirthdayOffer(null);
-                                mDatabaseManager.updateMerchant(merchantEntity);
-                            }
+                    } else if (response.code() == 404){
+                        BirthdayOfferEntity existingOffer = merchantEntity.getBirthdayOffer();
+                        if (existingOffer != null) {
+                            merchantEntity.setBirthdayOffer(null);
+                            mDatabaseManager.updateMerchant(merchantEntity);
                         }
                     }
                 }
@@ -237,10 +224,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 merchantEntity.setBirthdayOfferPresetSms(birthdayOfferPresetSmsEntity);
                                 mDatabaseManager.updateMerchant(merchantEntity);
                             }
-                        }
-                    } else {
-                        if (response.code() == 401) {
-                            mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
                         }
                     }
                 }
@@ -297,11 +280,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                         }
                     }
-
-                }  else {
-                    if (response.code() == 401) {
-                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                    }
                 }
 
             } catch (IOException e) {
@@ -318,10 +296,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteCustomer(customerEntity);
-                        } else {
-                            if (response.code() == 401) {
-                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                            }
                         }
                     }
 
@@ -375,11 +349,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                         Intent i = new Intent(Constants.SALES_TRANSACTIONS_SYNC_FINISHED);
                         getContext().sendBroadcast(i);
-
-                    }
-                } else {
-                    if (response.code() == 401) {
-                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
                     }
                 }
             } catch (IOException e) {
@@ -510,10 +479,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                         }
                     }
-                } else {
-                    if (response.code() == 401) {
-                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -568,10 +533,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                         }
                     }
-                } else {
-                    if (response.code() == 401) {
-                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -587,10 +548,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteProduct(productEntity);
-                        } else {
-                            if (response.code() == 401) {
-                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                            }
                         }
                     }
 
@@ -644,10 +601,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                         }
                     }
-                } else {
-                    if (response.code() == 401) {
-                        mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -663,10 +616,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             mDatabaseManager.deleteLoyaltyProgram(loyaltyProgramEntity);
-                        } else {
-                            if (response.code() == 401) {
-                                mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
-                            }
                         }
                     }
 
@@ -686,6 +635,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Bundle b = new Bundle();
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(AccountGeneral.getAccount(context, accountName), AccountGeneral.AUTHORITY, b);
+        Account account = AccountGeneral.getUserAccount(context, accountName);
+        if (account == null) {
+            return;
+        }
+        ContentResolver.requestSync(account, AccountGeneral.AUTHORITY, b);
     }
 }
