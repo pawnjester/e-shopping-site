@@ -4,12 +4,16 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -47,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -55,10 +60,12 @@ import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
@@ -72,6 +79,8 @@ import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
+import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
@@ -98,12 +107,14 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     private SessionManager mSessionManager;
     private BottomSheetBehavior.BottomSheetCallback mOrderSummaryBottomSheetCallback;
     private SparseIntArray mSelectedProducts = new SparseIntArray();
+    private SparseIntArray mSelectedLoyaltyPrograms = new SparseIntArray();
     private BottomSheetBehavior orderSummaryBottomSheetBehavior;
     private boolean orderSummaryDraggingStateUp = false;
     private double totalCharge = 0;
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
     private CustomerEntity mSelectedCustomer;
+    private List<LoyaltyProgramEntity> mLoyaltyPrograms;
 
     /*Views*/
     private View collapsedToolbar;
@@ -227,6 +238,11 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             }
         };
 
+        Selection<ReactiveResult<LoyaltyProgramEntity>> programsSelection = mDataStore.select(LoyaltyProgramEntity.class);
+        programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
+        programsSelection.where(LoyaltyProgramEntity.DELETED.notEqual(true));
+        mLoyaltyPrograms = programsSelection.get().toList();
+
         customerAutoCompleteDialog = CustomerAutoCompleteDialog.newInstance(getString(R.string.order_owner));
         customerAutoCompleteDialog.setSelectedCustomerListener(this);
 
@@ -339,6 +355,24 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         });
 
         RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
+            Drawable drawable = ContextCompat.getDrawable(mContext, android.R.drawable.ic_dialog_alert);
+            int color = ContextCompat.getColor(mContext, R.color.white);
+            assert drawable != null;
+            drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+            if (mSelectedProducts.size() > mSelectedLoyaltyPrograms.size()) {
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(mContext, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(mContext);
+                }
+                builder.setTitle("Loyalty Program Required!")
+                    .setMessage("Please select a loyalty program for each cart item. This will allow a customer to earn points or stamps for each item purchased.")
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
+                    .setIcon(drawable)
+                    .show();
+                return;
+            }
             ArrayList<Integer> ids = new ArrayList<>();
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 ids.add(mSelectedProducts.keyAt(i));
@@ -349,70 +383,100 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     .get();
 
             List<ProductEntity> productEntities = result.toList();
-            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
             DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
             SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
             int totalCustomerPoints  = databaseManager.getTotalCustomerPointsForProgram(mProgramId, mSelectedCustomer.getId());
             for (int i = 0; i < productEntities.size(); i ++) {
                 ProductEntity product = productEntities.get(i);
-                String template = "%.2f";
-                double tc = product.getPrice() * mSelectedProducts.get(product.getId());
-                int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
+                int programId = mSelectedLoyaltyPrograms.get(product.getId());
+                LoyaltyProgramEntity loyaltyProgram = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
+                if (loyaltyProgram != null) {
+                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                    // set temporary id
+                    if (lastTransactionRecord == null) {
+                        transactionEntity.setId(1);
+                    } else {
+                        int id = lastTransactionRecord.getId() + i + 1;
+                        transactionEntity.setId(id);
+                    }
+                    String template = "%.2f";
+                    double tc = product.getPrice() * mSelectedProducts.get(product.getId());
+                    int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
 
-                // set temporary id
-                if (lastTransactionRecord == null) {
-                    transactionEntity.setId(1);
-                } else {
-                    int id = lastTransactionRecord.getId() + i + 1;
-                    transactionEntity.setId(id);
-                }
-                transactionEntity.setSynced(false);
-                transactionEntity.setAmount(totalCost);
-                transactionEntity.setMerchantLoyaltyProgramId(mProgramId);
-                transactionEntity.setPoints(totalCost);
-                transactionEntity.setStamps(0);
-                transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
-                transactionEntity.setProductId(product.getId());
-                transactionEntity.setProgramType(getString(R.string.simple_points));
-                if (mSelectedCustomer != null) {
-                    transactionEntity.setUserId(mSelectedCustomer.getUserId());
-                }
+                    transactionEntity.setSynced(false);
+                    transactionEntity.setAmount(totalCost);
+                    transactionEntity.setMerchantLoyaltyProgramId(programId);
 
-                transactionEntity.setMerchant(merchantEntity);
-                transactionEntity.setCustomer(mSelectedCustomer);
-
-                if (i + 1 == productEntities.size()) {
-                    transactionEntity.setSendSms(true);
-                        databaseManager.insertNewSalesTransaction(transactionEntity);
-                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
-
-                        final Handler handler = new Handler();
-                        handler.postDelayed(() -> {
-                            Bundle bundle = new Bundle();
-                            int tp = totalCustomerPoints + Double.valueOf(totalCharge).intValue();
-                            bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, tp);
-                            bundle.putBoolean(Constants.PRINT_RECEIPT, true);
-                            bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-                            bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
-                            bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
-
-                            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
-                            for (int x = 0; x < mSelectedProducts.size(); x++) {
-                                orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
-                            }
-                            bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
-
-                            Intent intent = new Intent(mContext, TransactionsConfirmation.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            intent.putExtras(bundle);
-                            startActivity(intent);
-                        }, 200);
-                } else {
+                    if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                        transactionEntity.setPoints(totalCost);
+                        transactionEntity.setProgramType(getString(R.string.simple_points));
+                    } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                        int stampsEarned = mSelectedProducts.get(product.getId());
+                        transactionEntity.setStamps(stampsEarned);
+                        transactionEntity.setProgramType(getString(R.string.stamps_program));
+                    }
+                    transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+                    transactionEntity.setProductId(product.getId());
+                    if (mSelectedCustomer != null) {
+                        transactionEntity.setUserId(mSelectedCustomer.getUserId());
+                        transactionEntity.setCustomer(mSelectedCustomer);
+                    }
+                    transactionEntity.setMerchant(merchantEntity);
                     transactionEntity.setSendSms(false);
                     databaseManager.insertNewSalesTransaction(transactionEntity);
-                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+
+                    if (i + 1 == productEntities.size()) {
+                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                    }
                 }
             }
+
+            ArrayList<Integer> programIds = new ArrayList<>();
+            for (int i = 0; i < mSelectedLoyaltyPrograms.size(); i++) {
+                if (!programIds.contains(mSelectedLoyaltyPrograms.valueAt(i))) {
+                    programIds.add(mSelectedLoyaltyPrograms.valueAt(i));
+                }
+            }
+
+            Completable.complete()
+                .delay(1, TimeUnit.SECONDS)
+                .compose(bindToLifecycle())
+                .doOnComplete(() -> {
+
+                    for (int i = 0; i < programIds.size(); i++) {
+                        int programId = programIds.get(i);
+                        TransactionSmsEntity transactionSmsEntity = new TransactionSmsEntity();
+                        transactionSmsEntity.setCustomerId(mSelectedCustomer.getId());
+                        transactionSmsEntity.setLoyaltyProgramId(programId);
+                        transactionSmsEntity.setMerchantId(mSessionManager.getMerchantId());
+
+                        mDataStore.upsert(transactionSmsEntity).subscribe();
+
+                        if (i + 1 == programIds.size()) {
+                            SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                        }
+                    }
+
+                    Bundle bundle = new Bundle();
+                    int tp = totalCustomerPoints + Double.valueOf(totalCharge).intValue();
+                    bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, tp);
+                    bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+                    bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
+                    bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
+                    bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+
+                    @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                    for (int x = 0; x < mSelectedProducts.size(); x++) {
+                        orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+                    }
+                    bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+
+                    Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                })
+                .subscribe();
         });
 
         if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
@@ -679,7 +743,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         public void onBindViewHolder(ProductEntity item, BindingHolder<OrderSummaryItemBinding> holder, int position) {
             holder.binding.setProduct(item);
             RequestOptions options = new RequestOptions();
-            options.centerCrop().apply(RequestOptions.placeholderOf(
+            options.fitCenter().centerCrop().apply(RequestOptions.placeholderOf(
                     AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)
             ));
             Glide.with(mContext)
@@ -695,6 +759,15 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             double totalCostOfItem = item.getPrice() * mSelectedProducts.get(item.getId());
             String cText = String.format(Locale.UK, template, totalCostOfItem);
             holder.binding.productCost.setText(getString(R.string.product_price, merchantCurrencySymbol, cText));
+
+            CharSequence[] programLabels = new CharSequence[mLoyaltyPrograms.size()];
+            for (int i = 0; i < mLoyaltyPrograms.size(); i++) {
+                programLabels[i] = mLoyaltyPrograms.get(i).getName();
+            }
+            holder.binding.selectProgramSpinner.setEntries(programLabels);
+            if (mLoyaltyPrograms.size() == 1) {
+                holder.binding.selectProgramSpinner.setSelection(0);
+            }
         }
 
         @Override
@@ -723,6 +796,11 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     .show());
 
             binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
+
+            SpinnerButton.OnItemSelectedListener programItemSelectedListener = position -> {
+                mSelectedLoyaltyPrograms.put(binding.getProduct().getId(), mLoyaltyPrograms.get(position).getId());
+            };
+            binding.selectProgramSpinner.setListener(programItemSelectedListener);
 
             return new BindingHolder<>(binding);
         }

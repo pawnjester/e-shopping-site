@@ -21,6 +21,7 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
@@ -340,12 +341,6 @@ public class DatabaseManager implements IDatabaseManager{
                 .subscribe(/*no-op*/);
     }
 
-    @Override
-    public void updateProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
-        mDataStore.update(productCategoryEntity)
-                .subscribe(/*no-op*/);
-    }
-
     @NonNull
     @Override
     public List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity merchantEntity) {
@@ -353,16 +348,6 @@ public class DatabaseManager implements IDatabaseManager{
         query.where(SalesTransactionEntity.SYNCED.eq(false));
         query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
         return query.get().toList();
-    }
-
-    @NonNull
-    @Override
-    public List<SalesTransactionEntity> getMerchantSalesTransactions(int merchantId) {
-        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-                .where(MerchantEntity.ID.eq(merchantId))
-                .get()
-                .firstOrNull();
-        return merchantEntity != null ? merchantEntity.getSalesTransactions() : Collections.emptyList();
     }
 
     @Override
@@ -561,5 +546,16 @@ public class DatabaseManager implements IDatabaseManager{
             productCategoryEntities = selection.get().toList();
         }
         return productCategoryEntities;
+    }
+
+    @Override
+    public List<TransactionSmsEntity> getMerchantTransactionSms(int merchantId) {
+        return mDataStore.select(TransactionSmsEntity.class).where(TransactionSmsEntity.MERCHANT_ID.eq(merchantId)).get().toList();
+    }
+
+    @Override
+    public void deleteTransactionSms(@NonNull TransactionSmsEntity transactionSmsEntity) {
+        mDataStore.delete(transactionSmsEntity)
+            .subscribe(/*no-op*/);
     }
 }

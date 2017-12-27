@@ -26,4 +26,5 @@
     <dimen name="card_list_title_text_size">20sp</dimen>
     <dimen name="fab_top_margin">64dp</dimen>
     <dimen name="badge_text_size">12sp</dimen>
+    <dimen name="order_item_text_margin_start">80dp</dimen>
 </resources>

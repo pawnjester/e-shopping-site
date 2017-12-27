@@ -45,6 +45,8 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionSms;
+import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -107,6 +109,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
+            syncTransactionSms();
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
             getContext().sendBroadcast(i);
@@ -624,6 +627,32 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     }
                 });
+            }
+        }
+
+        @Override
+        public void syncTransactionSms() {
+            List<TransactionSmsEntity> transactionSms = mDatabaseManager.getMerchantTransactionSms(merchantEntity.getId());
+            if (!transactionSms.isEmpty()) {
+                for (TransactionSmsEntity transactionSmsEntity: transactionSms) {
+                    mApiClient.getLoystarApi(false).sendTransactionSms(
+                        transactionSmsEntity.getMerchantId(),
+                        transactionSmsEntity.getCustomerId(),
+                        transactionSmsEntity.getLoyaltyProgramId()
+                    ).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                mDatabaseManager.deleteTransactionSms(transactionSmsEntity);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                        }
+                    });
+                }
             }
         }
     }

@@ -14,6 +14,8 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
+import co.loystar.loystarbusiness.models.entities.TransactionSms;
+import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -102,13 +104,8 @@ public interface IDatabaseManager {
 
     void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
 
-    void updateProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
-
     @NonNull
     List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity  merchantEntity);
-
-    @NonNull
-    List<SalesTransactionEntity> getMerchantSalesTransactions(int  merchantId);
 
     int getTotalCustomerStamps(int merchantId, int customerId);
 
@@ -142,4 +139,8 @@ public interface IDatabaseManager {
     List<LoyaltyProgramEntity> getMerchantLoyaltyPrograms(int merchantId);
 
     List<ProductCategoryEntity> getMerchantProductCategories(int merchantId);
+
+    List<TransactionSmsEntity> getMerchantTransactionSms(int merchantId);
+
+    void deleteTransactionSms(@NonNull TransactionSmsEntity transactionSmsEntity);
 }

@@ -14,4 +14,5 @@ public interface ISync {
     void syncProductCategories();
     void syncProducts();
     void syncLoyaltyPrograms();
+    void syncTransactionSms();
 }

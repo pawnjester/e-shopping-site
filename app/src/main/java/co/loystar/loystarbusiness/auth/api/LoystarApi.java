@@ -197,4 +197,11 @@ public interface LoystarApi {
 
     @POST("merchants/set_firebase_registration_token")
     Call<ResponseBody> setFirebaseRegistrationToken(@Body RequestBody requestBody);
+
+    @GET("transactions/send_transaction_sms/{merchant_id}/{customer_id}/{loyalty_program_id}")
+    Call<ResponseBody> sendTransactionSms(
+        @Path("merchant_id") int merchant_id,
+        @Path("customer_id") int customer_id,
+        @Path("loyalty_program_id") int loyalty_program_id);
+
 }
