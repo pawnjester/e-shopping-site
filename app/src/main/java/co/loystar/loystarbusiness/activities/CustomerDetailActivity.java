@@ -5,12 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
@@ -141,25 +140,23 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
                                 .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
                     } else if (integer == 1) {
                         LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
-                        initiateSalesProcess(loyaltyProgramEntity);
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                        if (isPosTurnedOn) {
+                            startSaleWithPos();
+                        } else {
+                            startSaleWithoutPos(loyaltyProgramEntity.getId());
+                        }
                     } else {
-                        chooseProgram();
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                        if (isPosTurnedOn) {
+                            startSaleWithPos();
+                        } else {
+                            chooseProgram();
+                        }
                     }
                 });
-    }
-
-    private void initiateSalesProcess(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
-        if (isPosTurnedOn) {
-            if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
-                startPointsSaleWithPos(loyaltyProgramEntity.getId());
-            } else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
-                startStampsSaleWithPos(loyaltyProgramEntity.getId());
-            }
-        } else {
-            startSaleWithoutPos(loyaltyProgramEntity.getId());
-        }
     }
 
     private void chooseProgram() {
@@ -167,17 +164,9 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
         startActivityForResult(intent, REQUEST_CHOOSE_PROGRAM);
     }
 
-    private void startPointsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
+    private void startSaleWithPos() {
+        Intent intent = new Intent(this, SaleWithPosActivity.class);
         intent.putExtra(Constants.CUSTOMER_ID, customerId);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
-        startActivity(intent);
-    }
-
-    private void startStampsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
-        intent.putExtra(Constants.CUSTOMER_ID, customerId);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
         startActivity(intent);
     }
 
@@ -200,8 +189,7 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CHOOSE_PROGRAM) {
                 int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
-                LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
-                initiateSalesProcess(loyaltyProgramEntity);
+                startSaleWithoutPos(programId);
             }
         }
     }

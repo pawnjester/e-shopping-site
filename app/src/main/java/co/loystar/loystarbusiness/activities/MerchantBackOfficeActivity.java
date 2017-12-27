@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
-import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -426,9 +425,21 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                                     .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
                         } else if (integer == 1) {
                             LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
-                            initiateSalesProcess(loyaltyProgramEntity);
+                            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                            boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                            if (isPosTurnedOn) {
+                                startSaleWithPos();
+                            } else {
+                                startSaleWithoutPos(loyaltyProgramEntity.getId());
+                            }
                         } else {
-                            chooseProgram();
+                            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                            boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                            if (isPosTurnedOn) {
+                                startSaleWithPos();
+                            } else {
+                                chooseProgram();
+                            }
                         }
                     }
 
@@ -444,34 +455,13 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
                 });
     }
 
-    private void initiateSalesProcess(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
-        if (isPosTurnedOn) {
-            if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
-                startPointsSaleWithPos(loyaltyProgramEntity.getId());
-            } else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
-                startStampsSaleWithPos(loyaltyProgramEntity.getId());
-            }
-        } else {
-            startSaleWithoutPos(loyaltyProgramEntity.getId());
-        }
-    }
-
     private void chooseProgram() {
         Intent intent = new Intent(this, ChooseProgramActivity.class);
         startActivityForResult(intent, REQUEST_CHOOSE_PROGRAM);
     }
 
-    private void startPointsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
-        startActivity(intent);
-    }
-
-    private void startStampsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
+    private void startSaleWithPos() {
+        Intent intent = new Intent(this, SaleWithPosActivity.class);
         startActivity(intent);
     }
 
@@ -619,8 +609,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CHOOSE_PROGRAM) {
                 int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
-                LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
-                initiateSalesProcess(loyaltyProgramEntity);
+                startSaleWithoutPos(programId);
             }
         }
     }

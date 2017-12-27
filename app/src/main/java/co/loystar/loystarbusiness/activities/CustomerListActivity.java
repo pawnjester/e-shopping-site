@@ -25,7 +25,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -674,8 +673,7 @@ public class CustomerListActivity extends RxAppCompatActivity
         } else if (requestCode == REQUEST_CHOOSE_PROGRAM) {
            if (resultCode == RESULT_OK) {
                int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
-               LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
-               initiateSalesProcess(loyaltyProgramEntity);
+               startSaleWithoutPos(programId);
            }
         }
     }
@@ -698,25 +696,23 @@ public class CustomerListActivity extends RxAppCompatActivity
                                 .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
                     } else if (integer == 1) {
                         LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
-                        initiateSalesProcess(loyaltyProgramEntity);
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                        if (isPosTurnedOn) {
+                            startSaleWithPos();
+                        } else {
+                            startSaleWithoutPos(loyaltyProgramEntity.getId());
+                        }
                     } else {
-                        chooseProgram();
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
+                        if (isPosTurnedOn) {
+                            startSaleWithPos();
+                        } else {
+                            chooseProgram();
+                        }
                     }
                 });
-    }
-
-    private void initiateSalesProcess(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
-        if (isPosTurnedOn) {
-            if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.simple_points))) {
-                startPointsSaleWithPos(loyaltyProgramEntity.getId());
-            } else if (loyaltyProgramEntity.getProgramType().equals(getString(R.string.stamps_program))) {
-                startStampsSaleWithPos(loyaltyProgramEntity.getId());
-            }
-        } else {
-            startSaleWithoutPos(loyaltyProgramEntity.getId());
-        }
     }
 
     private void chooseProgram() {
@@ -724,17 +720,9 @@ public class CustomerListActivity extends RxAppCompatActivity
         startActivityForResult(intent, REQUEST_CHOOSE_PROGRAM);
     }
 
-    private void startPointsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, PointsSaleWithPosActivity.class);
+    private void startSaleWithPos() {
+        Intent intent = new Intent(this, SaleWithPosActivity.class);
         intent.putExtra(Constants.CUSTOMER_ID, customerId);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
-        startActivity(intent);
-    }
-
-    private void startStampsSaleWithPos(int programId) {
-        Intent intent = new Intent(this, StampsSaleWithPosActivity.class);
-        intent.putExtra(Constants.CUSTOMER_ID, customerId);
-        intent.putExtra(Constants.LOYALTY_PROGRAM_ID, programId);
         startActivity(intent);
     }
 

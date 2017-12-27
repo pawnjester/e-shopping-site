@@ -90,11 +90,11 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-public class PointsSaleWithPosActivity extends RxAppCompatActivity
+public class SaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener,
     SearchView.OnQueryTextListener {
 
-    public static final String TAG = PointsSaleWithPosActivity.class.getSimpleName();
+    public static final String TAG = SaleWithPosActivity.class.getSimpleName();
 
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
@@ -128,15 +128,15 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_points_sale_with_pos);
-        Toolbar toolbar = findViewById(R.id.activity_points_sale_with_pos_toolbar);
+        setContentView(R.layout.activity_sale_with_pos);
+        Toolbar toolbar = findViewById(R.id.activity_sale_with_pos_toolbar);
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        View mLayout = findViewById(R.id.activity_points_sale_with_pos_container);
+        View mLayout = findViewById(R.id.activity_sale_with_pos_container);
         boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
         if (productCreatedIntent) {
             Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();

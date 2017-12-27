@@ -309,7 +309,7 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
-            android:name=".activities.PointsSaleWithPosActivity"
+            android:name=".activities.SaleWithPosActivity"
             android:label="@string/title_activity_points_sale_with_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
             android:theme="@style/AppTheme.NoActionBar">

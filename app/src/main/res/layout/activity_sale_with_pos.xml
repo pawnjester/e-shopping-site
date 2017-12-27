@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:id="@+id/activity_points_sale_with_pos_container"
+    android:id="@+id/activity_sale_with_pos_container"
     android:layout_height="match_parent"
-    tools:context="co.loystar.loystarbusiness.activities.PointsSaleWithPosActivity">
+    tools:context="co.loystar.loystarbusiness.activities.SaleWithPosActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
-            android:id="@+id/activity_points_sale_with_pos_toolbar"
+            android:id="@+id/activity_sale_with_pos_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
@@ -35,6 +35,6 @@
         <include layout="@layout/order_summary_bottom_sheet" />
     </FrameLayout>
 
-    <include layout="@layout/content_points_sale_with_pos" />
+    <include layout="@layout/content_sale_with_pos" />
 
 </android.support.design.widget.CoordinatorLayout>

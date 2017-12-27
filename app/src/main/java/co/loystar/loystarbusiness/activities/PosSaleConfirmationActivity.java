@@ -166,7 +166,7 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
         }
 
         RxView.clicks(continueBtn).subscribe(o -> {
-            Intent intent = new Intent(mContext, PointsSaleWithPosActivity.class);
+            Intent intent = new Intent(mContext, SaleWithPosActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });

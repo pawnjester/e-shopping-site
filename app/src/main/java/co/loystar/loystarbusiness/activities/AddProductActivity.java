@@ -511,13 +511,8 @@ public class AddProductActivity extends AppCompatActivity {
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 intent.putExtra(getString(R.string.product_create_success), true);
                                 startActivity(intent);
-                            } else if (getActivityInitiator.equals(PointsSaleWithPosActivity.TAG)){
-                                Intent intent = new Intent(AddProductActivity.this, PointsSaleWithPosActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra(getString(R.string.product_create_success), true);
-                                startActivity(intent);
-                            } else if (getActivityInitiator.equals(StampsSaleWithPosActivity.TAG)) {
-                                Intent intent = new Intent(AddProductActivity.this, StampsSaleWithPosActivity.class);
+                            } else if (getActivityInitiator.equals(SaleWithPosActivity.TAG)){
+                                Intent intent = new Intent(AddProductActivity.this, SaleWithPosActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 intent.putExtra(getString(R.string.product_create_success), true);
                                 startActivity(intent);

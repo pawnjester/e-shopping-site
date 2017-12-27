@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDarker"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="co.loystar.loystarbusiness.activities.PointsSaleWithPosActivity"
-    tools:showIn="@layout/activity_points_sale_with_pos">
+    tools:context="co.loystar.loystarbusiness.activities.SaleWithPosActivity"
+    tools:showIn="@layout/activity_sale_with_pos">
 
     <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView
         android:id="@+id/points_sale_order_items_rv"
