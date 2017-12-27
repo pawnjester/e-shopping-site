@@ -318,15 +318,6 @@
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
         </activity>
         <activity
-            android:name=".activities.StampsSaleWithPosActivity"
-            android:label="@string/title_activity_stamps_sale_with_pos"
-            android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
-        </activity>
-        <activity
             android:name=".activities.SaleWithoutPosActivity"
             android:label="@string/title_activity_sale_without_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"

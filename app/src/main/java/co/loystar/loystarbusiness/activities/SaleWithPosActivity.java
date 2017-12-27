@@ -786,9 +786,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
 
             binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
 
-            SpinnerButton.OnItemSelectedListener programItemSelectedListener = position -> {
-                mSelectedLoyaltyPrograms.put(binding.getProduct().getId(), mLoyaltyPrograms.get(position).getId());
-            };
+            SpinnerButton.OnItemSelectedListener programItemSelectedListener = position -> mSelectedLoyaltyPrograms.put(binding.getProduct().getId(), mLoyaltyPrograms.get(position).getId());
             binding.selectProgramSpinner.setListener(programItemSelectedListener);
 
             return new BindingHolder<>(binding);
