@@ -366,6 +366,7 @@ public class PaySubscriptionActivity extends AppCompatActivity {
             errorView.setVisibility(View.VISIBLE);
         }
         else {
+            errorView.setVisibility(View.GONE);
             mPaymentView.setVisibility(show ? View.GONE : View.VISIBLE);
             mPaymentView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {

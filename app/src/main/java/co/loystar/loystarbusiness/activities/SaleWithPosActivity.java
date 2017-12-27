@@ -478,6 +478,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, which) -> {
                     mSelectedProducts.clear();
+                    mSelectedLoyaltyPrograms.clear();
                     totalCharge = 0;
                     orderSummaryAdapter.queryAsync();
                     mProductsAdapter.queryAsync();
@@ -774,6 +775,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                         OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
                         if (orderSummaryItemBinding != null) {
                             mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
+                            mSelectedLoyaltyPrograms.delete(orderSummaryItemBinding.getProduct().getId());
                             orderSummaryAdapter.queryAsync();
                             mProductsAdapter.queryAsync();
                             addItemToCart();
@@ -821,6 +823,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             setCheckoutValue();
         } else {
             mSelectedProducts.delete(productId);
+            mSelectedLoyaltyPrograms.delete(productId);
             orderSummaryAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
             addItemToCart();

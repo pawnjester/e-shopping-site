@@ -103,7 +103,7 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
         boolean showContinueButton = getIntent().getBooleanExtra(Constants.SHOW_CONTINUE_BUTTON, false);
         boolean isPrintReceipt = getIntent().getBooleanExtra(Constants.PRINT_RECEIPT, false);
 
-        mLayout = findViewById(R.id.transactions_confirmation_wrapper);
+        mLayout = findViewById(R.id.activity_sale_without_pos_confirmation_container);
         programTypeTextView = findViewById(R.id.program_type_text);
         customerLoyaltyWorthView = findViewById(R.id.customer_loyalty_worth);
         continueBtn = findViewById(R.id.activity_transactions_confirmation_continue_btn);

@@ -62,7 +62,10 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
                 mFragment.setArguments(data);
                 mFragmentManager.beginTransaction().replace(R.id.activity_sale_without_pos_container, mFragment).commit();
             } else {
+                Bundle data = new Bundle();
+                data.putInt(Constants.CUSTOMER_ID, mCustomerId);
                 mFragment = new SaleWithoutPosFragment();
+                mFragment.setArguments(data);
                 mFragmentManager.beginTransaction().replace(R.id.activity_sale_without_pos_container, mFragment, SALE_WITHOUT_POS_FRAGMENT).commit();
             }
         }
