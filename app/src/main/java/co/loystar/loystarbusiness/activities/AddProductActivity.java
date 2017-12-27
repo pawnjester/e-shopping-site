@@ -120,7 +120,6 @@ public class AddProductActivity extends AppCompatActivity {
     private MerchantEntity merchantEntity;
     private ProductCategoryEntity mProductCategory;
     private String getActivityInitiator = "";
-    private int mProgramId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +141,6 @@ public class AddProductActivity extends AppCompatActivity {
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
         merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
-        mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
 
         mLayout = findViewById(R.id.activity_add_product_container);
         mProgressView = findViewById(R.id.productCreateProgressView);
@@ -517,12 +515,10 @@ public class AddProductActivity extends AppCompatActivity {
                                 Intent intent = new Intent(AddProductActivity.this, PointsSaleWithPosActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 intent.putExtra(getString(R.string.product_create_success), true);
-                                intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mProgramId);
                                 startActivity(intent);
                             } else if (getActivityInitiator.equals(StampsSaleWithPosActivity.TAG)) {
                                 Intent intent = new Intent(AddProductActivity.this, StampsSaleWithPosActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mProgramId);
                                 intent.putExtra(getString(R.string.product_create_success), true);
                                 startActivity(intent);
                             }

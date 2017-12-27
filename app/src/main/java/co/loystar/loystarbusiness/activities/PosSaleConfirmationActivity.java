@@ -6,10 +6,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -17,17 +15,21 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
-import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +39,10 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +55,10 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.pojos.LoyaltyDeal;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
@@ -61,24 +67,17 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.schedulers.Schedulers;
 
-public class TransactionsConfirmation extends RxAppCompatActivity {
-    private static final String TAG = TransactionsConfirmation.class.getSimpleName();
+public class PosSaleConfirmationActivity extends RxAppCompatActivity {
+    private static final String TAG = PosSaleConfirmationActivity.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
     @SuppressLint("UseSparseArrays")
     private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
-    private int totalPoints;
-    private int totalStamps;
-    private int cashSpent = 0;
+    private ArrayList<LoyaltyProgramEntity> mLoyaltyPrograms = new ArrayList<>();
+    private ArrayList<LoyaltyDeal> loyaltyDeals = new ArrayList<>();
     private DatabaseManager mDatabaseManager;
-    private CustomerEntity mCustomer;
-    private LoyaltyProgramEntity mLoyaltyProgram;
 
     private View mLayout;
-    private TextView programTypeTextView;
-    private TextView customerLoyaltyWorthView;
-    private BrandButtonNormal continueBtn;
-    private BrandButtonTransparent printReceiptBtn;
 
     /*bluetooth print*/
     BluetoothAdapter mBluetoothAdapter;
@@ -95,8 +94,8 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transactions_confirmation);
-        Toolbar toolbar = findViewById(R.id.transactions_confirmation_toolbar);
+        setContentView(R.layout.activity_pos_sale_confirmation);
+        Toolbar toolbar = findViewById(R.id.activity_pos_sale_confirmation_toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -104,41 +103,44 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        mLayout = findViewById(R.id.activity_pos_sale_container);
         mContext = this;
         mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
 
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
-        int mLoyaltyProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
-        boolean showContinueButton = getIntent().getBooleanExtra(Constants.SHOW_CONTINUE_BUTTON, false);
-        boolean isPrintReceipt = getIntent().getBooleanExtra(Constants.PRINT_RECEIPT, false);
         mOrderSummaryItems = (HashMap<Integer, Integer>) getIntent().getSerializableExtra(Constants.ORDER_SUMMARY_ITEMS);
-        totalPoints = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_POINTS, 0);
-        totalStamps = getIntent().getIntExtra(Constants.TOTAL_CUSTOMER_STAMPS, 0);
-        cashSpent = getIntent().getIntExtra(Constants.CASH_SPENT, 0);
 
-        mLayout = findViewById(R.id.transactions_confirmation_wrapper);
-        programTypeTextView = findViewById(R.id.program_type_text);
-        customerLoyaltyWorthView = findViewById(R.id.customer_loyalty_worth);
-        continueBtn = findViewById(R.id.activity_transactions_confirmation_continue_btn);
-        printReceiptBtn = findViewById(R.id.printReceipt);
+        CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        List<LoyaltyProgramEntity> programs = mDatabaseManager.getMerchantLoyaltyPrograms(mSessionManager.getMerchantId());
+        mLoyaltyPrograms.addAll(programs);
 
-        if (showContinueButton) {
-            continueBtn.setVisibility(View.VISIBLE);
+        for (LoyaltyProgramEntity programEntity: mLoyaltyPrograms) {
+            int total_user_points = mDatabaseManager.getTotalCustomerPointsForProgram(programEntity.getId(), mCustomerId);
+            int total_user_stamps = mDatabaseManager.getTotalCustomerStampsForProgram(programEntity.getId(), mCustomerId);
+            loyaltyDeals.add(new LoyaltyDeal(
+                programEntity.getThreshold(),
+                programEntity.getReward(),
+                programEntity.getProgramType(),
+                total_user_points,
+                total_user_stamps)
+            );
         }
 
-        if (isPrintReceipt) {
-            printReceiptBtn.setVisibility(View.VISIBLE);
-        }
+        BrandButtonNormal continueBtn = findViewById(R.id.btn_continue);
+        BrandButtonTransparent printReceiptBtn = findViewById(R.id.printReceipt);
 
-        mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
-        mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
-
-        if (mLoyaltyProgram == null || mCustomer == null) {
-            return;
-        }
-
-        setupViews();
+        DealsAdapter mAdapter = new DealsAdapter(loyaltyDeals, mCustomer);
+        RecyclerView mRecyclerView = findViewById(R.id.deals_recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new SpacingItemDecoration(
+            getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
+            getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
+        );
 
         if (!AccountGeneral.isAccountActive(this)) {
             Drawable drawable = ContextCompat.getDrawable(mContext, android.R.drawable.ic_dialog_alert);
@@ -162,48 +164,11 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 .setIcon(drawable)
                 .show();
         }
-    }
-
-    private void setupViews() {
-        boolean isPoints = mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points));
-        boolean isStamps = mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program));
-        if (isPoints) {
-            if (totalPoints == 1) {
-                programTypeTextView.setText(getString(R.string.point));
-            } else {
-                programTypeTextView.setText(getString(R.string.points));
-            }
-            customerLoyaltyWorthView.setText(String.valueOf(totalPoints));
-        } else if (isStamps) {
-            if (totalStamps == 1) {
-                programTypeTextView.setText(getString(R.string.stamp));
-            } else {
-                programTypeTextView.setText(getString(R.string.stamps));
-            }
-            customerLoyaltyWorthView.setText(String.valueOf(totalStamps));
-        }
 
         RxView.clicks(continueBtn).subscribe(o -> {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-            boolean isPosTurnedOn = sharedPreferences.getBoolean(getString(R.string.pref_turn_on_pos_key), false);
-            if (isPosTurnedOn) {
-                if (isPoints) {
-                    Intent intent = new Intent(mContext, PointsSaleWithPosActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
-                    startActivity(intent);
-                } else if (isStamps) {
-                    Intent intent = new Intent(mContext, StampsSaleWithPosActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
-                    startActivity(intent);
-                }
-            } else {
-                Intent intent = new Intent(mContext, SaleWithoutPosActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgram.getId());
-                startActivity(intent);
-            }
+            Intent intent = new Intent(mContext, PointsSaleWithPosActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         });
 
         RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());
@@ -333,17 +298,17 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
             }
             return true;
         }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(bindToLifecycle())
-                .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
-                .subscribe(t -> {
-                    if (mmOutputStream == null) {
-                        Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
-                    } else {
-                        beginListenForData();
-                        sendData();
-                    }
-        }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(bindToLifecycle())
+            .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
+            .subscribe(t -> {
+                if (mmOutputStream == null) {
+                    Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
+                } else {
+                    beginListenForData();
+                    sendData();
+                }
+            }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
     }
 
     /*
@@ -379,9 +344,9 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
 
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(
-                                            readBuffer, 0,
-                                            encodedBytes, 0,
-                                            encodedBytes.length
+                                        readBuffer, 0,
+                                        encodedBytes, 0,
+                                        encodedBytes.length
                                     );
 
                                     // specify US-ASCII encoding
@@ -436,83 +401,36 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                 writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
                 BILL = new StringBuilder();
 
-                if (mOrderSummaryItems == null || mOrderSummaryItems.isEmpty()) {
-                    totalCharge = Double.valueOf(String.format(Locale.UK, td, cashSpent));
-                    BILL.append("\n").append("TOTAL").append("             ").append(totalCharge).append("\n");
-                    writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-                } else {
-                    for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
-                        ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
-                        if (productEntity != null) {
-                            double tc = productEntity.getPrice() * orderItem.getValue();
-                            totalCharge += tc;
-                            int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
+                for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+                    ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+                    if (productEntity != null) {
+                        double tc = productEntity.getPrice() * orderItem.getValue();
+                        totalCharge += tc;
+                        int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
 
-                            BILL.append("\n").append(productEntity.getName());
-                            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                            BILL = new StringBuilder();
+                        BILL.append("\n").append(productEntity.getName());
+                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                        BILL = new StringBuilder();
 
-                            BILL.append("\n").append(orderItem.getValue())
-                                    .append(" ")
-                                    .append("x")
-                                    .append(" ")
-                                    .append(productEntity.getPrice())
-                                    .append("          ").append(tcv);
-                            writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                            BILL = new StringBuilder();
-                        }
+                        BILL.append("\n").append(orderItem.getValue())
+                            .append(" ")
+                            .append("x")
+                            .append(" ")
+                            .append(productEntity.getPrice())
+                            .append("          ").append(tcv);
+                        writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                        BILL = new StringBuilder();
                     }
-
-                    BILL.append("\n").append("-------------------------------");
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-
-                    totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-                    BILL.append("\n").append("TOTAL").append("               ").append(totalCharge).append("\n");
-                    writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
-                    BILL = new StringBuilder();
                 }
 
-                if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
-                    String pTxt;
-                    if (totalPoints == 1) {
-                        pTxt = getString(R.string.point);
-                    } else {
-                        pTxt = getString(R.string.points);
-                    }
-                    int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
-                    BILL.append("\n").append(mCustomer.getFirstName())
-                            .append(" you now have ")
-                            .append(totalPoints)
-                            .append(" ")
-                            .append(pTxt)
-                            .append(", spend ")
-                            .append(pointsDiff)
-                            .append(" more to get your ")
-                            .append(mLoyaltyProgram.getReward());
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-                } else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
-                    String sTxt;
-                    if (totalStamps == 1) {
-                        sTxt = getString(R.string.stamp);
-                    } else {
-                        sTxt = getString(R.string.stamps);
-                    }
-                    int stampsDiff = mLoyaltyProgram.getThreshold() - totalStamps;
-                    BILL.append("\n").append(mCustomer.getFirstName())
-                            .append(" you now have ")
-                            .append(totalStamps)
-                            .append(" ")
-                            .append(sTxt)
-                            .append(", earn ")
-                            .append(stampsDiff)
-                            .append(" more to get your ")
-                            .append(mLoyaltyProgram.getReward());
-                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
-                    BILL = new StringBuilder();
-                }
+                BILL.append("\n").append("-------------------------------");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+                BILL.append("\n").append("TOTAL").append("               ").append(totalCharge).append("\n");
+                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
+                BILL = new StringBuilder();
 
                 BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
                 writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
@@ -536,6 +454,71 @@ public class TransactionsConfirmation extends RxAppCompatActivity {
                     closeBT();
                 } catch (IOException ignored){}
             }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+    }
+
+    private class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.ViewHolder> {
+
+        private ArrayList<LoyaltyDeal> mDeals;
+        private CustomerEntity mCustomerEntity;
+
+        DealsAdapter(ArrayList<LoyaltyDeal> deals, CustomerEntity customerEntity) {
+            mDeals = deals;
+            mCustomerEntity = customerEntity;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            private TextView mTitle;
+            private TextView mDescription;
+            ViewHolder(View itemView) {
+                super(itemView);
+                mTitle = itemView.findViewById(R.id.title);
+                mDescription = itemView.findViewById(R.id.description);
+            }
+        }
+
+        @Override
+        public DealsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.program_item, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(DealsAdapter.ViewHolder holder, int position) {
+            LoyaltyDeal deal = mDeals.get(position);
+            holder.mTitle.setText(deal.getReward());
+            String txt = "";
+            if (deal.getProgram_type().equals(getString(R.string.simple_points))) {
+                if (deal.getTotal_user_points() >= deal.getThreshold()) {
+                    txt = mCustomerEntity.getFirstName() + " is due this deal.";
+                } else {
+                    String pointsTxt;
+                    if (deal.getTotal_user_points() == 1) {
+                        pointsTxt = "point";
+                    } else {
+                        pointsTxt = "points";
+                    }
+                    txt = mCustomerEntity.getFirstName() + " has earned " + deal.getTotal_user_points() + " " + pointsTxt;
+                }
+            } else if (deal.getProgram_type().equals(getString(R.string.stamps_program))) {
+                if (deal.getTotal_user_stamps() >= deal.getThreshold()) {
+                    txt = mCustomerEntity.getFirstName() + " is due this deal.";
+                } else {
+                    String stampsTxt;
+                    if (deal.getTotal_user_stamps() == 1) {
+                        stampsTxt = "stamp";
+                    } else {
+                        stampsTxt = "stamps";
+                    }
+                    txt = mCustomerEntity.getFirstName() + " has earned " + deal.getTotal_user_stamps() + " " + stampsTxt;
+                }
+            }
+            holder.mDescription.setText(txt);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mDeals.size();
+        }
     }
 
     // close the connection to bluetooth printer.

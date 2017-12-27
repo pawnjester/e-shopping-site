@@ -48,6 +48,7 @@
     <style name="myAutoCompleteTextViewStyle" parent="Widget.AppCompat.Light.AutoCompleteTextView">
         <item name="android:popupBackground">#ffffff</item>
     </style>
+
     <style name="mySearchSuggestionResultTitle" parent="TextAppearance.AppCompat.SearchResult.Title">
         <item name="android:textColor">@color/title</item>
         <item name="android:textSize">18sp</item>

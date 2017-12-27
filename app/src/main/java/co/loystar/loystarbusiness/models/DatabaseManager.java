@@ -39,7 +39,7 @@ import io.requery.sql.TableCreationMode;
  */
 
 public class DatabaseManager implements IDatabaseManager{
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static DatabaseManager mInstance;
     private ReactiveEntityStore<Persistable> mDataStore;
     private StdDateFormat mDateFormat;

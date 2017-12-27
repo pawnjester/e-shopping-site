@@ -73,13 +73,15 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_adapter" />
         </service>
-        <service android:name=".utils.fcm.MyFirebaseMessagingService"
+        <service
+            android:name=".utils.fcm.MyFirebaseMessagingService"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".utils.fcm.MyFirebaseInstanceIDService"
+        <service
+            android:name=".utils.fcm.MyFirebaseInstanceIDService"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
@@ -363,6 +365,11 @@
             android:name=".models.CustomerContentProvider"
             android:authorities="co.loystar.loystarbusiness.models.db.provider"
             android:exported="false" />
+
+        <activity
+            android:name=".activities.PosSaleConfirmationActivity"
+            android:label="@string/title_activity_pos_sale_confirmation"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

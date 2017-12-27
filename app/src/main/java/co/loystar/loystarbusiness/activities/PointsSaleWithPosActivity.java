@@ -96,9 +96,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
 
     public static final String TAG = PointsSaleWithPosActivity.class.getSimpleName();
 
-    // intent params
-    private int mProgramId;
-
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context mContext;
     private ProductsAdapter mProductsAdapter;
@@ -150,7 +147,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
-        mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         int customerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
@@ -285,7 +281,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
         stateActionBtn.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
             intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
-            intent.putExtra(Constants.LOYALTY_PROGRAM_ID, mProgramId);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
@@ -385,7 +380,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
             List<ProductEntity> productEntities = result.toList();
             DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
             SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
-            int totalCustomerPoints  = databaseManager.getTotalCustomerPointsForProgram(mProgramId, mSelectedCustomer.getId());
             for (int i = 0; i < productEntities.size(); i ++) {
                 ProductEntity product = productEntities.get(i);
                 int programId = mSelectedLoyaltyPrograms.get(product.getId());
@@ -458,11 +452,6 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     }
 
                     Bundle bundle = new Bundle();
-                    int tp = totalCustomerPoints + Double.valueOf(totalCharge).intValue();
-                    bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, tp);
-                    bundle.putBoolean(Constants.PRINT_RECEIPT, true);
-                    bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-                    bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
                     bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
 
                     @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
@@ -471,7 +460,7 @@ public class PointsSaleWithPosActivity extends RxAppCompatActivity
                     }
                     bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
 
-                    Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+                    Intent intent = new Intent(mContext, PosSaleConfirmationActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.putExtras(bundle);
                     startActivity(intent);
