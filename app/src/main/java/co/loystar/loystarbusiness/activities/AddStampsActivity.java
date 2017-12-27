@@ -150,9 +150,13 @@ public class AddStampsActivity extends AppCompatActivity {
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
 
-        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(1);
-        orderSummaryItems.put(mProductId, userStampsForThisTransaction);
-        bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+        if (mProductId == null) {
+            bundle.putInt(Constants.CASH_SPENT, amountSpent);
+        } else {
+            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(1);
+            orderSummaryItems.put(mProductId, userStampsForThisTransaction);
+            bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+        }
 
         Intent intent = new Intent(mContext, TransactionsConfirmation.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
