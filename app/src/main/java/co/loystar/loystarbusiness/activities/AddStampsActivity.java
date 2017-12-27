@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
@@ -34,7 +32,6 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.pojos.StampItem;
 import co.loystar.loystarbusiness.utils.Constants;
@@ -48,7 +45,6 @@ public class AddStampsActivity extends AppCompatActivity {
     private static final String TAG = AddStampsActivity.class.getCanonicalName();
 
     private int mProgramId;
-    private Integer mProductId;
     private int amountSpent;
     private int mCustomerId;
     private int totalCustomerStamps;
@@ -75,7 +71,6 @@ public class AddStampsActivity extends AppCompatActivity {
         mDatabaseManager = DatabaseManager.getInstance(this);
         merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
-        mProductId = getIntent().getIntExtra(Constants.PRODUCT_ID, 0);
         mProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         amountSpent = getIntent().getIntExtra(Constants.CASH_SPENT, 0);
         mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
@@ -106,12 +101,6 @@ public class AddStampsActivity extends AppCompatActivity {
     private void addStamps() {
         int initialCustomerStamps = mDatabaseManager.getTotalCustomerStampsForProgram(mProgramId, mCustomerId);
         int userStampsForThisTransaction = totalCustomerStamps - initialCustomerStamps;
-        if (mProductId != null) {
-            ProductEntity product = mDatabaseManager.getProductById(mProductId);
-            if (product != null) {
-                amountSpent = (int) (userStampsForThisTransaction * product.getPrice());
-            }
-        }
 
         SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
         SalesTransactionEntity lastTransactionRecord = mDatabaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
@@ -129,7 +118,6 @@ public class AddStampsActivity extends AppCompatActivity {
         transactionEntity.setPoints(0);
         transactionEntity.setStamps(userStampsForThisTransaction);
         transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
-        transactionEntity.setProductId(mProductId);
         transactionEntity.setProgramType(getString(R.string.stamps_program));
         if (mCustomer != null) {
             transactionEntity.setUserId(mCustomer.getUserId());
@@ -144,21 +132,14 @@ public class AddStampsActivity extends AppCompatActivity {
         int newTotalStamps = initialCustomerStamps + userStampsForThisTransaction;
 
         Bundle bundle = new Bundle();
-        bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
-        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+        bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
+        bundle.putInt(Constants.CASH_SPENT, amountSpent);
 
-        if (mProductId == null) {
-            bundle.putInt(Constants.CASH_SPENT, amountSpent);
-        } else {
-            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(1);
-            orderSummaryItems.put(mProductId, userStampsForThisTransaction);
-            bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
-        }
-
-        Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+        Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtras(bundle);
         startActivity(intent);

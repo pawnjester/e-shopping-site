@@ -107,14 +107,14 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     @Override
     public void onAddPointsFragmentInteraction(Bundle data) {
         Bundle bundle = new Bundle();
+        bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
         bundle.putBoolean(Constants.PRINT_RECEIPT, true);
         bundle.putInt(Constants.CASH_SPENT, data.getInt(Constants.CASH_SPENT, 0));
         bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, data.getInt(Constants.TOTAL_CUSTOMER_POINTS, 0));
-        bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
 
-        Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+        Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtras(bundle);
         startActivity(intent);

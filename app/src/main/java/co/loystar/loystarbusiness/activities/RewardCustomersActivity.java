@@ -202,10 +202,11 @@ public class RewardCustomersActivity extends AppCompatActivity {
                                 }
                             }
                             bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, false);
+                            bundle.putBoolean(Constants.PRINT_RECEIPT, false);
                             bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mSelectedProgramId);
                             bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomerId);
 
-                            Intent intent = new Intent(mContext, TransactionsConfirmation.class);
+                            Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             intent.putExtras(bundle);
                             startActivity(intent);

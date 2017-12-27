@@ -370,6 +370,15 @@
             android:name=".activities.PosSaleConfirmationActivity"
             android:label="@string/title_activity_pos_sale_confirmation"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.SaleWithoutPosConfirmationActivity"
+            android:label="@string/title_activity_sale_without_pos_confirmation"
+            android:parentActivityName=".activities.MerchantBackOfficeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
+        </activity>
     </application>
 
 </manifest>

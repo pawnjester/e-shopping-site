@@ -531,4 +531,5 @@
     <string name="default_notification_channel_name">Orders</string>
     <string name="title_activity_searchable">Search Customer</string>
     <string name="title_activity_pos_sale_confirmation">Transaction Confirmation</string>
+    <string name="title_activity_sale_without_pos_confirmation">Transaction Confirmation</string>
 </resources>
