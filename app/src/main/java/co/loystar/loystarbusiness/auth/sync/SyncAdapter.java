@@ -32,8 +32,10 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
+import co.loystar.loystarbusiness.models.databinders.OrderItem;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
+import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
@@ -41,8 +43,10 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.models.entities.TransactionSms;
@@ -110,6 +114,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
             syncTransactionSms();
+            syncSalesOrders();
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
             getContext().sendBroadcast(i);
@@ -653,6 +658,65 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     });
                 }
+            }
+        }
+
+        @Override
+        public void syncSalesOrders() {
+            String timeStamp = mDatabaseManager.getSalesOrdersLastRecordDate(merchantEntity);
+            JSONObject jsonObjectData = new JSONObject();
+            try {
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                mApiClient.getLoystarApi(false).getMerchantOrders(requestBody).enqueue(new Callback<ArrayList<SalesOrder>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ArrayList<SalesOrder>> call, @NonNull Response<ArrayList<SalesOrder>> response) {
+                        if (response.isSuccessful()) {
+                            ArrayList<SalesOrder> salesOrders = response.body();
+                            if (salesOrders != null) {
+                                for (SalesOrder salesOrder: salesOrders) {
+                                    SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
+                                    salesOrderEntity.setMerchant(merchantEntity);
+                                    salesOrderEntity.setId(salesOrder.getId());
+                                    salesOrderEntity.setStatus(salesOrder.getStatus());
+                                    salesOrderEntity.setTotal(salesOrder.getTotal());
+                                    salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
+                                    salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
+                                    CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(salesOrder.getUser_id());
+                                    salesOrderEntity.setCustomer(customerEntity);
+
+                                    for (OrderItem orderItem: salesOrder.getOrder_items()) {
+                                        OrderItemEntity orderItemEntity = new OrderItemEntity();
+                                        orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+                                        orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+                                        orderItemEntity.setId(orderItem.getId());
+                                        orderItemEntity.setQuantity(orderItem.getQuantity());
+                                        orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+                                        orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+                                        ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getProduct_id());
+                                        orderItemEntity.setSalesOrder(salesOrderEntity);
+                                        orderItemEntity.setProduct(productEntity);
+                                    }
+                                    mDatabaseManager.insertSalesOrder(salesOrderEntity);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ArrayList<SalesOrder>> call, @NonNull Throwable t) {
+
+                    }
+                });
+            } catch (JSONException e) {
+                Log.d(TAG, "syncSalesOrders: " + e.getMessage());
             }
         }
     }

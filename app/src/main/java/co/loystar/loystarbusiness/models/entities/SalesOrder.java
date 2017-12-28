@@ -15,30 +15,28 @@ import io.requery.OneToMany;
 import io.requery.Persistable;
 
 /**
- * Created by ordgen on 11/9/17.
+ * Created by ordgen on 12/27/17.
  */
 
 @Entity
-public interface Product extends Observable, Parcelable, Persistable {
+public interface SalesOrder extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 
+    String getStatus();
     Timestamp getCreatedAt();
     Timestamp getUpdatedAt();
-    double getPrice();
-    String getName();
-    String getPicture();
-    String geDescription();
-    boolean isDeleted();
+
+    double getTotal();
 
     @Bindable
     @ManyToOne
-    Merchant getOwner();
+    MerchantEntity getMerchant();
 
     @Bindable
     @ManyToOne
-    ProductCategoryEntity getCategory();
+    CustomerEntity getCustomer();
 
-    @OneToMany(mappedBy = "product", cascade = {CascadeAction.SAVE})
+    @OneToMany(mappedBy = "salesOrder", cascade = {CascadeAction.SAVE})
     List<OrderItemEntity> getOrderItems();
 }

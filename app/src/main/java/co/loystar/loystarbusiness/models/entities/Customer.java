@@ -47,4 +47,7 @@ public interface Customer extends Observable, Parcelable, Persistable {
 
     @OneToMany(mappedBy = "customer", cascade = {CascadeAction.SAVE})
     List<SalesTransactionEntity> getSalesTransactions();
+
+    @OneToMany(mappedBy = "customer", cascade = {CascadeAction.SAVE})
+    List<SalesOrderEntity> getSalesOrders();
 }

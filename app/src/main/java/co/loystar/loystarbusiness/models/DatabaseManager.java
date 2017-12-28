@@ -17,8 +17,10 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
+import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
@@ -557,5 +559,39 @@ public class DatabaseManager implements IDatabaseManager{
     public void deleteTransactionSms(@NonNull TransactionSmsEntity transactionSmsEntity) {
         mDataStore.delete(transactionSmsEntity)
             .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertSalesOrder(@NonNull SalesOrderEntity salesOrderEntity) {
+        mDataStore.upsert(salesOrderEntity)
+            .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertOrderItem(@NonNull OrderItemEntity orderItemEntity) {
+        mDataStore.upsert(orderItemEntity)
+            .subscribe(/*no-op*/);
+    }
+
+    @Nullable
+    @Override
+    public String getSalesOrdersLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<SalesOrderEntity> salesOrderEntities = mDataStore.select(SalesOrderEntity.class)
+            .where(SalesOrderEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesOrderEntity.UPDATED_AT.desc()).get();
+
+        SalesOrderEntity salesOrderEntity = salesOrderEntities.firstOrNull();
+        if (salesOrderEntity != null) {
+            return mDateFormat.format(salesOrderEntity.getUpdatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public CustomerEntity getCustomerByUserId(int userId) {
+        return mDataStore.select(CustomerEntity.class)
+            .where(CustomerEntity.USER_ID.eq(userId))
+            .get()
+            .firstOrNull();
     }
 }

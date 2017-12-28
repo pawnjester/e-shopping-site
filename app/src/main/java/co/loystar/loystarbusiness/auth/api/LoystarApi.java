@@ -14,6 +14,7 @@ import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
+import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
@@ -203,5 +204,8 @@ public interface LoystarApi {
         @Path("merchant_id") int merchant_id,
         @Path("customer_id") int customer_id,
         @Path("loyalty_program_id") int loyalty_program_id);
+
+    @POST("merchants/latest_orders")
+    Call<ArrayList<SalesOrder>> getMerchantOrders(@Body RequestBody requestBody);
 
 }
