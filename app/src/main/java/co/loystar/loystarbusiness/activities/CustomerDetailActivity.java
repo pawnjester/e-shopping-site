@@ -26,12 +26,6 @@ import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
-/**
- * An activity representing a single Customer detail screen. This
- * activity is only used on narrow width devices. On tablet-size devices,
- * item details are presented side-by-side with a list of items
- * in a {@link CustomerListActivity}.
- */
 public class CustomerDetailActivity extends RxAppCompatActivity {
     private static final String TAG = CustomerDetailActivity.class.getSimpleName();
     private static final int REQUEST_CHOOSE_PROGRAM = 145;
@@ -48,7 +42,6 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
         Toolbar toolbar = findViewById(R.id.customer_detail_toolbar);
         setSupportActionBar(toolbar);
 
-        // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);

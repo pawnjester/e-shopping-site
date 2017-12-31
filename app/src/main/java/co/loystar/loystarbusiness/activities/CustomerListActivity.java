@@ -86,22 +86,10 @@ import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
 
-/**
- * An activity representing a list of Customers. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link CustomerDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- */
 @RuntimePermissions
 public class CustomerListActivity extends RxAppCompatActivity
         implements DialogInterface.OnClickListener, SearchView.OnQueryTextListener {
 
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
     private boolean mTwoPane;
     public static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 104;
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
@@ -284,7 +272,6 @@ public class CustomerListActivity extends RxAppCompatActivity
                         myAlertDialog.setMessage("All sales records for " + mSelectedCustomer.getFirstName() + " will be deleted as well.");
                         myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), CustomerListActivity.this);
                         myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
-                        myAlertDialog.setDialogIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert));
                         myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
                     }
                 }

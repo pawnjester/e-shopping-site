@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:name="co.loystar.loystarbusiness.activities.SalesOrderListFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="co.loystar.loystarbusiness.activities.SalesOrderListActivity">
+
+    <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView
+        android:layout_width="match_parent"
+        android:scrollbars="vertical"
+        android:id="@+id/sales_order_list_rv"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/no_orders_empty_view"
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:text="@string/no_orders_recieved"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>

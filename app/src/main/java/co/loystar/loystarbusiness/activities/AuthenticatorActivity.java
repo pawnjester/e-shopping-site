@@ -494,6 +494,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
 
             setResult(RESULT_OK, intent);
             Intent homeIntent = new Intent(mContext, MerchantBackOfficeActivity.class);
+            homeIntent.putExtra(Constants.IS_NEW_LOGIN, true);
             startActivity(homeIntent);
             finish();
             setAccountAuthenticatorResult(intent.getExtras());

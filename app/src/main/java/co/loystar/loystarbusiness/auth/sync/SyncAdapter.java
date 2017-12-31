@@ -52,6 +52,8 @@ import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.models.entities.TransactionSms;
 import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import io.requery.Persistable;
+import io.requery.reactivex.ReactiveEntityStore;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -70,6 +72,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
+    private ReactiveEntityStore<Persistable> mDataStore;
 
     SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -77,6 +80,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mApiClient = new ApiClient(context);
         mDatabaseManager = DatabaseManager.getInstance(context);
         mSessionManager = new SessionManager(context);
+        mDataStore = DatabaseManager.getDataStore(context);
     }
 
     @Override
@@ -682,29 +686,36 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             ArrayList<SalesOrder> salesOrders = response.body();
                             if (salesOrders != null) {
                                 for (SalesOrder salesOrder: salesOrders) {
-                                    SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
-                                    salesOrderEntity.setMerchant(merchantEntity);
-                                    salesOrderEntity.setId(salesOrder.getId());
-                                    salesOrderEntity.setStatus(salesOrder.getStatus());
-                                    salesOrderEntity.setTotal(salesOrder.getTotal());
-                                    salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
-                                    salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
                                     CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(salesOrder.getUser_id());
-                                    salesOrderEntity.setCustomer(customerEntity);
+                                    if (customerEntity != null) {
+                                        SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
+                                        salesOrderEntity.setMerchant(merchantEntity);
+                                        salesOrderEntity.setId(salesOrder.getId());
+                                        salesOrderEntity.setStatus(salesOrder.getStatus());
+                                        salesOrderEntity.setUpdateRequired(false);
+                                        salesOrderEntity.setTotal(salesOrder.getTotal());
+                                        salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
+                                        salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
+                                        salesOrderEntity.setCustomer(customerEntity);
 
-                                    for (OrderItem orderItem: salesOrder.getOrder_items()) {
-                                        OrderItemEntity orderItemEntity = new OrderItemEntity();
-                                        orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
-                                        orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
-                                        orderItemEntity.setId(orderItem.getId());
-                                        orderItemEntity.setQuantity(orderItem.getQuantity());
-                                        orderItemEntity.setUnitPrice(orderItem.getUnit_price());
-                                        orderItemEntity.setTotalPrice(orderItem.getTotal_price());
-                                        ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getProduct_id());
-                                        orderItemEntity.setSalesOrder(salesOrderEntity);
-                                        orderItemEntity.setProduct(productEntity);
+                                        mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
+                                            for (OrderItem orderItem: salesOrder.getOrder_items()) {
+                                                OrderItemEntity orderItemEntity = new OrderItemEntity();
+                                                orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+                                                orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+                                                orderItemEntity.setId(orderItem.getId());
+                                                orderItemEntity.setQuantity(orderItem.getQuantity());
+                                                orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+                                                orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+                                                orderItemEntity.setSalesOrder(orderEntity);
+                                                ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getProduct_id());
+                                                if (productEntity != null) {
+                                                    orderItemEntity.setProduct(productEntity);
+                                                    mDatabaseManager.insertOrderItem(orderItemEntity);
+                                                }
+                                            }
+                                        });
                                     }
-                                    mDatabaseManager.insertSalesOrder(salesOrderEntity);
                                 }
                             }
                         }
@@ -715,6 +726,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     }
                 });
+            } catch (JSONException e) {
+                Log.d(TAG, "syncSalesOrders: " + e.getMessage());
+            }
+
+            /*sync sales orders that need to be updated on the server*/
+            List<SalesOrderEntity> updateRequiredSalesOrders = mDatabaseManager.getUpdateRequiredSalesOrders(merchantEntity);
+            try {
+                for (SalesOrderEntity salesOrderEntity: updateRequiredSalesOrders) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("status", salesOrderEntity.getStatus());
+
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("order", jsonObject);
+
+                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+
+                    mApiClient.getLoystarApi(false).updateMerchantOrder(salesOrderEntity.getId(), requestBody).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                salesOrderEntity.setUpdateRequired(false);
+                                mDataStore.update(salesOrderEntity).subscribe(/*no-op*/);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                        }
+                    });
+                }
             } catch (JSONException e) {
                 Log.d(TAG, "syncSalesOrders: " + e.getMessage());
             }

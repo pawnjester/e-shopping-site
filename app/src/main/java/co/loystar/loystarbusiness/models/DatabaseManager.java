@@ -32,6 +32,7 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
+import io.requery.reactor.ReactorResult;
 import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.TableCreationMode;
@@ -593,5 +594,19 @@ public class DatabaseManager implements IDatabaseManager{
             .where(CustomerEntity.USER_ID.eq(userId))
             .get()
             .firstOrNull();
+    }
+
+    @Nullable
+    @Override
+    public SalesOrderEntity getSalesOrderById(int salesOrderId) {
+        return mDataStore.findByKey(SalesOrderEntity.class, salesOrderId).blockingGet();
+    }
+
+    @Override
+    public List<SalesOrderEntity> getUpdateRequiredSalesOrders(@NonNull MerchantEntity merchantEntity) {
+        Selection<ReactiveResult<SalesOrderEntity>> selection = mDataStore.select(SalesOrderEntity.class);
+        selection.where(SalesOrderEntity.MERCHANT.eq(merchantEntity));
+        selection.where(SalesOrderEntity.UPDATE_REQUIRED.eq(true));
+        return selection.get().toList();
     }
 }

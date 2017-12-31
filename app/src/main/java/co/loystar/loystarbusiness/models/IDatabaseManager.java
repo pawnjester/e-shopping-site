@@ -155,4 +155,9 @@ public interface IDatabaseManager {
 
     @Nullable
     CustomerEntity getCustomerByUserId(int userId);
+
+    @Nullable
+    SalesOrderEntity getSalesOrderById(int salesOrderId);
+
+    List<SalesOrderEntity> getUpdateRequiredSalesOrders(@NonNull MerchantEntity merchantEntity);
 }

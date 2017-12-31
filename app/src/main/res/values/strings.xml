@@ -532,4 +532,16 @@
     <string name="title_activity_searchable">Search Customer</string>
     <string name="title_activity_pos_sale_confirmation">Transaction Confirmation</string>
     <string name="title_activity_sale_without_pos_confirmation">Transaction Confirmation</string>
+    <string name="title_salesorder_list">My Orders</string>
+    <string name="title_salesorder_detail">Process Order</string>
+    <string name="status_pending">PENDING</string>
+    <string name="status_rejected">REJECTED</string>
+    <string name="status_completed">COMPLETED</string>
+    <string name="action_reject_order">Reject Order</string>
+    <string name="action_process_order">Process Order</string>
+    <string name="pending">pending</string>
+    <string name="completed">completed</string>
+    <string name="no_orders_recieved">Sorry! you have not received any orders yet.</string>
+    <string name="view_orders"><u>View Orders</u></string>
+    <string name="rejected">rejected</string>
 </resources>

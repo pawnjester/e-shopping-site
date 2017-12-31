@@ -25,7 +25,6 @@ public class Constants {
     public static final String CURRENCY = "CURRENCY";
     public static final String PASSWORD = "PASSWORD";
     public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
-    public static final String PRODUCT_ID = "PRODUCT_ID";
     public static final String CASH_SPENT = "CASH_SPENT";
     public static final String TOTAL_CUSTOMER_POINTS = "TOTAL_CUSTOMER_POINTS";
     public static final String ADD_POINTS = "ADD_POINTS";
@@ -33,10 +32,12 @@ public class Constants {
     public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";
     public static final String SKIP_INTRO = "SKIP_INTRO";
     public static final String ORDER_SUMMARY_ITEMS = "ORDER_SUMMARY_ITEMS";
-    public static final String SELECTED_LOYALTY_PROGRAMS = "SELECTED_LOYALTY_PROGRAMS";
+    public static final String SALES_ORDER_ID = "SALES_ORDER_ID";
     public static final String FRAGMENT_EVENT_ID = "FRAGMENT_EVENT_ID";
     public static final String ACTIVITY_INITIATOR = "ACTIVITY_INITIATOR";
     public static final String FIREBASE_REGISTRATION_TOKEN = "FIREBASE_REGISTRATION_TOKEN";
-    public static final int NOTIFICATION_ID = 100;
-    public static final int NOTIFICATION_ID_BIG_IMAGE = 101;
+    static final int NOTIFICATION_ID = 100;
+    static final int NOTIFICATION_ID_BIG_IMAGE = 101;
+    public static final String PUSH_NOTIFICATION = "PUSH_NOTIFICATION";
+    public static final String IS_NEW_LOGIN = "IS_NEW_LOGIN";
 }

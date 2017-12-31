@@ -10,7 +10,8 @@
     <color name="colorControlHighlight">#c5c5c5</color>
     <color name="logoDarKText">#9B9B9B</color>
     <color name="walkthrough_transp_bg">#E6913461</color>
-    <color name="green">#00A79B</color>
+    <color name="greenDart">#044700</color>
+    <color name="green">#328A2E</color>
     <color name="translucent">#80000000</color>
     <color name="title">#222222</color>
 

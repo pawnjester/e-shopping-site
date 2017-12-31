@@ -27,6 +27,8 @@ public interface SalesOrder extends Observable, Parcelable, Persistable {
     Timestamp getCreatedAt();
     Timestamp getUpdatedAt();
 
+    boolean isUpdateRequired();
+
     double getTotal();
 
     @Bindable

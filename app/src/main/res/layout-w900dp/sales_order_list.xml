@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    android:showDividers="middle"
+    tools:context="co.loystar.loystarbusiness.activities.SalesOrderListActivity">
+
+    <!--
+    This layout is a two-pane layout for the SalesOrders
+    master/detail flow.
+    
+    -->
+
+    <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/sales_order_list_rv"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="co.loystar.loystarbusiness.activities.SalesOrderListActivity" />
+
+    <TextView
+        android:id="@+id/no_orders_empty_view"
+        android:layout_width="match_parent"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="@string/no_orders_recieved"
+        android:layout_height="match_parent" />
+
+    <FrameLayout
+        android:id="@+id/sales_order_detail_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3" />
+
+</LinearLayout>

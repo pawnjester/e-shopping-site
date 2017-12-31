@@ -49,23 +49,11 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-/**
- * An activity representing a list of LoyaltyPrograms. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link LoyaltyProgramDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- */
 public class LoyaltyProgramListActivity extends RxAppCompatActivity {
     private final String KEY_RECYCLER_STATE = "recycler_state";
     public static final int REQ_CREATE_PROGRAM = 110;
     private Bundle mBundleRecyclerViewState;
 
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
     private boolean mTwoPane;
 
     private View mLayout;

@@ -208,4 +208,6 @@ public interface LoystarApi {
     @POST("merchants/latest_orders")
     Call<ArrayList<SalesOrder>> getMerchantOrders(@Body RequestBody requestBody);
 
+    @PATCH("merchants/orders/{id}")
+    Call<ResponseBody> updateMerchantOrder(@Path("id") int id, @Body RequestBody requestBody);
 }

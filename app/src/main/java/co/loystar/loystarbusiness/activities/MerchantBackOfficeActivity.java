@@ -46,6 +46,7 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
@@ -75,6 +76,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.GraphCoordinates;
+import co.loystar.loystarbusiness.utils.fcm.SendFirebaseRegistrationToken;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
@@ -141,6 +143,16 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(mSessionManager.getBusinessName().substring(0, 1).toUpperCase() + mSessionManager.getBusinessName().substring(1));
         }
+
+        if (getIntent().getBooleanExtra(Constants.IS_NEW_LOGIN, false)) {
+            SendFirebaseRegistrationToken sendFirebaseRegistrationToken = new SendFirebaseRegistrationToken(mContext);
+            sendFirebaseRegistrationToken.sendRegistrationToServer();
+        }
+
+        RxView.clicks(findViewById(R.id.viewOrdersBtn)).subscribe(o -> {
+            Intent intent = new Intent(this, SalesOrderListActivity.class);
+            startActivity(intent);
+        });
 
         setupView();
         setupGraph();

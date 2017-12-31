@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="salesOrder"
+            type="co.loystar.loystarbusiness.models.entities.SalesOrder" />
+    </data>
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        card_view:cardElevation="8dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textSize="16sp"
+                    android:id="@+id/status_text"
+                    android:textAlignment="center"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:textColor="@color/white"
+                    android:background="@color/orange"
+                    android:text="@string/status_pending"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:id="@+id/timestamp_text"
+                    android:text="5 min ago"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/activity_vertical_margin"
+                android:paddingRight="@dimen/activity_vertical_margin"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/customer_name"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"
+                    android:text="Kofi Abanga"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/order_description"
+                    android:layout_width="match_parent"
+                    android:text="bottled water(2), chicken wings(1), fried goat(2), balls of kenkey(3), fried fish (2)"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:id="@+id/salesOrderActionsWrapper"
+                android:visibility="gone"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/activity_vertical_margin"
+                android:paddingRight="@dimen/activity_vertical_margin"
+                android:layout_height="wrap_content">
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:contentDescription="@string/image"
+                        android:id="@+id/rejectImg"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:src="@drawable/ic_red_cross_tick"
+                        app:layout_constraintBottom_toBottomOf="@+id/rejectBtn"
+                        app:layout_constraintEnd_toStartOf="@+id/rejectBtn"
+                        app:layout_constraintTop_toTopOf="@+id/rejectBtn" />
+
+                    <Button
+                        android:id="@+id/rejectBtn"
+                        android:padding="0dp"
+                        style="?android:attr/buttonBarButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_reject_order"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/rejectImg" />
+
+                </android.support.constraint.ConstraintLayout>
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/processImg"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:contentDescription="@string/image"
+                        android:src="@drawable/ic_greentick_small"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginEnd="5dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/processBtn"
+                        app:layout_constraintEnd_toStartOf="@+id/processBtn"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintTop_toTopOf="@+id/processBtn" />
+
+                    <Button
+                        android:id="@+id/processBtn"
+                        style="?android:attr/buttonBarButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="0dp"
+                        android:text="@string/action_process_order"
+                        android:textColor="@color/green"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/processImg" />
+
+                </android.support.constraint.ConstraintLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+</layout>

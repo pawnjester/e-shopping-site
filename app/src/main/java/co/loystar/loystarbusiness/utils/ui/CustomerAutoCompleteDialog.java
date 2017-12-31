@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.utils.ui;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -48,11 +49,20 @@ public class CustomerAutoCompleteDialog extends RxAppCompatDialogFragment {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         @SuppressLint("InflateParams") View rootView = inflater.inflate(R.layout.customer_autocomplete_dialog, null);
 
+        if (getActivity() == null) {
+            return getDialog();
+        }
+
         final AutoCompleteTextView autoCompleteTextView = rootView.findViewById(R.id.customerAutocomplete);
         autoCompleteTextView.setThreshold(1);
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
-        alertDialog.setView(rootView);
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Light_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(getActivity());
+        }
+        builder.setView(rootView);
 
         SessionManager mSessionManager = new SessionManager(getActivity());
         DatabaseManager mDatabaseManager = DatabaseManager.getInstance(getActivity());
@@ -70,10 +80,12 @@ public class CustomerAutoCompleteDialog extends RxAppCompatDialogFragment {
                     }
                 });
 
-        String dialogTitle = getArguments().getString(DIALOG_TITLE, "");
-        alertDialog.setTitle(dialogTitle);
+        if (getArguments() != null) {
+            String dialogTitle = getArguments().getString(DIALOG_TITLE, "");
+            builder.setTitle(dialogTitle);
+        }
 
-        alertDialog.setPositiveButton("Add new customer", (dialogInterface, i) -> {
+        builder.setPositiveButton("Add new customer", (dialogInterface, i) -> {
             dialogInterface.dismiss();
             Intent addCustomerIntent = new Intent(getActivity(), AddNewCustomerActivity.class);
             if (!autoCompleteTextView.getText().toString().isEmpty()) {
@@ -88,13 +100,13 @@ public class CustomerAutoCompleteDialog extends RxAppCompatDialogFragment {
             getActivity().startActivityForResult(addCustomerIntent, ADD_NEW_CUSTOMER_REQUEST);
         });
 
-        alertDialog.setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+        builder.setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
             dialogInterface.dismiss();
             mAdapter.getFilter().filter("");
 
         });
 
-        Dialog dialog =  alertDialog.create();
+        Dialog dialog =  builder.create();
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
 

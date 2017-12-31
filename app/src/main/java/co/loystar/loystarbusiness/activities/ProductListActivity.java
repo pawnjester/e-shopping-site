@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -253,6 +254,7 @@ public class ProductListActivity
 
         @Override
         public void onBindViewHolder(ProductEntity item, BindingHolder<ProductItemBinding> holder, int position) {
+            Log.e(TAG, "onBindViewHolder: " + item.getId() );
             holder.binding.setProduct(item);
             holder.binding.productPrice.setText(String.valueOf(item.getPrice()));
             Glide.with(mContext)

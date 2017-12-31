@@ -2,11 +2,17 @@ package co.loystar.loystarbusiness.utils.ui;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+
+import co.loystar.loystarbusiness.R;
 
 /**
  * Created by ordgen on 11/12/17.
@@ -24,22 +30,35 @@ public class MyAlertDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        if (getActivity() == null) {
+            return getDialog();
+        }
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(getActivity());
+        }
         String strPositiveButton = mPositiveButtonText == null ? getString(android.R.string.yes) : mPositiveButtonText;
-        alertDialog.setPositiveButton(strPositiveButton, mOnClickListener);
+        builder.setPositiveButton(strPositiveButton, mOnClickListener);
 
         String strNegativeButton = mNegativeButtonText == null ? getString(android.R.string.no) : mNegativeButtonText;
-        alertDialog.setNegativeButton(strNegativeButton, mOnClickListener);
+        builder.setNegativeButton(strNegativeButton, mOnClickListener);
 
-        if (mDialogIcon != null) {
-            alertDialog.setIcon(mDialogIcon);
+        if (mDialogIcon == null) {
+            Drawable icon = ContextCompat.getDrawable(getActivity(), android.R.drawable.ic_dialog_alert);
+            int color = ContextCompat.getColor(getActivity(), R.color.white);
+            assert icon != null;
+            icon.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+            builder.setIcon(icon);
+        } else {
+            builder.setIcon(mDialogIcon);
         }
 
-        alertDialog.setTitle(mDialogTitle);
-        alertDialog.setMessage(mDialogMessage);
+        builder.setTitle(mDialogTitle);
+        builder.setMessage(mDialogMessage);
 
-        return alertDialog.create();
+        return builder.create();
     }
 
     public void setTitle(String strTitle) {
