@@ -1,6 +1,5 @@
 package co.loystar.loystarbusiness.fragments;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,9 +30,14 @@ import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
+import io.requery.Persistable;
+import io.requery.reactivex.ReactiveEntityStore;
+
+import static android.content.DialogInterface.BUTTON_NEGATIVE;
+import static android.content.DialogInterface.BUTTON_POSITIVE;
 
 
-public class SalesOrderDetailFragment extends Fragment implements DialogInterface.OnClickListener{
+public class SalesOrderDetailFragment extends Fragment{
     public static final String ARG_ITEM_ID = "item_id";
     private SalesOrderEntity mItem;
     private ArrayList<OrderItemEntity> orderItems = new ArrayList<>();
@@ -63,6 +67,9 @@ public class SalesOrderDetailFragment extends Fragment implements DialogInterfac
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.sales_order_detail, container, false);
+        if (getActivity() == null) {
+            return rootView;
+        }
         processOrderViewWrapper = rootView.findViewById(R.id.process_order_action_buttons_wrapper);
         if (mItem != null) {
             orderItems.addAll(mItem.getOrderItems());
@@ -86,41 +93,61 @@ public class SalesOrderDetailFragment extends Fragment implements DialogInterfac
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
 
-        RxView.clicks(rootView.findViewById(R.id.reject_order_btn)).subscribe(o -> {
-            mItem.setStatus(getString(R.string.rejected));
-            mItem.setUpdateRequired(true);
-            processOrderViewWrapper.setVisibility(View.VISIBLE);
-            SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+        ReactiveEntityStore<Persistable> mDataStore = DatabaseManager.getDataStore(getActivity());
 
+        RxView.clicks(rootView.findViewById(R.id.reject_order_btn)).subscribe(o -> {
+            myAlertDialog.setTitle("Are you sure?");
+            myAlertDialog.setPositiveButton(getString(R.string.confirm_reject), (dialogInterface, i) -> {
+                switch (i) {
+                    case BUTTON_NEGATIVE:
+                        dialogInterface.dismiss();
+                        break;
+                    case BUTTON_POSITIVE:
+                        dialogInterface.dismiss();
+                        mItem.setStatus(getString(R.string.rejected));
+                        mItem.setUpdateRequired(true);
+                        mDataStore.update(mItem).subscribe();
+                        processOrderViewWrapper.setVisibility(View.GONE);
+                        SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+
+                        Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+            });
+            myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
             if (getActivity() != null) {
-                myAlertDialog.setTitle("Order Rejected!");
-                myAlertDialog.setPositiveButton(getString(android.R.string.ok), SalesOrderDetailFragment.this);
                 myAlertDialog.show(getActivity().getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         });
 
         RxView.clicks(rootView.findViewById(R.id.process_order_btn)).subscribe(o -> {
-            mItem.setStatus(getString(R.string.completed));
-            mItem.setUpdateRequired(true);
-            processOrderViewWrapper.setVisibility(View.VISIBLE);
-            SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+            myAlertDialog.setTitle("Are you sure?");
+            myAlertDialog.setPositiveButton(getString(R.string.yes), (dialogInterface, i) -> {
+                switch (i) {
+                    case BUTTON_NEGATIVE:
+                        dialogInterface.dismiss();
+                        break;
+                    case BUTTON_POSITIVE:
+                        dialogInterface.dismiss();
+                        mItem.setStatus(getString(R.string.completed));
+                        mItem.setUpdateRequired(true);
+                        mDataStore.update(mItem).subscribe();
+                        processOrderViewWrapper.setVisibility(View.GONE);
+                        SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
+                        Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+            });
+            myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
             if (getActivity() != null) {
-                myAlertDialog.setTitle("Order Completed!");
-                myAlertDialog.setMessage("Order was successfully processed!");
-                myAlertDialog.setPositiveButton(getString(android.R.string.ok), SalesOrderDetailFragment.this);
                 myAlertDialog.show(getActivity().getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         });
 
         return rootView;
-    }
-
-    @Override
-    public void onClick(DialogInterface dialogInterface, int i) {
-        dialogInterface.dismiss();
-        Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
-        startActivity(intent);
     }
 
     private class OrderItemsAdapter extends RecyclerView.Adapter<OrderItemsAdapter.ViewHolder> {

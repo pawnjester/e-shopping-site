@@ -544,4 +544,7 @@
     <string name="no_orders_recieved">Sorry! you have not received any orders yet.</string>
     <string name="view_orders"><u>View Orders</u></string>
     <string name="rejected">rejected</string>
+    <string name="view">View</string>
+    <string name="confirm_reject">Yes, reject</string>
+    <string name="yes">Yes</string>
 </resources>

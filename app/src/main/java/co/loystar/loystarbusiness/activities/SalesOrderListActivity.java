@@ -1,6 +1,7 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -26,23 +27,29 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.SalesOrderItemBinding;
 import co.loystar.loystarbusiness.fragments.SalesOrderDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
+import co.loystar.loystarbusiness.models.entities.SalesOrder;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.TimeUtils;
+import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.reactivex.ReactiveEntityStore;
 
+import static android.content.DialogInterface.BUTTON_NEGATIVE;
+import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
 
 public class SalesOrderListActivity extends AppCompatActivity {
@@ -56,6 +63,7 @@ public class SalesOrderListActivity extends AppCompatActivity {
     private Context mContext;
     private FragmentManager fragmentManager;
     private SalesOrderListAdapter mAdapter;
+    private MyAlertDialog myAlertDialog;
 
     /*Views*/
     private EmptyRecyclerView mRecyclerView;
@@ -73,6 +81,7 @@ public class SalesOrderListActivity extends AppCompatActivity {
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
+        myAlertDialog = new MyAlertDialog();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -171,30 +180,31 @@ public class SalesOrderListActivity extends AppCompatActivity {
            if (merchantEntity == null) {
                return null;
            }
-           return mDataStore.select(SalesOrderEntity.class).where(SalesOrderEntity.MERCHANT.eq(merchantEntity)).get();
+           return mDataStore
+               .select(SalesOrderEntity.class)
+               .where(SalesOrderEntity.MERCHANT.eq(merchantEntity))
+               .orderBy(SalesOrderEntity.CREATED_AT.desc())
+               .get();
        }
 
        @Override
        public void onBindViewHolder(SalesOrderEntity item, BindingHolder<SalesOrderItemBinding> holder, int position) {
             holder.binding.setSalesOrder(item);
 
-            String statusText;
             if (item.getStatus().equals(getString(R.string.pending))) {
-                statusText = getString(R.string.status_pending);
+                holder.binding.salesOrderActionsWrapper.setVisibility(View.VISIBLE);
+                holder.binding.statusText.setText(getString(R.string.status_pending));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
             } else if (item.getStatus().equals(getString(R.string.completed))) {
-                statusText = getString(R.string.status_completed);
+                holder.binding.statusText.setText(getString(R.string.status_completed));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.green));
             } else {
-                statusText = getString(R.string.status_rejected);
+                holder.binding.statusText.setText(getString(R.string.status_rejected));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
             }
-            holder.binding.statusText.setText(statusText);
+
             holder.binding.timestampText.setText(TimeUtils.getTimeAgo(item.getCreatedAt().getTime(), mContext));
 
-            if (statusText.equals(getString(R.string.status_pending))) {
-                holder.binding.salesOrderActionsWrapper.setVisibility(View.VISIBLE);
-            }
 
             CustomerEntity customerEntity = item.getCustomer();
             String customerName = customerEntity.getFirstName() + " " + customerEntity.getLastName();
@@ -239,11 +249,48 @@ public class SalesOrderListActivity extends AppCompatActivity {
                }
            });
 
-           binding.rejectBtn.setOnClickListener(view -> {
+           binding.itemStatusBloc.setOnClickListener(view -> processOrder(binding.getSalesOrder()));
+           binding.itemDescriptionBloc.setOnClickListener(view -> processOrder(binding.getSalesOrder()));
 
+           binding.rejectBtn.setOnClickListener(view -> {
+               myAlertDialog.setTitle("Are you sure?");
+               myAlertDialog.setPositiveButton(getString(R.string.confirm_reject), (dialogInterface, i) -> {
+                   switch (i) {
+                       case BUTTON_NEGATIVE:
+                           dialogInterface.dismiss();
+                           break;
+                       case BUTTON_POSITIVE:
+                           dialogInterface.dismiss();
+                           SalesOrderEntity salesOrderEntity = mDataStore.findByKey(SalesOrderEntity.class, binding.getSalesOrder().getId()).blockingGet();
+                           salesOrderEntity.setStatus(getString(R.string.rejected));
+                           salesOrderEntity.setUpdateRequired(true);
+                           mDataStore.update(salesOrderEntity).subscribe();
+                           SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                           mAdapter.queryAsync();
+                           break;
+                   }
+               });
+               myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
+               myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
            });
 
            return new BindingHolder<>(binding);
+       }
+
+       private void processOrder(SalesOrder salesOrder) {
+           if (mTwoPane) {
+               Bundle arguments = new Bundle();
+               arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, salesOrder.getId());
+               SalesOrderDetailFragment salesOrderDetailFragment = new SalesOrderDetailFragment();
+               salesOrderDetailFragment.setArguments(arguments);
+               fragmentManager.beginTransaction()
+                   .replace(R.id.sales_order_detail_container, salesOrderDetailFragment)
+                   .commit();
+           } else {
+               Intent intent = new Intent(mContext, SalesOrderDetailActivity.class);
+               intent.putExtra(SalesOrderDetailFragment.ARG_ITEM_ID, salesOrder.getId());
+               startActivity(intent);
+           }
        }
    }
 

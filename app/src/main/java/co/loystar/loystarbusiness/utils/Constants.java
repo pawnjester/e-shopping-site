@@ -40,4 +40,8 @@ public class Constants {
     static final int NOTIFICATION_ID_BIG_IMAGE = 101;
     public static final String PUSH_NOTIFICATION = "PUSH_NOTIFICATION";
     public static final String IS_NEW_LOGIN = "IS_NEW_LOGIN";
+    public static final String NOTIFICATION_MESSAGE = "NOTIFICATION_MESSAGE";
+    public static final String NOTIFICATION_TYPE = "NOTIFICATION_TYPE";
+    public static final String ORDER_RECEIVED_NOTIFICATION = "ORDER_RECEIVED_NOTIFICATION";
+    public static final String NOTIFICATION_ORDER_ID = "NOTIFICATION_ORDER_ID";
 }

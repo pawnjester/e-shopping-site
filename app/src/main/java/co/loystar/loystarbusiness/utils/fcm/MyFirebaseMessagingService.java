@@ -36,15 +36,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // Check if message contains a data payload.
-        Log.e(TAG, "onMessageReceived: " + remoteMessage.getData() );
         if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+            Log.e(TAG, "Message data payload: " + remoteMessage.getData());
             try {
-                JSONObject json = new JSONObject(remoteMessage.getData());
+                JSONObject json = new JSONObject(remoteMessage.getData().toString());
                 /* Check if data needs to be processed by long running job */
                 if (json.has("payload")) {
                     Bundle bundle = new Bundle();
-                    bundle.putString("data", json.toString());
+                    bundle.putString("payload", json.getJSONObject("payload").toString());
+                    bundle.putString("notification", json.getJSONObject("notification").toString());
                     scheduleJob(bundle);
                 } else {
                     // Handle message within 10 seconds

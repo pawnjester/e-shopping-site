@@ -17,6 +17,7 @@ import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
@@ -76,8 +77,10 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.GraphCoordinates;
+import co.loystar.loystarbusiness.utils.NotificationUtils;
 import co.loystar.loystarbusiness.utils.fcm.SendFirebaseRegistrationToken;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Observer;
@@ -88,7 +91,8 @@ import io.smooch.core.Smooch;
 import io.smooch.core.User;
 
 
-public class MerchantBackOfficeActivity extends AppCompatActivity implements OnChartValueSelectedListener {
+public class MerchantBackOfficeActivity extends AppCompatActivity
+    implements OnChartValueSelectedListener {
     private static final String TAG = MerchantBackOfficeActivity.class.getCanonicalName();
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private SessionManager mSessionManager;
@@ -105,6 +109,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null && intent.getAction().equals(Constants.PUSH_NOTIFICATION)) {
+                // new push notification is received
+
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +143,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         mLayout = findViewById(R.id.merchant_back_office_wrapper);
         chartLayout = findViewById(R.id.chartLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        MyAlertDialog myAlertDialog = new MyAlertDialog();
 
         stateWelcomeImageView = emptyStateLayout.findViewById(R.id.stateImage);
         stateWelcomeTextView = emptyStateLayout.findViewById(R.id.stateIntroText);
@@ -153,6 +169,21 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
             Intent intent = new Intent(this, SalesOrderListActivity.class);
             startActivity(intent);
         });
+
+        if (getIntent().hasExtra(Constants.NOTIFICATION_MESSAGE)) {
+            if (getIntent().getStringExtra(Constants.NOTIFICATION_TYPE).equals(Constants.ORDER_RECEIVED_NOTIFICATION)) {
+
+                int orderId = getIntent().getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
+                myAlertDialog.setTitle("New Order Received!");
+                myAlertDialog.setPositiveButton(getString(R.string.view), (dialogInterface, i) -> {
+                    Intent intent = new Intent(mContext, SalesOrderListActivity.class);
+                    intent.putExtra(Constants.SALES_ORDER_ID, orderId);
+                    startActivity(intent);
+                });
+                myAlertDialog.setNegativeButtonText(getString(android.R.string.cancel));
+                myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+            }
+        }
 
         setupView();
         setupGraph();
@@ -539,6 +570,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
@@ -552,6 +585,14 @@ public class MerchantBackOfficeActivity extends AppCompatActivity implements OnC
         if (bottomNavigationBar != null){
             bottomNavigationBar.selectTabWithId(R.id.home);
         }
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
+            new IntentFilter(Constants.PUSH_NOTIFICATION));
+
+        // clear the notification area when the app is opened
+        NotificationUtils.clearNotifications(getApplicationContext());
     }
 
     private BroadcastReceiver syncFinishedReceiver = new BroadcastReceiver() {
