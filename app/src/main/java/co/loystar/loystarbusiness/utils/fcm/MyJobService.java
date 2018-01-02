@@ -99,7 +99,7 @@ public class MyJobService extends JobService {
                         mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
                             for (OrderItemEntity orderItemEntity: orderItemEntities) {
                                 orderItemEntity.setSalesOrder(orderEntity);
-                                mDataStore.insert(orderItemEntity).subscribe(/*no-op*/);
+                                mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
                             }
                             showNotification(notificationObject, salesOrder.getId());
                         });

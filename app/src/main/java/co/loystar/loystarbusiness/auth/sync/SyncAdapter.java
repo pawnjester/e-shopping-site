@@ -698,23 +698,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
                                         salesOrderEntity.setCustomer(customerEntity);
 
-                                        mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
-                                            for (OrderItem orderItem: salesOrder.getOrder_items()) {
-                                                OrderItemEntity orderItemEntity = new OrderItemEntity();
-                                                orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
-                                                orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
-                                                orderItemEntity.setId(orderItem.getId());
-                                                orderItemEntity.setQuantity(orderItem.getQuantity());
-                                                orderItemEntity.setUnitPrice(orderItem.getUnit_price());
-                                                orderItemEntity.setTotalPrice(orderItem.getTotal_price());
-                                                orderItemEntity.setSalesOrder(orderEntity);
-                                                ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getProduct_id());
-                                                if (productEntity != null) {
-                                                    orderItemEntity.setProduct(productEntity);
-                                                    mDatabaseManager.insertOrderItem(orderItemEntity);
-                                                }
+                                        ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
+                                        for (OrderItem orderItem: salesOrder.getOrder_items()) {
+                                            OrderItemEntity orderItemEntity = new OrderItemEntity();
+                                            orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+                                            orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+                                            orderItemEntity.setId(orderItem.getId());
+                                            orderItemEntity.setQuantity(orderItem.getQuantity());
+                                            orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+                                            orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+                                            ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
+                                            if (productEntity != null) {
+                                                orderItemEntity.setProduct(productEntity);
+                                                orderItemEntities.add(orderItemEntity);
                                             }
-                                        });
+                                        }
+
+                                        if (!orderItemEntities.isEmpty()) {
+                                            mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
+                                                for (OrderItemEntity orderItemEntity: orderItemEntities) {
+                                                    orderItemEntity.setSalesOrder(orderEntity);
+                                                    mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
+                                                }
+                                            });
+                                        }
                                     }
                                 }
                             }
