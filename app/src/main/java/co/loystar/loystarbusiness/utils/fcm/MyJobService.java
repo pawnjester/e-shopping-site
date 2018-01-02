@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -78,56 +79,30 @@ public class MyJobService extends JobService {
                     salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
                     salesOrderEntity.setCustomer(customerEntity);
 
-                    mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
-                        for (OrderItem orderItem: salesOrder.getOrder_items()) {
-                            OrderItemEntity orderItemEntity = new OrderItemEntity();
-                            orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
-                            orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
-                            orderItemEntity.setId(orderItem.getId());
-                            orderItemEntity.setQuantity(orderItem.getQuantity());
-                            orderItemEntity.setUnitPrice(orderItem.getUnit_price());
-                            orderItemEntity.setTotalPrice(orderItem.getTotal_price());
-                            orderItemEntity.setSalesOrder(orderEntity);
-                            ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
-                            if (productEntity != null) {
-                                orderItemEntity.setProduct(productEntity);
+                    ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
+                    for (OrderItem orderItem: salesOrder.getOrder_items()) {
+                        OrderItemEntity orderItemEntity = new OrderItemEntity();
+                        orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+                        orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+                        orderItemEntity.setId(orderItem.getId());
+                        orderItemEntity.setQuantity(orderItem.getQuantity());
+                        orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+                        orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+                        ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
+                        if (productEntity != null) {
+                            orderItemEntity.setProduct(productEntity);
+                            orderItemEntities.add(orderItemEntity);
+                        }
+                    }
+
+                    if (!orderItemEntities.isEmpty()) {
+                        mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
+                            for (OrderItemEntity orderItemEntity: orderItemEntities) {
+                                orderItemEntity.setSalesOrder(orderEntity);
                                 mDataStore.insert(orderItemEntity).subscribe(/*no-op*/);
                             }
-                        }
-                    });
-                }
-
-                String title = notificationObject.getString("title");
-                String message = notificationObject.getString("message");
-                String imageUrl = notificationObject.getString("image");
-                String timestamp = notificationObject.getString("timestamp");
-
-                if (!NotificationUtils.isAppIsInBackground(getApplicationContext())) {
-                    // app is in foreground, broadcast the push message
-                    Intent pushNotification = new Intent(Constants.PUSH_NOTIFICATION);
-                    pushNotification.putExtra(Constants.NOTIFICATION_MESSAGE, message);
-                    pushNotification.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
-                    pushNotification.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrder.getId());
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
-
-                    Intent resultIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
-                    resultIntent.putExtra(Constants.NOTIFICATION_MESSAGE, message);
-                    resultIntent.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
-                    resultIntent.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrder.getId());
-                    showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
-                } else {
-                    // app is in background, show the notification in notification tray
-                    Intent resultIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
-                    resultIntent.putExtra(Constants.NOTIFICATION_MESSAGE, message);
-                    resultIntent.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
-                    resultIntent.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrder.getId());
-
-                    // check for image attachment
-                    if (TextUtils.isEmpty(imageUrl)) {
-                        showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
-                    } else {
-                        // image is present, show notification with image
-                        showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, imageUrl);
+                            showNotification(notificationObject, salesOrder.getId());
+                        });
                     }
                 }
 
@@ -161,5 +136,51 @@ public class MyJobService extends JobService {
         NotificationUtils notificationUtils = new NotificationUtils(context);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         notificationUtils.showNotificationMessage(title, message, timeStamp, intent, imageUrl);
+    }
+
+    private void showNotification(JSONObject notificationObject, int salesOrderId) {
+        try {
+            String title = notificationObject.getString("title");
+            String message = notificationObject.getString("message");
+            String imageUrl = notificationObject.getString("image");
+            String timestamp = notificationObject.getString("timestamp");
+
+            if (!NotificationUtils.isAppIsInBackground(getApplicationContext())) {
+                // app is in foreground, broadcast the push message
+                Intent pushNotification = new Intent(Constants.PUSH_NOTIFICATION);
+                pushNotification.putExtra(Constants.NOTIFICATION_MESSAGE, message);
+                pushNotification.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
+                pushNotification.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrderId);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
+
+                Intent resultIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                resultIntent.putExtra(Constants.NOTIFICATION_MESSAGE, message);
+                resultIntent.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
+                resultIntent.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrderId);
+                // check for image attachment
+                if (TextUtils.isEmpty(imageUrl)) {
+                    showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
+                } else {
+                    // image is present, show notification with image
+                    showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, imageUrl);
+                }
+            } else {
+                // app is in background, show the notification in notification tray
+                Intent resultIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                resultIntent.putExtra(Constants.NOTIFICATION_MESSAGE, message);
+                resultIntent.putExtra(Constants.NOTIFICATION_TYPE, Constants.ORDER_RECEIVED_NOTIFICATION);
+                resultIntent.putExtra(Constants.NOTIFICATION_ORDER_ID, salesOrderId);
+
+                // check for image attachment
+                if (TextUtils.isEmpty(imageUrl)) {
+                    showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
+                } else {
+                    // image is present, show notification with image
+                    showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, imageUrl);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

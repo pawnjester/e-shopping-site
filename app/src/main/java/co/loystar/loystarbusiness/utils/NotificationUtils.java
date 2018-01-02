@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -67,7 +68,8 @@ public class NotificationUtils {
         NotificationCompat.Builder mBuilder =
             new NotificationCompat.Builder(mContext, channelId);
 
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        final Uri alarmSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
+            + "://" + mContext.getPackageName() + "/raw/notification");
 
         if (!TextUtils.isEmpty(imageUrl)) {
 
@@ -76,13 +78,14 @@ public class NotificationUtils {
                 Bitmap bitmap = getBitmapFromURL(imageUrl);
 
                 if (bitmap != null) {
-                    showBigNotification(bitmap, mBuilder, icon, title, message, timeStamp, pendingIntent, defaultSoundUri);
+                    showBigNotification(bitmap, mBuilder, icon, title, message, timeStamp, pendingIntent, alarmSound);
                 } else {
-                    showSmallNotification(mBuilder, icon, title, message, timeStamp, pendingIntent, defaultSoundUri);
+                    showSmallNotification(mBuilder, icon, title, message, timeStamp, pendingIntent, alarmSound);
                 }
             }
         } else {
-            showSmallNotification(mBuilder, icon, title, message, timeStamp, pendingIntent, defaultSoundUri);
+            showSmallNotification(mBuilder, icon, title, message, timeStamp, pendingIntent, alarmSound);
+            playNotificationSound();
         }
     }
 
@@ -215,8 +218,9 @@ public class NotificationUtils {
     // Playing notification sound
     public void playNotificationSound() {
         try {
-            Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(mContext, defaultSoundUri);
+            final Uri alarmSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
+                + "://" + mContext.getPackageName() + "/raw/notification");
+            Ringtone r = RingtoneManager.getRingtone(mContext, alarmSound);
             r.play();
         } catch (Exception e) {
             e.printStackTrace();

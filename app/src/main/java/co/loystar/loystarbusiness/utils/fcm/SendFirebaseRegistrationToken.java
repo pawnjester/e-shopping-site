@@ -4,6 +4,7 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,31 +40,33 @@ public class SendFirebaseRegistrationToken {
      *
      */
     public void sendRegistrationToServer() {
-        ApiClient apiClient = new ApiClient(mContext);
-        JSONObject jsonObjectData = new JSONObject();
-        try {
-            jsonObjectData.put("token", mToken);
-            JSONObject requestData = new JSONObject();
-            requestData.put("data", jsonObjectData);
+        if (!TextUtils.isEmpty(mToken)) {
+            ApiClient apiClient = new ApiClient(mContext);
+            JSONObject jsonObjectData = new JSONObject();
+            try {
+                jsonObjectData.put("token", mToken);
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
 
-            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-            apiClient.getLoystarApi(false).setFirebaseRegistrationToken(requestBody).enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                    if (response.code() == 401) {
-                        SessionManager sessionManager = new SessionManager(mContext);
-                        AccountManager accountManager = AccountManager.get(mContext);
-                        accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                apiClient.getLoystarApi(false).setFirebaseRegistrationToken(requestBody).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                        if (response.code() == 401) {
+                            SessionManager sessionManager = new SessionManager(mContext);
+                            AccountManager accountManager = AccountManager.get(mContext);
+                            accountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, sessionManager.getAccessToken());
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                    @Override
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
-                }
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
