@@ -254,7 +254,6 @@ public class ProductListActivity
 
         @Override
         public void onBindViewHolder(ProductEntity item, BindingHolder<ProductItemBinding> holder, int position) {
-            Log.e(TAG, "onBindViewHolder: " + item.getId() );
             holder.binding.setProduct(item);
             holder.binding.productPrice.setText(String.valueOf(item.getPrice()));
             Glide.with(mContext)

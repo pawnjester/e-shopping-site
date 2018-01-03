@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.sql.Timestamp;
 
@@ -39,7 +38,6 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
     private ApiClient mApiClient;
     private SessionManager mSessionManager;
     private DatabaseManager mDatabaseManager;
-    private static final String TAG = LoystarAuthenticator.class.getSimpleName();
 
     LoystarAuthenticator(Context context) {
         super(context);
@@ -63,8 +61,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
             Bundle bundle
     ) throws NetworkErrorException {
         Intent intent = new Intent(mContext, AuthenticatorActivity.class);
-        intent.putExtra(AuthenticatorActivity.ARG_ACCOUNT_TYPE, accountType);
-        intent.putExtra(AuthenticatorActivity.ARG_AUTH_TYPE, authTokenType);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, accountType);
         intent.putExtra(AuthenticatorActivity.ARG_IS_ADDING_NEW_ACCOUNT, true);
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
 
@@ -162,8 +159,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
         // an intent to display our AuthenticatorActivity.
         final Intent intent = new Intent(mContext, AuthenticatorActivity.class);
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
-        intent.putExtra(AuthenticatorActivity.ARG_ACCOUNT_TYPE, account.type);
-        intent.putExtra(AuthenticatorActivity.ARG_AUTH_TYPE, authTokenType);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type);
         final Bundle accountBundle = new Bundle();
         accountBundle.putParcelable(AccountManager.KEY_INTENT, intent);
         return accountBundle;

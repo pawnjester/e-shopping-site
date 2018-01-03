@@ -24,6 +24,7 @@ import co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.OrderItem;
 import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -53,56 +54,51 @@ public class MyJobService extends JobService {
                 JSONObject notificationObject = new JSONObject(extras.getString("notification", ""));
                 ReactiveEntityStore<Persistable> mDataStore = DatabaseManager.getDataStore(getApplicationContext());
                 SessionManager sessionManager  = new SessionManager(getApplicationContext());
-
-                ResponseBody valueToConvert  = ResponseBody.create(
-                    MediaType.parse("application/json; charset=utf-8"),
-                    extras.getString("payload", "")
-                );
-                ObjectMapper objectMapper = ApiUtils.getObjectMapper(false);
-                JavaType javaType = objectMapper.getTypeFactory().constructType(SalesOrder.class);
-                ObjectReader reader = objectMapper.readerFor(javaType);
-                SalesOrder salesOrder = reader.readValue(valueToConvert.charStream());
-
                 MerchantEntity merchantEntity = mDataStore.findByKey(MerchantEntity.class, sessionManager.getMerchantId()).blockingGet();
-                CustomerEntity customerEntity = mDataStore.select(CustomerEntity.class)
-                    .where(CustomerEntity.USER_ID.eq(salesOrder.getUser_id()))
-                    .get()
-                    .firstOrNull();
-                if (customerEntity != null && merchantEntity != null) {
-                    SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
-                    salesOrderEntity.setMerchant(merchantEntity);
-                    salesOrderEntity.setId(salesOrder.getId());
-                    salesOrderEntity.setStatus(salesOrder.getStatus());
-                    salesOrderEntity.setUpdateRequired(false);
-                    salesOrderEntity.setTotal(salesOrder.getTotal());
-                    salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
-                    salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
-                    salesOrderEntity.setCustomer(customerEntity);
 
-                    ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
-                    for (OrderItem orderItem: salesOrder.getOrder_items()) {
-                        OrderItemEntity orderItemEntity = new OrderItemEntity();
-                        orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
-                        orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
-                        orderItemEntity.setId(orderItem.getId());
-                        orderItemEntity.setQuantity(orderItem.getQuantity());
-                        orderItemEntity.setUnitPrice(orderItem.getUnit_price());
-                        orderItemEntity.setTotalPrice(orderItem.getTotal_price());
-                        ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
-                        if (productEntity != null) {
-                            orderItemEntity.setProduct(productEntity);
-                            orderItemEntities.add(orderItemEntity);
+                if (merchantEntity != null) {
+                    ResponseBody customerObjectToConvert  = ResponseBody.create(
+                        MediaType.parse("application/json; charset=utf-8"),
+                        extras.getString("customer", "")
+                    );
+
+                    ObjectMapper objectMapper = ApiUtils.getObjectMapper(false);
+                    JavaType customerType = objectMapper.getTypeFactory().constructType(Customer.class);
+                    ObjectReader customerReader = objectMapper.readerFor(customerType);
+                    Customer customer = customerReader.readValue(customerObjectToConvert.charStream());
+                    CustomerEntity existingCustomer = mDataStore.findByKey(CustomerEntity.class, customer.getId()).blockingGet();
+
+                    ResponseBody orderObjectToConvert  = ResponseBody.create(
+                        MediaType.parse("application/json; charset=utf-8"),
+                        extras.getString("order", "")
+                    );
+
+                    JavaType orderType = objectMapper.getTypeFactory().constructType(SalesOrder.class);
+                    ObjectReader reader = objectMapper.readerFor(orderType);
+                    SalesOrder salesOrder = reader.readValue(orderObjectToConvert.charStream());
+
+                    if (existingCustomer == null) {
+                        CustomerEntity newCustomerEntity = new CustomerEntity();
+                        newCustomerEntity.setId(customer.getId());
+                        if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
+                            newCustomerEntity.setEmail(customer.getEmail());
                         }
-                    }
+                        newCustomerEntity.setFirstName(customer.getFirst_name());
+                        newCustomerEntity.setDeleted(false);
+                        newCustomerEntity.setLastName(customer.getLast_name());
+                        newCustomerEntity.setSex(customer.getSex());
+                        newCustomerEntity.setDateOfBirth(customer.getDate_of_birth());
+                        newCustomerEntity.setPhoneNumber(customer.getPhone_number());
+                        newCustomerEntity.setUserId(customer.getUser_id());
+                        newCustomerEntity.setCreatedAt(new Timestamp(customer.getCreated_at().getMillis()));
+                        newCustomerEntity.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
+                        newCustomerEntity.setOwner(merchantEntity);
 
-                    if (!orderItemEntities.isEmpty()) {
-                        mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
-                            for (OrderItemEntity orderItemEntity: orderItemEntities) {
-                                orderItemEntity.setSalesOrder(orderEntity);
-                                mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
-                            }
-                            showNotification(notificationObject, salesOrder.getId());
+                        mDataStore.upsert(newCustomerEntity).subscribe(customerEntity -> {
+                            insertNewSalesOrder(salesOrder, customerEntity, mDataStore, merchantEntity, notificationObject);
                         });
+                    } else {
+                        insertNewSalesOrder(salesOrder, existingCustomer, mDataStore, merchantEntity, notificationObject);
                     }
                 }
 
@@ -136,6 +132,50 @@ public class MyJobService extends JobService {
         NotificationUtils notificationUtils = new NotificationUtils(context);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         notificationUtils.showNotificationMessage(title, message, timeStamp, intent, imageUrl);
+    }
+
+    private void insertNewSalesOrder(
+        SalesOrder salesOrder,
+        CustomerEntity customerEntity,
+        ReactiveEntityStore<Persistable> mDataStore,
+        MerchantEntity merchantEntity,
+        JSONObject notificationObject) {
+
+        SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
+        salesOrderEntity.setMerchant(merchantEntity);
+        salesOrderEntity.setId(salesOrder.getId());
+        salesOrderEntity.setStatus(salesOrder.getStatus());
+        salesOrderEntity.setUpdateRequired(false);
+        salesOrderEntity.setTotal(salesOrder.getTotal());
+        salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
+        salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
+        salesOrderEntity.setCustomer(customerEntity);
+
+        ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
+        for (OrderItem orderItem: salesOrder.getOrder_items()) {
+            OrderItemEntity orderItemEntity = new OrderItemEntity();
+            orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+            orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+            orderItemEntity.setId(orderItem.getId());
+            orderItemEntity.setQuantity(orderItem.getQuantity());
+            orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+            orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+            ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
+            if (productEntity != null) {
+                orderItemEntity.setProduct(productEntity);
+                orderItemEntities.add(orderItemEntity);
+            }
+        }
+
+        if (!orderItemEntities.isEmpty()) {
+            mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
+                for (OrderItemEntity orderItemEntity: orderItemEntities) {
+                    orderItemEntity.setSalesOrder(orderEntity);
+                    mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
+                }
+                showNotification(notificationObject, salesOrder.getId());
+            });
+        }
     }
 
     private void showNotification(JSONObject notificationObject, int salesOrderId) {

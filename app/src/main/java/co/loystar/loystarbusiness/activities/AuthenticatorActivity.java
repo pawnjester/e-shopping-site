@@ -73,8 +73,6 @@ import static android.Manifest.permission.READ_CONTACTS;
 public class AuthenticatorActivity extends RxAppCompatActivity implements LoaderCallbacks<Cursor> {
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
-    public static final String ARG_ACCOUNT_TYPE = "ARG_ACCOUNT_TYPE";
-    public static final String ARG_AUTH_TYPE = "ARG_AUTH_TYPE";
     private final int REQ_SIGN_UP = 101;
     private static final int REQ_VERIFY_PHONE_NUMBER = 120;
 
@@ -479,7 +477,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
     private void finishLogin(Intent intent) {
         if (intent.hasExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE)) {
             setResult(RESULT_CANCELED);
-            Toast.makeText(mContext, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Toast.LENGTH_LONG).show();
+            Snackbar.make(mLayout, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Snackbar.LENGTH_LONG).show();
         } else {
             String accountPassword = intent.getStringExtra(AccountManager.KEY_PASSWORD);
             String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -493,7 +491,7 @@ public class AuthenticatorActivity extends RxAppCompatActivity implements Loader
             }
 
             setResult(RESULT_OK, intent);
-            Intent homeIntent = new Intent(mContext, MerchantBackOfficeActivity.class);
+            Intent homeIntent = new Intent(AuthenticatorActivity.this, MerchantBackOfficeActivity.class);
             homeIntent.putExtra(Constants.IS_NEW_LOGIN, true);
             startActivity(homeIntent);
             finish();

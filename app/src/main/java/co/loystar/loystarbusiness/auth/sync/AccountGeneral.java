@@ -66,7 +66,7 @@ public class AccountGeneral {
         Account account = null;
         Account[] accounts = accountManager.getAccountsByType(ACCOUNT_TYPE);
         if (accounts.length == 0) {
-            account = new Account(accountName, AccountGeneral.ACCOUNT_TYPE);
+            account = new Account(accountName, ACCOUNT_TYPE);
             accountManager.addAccountExplicitly(account, password, null);
         } else {
             for (Account ac: accounts) {
@@ -75,7 +75,7 @@ public class AccountGeneral {
                 }
             }
             if (account == null) {
-                account = new Account(accountName, AccountGeneral.ACCOUNT_TYPE);
+                account = new Account(accountName, ACCOUNT_TYPE);
                 accountManager.addAccountExplicitly(account, password, null);
             } else {
                 accountManager.setPassword(account, password);

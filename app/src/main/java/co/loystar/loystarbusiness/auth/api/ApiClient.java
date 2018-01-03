@@ -18,6 +18,7 @@ import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -54,6 +55,7 @@ public class ApiClient {
                         String token =
                             mAccountManager.peekAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
 
+                        Timber.d("peekAuthToken: " + token);
                         if (token != null) {
                             Request authorisedRequest = originalRequest.newBuilder()
                                 .header("ACCESS-TOKEN", token)
