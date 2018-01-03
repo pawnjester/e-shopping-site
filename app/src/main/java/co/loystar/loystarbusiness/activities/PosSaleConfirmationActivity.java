@@ -213,7 +213,7 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            showSnackbar(R.string.sms_sent_notice);
+
         }
     };
 
@@ -221,7 +221,7 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            showSnackbar(R.string.sms_would_be_sent_notice);
+
         }
     };
 
