@@ -156,10 +156,10 @@ public class CustomerListActivity extends RxAppCompatActivity
         }
         else {
             if (mTwoPane) {
-                Result<CustomerEntity> customerEntities = mAdapter.performQuery();
-                if (!customerEntities.toList().isEmpty()) {
+                Result<CustomerEntity> result = mAdapter.performQuery();
+                if (result.first() != null) {
                     Bundle arguments = new Bundle();
-                    arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, customerEntities.first().getId());
+                    arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, result.first().getId());
                     CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
                     customerDetailFragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()

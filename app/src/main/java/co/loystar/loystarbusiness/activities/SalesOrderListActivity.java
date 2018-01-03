@@ -88,6 +88,10 @@ public class SalesOrderListActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        mAdapter = new SalesOrderListAdapter();
+        executor = Executors.newSingleThreadExecutor();
+        mAdapter.setExecutor(executor);
+
         if (findViewById(R.id.sales_order_detail_container) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -114,10 +118,10 @@ public class SalesOrderListActivity extends AppCompatActivity {
         }
         else {
             if (mTwoPane) {
-                Result<SalesOrderEntity> salesOrderEntities = mAdapter.performQuery();
-                if (!salesOrderEntities.toList().isEmpty()) {
+                Result<SalesOrderEntity> result = mAdapter.performQuery();
+                if (result.first() != null) {
                     Bundle arguments = new Bundle();
-                    arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, salesOrderEntities.first().getId());
+                    arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, result.first().getId());
                     SalesOrderDetailFragment salesOrderDetailFragment = new SalesOrderDetailFragment();
                     salesOrderDetailFragment.setArguments(arguments);
                     fragmentManager.beginTransaction()
@@ -126,10 +130,6 @@ public class SalesOrderListActivity extends AppCompatActivity {
                 }
             }
         }
-
-        mAdapter = new SalesOrderListAdapter();
-        executor = Executors.newSingleThreadExecutor();
-        mAdapter.setExecutor(executor);
 
         EmptyRecyclerView recyclerView = findViewById(R.id.sales_order_list_rv);
         assert recyclerView != null;
