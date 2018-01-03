@@ -312,7 +312,6 @@
             android:name=".activities.SaleWithPosActivity"
             android:label="@string/title_activity_points_sale_with_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -322,7 +321,6 @@
             android:name=".activities.SaleWithoutPosActivity"
             android:label="@string/title_activity_sale_without_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

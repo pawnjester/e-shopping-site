@@ -9,6 +9,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -23,6 +24,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -49,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -121,9 +124,16 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private View orderSummaryCheckoutWrapper;
     private ImageView cartCountImageView;
     private String searchFilterText;
-    private EmptyRecyclerView mRecyclerView;
+    private EmptyRecyclerView mProductsRecyclerView;
+    private EmptyRecyclerView mOrderSummaryRecyclerView;
     private CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private int proceedToCheckoutBtnHeight = 0;
+
+    private final String KEY_PRODUCTS_RECYCLER_STATE = "products_recycler_state";
+    private final String KEY_SELECTED_PRODUCTS_STATE = "selected_products_state";
+    private final String KEY_ORDER_SUMMARY_RECYCLER_STATE = "order_summary_recycler_state";
+    private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
+    private final String KEY_SELECTED_PROGRAMS_STATE = "selected_programs_state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -285,18 +295,18 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             startActivity(intent);
         });
 
-        mRecyclerView = recyclerView;
+        mProductsRecyclerView = recyclerView;
 
-        mRecyclerView.setHasFixedSize(true);
+        mProductsRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(mProductsAdapter);
-        mRecyclerView.addItemDecoration(new SpacingItemDecoration(
+        mProductsRecyclerView.setLayoutManager(mLayoutManager);
+        mProductsRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mProductsRecyclerView.setAdapter(mProductsAdapter);
+        mProductsRecyclerView.addItemDecoration(new SpacingItemDecoration(
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
         );
-        mRecyclerView.setEmptyView(emptyView);
+        mProductsRecyclerView.setEmptyView(emptyView);
     }
 
     private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -304,19 +314,19 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         BrandButtonNormal addToCartBtn = emptyView.findViewById(R.id.add_to_cart);
         addToCartBtn.setOnClickListener(view -> orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED));
 
+        mOrderSummaryRecyclerView = recyclerView;
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.addItemDecoration(
+        mOrderSummaryRecyclerView.setHasFixedSize(true);
+        mOrderSummaryRecyclerView.setLayoutManager(mLayoutManager);
+        mOrderSummaryRecyclerView.addItemDecoration(
                 new SpacingItemDecoration(
                         getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
                         getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
         );
-        recyclerView.addItemDecoration(new OrderItemDividerItemDecoration(this));
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(orderSummaryAdapter);
-        recyclerView.setEmptyView(emptyView);
-
+        mOrderSummaryRecyclerView.addItemDecoration(new OrderItemDividerItemDecoration(this));
+        mOrderSummaryRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mOrderSummaryRecyclerView.setAdapter(orderSummaryAdapter);
+        mOrderSummaryRecyclerView.setEmptyView(emptyView);
     }
 
     private void setUpBottomSheetView() {
@@ -482,7 +492,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     totalCharge = 0;
                     orderSummaryAdapter.queryAsync();
                     mProductsAdapter.queryAsync();
-                    addItemToCart();
+                    refreshCartCount();
                     setCheckoutValue();
                 })
                 .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel())
@@ -553,12 +563,12 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     public boolean onQueryTextChange(String newText) {
         if (TextUtils.isEmpty(newText)) {
             searchFilterText = null;
-            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+            ((ProductsAdapter) mProductsRecyclerView.getAdapter()).getFilter().filter(null);
         }
         else {
-            ((ProductsAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+            ((ProductsAdapter) mProductsRecyclerView.getAdapter()).getFilter().filter(newText);
         }
-        mRecyclerView.scrollToPosition(0);
+        mProductsRecyclerView.scrollToPosition(0);
         return true;
     }
 
@@ -757,6 +767,16 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             holder.binding.selectProgramSpinner.setEntries(programLabels);
             if (mLoyaltyPrograms.size() == 1) {
                 holder.binding.selectProgramSpinner.setSelection(0);
+                mSelectedLoyaltyPrograms.put(item.getId(), mLoyaltyPrograms.get(0).getId());
+            }
+            if (mSelectedLoyaltyPrograms.size() > 0) {
+                int selectedProgramId = mSelectedLoyaltyPrograms.get(item.getId());
+                for (int i=0; i < mLoyaltyPrograms.size(); i++) {
+                    LoyaltyProgramEntity loyaltyProgramEntity = mLoyaltyPrograms.get(i);
+                    if (loyaltyProgramEntity.getId() == selectedProgramId) {
+                        holder.binding.selectProgramSpinner.setSelection(i);
+                    }
+                }
             }
         }
 
@@ -778,7 +798,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                             mSelectedLoyaltyPrograms.delete(orderSummaryItemBinding.getProduct().getId());
                             orderSummaryAdapter.queryAsync();
                             mProductsAdapter.queryAsync();
-                            addItemToCart();
+                            refreshCartCount();
                             setCheckoutValue();
                         }
                     })
@@ -810,7 +830,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         super.onDestroy();
     }
 
-    private void addItemToCart() {
+    private void refreshCartCount() {
         proceedToCheckoutBtn.setCartCount(String.valueOf(mSelectedProducts.size()));
     }
 
@@ -819,14 +839,14 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             mSelectedProducts.put(productId, newValue);
             orderSummaryAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
-            addItemToCart();
+            refreshCartCount();
             setCheckoutValue();
         } else {
             mSelectedProducts.delete(productId);
             mSelectedLoyaltyPrograms.delete(productId);
             orderSummaryAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
-            addItemToCart();
+            refreshCartCount();
             setCheckoutValue();
         }
     }
@@ -870,7 +890,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        addItemToCart();
+                        refreshCartCount();
                     }
 
                     @Override
@@ -921,5 +941,88 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         searchView.setOnQueryTextListener(this);
 
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+        for (int x = 0; x < mSelectedProducts.size(); x++) {
+            orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+        }
+        outState.putSerializable(KEY_SELECTED_PRODUCTS_STATE, orderSummaryItems);
+
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> selectedPrograms = new HashMap<>(mSelectedLoyaltyPrograms.size());
+        for (int x = 0; x < mSelectedLoyaltyPrograms.size(); x++) {
+            selectedPrograms.put(mSelectedLoyaltyPrograms.keyAt(x), mSelectedLoyaltyPrograms.valueAt(x));
+        }
+        outState.putSerializable(KEY_SELECTED_PROGRAMS_STATE, selectedPrograms);
+
+        Parcelable productsListState = mProductsRecyclerView.getLayoutManager().onSaveInstanceState();
+        Parcelable orderSummaryListState = mOrderSummaryRecyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(KEY_PRODUCTS_RECYCLER_STATE, productsListState);
+        outState.putParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE, orderSummaryListState);
+
+        if (mSelectedCustomer != null) {
+            outState.putInt(KEY_SAVED_CUSTOMER_ID, mSelectedCustomer.getId());
+        }
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+        Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
+
+        /*restore RecyclerView state*/
+        if (productsListState != null) {
+            mProductsRecyclerView.getLayoutManager().onRestoreInstanceState(productsListState);
+        }
+        if (orderSummaryListState != null) {
+            mOrderSummaryRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
+        }
+
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+        if (orderSummaryItems != null) {
+            for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
+                mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
+                setProductCountValue(orderItem.getValue(), orderItem.getKey());
+            }
+        }
+
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> selectedPrograms = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PROGRAMS_STATE);
+        if (selectedPrograms != null) {
+            for (Map.Entry<Integer, Integer> program: selectedPrograms.entrySet()) {
+                mSelectedLoyaltyPrograms.put(program.getKey(), program.getValue());
+            }
+        }
+
+        if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
+            mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
+        }
+
+        orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
+        treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                ViewTreeObserver obs = proceedToCheckoutBtn.getViewTreeObserver();
+                obs.removeOnGlobalLayoutListener(this);
+                proceedToCheckoutBtnHeight = proceedToCheckoutBtn.getMeasuredHeight();
+                orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        } else {
+            super.onBackPressed();
+        }
     }
 }
