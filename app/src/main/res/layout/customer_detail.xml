@@ -120,7 +120,6 @@
                     android:layout_below="@+id/total_points_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/total_points_text"
                     android:gravity="center"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/points_txt" />
@@ -144,7 +143,6 @@
                     android:layout_below="@+id/total_amount_spent_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/amount_spent"
                     android:gravity="center"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/spent_txt" />

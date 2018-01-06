@@ -13,7 +13,6 @@
     <string name="intro4_body"><![CDATA[It’s never been easier to boost sales on slow days, announce new products & services or invite your customers back with a discount for a festive season.]]></string>
     <string name="intro5_body">Designed to be simple, Loystar puts all these powerful features at your fingertips and you can see the effect of your efforts in weekly and monthly reports.</string>
     <string name="title_activity_authenticator">Loystar</string>
-    <string name="sign_up_cancelled">Sign up cancelled</string>
     <string name="unknown_error">Sorry! An unknown error occurred. Please again.</string>
     <string name="no_internet_connection">Connection failed! please check your connection and try again.</string>
     <string name="error_internet_connection_timed_out">Connection timed out. Please check your connection and try again.</string>
@@ -22,17 +21,14 @@
     <string name="prompt_email">Email</string>
     <string name="error_login_credentials">Email or Password is incorrect. Please try again!</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="signing_up_msg">Signing up… Please wait.</string>
     <string name="signing_in_msg">Signing in… Please wait.</string>
     <string name="sign_up_btn_text">New to Loystar? Sign Up</string>
     <string name="have_account"><u>HAVE AN ACCOUNT? LOGIN HERE</u></string>
-    <string name="phone_rationale_text">Please use a number you can access to receive important notifications.</string>
     <string name="email_rationale_text">Please use an email you can access to receive reports.</string>
     <string name="sign_out">Sign Out</string>
     <string name="forgot_password">Forgot password?</string>
@@ -46,7 +42,6 @@
     <string name="logo">logo</string>
     <string name="title_activity_merchant_sign_up">Sign Up</string>
     <string name="title_activity_forgot_password">Forgot Password</string>
-    <string name="something_went_wrong">Something went wrong! Please try again</string>
     <string name="title_activity_app_intro">intro</string>
     <string name="action_settings">Settings</string>
     <string name="menuitem_sync">Sync now</string>
@@ -56,26 +51,6 @@
 
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
-
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
-
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
@@ -98,20 +73,6 @@
         <item>-1</item>
     </string-array>
 
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value" />
-
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
@@ -127,7 +88,6 @@
     <string name="records_to_be_updated_notice">Your records would be updated shortly.</string>
     <string name="records_updated_notice">Records successfully updated.</string>
     <string name="sales_overview">Sales History</string>
-    <string name="add_sales">Add sales</string>
 
     <string name="home_menu">Home</string>
     <string name="record_sale">Sell</string>
@@ -165,12 +125,7 @@
     <string name="button_deny">Deny</string>
     <string name="permission_write_external_storage__denied">External storage permission is denied.</string>
     <string name="permission_write_external_storage_never_ask">External Storage permission was denied with never ask again.</string>
-    <string name="permission_available_external_storage">External Storage Permission has been granted. </string>
-    <string name="permission_granted_accounts">Accounts permission has been granted</string>
-    <string name="permission_available_contacts">Contacts Permissions have been granted.</string>
-    <string name="permissions_not_granted">Permissions were not granted.</string>
     <string name="permission_write_external_storage_rationale">Storage permission is needed to store this file.</string>
-    <string name="permission_get_accounts_rationale">Accounts permission is needed to sync your records with our servers.</string>
     <string name="permission_contacts_rationale">This app needs Contacts permission, please accept to access contacts on your phone.</string>
     <string name="title_activity_add_new_customer">Add New Customer</string>
     <string name="add_customer_from_contacts">Add from contacts</string>
@@ -227,7 +182,6 @@
     <string name="total_customer_points">Total Customer Points:</string>
     <string name="program_target">Program Target</string>
     <string name="total_customer_stamps">Total Customer Stamps</string>
-    <string name="title_activity_transactions_confirmation">Transaction Confirmation</string>
     <string name="title_activity_message_broadcast">Messaging</string>
     <string name="send">Send</string>
     <string name="enter_message">Enter message</string>
@@ -244,11 +198,9 @@
     <string name="title_activity_pay_subscription">Pay Subscription</string>
     <string name="pay_subscription">Pay subscription</string>
     <string name="title_activity_send_sms">Message</string>
-    <string name="title_activity_loyalty_programs_list">My Loyalty Programs</string>
     <string name="title_loyaltyprogram_list">My Loyalty Programs</string>
     <string name="title_loyaltyprogram_detail">Edit program</string>
     <string name="no_programs_found">We could not find any loyalty \nprograms for you.</string>
-    <string name="add_program">Add program</string>
     <string name="program_type_label">Type:</string>
     <string name="program_target_label">Target:</string>
     <string name="reward_label">Reward:</string>
@@ -264,9 +216,7 @@
     <string name="hello_text">Hello, %1$s</string>
 
 
-    <string name="select_biz_category">Select Business Category</string>
     <string name="business_category">Business Category</string>
-    <string name="food_and_drinks">Food and Drinks</string>
     <string name="hair_and_beauty">Hair and Beauty</string>
     <string name="fashion_and_accessories">Fashion and Accessories</string>
     <string name="gym_and_fitness">Gym and Fitness</string>
@@ -274,19 +224,16 @@
 
 
     <string name="salon_and_beauty_reward_eg">E.g. Free hairdo.</string>
-    <string name="fashion_and_accessories_reward_points">E.g. 20% discount on your next purchase.</string>
     <string name="fashion_and_accessories_reward_stamps">E.g. 1 free fashion item.</string>
     <string name="gym_and_fitness_reward_stamps">E.g. 1 free session.</string>
     <string name="gym_and_fitness_reward_points">E.g. 20% discount on your next subscription.</string>
     <string name="discount_on_next_purchase">E.g. 20% discount on your next purchase.</string>
     <string name="bakery_and_pastry">Bakery and Pastry</string>
     <string name="travel_and_hotel">Travel and Hotel</string>
-    <string name="other">Other</string>
     <string name="beverages_and_deserts_reward">eg. Free bottle of wine</string>
     <string name="next_purchase_free">E.g. Next purchase free</string>
     <string name="travel_and_hotel_reward">E.g. 20% discount on your next travel</string>
 
-    <string name="creating_loyalty_wait">Please wait while we setup your loyalty program.</string>
     <string name="updating_loyalty_wait">Please wait while we update your loyalty program.</string>
     <string name="error_spend_target_cant_be_zero">Spending target can\'t be zero</string>
     <string name="error_program_name_required">Please enter program name</string>
@@ -295,7 +242,6 @@
     <string name="error_program_update">Sorry we couldn\'t update your program. Please try again.</string>
     <string name="program_update_success">Program successfully updated!</string>
     <string name="error_stamps_threshold">Please enter stamps target</string>
-    <string name="error_program_create_connection">Sorry we couldn\'t create your program. Please check your connection and try again.</string>
     <string name="error_program_create">Sorry we couldn\'t create your program. Please try again.</string>
     <string name="title_activity_new_loyalty_program_list">Choose program type</string>
     <string name="set_program_details_text">Set program details here.</string>
@@ -303,9 +249,6 @@
     <string name="create_program_success">Program successfully created!</string>
 
 
-    <string name="pref_account_title">Account Information</string>
-    <string name="pref_account_status_title">Status</string>
-    <string name="pref_account_status_key">account_status</string>
     <string name="pref_pay_subscription_title">Pay Subscription</string>
     <string name="pref_edit_account_title">My Profile</string>
     <string name="pref_pay_subscription_key">pay_subscription</string>
@@ -323,18 +266,14 @@
     <string name="pref_privacy_policy_title">Privacy Policy</string>
     <string name="birthday_messages_and_offers">Birthday Messages &amp; Offers</string>
     <string name="pref_birthday_messages_and_offers_key">pref_birthday_messages_and_offers</string>
-    <string name="settings_birthday_messages_and_offers">settings_birthday_messages_and_offers</string>
     <string name="pref_turn_on_pos_key">turn_on_point_of_sale</string>
     <string name="pref_turn_on_pos_title">Turn on POS</string>
-    <string name="pos">Point of Sale (POS)</string>
-    <string name="settings_pos">settings_pos</string>
     <string name="pref_product_categories_key">pref_product_categories</string>
     <string name="pref_product_categories_title">My Product Categories</string>
     <string name="pref_my_products_key">pref_my_products</string>
     <string name="pref_my_products_title">My Products / Services</string>
     <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
     <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
-    <string name="pos_turn_off_notice">POS  has been disabled.</string>
     <string name="pos_turn_on_notice">POS has been enabled.</string>
 
     <string name="account">Account</string>
@@ -343,12 +282,9 @@
     <string name="title_product_list">My products / services</string>
     <string name="title_product_detail">Product Detail</string>
     <string name="title_productcategory_list">My Product Categories</string>
-    <string name="title_productcategory_detail">ProductCategory Detail</string>
     <string name="my_products_and_services">My Products and Services</string>
     <string name="title_activity_birthday_offers_and_messaging">Birthday Offers and Messaging
     </string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <string name="search_customer_hint">Search customer</string>
 
     <string name="no_birthday_offer">No Birthday offer found!</string>
@@ -358,7 +294,6 @@
     <string name="birthday_offer_create_success">Birthday offer created successfully.</string>
     <string name="birthday_offer_update_success">Birthday offer updated successfully.</string>
     <string name="birthday_offer_delete_success">Birthday offer deleted successfully.</string>
-    <string name="error_offer_required">Please enter description of offer</string>
     <string name="birthday_offer_field_label">What\'s the offer?</string>
     <string name="error_birthday_offer_delete">Sorry! we couldn\'t delete your birthday offer. Please try again.</string>
     <string name="error_birthday_offer_text_required">Please enter birthday offer</string>
@@ -376,16 +311,11 @@
     <string name="customer_name_placeholder_value">This will be replaced with the customer\'s name. \n*Required</string>
     <string name="insert_b_offer_placeholder_label">[BIRTHDAY_OFFER] -</string>
     <string name="insert_b_offer_placeholder_value">This will be replaced with the birthday offer you set.</string>
-    <string name="error_preset_sms_special_strings_more_found">Please include only one of [CUSTOMER_NAME] or [BIRTHDAY_OFFER]</string>
     <string name="error_special_strings_customer_name_not_found">Please include [CUSTOMER_NAME]</string>
     <string name="update">Update</string>
     <string name="birthday_offer_preset_sms_update_success">Birthday message  updated successfully</string>
     <string name="create">Create</string>
     <string name="sms_bundle_lite">Get %1$s SMS credits each month</string>
-    <string name="sms_bundle_lite_ngn">Get 500 SMS credits each month</string>
-    <string name="simple_points_program_plan_desc">Run a points based loyalty program for your customers</string>
-    <string name="lite_plan_amount_text">157</string>
-    <string name="loystar_lite_header_text">Loystar Lite</string>
     <string name="loystar_feature_one">Design and run unlimited loyalty programs.</string>
     <string name="fetch_pricing_data_network_error">Sorry, an error occurred. Please check your connection and try again.</string>
     <string name="monthly">Monthly</string>
@@ -393,17 +323,14 @@
     <string name="total_label">Total</string>
     <string name="make_payments">Make payment</string>
     <string name="how_to_pay">Select How to pay:</string>
-    <string name="enter_mob_money_no">Enter mobile money number</string>
     <string name="saving_msg_12">1200 bonus sms when you pay for a year</string>
     <string name="saving_msg_6">450 bonus sms when you pay for 6 months</string>
     <string name="saving_msg_3">200 bonus sms when you pay for 3 months</string>
-    <string name="subs_sel_title">Choose a plan</string>
     <string name="tigo">Tigo</string>
     <string name="mtn">MTN</string>
     <string name="airtel">Airtel</string>
     <string name="pay_with_momoney">Pay with Mobile Money</string>
     <string name="error_mobile_money_number_required">Mobile money number is required</string>
-    <string name="transaction_success">Payment successfully completed!</string>
     <string name="one_month">1-month</string>
     <string name="three_months">3-months</string>
     <string name="six_months">6-months</string>
@@ -418,7 +345,6 @@
     <string name="confirm_password">Confirm password</string>
     <string name="finish">Finish</string>
     <string name="privacy_policy_txt">By tapping \'Finish\', you agree to our Privacy Policy.</string>
-    <string name="privacy_policy_link"><u>PRIVACY POLICY</u></string>
     <string name="error_business_category_required">Please choose business category</string>
     <string name="error_currency_required">Please choose currency</string>
     <string name="error_incorrect_password_extra">Password must be at least 6 characters long.</string>
@@ -444,12 +370,6 @@
     <string name="title_invalid_email">Invalid email</string>
     <string name="feedback_pwdreset_noemail">No account registered with email:  </string>
 
-    <string-array name="subs_duration">
-        <item>@string/one_month</item>
-        <item>@string/three_months</item>
-        <item>@string/six_months</item>
-        <item>@string/twelve_months</item>
-    </string-array>
     <string name="title_activity_confirm_password_reset">Confirm Password Reset</string>
     <string name="error_password_required">Please enter password</string>
 
@@ -459,8 +379,6 @@
     <string name="no_product_categories_found">We could not find any product \ncategories for you.</string>
     <string name="start_adding_product_categories_label">Start Adding Categories</string>
     <string name="title_activity_add_product">Add Product</string>
-    <string name="title_activity_add_product_category">Add Product Category</string>
-    <string name="title_activity_edit_product">Edit Product</string>
     <string name="name">Name</string>
     <string name="price">Price</string>
     <string name="product_category">Product category</string>
@@ -472,12 +390,7 @@
     <string name="error_price_cant_be_zero">Price can not be zero</string>
     <string name="product_edit_success">Product successfully updated!.</string>
     <string name="update_in_progress">Update in progress…</string>
-    <string name="uploading">Uploading…</string>
-    <string name="creating_product">Creating your product</string>
     <string name="delete">Delete</string>
-    <string name="product_delete_success">Product successfully deleted!</string>
-    <string name="product_category_delete_success">Category successfully deleted!</string>
-    <string name="error_upload_failed">Sorry! upload failed, please try again.</string>
     <string name="error_product_update">Error! product update failed, please try again.</string>
     <string name="enter_name">Enter name</string>
     <string name="create_product_in_progress">creating your product…</string>
@@ -485,7 +398,6 @@
     <string name="product_category_update_success">Product Category successfully updated!</string>
     <string name="error_delete_failed">Sorry! delete failed. Please try again.</string>
     <string name="title_activity_points_sale_with_pos">Sell</string>
-    <string name="title_activity_stamps_sale_with_pos">Sell</string>
     <string name="title_activity_sale_without_pos">Sell</string>
     <string name="title_activity_choose_program">Choose Program</string>
     <string name="dash">-</string>
@@ -493,7 +405,6 @@
     <string name="title_order_summary">Order summary</string>
     <string name="cart_is_empty">Your cart is empty!</string>
     <string name="add_to_cart">Add to cart</string>
-    <string name="action_cart">Cart</string>
     <string name="charge">CHARGE %1$s %2$s</string>
     <string name="checkout">CHECKOUT %1$s %2$s</string>
     <string name="clear">Clear</string>
@@ -516,11 +427,7 @@
     <string name="stamp">Stamp</string>
     <string name="print_receipt">Print Receipt</string>
     <string name="no_bluetooth_adapter_available">Bluetooth not supported!!</string>
-    <string name="data_sent_to_printer">Data sent to printer</string>
-    <string name="title_activity_bluetooth_devise_list">Bluetooth Device List</string>
-    <string name="no_bluetooth_devises_available">No bluetooth devices available</string>
     <string name="no_printer_devises_available">No printer devices available</string>
-    <string name="bluetooth_device_found">Printer devise found!</string>
     <string name="opening_printer_connection">Opening connection to printer.</string>
     <string name="error_printer_connection">Cannot establish connection with printer. Please ensure your phone and the printer are connected together.</string>
     <string name="transaction_complete">Transaction Complete</string>

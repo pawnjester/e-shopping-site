@@ -18,7 +18,6 @@
 
 
         <TextView
-            android:id="@+id/sp_program_name_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/program_name"
@@ -33,7 +32,6 @@
 
 
         <TextView
-            android:id="@+id/stamps_target_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/stamps_target"
@@ -56,7 +54,6 @@
             android:layout_gravity="center_horizontal" />
 
         <TextView
-            android:id="@+id/reward_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/what_is_the_reward"

@@ -99,8 +99,7 @@
                 android:textSize="12sp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
-                android:text="@string/email_rationale_text"
-                android:id="@+id/email_rationale_text" />
+                android:text="@string/email_rationale_text" />
 
         </android.support.constraint.ConstraintLayout>
 

@@ -11,7 +11,6 @@
     tools:context="co.loystar.loystarbusiness.fragments.SaleWithoutPosFragment">
 
     <TextView
-        android:id="@+id/order_belongs_to_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/sales_belongs_to"
@@ -24,7 +23,6 @@
         android:id="@+id/record_direct_sales_customer_autocomplete"/>
 
     <TextView
-        android:id="@+id/record_direct_sales_amount_spent_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/amount_spent_hint"

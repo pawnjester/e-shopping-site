@@ -20,7 +20,6 @@
 
 
         <TextView
-            android:id="@+id/program_name_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/program_name"
@@ -41,7 +40,6 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/spending_target_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/spending_target"
@@ -78,7 +76,6 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/stamps_target_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/stamps_target"
@@ -103,7 +100,6 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/reward_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/what_is_the_reward"

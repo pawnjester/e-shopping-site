@@ -35,7 +35,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="2"
-        android:id="@+id/customer_value_bloc"
         android:layout_below="@+id/threshold_bloc"
         android:orientation="horizontal">
 

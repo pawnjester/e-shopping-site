@@ -29,6 +29,5 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_tigo_cash"
-        android:id="@+id/tigo_cash"
         android:layout_weight="1" />
 </LinearLayout>

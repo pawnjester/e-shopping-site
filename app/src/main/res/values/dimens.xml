@@ -1,6 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="card_corner_radius">2dp</dimen>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
@@ -10,7 +9,6 @@
 
     <dimen name="empty_state_text_title">20sp</dimen>
     <dimen name="chart_padding">5dp</dimen>
-    <dimen name="item_space_extra">25dp</dimen>
     <dimen name="item_space_medium">15dp</dimen>
     <dimen name="item_space">10dp</dimen>
     <dimen name="card_list_padding">16dp</dimen>
@@ -23,7 +21,6 @@
     <dimen name="item_width">200dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="element_spacing_normal">8dp</dimen>
-    <dimen name="card_list_title_text_size">20sp</dimen>
     <dimen name="fab_top_margin">64dp</dimen>
     <dimen name="badge_text_size">12sp</dimen>
     <dimen name="order_item_text_margin_start">90dp</dimen>

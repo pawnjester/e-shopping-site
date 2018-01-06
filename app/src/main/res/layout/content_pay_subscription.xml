@@ -40,7 +40,6 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/pricing_data_err"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/fetch_pricing_data_network_error"
@@ -188,7 +187,6 @@
                             android:layout_height="wrap_content"/>
 
                         <LinearLayout
-                            android:id="@+id/totalWrapper"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
