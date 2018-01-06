@@ -212,13 +212,18 @@ public class SalesOrderListActivity extends AppCompatActivity {
 
            List<OrderItemEntity> orderItemEntities = item.getOrderItems();
            StringBuilder stringBuilder  = new StringBuilder();
+           int count = 0;
            for (OrderItemEntity orderItemEntity: orderItemEntities) {
+               count++;
                String productName = orderItemEntity.getProduct().getName();
                stringBuilder
                    .append(productName)
                    .append(" (")
                    .append(orderItemEntity.getQuantity())
-                   .append(")").append(", ");
+                   .append(")");
+               if (count < orderItemEntities.size()) {
+                   stringBuilder.append(", ");
+               }
            }
            holder.binding.orderDescription.setText(stringBuilder.toString());
 
@@ -264,9 +269,10 @@ public class SalesOrderListActivity extends AppCompatActivity {
                            SalesOrderEntity salesOrderEntity = mDataStore.findByKey(SalesOrderEntity.class, binding.getSalesOrder().getId()).blockingGet();
                            salesOrderEntity.setStatus(getString(R.string.rejected));
                            salesOrderEntity.setUpdateRequired(true);
-                           mDataStore.update(salesOrderEntity).subscribe();
-                           SyncAdapter.performSync(mContext, mSessionManager.getEmail());
-                           mAdapter.queryAsync();
+                           mDataStore.update(salesOrderEntity).subscribe(orderEntity -> {
+                               SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                               mAdapter.queryAsync();
+                           });
                            break;
                    }
                });

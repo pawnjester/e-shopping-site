@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +48,6 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionSms;
 import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import io.requery.Persistable;
@@ -60,6 +58,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -375,7 +374,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 for (final SalesTransactionEntity transactionEntity : unsyncedTransactions) {
                     LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
                     final CustomerEntity customer = transactionEntity.getCustomer();
-                    Log.e(TAG, "syncTransactions: " + customer );
                     if (customer != null) {
 
                         try {
@@ -439,7 +437,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     @Override
                                     public void onFailure(@NonNull Call<Transaction> call, @NonNull Throwable t) {
                                         t.printStackTrace();
-                                        Log.e(TAG, "onFailure: " + t.getMessage() );
+                                        Timber.e(t);
                                     }
                                 });
 
@@ -730,11 +728,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     @Override
                     public void onFailure(@NonNull Call<ArrayList<SalesOrder>> call, @NonNull Throwable t) {
-
+                        Timber.e(t);
                     }
                 });
             } catch (JSONException e) {
-                Log.d(TAG, "syncSalesOrders: " + e.getMessage());
+                Timber.e(e);
             }
 
             /*sync sales orders that need to be updated on the server*/
@@ -765,7 +763,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     });
                 }
             } catch (JSONException e) {
-                Log.d(TAG, "syncSalesOrders: " + e.getMessage());
+                Timber.e(e);
             }
         }
     }

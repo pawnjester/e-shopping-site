@@ -44,6 +44,7 @@ public class SalesOrderDetailFragment extends Fragment{
     private SessionManager mSessionManager;
     private View processOrderViewWrapper;
     private MyAlertDialog myAlertDialog;
+    private ReactiveEntityStore<Persistable> mDataStore;
 
     public SalesOrderDetailFragment() {}
 
@@ -56,6 +57,7 @@ public class SalesOrderDetailFragment extends Fragment{
         }
 
         mSessionManager = new SessionManager(getActivity());
+        mDataStore = DatabaseManager.getDataStore(getActivity());
         if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
 
             DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
@@ -93,8 +95,6 @@ public class SalesOrderDetailFragment extends Fragment{
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
 
-        ReactiveEntityStore<Persistable> mDataStore = DatabaseManager.getDataStore(getActivity());
-
         RxView.clicks(rootView.findViewById(R.id.reject_order_btn)).subscribe(o -> {
             myAlertDialog.setTitle("Are you sure?");
             myAlertDialog.setPositiveButton(getString(R.string.confirm_reject), (dialogInterface, i) -> {
@@ -106,12 +106,13 @@ public class SalesOrderDetailFragment extends Fragment{
                         dialogInterface.dismiss();
                         mItem.setStatus(getString(R.string.rejected));
                         mItem.setUpdateRequired(true);
-                        mDataStore.update(mItem).subscribe();
-                        processOrderViewWrapper.setVisibility(View.GONE);
-                        SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+                        mDataStore.update(mItem).subscribe(orderEntity -> {
+                            processOrderViewWrapper.setVisibility(View.GONE);
+                            SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
-                        Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
-                        startActivity(intent);
+                            Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                            startActivity(intent);
+                        });
                         break;
                 }
             });
@@ -132,12 +133,13 @@ public class SalesOrderDetailFragment extends Fragment{
                         dialogInterface.dismiss();
                         mItem.setStatus(getString(R.string.completed));
                         mItem.setUpdateRequired(true);
-                        mDataStore.update(mItem).subscribe();
-                        processOrderViewWrapper.setVisibility(View.GONE);
-                        SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+                        mDataStore.update(mItem).subscribe(orderEntity -> {
+                            processOrderViewWrapper.setVisibility(View.GONE);
+                            SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
-                        Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
-                        startActivity(intent);
+                            Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                            startActivity(intent);
+                        });
                         break;
                 }
             });
