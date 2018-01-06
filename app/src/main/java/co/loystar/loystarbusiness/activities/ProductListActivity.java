@@ -89,6 +89,7 @@ public class ProductListActivity
         FloatingActionButton fab = findViewById(R.id.activity_product_list_toolbar_fab);
         fab.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, AddProductActivity.class);
+            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
             startActivity(intent);
         });
 
