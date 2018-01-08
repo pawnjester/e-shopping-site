@@ -25,7 +25,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,12 +68,10 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
-    private static final String TAG = SaleWithPosConfirmationActivity.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
     @SuppressLint("UseSparseArrays")
     private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
-    private ArrayList<LoyaltyProgramEntity> mLoyaltyPrograms = new ArrayList<>();
     private ArrayList<LoyaltyDeal> loyaltyDeals = new ArrayList<>();
     private DatabaseManager mDatabaseManager;
 
@@ -114,9 +111,8 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
 
         CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
         List<LoyaltyProgramEntity> programs = mDatabaseManager.getMerchantLoyaltyPrograms(mSessionManager.getMerchantId());
-        mLoyaltyPrograms.addAll(programs);
 
-        for (LoyaltyProgramEntity programEntity: mLoyaltyPrograms) {
+        for (LoyaltyProgramEntity programEntity: programs) {
             int total_user_points = mDatabaseManager.getTotalCustomerPointsForProgram(programEntity.getId(), mCustomerId);
             int total_user_stamps = mDatabaseManager.getTotalCustomerStampsForProgram(programEntity.getId(), mCustomerId);
             loyaltyDeals.add(new LoyaltyDeal(
