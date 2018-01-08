@@ -454,4 +454,9 @@
     <string name="view">View</string>
     <string name="confirm_reject">Yes, reject</string>
     <string name="yes">Yes</string>
+    <string name="customer_only">CustomerOnly</string>
+    <string name="cashier_only">CashierOnly</string>
+    <string name="kitchen_only">KitchenOnly</string>
+    <string name="customer_cashier_kitchen">CustomerCashierKitchen</string>
+    <string name="print_for">Print for</string>
 </resources>

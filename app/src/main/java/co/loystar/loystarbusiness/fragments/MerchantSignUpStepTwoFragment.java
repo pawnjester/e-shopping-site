@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.models.pojos.BusinessType;
-import co.loystar.loystarbusiness.utils.BusinessTypesFetcher;
+import co.loystar.loystarbusiness.models.BusinessTypesFetcher;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.Currency.Currency;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPicker;

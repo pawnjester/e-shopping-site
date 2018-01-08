@@ -354,7 +354,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".activities.PosSaleConfirmationActivity"
+            android:name=".activities.SaleWithPosConfirmationActivity"
             android:label="@string/title_activity_pos_sale_confirmation"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

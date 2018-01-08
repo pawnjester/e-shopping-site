@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils;
+package co.loystar.loystarbusiness.models;
 
 import android.content.Context;
 

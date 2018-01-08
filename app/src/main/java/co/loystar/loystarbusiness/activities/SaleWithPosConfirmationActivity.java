@@ -66,9 +66,10 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
-public class PosSaleConfirmationActivity extends RxAppCompatActivity {
-    private static final String TAG = PosSaleConfirmationActivity.class.getSimpleName();
+public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
+    private static final String TAG = SaleWithPosConfirmationActivity.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
     @SuppressLint("UseSparseArrays")
@@ -94,8 +95,8 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pos_sale_confirmation);
-        Toolbar toolbar = findViewById(R.id.activity_pos_sale_confirmation_toolbar);
+        setContentView(R.layout.activity_sale_with_pos_confirmation);
+        Toolbar toolbar = findViewById(R.id.activity_sale_with_pos_confirmation_toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -103,7 +104,7 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mLayout = findViewById(R.id.activity_pos_sale_container);
+        mLayout = findViewById(R.id.activity_sale_with_pos_confirmation_wrapper);
         mContext = this;
         mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
@@ -550,7 +551,7 @@ public class PosSaleConfirmationActivity extends RxAppCompatActivity {
             mmOutputStream.write(buffer, 0, buffer.length);
 
         } catch (IOException e) {
-            Log.e(TAG, "Exception during write", e);
+            Timber.e(e);
         }
     }
 

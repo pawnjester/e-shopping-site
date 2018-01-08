@@ -19,7 +19,7 @@ import java.util.List;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.models.pojos.LoyaltyProgram;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.LoyaltyProgramsFetcher;
+import co.loystar.loystarbusiness.models.LoyaltyProgramsFetcher;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 

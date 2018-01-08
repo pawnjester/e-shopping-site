@@ -1,0 +1,18 @@
+[
+  {
+    "id": "CustomerOnly",
+    "title": "Customer Only"
+  },
+  {
+    "id": "CashierOnly",
+    "title": "Cashier Only"
+  },
+  {
+    "id": "KitchenOnly",
+    "title": "Kitchen Only"
+  },
+  {
+    "id": "CustomerCashierKitchen",
+    "title": "Customer, Cashier, and Kitchen"
+  }
+]

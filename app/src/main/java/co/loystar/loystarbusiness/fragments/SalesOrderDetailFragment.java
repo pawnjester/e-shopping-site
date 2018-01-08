@@ -32,6 +32,7 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDivide
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
+import timber.log.Timber;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
@@ -74,6 +75,7 @@ public class SalesOrderDetailFragment extends Fragment{
         }
         processOrderViewWrapper = rootView.findViewById(R.id.process_order_action_buttons_wrapper);
         if (mItem != null) {
+            Timber.e("MITEM: %s", mItem.getStatus());
             orderItems.addAll(mItem.getOrderItems());
             if (mItem.getStatus().equals(getString(R.string.pending))) {
                 processOrderViewWrapper.setVisibility(View.VISIBLE);

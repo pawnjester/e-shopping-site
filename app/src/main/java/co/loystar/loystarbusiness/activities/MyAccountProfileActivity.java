@@ -35,7 +35,7 @@ import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.pojos.BusinessType;
-import co.loystar.loystarbusiness.utils.BusinessTypesFetcher;
+import co.loystar.loystarbusiness.models.BusinessTypesFetcher;
 import co.loystar.loystarbusiness.utils.ui.Currency.Currency;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPicker;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;

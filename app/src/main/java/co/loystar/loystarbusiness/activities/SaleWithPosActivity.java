@@ -24,7 +24,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -470,7 +469,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     }
                     bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
 
-                    Intent intent = new Intent(mContext, PosSaleConfirmationActivity.class);
+                    Intent intent = new Intent(mContext, SaleWithPosConfirmationActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.putExtras(bundle);
                     startActivity(intent);

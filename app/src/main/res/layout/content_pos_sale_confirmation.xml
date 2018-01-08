@@ -8,8 +8,8 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="co.loystar.loystarbusiness.activities.PosSaleConfirmationActivity"
-    tools:showIn="@layout/activity_pos_sale_confirmation">
+    tools:context="co.loystar.loystarbusiness.activities.SaleWithPosConfirmationActivity"
+    tools:showIn="@layout/activity_sale_with_pos_confirmation">
 
     <LinearLayout
         android:orientation="vertical"
