@@ -490,7 +490,7 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
             String txt = "";
             if (deal.getProgram_type().equals(getString(R.string.simple_points))) {
                 if (deal.getTotal_user_points() >= deal.getThreshold()) {
-                    txt = mCustomerEntity.getFirstName() + " is due this deal.";
+                    txt = mCustomerEntity.getFirstName() + " is due for this reward.";
                 } else {
                     String pointsTxt;
                     if (deal.getTotal_user_points() == 1) {
@@ -502,7 +502,7 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
                 }
             } else if (deal.getProgram_type().equals(getString(R.string.stamps_program))) {
                 if (deal.getTotal_user_stamps() >= deal.getThreshold()) {
-                    txt = mCustomerEntity.getFirstName() + " is due this deal.";
+                    txt = mCustomerEntity.getFirstName() + " is due for this reward.";
                 } else {
                     String stampsTxt;
                     if (deal.getTotal_user_stamps() == 1) {
