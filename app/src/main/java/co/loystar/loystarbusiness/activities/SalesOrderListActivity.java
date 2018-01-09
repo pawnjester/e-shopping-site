@@ -15,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -62,7 +63,7 @@ import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.TimeUtils;
 import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
-import co.loystar.loystarbusiness.utils.ui.OrderPrintBottomSheetDialogFragment;
+import co.loystar.loystarbusiness.utils.ui.OrderPrintOptionsDialogFragment;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -83,7 +84,7 @@ import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
 
 public class SalesOrderListActivity extends RxAppCompatActivity
-    implements OrderPrintBottomSheetDialogFragment.OnPrintOptionSelectedListener {
+    implements OrderPrintOptionsDialogFragment.OnPrintOptionSelectedListener {
 
     private boolean mTwoPane;
     private ExecutorService executor;
@@ -149,8 +150,16 @@ public class SalesOrderListActivity extends RxAppCompatActivity
             mTwoPane = true;
         }
 
-        if (getIntent().hasExtra(Constants.SALES_ORDER_ID)){
-            int orderId = getIntent().getIntExtra(Constants.SALES_ORDER_ID, 0);
+        setupRecyclerView();
+        onNewIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if (intent.hasExtra(Constants.SALES_ORDER_ID)){
+            int orderId = intent.getIntExtra(Constants.SALES_ORDER_ID, 0);
             if (mTwoPane) {
                 Bundle arguments = new Bundle();
                 arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, orderId);
@@ -160,9 +169,9 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                     .replace(R.id.sales_order_detail_container, salesOrderDetailFragment)
                     .commit();
             } else {
-                Intent intent = new Intent(mContext, SalesOrderDetailActivity.class);
-                intent.putExtra(SalesOrderDetailFragment.ARG_ITEM_ID, orderId);
-                startActivity(intent);
+                Intent detailIntent = new Intent(mContext, SalesOrderDetailActivity.class);
+                detailIntent.putExtra(SalesOrderDetailFragment.ARG_ITEM_ID, orderId);
+                startActivity(detailIntent);
             }
         }
         else {
@@ -179,8 +188,6 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                 }
             }
         }
-
-        setupRecyclerView();
     }
 
     @Override
@@ -296,7 +303,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                }
            }
            holder.binding.orderDescription.setText(stringBuilder.toString());
-           holder.binding.printOrderReceipt.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_print));
+           holder.binding.printOrderReceipt.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_print));
 
            holder.binding.getRoot().setLayoutParams(new FrameLayout.LayoutParams(
                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -328,7 +335,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
            binding.printOrderReceipt.setOnClickListener(view -> {
                 mSelectedOrderEntity = mDataStore.findByKey(SalesOrderEntity.class, binding.getSalesOrder().getId()).blockingGet();
                 if (mSelectedOrderEntity != null) {
-                    OrderPrintBottomSheetDialogFragment bottomSheetDialogFragment = OrderPrintBottomSheetDialogFragment.newInstance();
+                    OrderPrintOptionsDialogFragment bottomSheetDialogFragment = OrderPrintOptionsDialogFragment.newInstance();
                     bottomSheetDialogFragment.setListener(SalesOrderListActivity.this);
                     if (!bottomSheetDialogFragment.isAdded()) {
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());

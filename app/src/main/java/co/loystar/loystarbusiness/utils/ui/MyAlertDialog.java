@@ -31,7 +31,7 @@ public class MyAlertDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getActivity() == null) {
-            return getDialog();
+            return super.onCreateDialog(savedInstanceState);
         }
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

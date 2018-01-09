@@ -46,12 +46,11 @@ public class CustomerAutoCompleteDialog extends RxAppCompatDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        if (getActivity() == null) {
+            return super.onCreateDialog(savedInstanceState);
+        }
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         @SuppressLint("InflateParams") View rootView = inflater.inflate(R.layout.customer_autocomplete_dialog, null);
-
-        if (getActivity() == null) {
-            return getDialog();
-        }
 
         final AutoCompleteTextView autoCompleteTextView = rootView.findViewById(R.id.customerAutocomplete);
         autoCompleteTextView.setThreshold(1);

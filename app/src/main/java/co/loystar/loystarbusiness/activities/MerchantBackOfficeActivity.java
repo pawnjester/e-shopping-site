@@ -74,6 +74,7 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.GraphCoordinates;
@@ -89,11 +90,11 @@ import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.smooch.core.Smooch;
 import io.smooch.core.User;
+import timber.log.Timber;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity
     implements OnChartValueSelectedListener {
-    private static final String TAG = MerchantBackOfficeActivity.class.getCanonicalName();
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private SessionManager mSessionManager;
     private Context mContext;
@@ -114,8 +115,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null && intent.getAction().equals(Constants.PUSH_NOTIFICATION)) {
-                // new push notification is received
-
+                Timber.d("New Notification: %s", intent.getStringExtra(Constants.NOTIFICATION_MESSAGE));
             }
 
         }

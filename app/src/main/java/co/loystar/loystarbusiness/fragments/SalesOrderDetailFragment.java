@@ -75,7 +75,6 @@ public class SalesOrderDetailFragment extends Fragment{
         }
         processOrderViewWrapper = rootView.findViewById(R.id.process_order_action_buttons_wrapper);
         if (mItem != null) {
-            Timber.e("MITEM: %s", mItem.getStatus());
             orderItems.addAll(mItem.getOrderItems());
             if (mItem.getStatus().equals(getString(R.string.pending))) {
                 processOrderViewWrapper.setVisibility(View.VISIBLE);
@@ -113,6 +112,7 @@ public class SalesOrderDetailFragment extends Fragment{
                             SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
                             Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                         });
                         break;
@@ -140,6 +140,7 @@ public class SalesOrderDetailFragment extends Fragment{
                             SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
                             Intent intent = new Intent(getActivity(), SalesOrderListActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                         });
                         break;

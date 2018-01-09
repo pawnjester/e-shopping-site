@@ -369,6 +369,7 @@
         <activity
             android:name=".activities.SalesOrderListActivity"
             android:label="@string/title_salesorder_list"
+            android:launchMode="singleTop"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

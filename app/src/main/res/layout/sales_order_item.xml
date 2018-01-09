@@ -46,20 +46,6 @@
                     android:text="5 min ago"
                     android:layout_height="wrap_content" />
 
-                <ImageView
-                    android:contentDescription="@string/image"
-                    android:layout_width="wrap_content"
-                    android:visibility="gone"
-                    android:paddingTop="10dp"
-                    android:paddingEnd="10dp"
-                    android:paddingRight="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:id="@+id/printOrderReceipt"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_height="wrap_content" />
-
             </RelativeLayout>
 
             <LinearLayout
@@ -86,6 +72,17 @@
                     android:text="bottled water(2), chicken wings(1), fried goat(2), balls of kenkey(3), fried fish (2)"
                     android:layout_height="wrap_content" />
 
+                <ImageView
+                    android:contentDescription="@string/image"
+                    android:layout_width="wrap_content"
+                    android:visibility="gone"
+                    android:paddingTop="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_gravity="end"
+                    android:id="@+id/printOrderReceipt"
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -95,7 +92,8 @@
                 android:orientation="horizontal"
                 android:paddingLeft="@dimen/activity_vertical_margin"
                 android:paddingRight="@dimen/activity_vertical_margin"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:baselineAligned="false">
 
                 <android.support.constraint.ConstraintLayout
                     android:layout_width="0dp"
