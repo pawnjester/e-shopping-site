@@ -107,10 +107,10 @@ public class LoyaltyProgramListActivity extends RxAppCompatActivity {
         }
 
         if (mTwoPane) {
-            Result<LoyaltyProgramEntity> loyaltyProgramEntities = mAdapter.performQuery();
-            if (!loyaltyProgramEntities.toList().isEmpty()) {
+            Result<LoyaltyProgramEntity> result = mAdapter.performQuery();
+            if (result.iterator().hasNext() && result.first() != null) {
                 Bundle arguments = new Bundle();
-                arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgramEntities.first().getId());
+                arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, result.first().getId());
                 LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
                 fragment.setArguments(arguments);
                 getSupportFragmentManager().beginTransaction()

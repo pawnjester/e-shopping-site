@@ -158,7 +158,7 @@ public class CustomerListActivity extends RxAppCompatActivity
         else {
             if (mTwoPane) {
                 Result<CustomerEntity> result = mAdapter.performQuery();
-                if (result.first() != null) {
+                if (result.iterator().hasNext() && result.first() != null) {
                     Bundle arguments = new Bundle();
                     arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, result.first().getId());
                     CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();

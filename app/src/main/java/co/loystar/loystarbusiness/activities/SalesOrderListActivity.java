@@ -177,7 +177,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
         else {
             if (mTwoPane) {
                 Result<SalesOrderEntity> result = mAdapter.performQuery();
-                if (result.first() != null) {
+                if (result.iterator().hasNext() && result.first() != null) {
                     Bundle arguments = new Bundle();
                     arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, result.first().getId());
                     SalesOrderDetailFragment salesOrderDetailFragment = new SalesOrderDetailFragment();
