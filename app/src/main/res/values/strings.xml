@@ -440,7 +440,7 @@
     <string name="title_activity_pos_sale_confirmation">Transaction Confirmation</string>
     <string name="title_activity_sale_without_pos_confirmation">Transaction Confirmation</string>
     <string name="title_salesorder_list">My Orders</string>
-    <string name="title_salesorder_detail">Process Order</string>
+    <string name="title_salesorder_detail">Order details</string>
     <string name="status_pending">PENDING</string>
     <string name="status_rejected">REJECTED</string>
     <string name="status_completed">COMPLETED</string>

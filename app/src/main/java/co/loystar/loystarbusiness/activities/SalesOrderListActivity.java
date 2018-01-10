@@ -271,10 +271,12 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                 holder.binding.statusText.setText(getString(R.string.status_pending));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
             } else if (item.getStatus().equals(getString(R.string.completed))) {
+                holder.binding.salesOrderActionsWrapper.setVisibility(View.GONE);
                 holder.binding.printOrderReceipt.setVisibility(View.VISIBLE);
                 holder.binding.statusText.setText(getString(R.string.status_completed));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.green));
             } else if (item.getStatus().equals(getString(R.string.rejected))){
+                holder.binding.salesOrderActionsWrapper.setVisibility(View.GONE);
                 holder.binding.printOrderReceipt.setVisibility(View.GONE);
                 holder.binding.statusText.setText(getString(R.string.status_rejected));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
