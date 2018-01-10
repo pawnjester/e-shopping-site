@@ -267,7 +267,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.save_with_icon, menu);
+        inflater.inflate(R.menu.save_with_icon_menu, menu);
         return true;
     }
 
@@ -293,7 +293,7 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
                     finish();
                 }
                 return true;
-            case R.id.action_done:
+            case R.id.action_save:
                 if (formIsDirty()) {
                     closeKeyBoard();
                     submitForm();

@@ -368,7 +368,7 @@ public class AddProductActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.save_with_icon, menu);
+        inflater.inflate(R.menu.save_with_icon_menu, menu);
         return true;
     }
 
@@ -398,7 +398,7 @@ public class AddProductActivity extends AppCompatActivity {
                     navigateUpTo(new Intent(this, ProductListActivity.class));
                 }
                 return true;
-            case R.id.action_done:
+            case R.id.action_save:
                 if (isFormDirty()) {
                     closeKeyBoard();
                     submitForm();

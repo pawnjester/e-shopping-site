@@ -56,6 +56,7 @@ import java.util.Locale;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
@@ -63,6 +64,7 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
 import co.loystar.loystarbusiness.utils.RequestBodyWithProgress;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
+import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import id.zelory.compressor.Compressor;
 import okhttp3.MediaType;
@@ -77,6 +79,9 @@ import permissions.dispatcher.RuntimePermissions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static android.content.DialogInterface.BUTTON_NEGATIVE;
+import static android.content.DialogInterface.BUTTON_POSITIVE;
 
 @RuntimePermissions
 public class ProductDetailActivity extends AppCompatActivity {
@@ -117,6 +122,8 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String originalPrice;
     private TextView charCounterView;
     private ProductEntity mProductItem;
+    private MyAlertDialog myAlertDialog;
+    private SessionManager mSessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,9 +145,10 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         contentResolver = this.getContentResolver();
         mContext = this;
-        SessionManager mSessionManager = new SessionManager(this);
+        mSessionManager = new SessionManager(this);
         mDatabaseManager = DatabaseManager.getInstance(this);
         mApiClient = new ApiClient(this);
+        myAlertDialog = new MyAlertDialog();
 
         mLayout = findViewById(R.id.activity_product_detail_container);
         mProgressView = findViewById(R.id.productEditProgressView);
@@ -298,7 +306,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.save_with_icon, menu);
+        inflater.inflate(R.menu.save_or_delete_menu, menu);
         return true;
     }
 
@@ -328,13 +336,37 @@ public class ProductDetailActivity extends AppCompatActivity {
                     navigateUpTo(new Intent(this, ProductListActivity.class));
                 }
                 return true;
-            case R.id.action_done:
+            case R.id.action_save:
                 if (isFormDirty()) {
                     closeKeyBoard();
                     submitForm();
                     return true;
                 }
                 return false;
+            case R.id.action_delete:
+                if (mProductItem != null) {
+                    myAlertDialog.setTitle("Are you sure?");
+                    myAlertDialog.setMessage("You won't be able to recover this product.");
+                    myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), (dialogInterface, i) -> {
+                        switch (i) {
+                            case BUTTON_NEGATIVE:
+                                dialogInterface.dismiss();
+                                break;
+                            case BUTTON_POSITIVE:
+                                dialogInterface.dismiss();
+                                mProductItem.setDeleted(true);
+                                mDatabaseManager.updateProduct(mProductItem);
+                                SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+
+                                Intent intent = new Intent(mContext, ProductListActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                        }
+                    });
+                    myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
+                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
