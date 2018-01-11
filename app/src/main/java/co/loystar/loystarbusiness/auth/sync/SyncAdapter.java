@@ -753,7 +753,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
                                 salesOrderEntity.setUpdateRequired(false);
-                                mDataStore.update(salesOrderEntity).subscribe(/*no-op*/);
+                                mDataStore.upsert(salesOrderEntity).subscribe(/*no-op*/);
                             }
                         }
 
