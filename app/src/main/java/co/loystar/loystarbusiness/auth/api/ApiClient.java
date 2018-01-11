@@ -52,20 +52,12 @@ public class ApiClient {
                             return chain.proceed(originalRequest);
                         }
 
-                        String token =
-                            mAccountManager.peekAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
-
-                        Timber.d("peekAuthToken: " + token);
-                        if (token != null) {
-                            Request authorisedRequest = originalRequest.newBuilder()
-                                .header("ACCESS-TOKEN", token)
-                                .header("CLIENT", mSessionManager.getClientKey())
-                                .header("UID", mSessionManager.getEmail())
-                                .build();
-                            return chain.proceed(authorisedRequest);
-                        }
-
-                        return chain.proceed(originalRequest);
+                        Request authorisedRequest = originalRequest.newBuilder()
+                            .header("ACCESS-TOKEN", mSessionManager.getAccessToken())
+                            .header("CLIENT", mSessionManager.getClientKey())
+                            .header("UID", mSessionManager.getEmail())
+                            .build();
+                        return chain.proceed(authorisedRequest);
                     })
                     .authenticator((route, response) -> {
                         if (responseCount(response) >= 3) {
@@ -73,13 +65,11 @@ public class ApiClient {
                         }
                         if (mAccount != null) {
                             String oldToken = mAccountManager.peekAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
-                            Log.d(TAG, "Re-authenticate. oldToken: " + oldToken );
                             if (oldToken != null) {
                                 mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, oldToken);
                                 try {
                                     String newToken = mAccountManager.blockingGetAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
                                     if (newToken != null) {
-                                        Log.d(TAG, "Re-authenticate. newToken: " + newToken);
                                         return response.request().newBuilder()
                                             .header("ACCESS-TOKEN", newToken)
                                             .header("CLIENT", mSessionManager.getClientKey())
