@@ -339,7 +339,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                            SalesOrderEntity salesOrderEntity = mDataStore.findByKey(SalesOrderEntity.class, binding.getSalesOrder().getId()).blockingGet();
                            salesOrderEntity.setStatus(getString(R.string.rejected));
                            salesOrderEntity.setUpdateRequired(true);
-                           mDataStore.update(salesOrderEntity).subscribe(orderEntity -> {
+                           mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
                                SyncAdapter.performSync(mContext, mSessionManager.getEmail());
                                mAdapter.queryAsync();
                            });

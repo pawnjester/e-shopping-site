@@ -107,7 +107,7 @@ public class SalesOrderDetailFragment extends Fragment{
                         dialogInterface.dismiss();
                         mItem.setStatus(getString(R.string.rejected));
                         mItem.setUpdateRequired(true);
-                        mDataStore.update(mItem).subscribe(orderEntity -> {
+                        mDataStore.upsert(mItem).subscribe(orderEntity -> {
                             processOrderViewWrapper.setVisibility(View.GONE);
                             SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
@@ -119,7 +119,7 @@ public class SalesOrderDetailFragment extends Fragment{
                 }
             });
             myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
-            if (getActivity() != null) {
+            if (getActivity() != null && !myAlertDialog.isAdded()) {
                 myAlertDialog.show(getActivity().getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         });
@@ -135,7 +135,7 @@ public class SalesOrderDetailFragment extends Fragment{
                         dialogInterface.dismiss();
                         mItem.setStatus(getString(R.string.completed));
                         mItem.setUpdateRequired(true);
-                        mDataStore.update(mItem).subscribe(orderEntity -> {
+                        mDataStore.upsert(mItem).subscribe(orderEntity -> {
                             processOrderViewWrapper.setVisibility(View.GONE);
                             SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
@@ -147,7 +147,7 @@ public class SalesOrderDetailFragment extends Fragment{
                 }
             });
             myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
-            if (getActivity() != null) {
+            if (getActivity() != null && !myAlertDialog.isAdded()) {
                 myAlertDialog.show(getActivity().getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         });
