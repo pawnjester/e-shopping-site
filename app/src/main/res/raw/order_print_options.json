@@ -10,9 +10,5 @@
   {
     "id": "KitchenOnly",
     "title": "Kitchen Only"
-  },
-  {
-    "id": "CustomerCashierKitchen",
-    "title": "Customer, Cashier, and Kitchen"
   }
 ]

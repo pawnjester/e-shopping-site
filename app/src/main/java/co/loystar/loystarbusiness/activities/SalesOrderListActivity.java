@@ -33,7 +33,6 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +40,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,7 +49,6 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.SalesOrderItemBinding;
 import co.loystar.loystarbusiness.fragments.SalesOrderDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
-import co.loystar.loystarbusiness.models.OrderPrintOptionsFetcher;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
@@ -68,7 +65,6 @@ import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -223,23 +219,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
 
     @Override
     public void onPrintOptionSelected(OrderPrintOption orderPrintOption) {
-        if (orderPrintOption.id.equals(getString(R.string.customer_cashier_kitchen))) {
-            ArrayList<OrderPrintOption> allPrintOptions = OrderPrintOptionsFetcher.getOrderPrintOptions(mContext);
-            ArrayList<OrderPrintOption> printOptions = new ArrayList<>();
-            for (OrderPrintOption printOption: allPrintOptions) {
-                if (!printOption.id.equals(getString(R.string.customer_cashier_kitchen))) {
-                    printOptions.add(printOption);
-                }
-            }
-            for (OrderPrintOption printOption: printOptions) {
-                Completable.complete()
-                    .delay(2, TimeUnit.SECONDS)
-                    .doOnComplete(() -> printViaBT(printOption))
-                    .subscribe();
-            }
-        } else {
-            printViaBT(orderPrintOption);
-        }
+        printViaBT(orderPrintOption);
     }
 
     private class SalesOrderListAdapter extends QueryRecyclerAdapter<SalesOrderEntity, BindingHolder<SalesOrderItemBinding>> {
@@ -367,7 +347,9 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                    }
                });
                myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
-               myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+               if (myAlertDialog.isAdded()) {
+                   myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+               }
            });
 
            return new BindingHolder<>(binding);

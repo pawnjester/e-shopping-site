@@ -27,6 +27,7 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/13/17.
@@ -140,8 +141,8 @@ public class InternationalPhoneInput extends RelativeLayout
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             //set default to the US if device network iso is not in the list
-            mSelectedCountry = mCountries.get(6);
-            mSpinner.setSelection(6);
+            mSelectedCountry = mCountries.get(229);
+            mSpinner.setSelection(229);
         }
     }
 
