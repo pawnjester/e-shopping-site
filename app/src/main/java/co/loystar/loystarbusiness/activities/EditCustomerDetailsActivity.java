@@ -105,7 +105,7 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
             userFnameField.setText(mCustomer.getFirstName());
             userLnameField.setText(mCustomer.getLastName());
             userPhoneField.setNumber(mCustomer.getPhoneNumber());
-            if (!mCustomer.getEmail().contains("yopmail.com")) {
+            if (mCustomer.getEmail() != null && !mCustomer.getEmail().contains("yopmail.com")) {
                 userEmailField.setText(mCustomer.getEmail());
             }
             if (mCustomer.getDateOfBirth() != null) {
@@ -226,7 +226,9 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                             mCustomer.setDateOfBirth(customer.getDate_of_birth());
                             mCustomer.setUpdatedAt(new Timestamp(customer.getUpdated_at().getMillis()));
                             mCustomer.setSex(customer.getSex());
-                            mCustomer.setEmail(customer.getEmail());
+                            if (customer.getEmail() != null && !customer.getEmail().contains("yopmail.com")) {
+                                mCustomer.setEmail(customer.getEmail());
+                            }
                             mDatabaseManager.updateCustomer(mCustomer);
 
                             Intent intent = new Intent(EditCustomerDetailsActivity.this, CustomerListActivity.class);
