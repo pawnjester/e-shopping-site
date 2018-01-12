@@ -3,7 +3,6 @@ package co.loystar.loystarbusiness.utils.fcm;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -17,13 +16,13 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.NotificationUtils;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 12/18/17.
  */
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-    private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
     private static final String KEY_SALES_ORDER = "sales_order";
     private static final String KEY_SYNC_REQUEST = "sync_request";
     /**
@@ -50,7 +49,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     SyncAdapter.performSync(getApplicationContext(), sessionManager.getEmail());
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Exception: " + e.getMessage());
+                Timber.e(e);
             }
         }
 

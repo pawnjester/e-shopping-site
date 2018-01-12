@@ -33,11 +33,13 @@ import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.NotificationUtils;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 12/18/17.
@@ -185,7 +187,7 @@ public class MyJobService extends JobService {
             String imageUrl = notificationObject.getString("image");
             String timestamp = notificationObject.getString("timestamp");
 
-            if (!NotificationUtils.isAppIsInBackground(getApplicationContext())) {
+            if (Foreground.get().isForeground()) {
                 // app is in foreground, broadcast the push message
                 Intent pushNotification = new Intent(Constants.PUSH_NOTIFICATION);
                 pushNotification.putExtra(Constants.NOTIFICATION_MESSAGE, message);
@@ -204,7 +206,7 @@ public class MyJobService extends JobService {
                     // image is present, show notification with image
                     showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, imageUrl);
                 }
-            } else {
+            } else if (Foreground.get().isBackground()){
                 // app is in background, show the notification in notification tray
                 Intent resultIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
                 resultIntent.putExtra(Constants.NOTIFICATION_MESSAGE, message);

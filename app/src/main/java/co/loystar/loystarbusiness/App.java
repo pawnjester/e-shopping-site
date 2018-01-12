@@ -5,6 +5,7 @@ import android.support.multidex.MultiDexApplication;
 
 import com.google.firebase.FirebaseApp;
 
+import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.TypefaceUtil;
 import io.smooch.core.Settings;
 import io.smooch.core.Smooch;
@@ -27,6 +28,7 @@ public class App extends MultiDexApplication{
     public void onCreate() {
         super.onCreate();
         singleton = this;
+        Foreground.init(this);
         extractLato();
         setGlobalFontType();
         singleton.initializeInstance();
