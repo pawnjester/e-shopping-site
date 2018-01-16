@@ -122,6 +122,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private EmptyRecyclerView mOrderSummaryRecyclerView;
     private CustomerAutoCompleteDialog customerAutoCompleteDialog;
     private int proceedToCheckoutBtnHeight = 0;
+    private MyAlertDialog myAlertDialog;
 
     private final String KEY_PRODUCTS_RECYCLER_STATE = "products_recycler_state";
     private final String KEY_SELECTED_PRODUCTS_STATE = "selected_products_state";
@@ -251,50 +252,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         setUpBottomSheetView();
         if (mSelectedCustomer != null) {
             setOrderSummaryView(mSelectedCustomer, false);
-        }
-
-        MyAlertDialog myAlertDialog;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            myAlertDialog = MyAlertDialog.newInstance(android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            myAlertDialog = new MyAlertDialog();
-        }
-        myAlertDialog.setShowNegativeButton(false);
-
-        List<ProductEntity> productEntities = mProductsAdapter.performQuery().toList();
-        List<ProductEntity> productsWithoutLoyaltyProgram = new ArrayList<>();
-        for (ProductEntity productEntity: productEntities) {
-            if (productEntity.getLoyaltyProgram() == null) {
-                productsWithoutLoyaltyProgram.add(productEntity);
-            }
-        }
-        if (!productsWithoutLoyaltyProgram.isEmpty()) {
-            myAlertDialog.setTitle("Products Notice");
-            if (productEntities.size() == productsWithoutLoyaltyProgram.size()) {
-                myAlertDialog.setMessage("Your products or services don't have loyalty programs set. For each product, go to the products edit screen, select a loyalty program and save.");
-                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
-                    Intent intent = new Intent(mContext, ProductListActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                });
-            } else if (productsWithoutLoyaltyProgram.size() == 1){
-                myAlertDialog.setMessage("1 of your products or services don't have a loyalty program set. Click the button below, select a loyalty program and save.");
-                myAlertDialog.setPositiveButton(getString(R.string.update_product), (dialogInterface, i) -> {
-                    Intent intent = new Intent(mContext, ProductDetailActivity.class);
-                    intent.putExtra(ProductDetailActivity.ARG_ITEM_ID, productsWithoutLoyaltyProgram.get(0).getId());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    startActivity(intent);
-                });
-            } else {
-                myAlertDialog.setMessage(productsWithoutLoyaltyProgram.size() + " of your products or services " + "don't have loyalty programs set. For each product, go to the products edit screen. Select a loyalty program and save.");
-                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
-                    Intent intent = new Intent(mContext, ProductListActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                });
-            }
-            myAlertDialog.setCancelable(false);
-            myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
         }
     }
 
@@ -810,6 +767,52 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     protected void onResume() {
         mProductsAdapter.queryAsync();
         orderSummaryAdapter.queryAsync();
+
+        if (myAlertDialog == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                myAlertDialog = MyAlertDialog.newInstance(android.R.style.Theme_Material_Dialog_Alert);
+            } else {
+                myAlertDialog = new MyAlertDialog();
+            }
+        }
+        myAlertDialog.setShowNegativeButton(false);
+
+        List<ProductEntity> productEntities = mProductsAdapter.performQuery().toList();
+        List<ProductEntity> productsWithoutLoyaltyProgram = new ArrayList<>();
+        for (ProductEntity productEntity: productEntities) {
+            if (productEntity.getLoyaltyProgram() == null) {
+                productsWithoutLoyaltyProgram.add(productEntity);
+            }
+        }
+        if (!productsWithoutLoyaltyProgram.isEmpty()) {
+            myAlertDialog.setTitle("Products Notice");
+            if (productEntities.size() == productsWithoutLoyaltyProgram.size()) {
+                myAlertDialog.setMessage("Your products or services don't have loyalty programs set. For each product, go to the products edit screen, select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
+                    Intent intent = new Intent(mContext, ProductListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                });
+            } else if (productsWithoutLoyaltyProgram.size() == 1){
+                myAlertDialog.setMessage("1 of your products or services don't have a loyalty program set. Click the button below, select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.update_product), (dialogInterface, i) -> {
+                    Intent intent = new Intent(mContext, ProductDetailActivity.class);
+                    intent.putExtra(ProductDetailActivity.ARG_ITEM_ID, productsWithoutLoyaltyProgram.get(0).getId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(intent);
+                });
+            } else {
+                myAlertDialog.setMessage(productsWithoutLoyaltyProgram.size() + " of your products or services " + "don't have loyalty programs set. For each product, go to the products edit screen. Select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
+                    Intent intent = new Intent(mContext, ProductListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                });
+            }
+            myAlertDialog.setCancelable(false);
+            myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+        }
+
         super.onResume();
     }
 
