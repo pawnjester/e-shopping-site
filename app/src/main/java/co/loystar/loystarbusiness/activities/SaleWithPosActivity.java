@@ -66,6 +66,7 @@ import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialog;
@@ -810,7 +811,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                 });
             }
             myAlertDialog.setCancelable(false);
-            myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+            if (Foreground.get().isForeground()) {
+                myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+            }
         }
 
         super.onResume();

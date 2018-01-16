@@ -77,6 +77,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.GraphCoordinates;
 import co.loystar.loystarbusiness.utils.NotificationUtils;
 import co.loystar.loystarbusiness.utils.fcm.SendFirebaseRegistrationToken;
@@ -181,7 +182,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     startActivity(intent);
                 });
                 myAlertDialog.setNegativeButtonText(getString(android.R.string.cancel));
-                myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+                if (Foreground.get().isForeground()) {
+                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+                }
             }
         }
 
@@ -458,7 +461,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     @Override
                     public void onNext(Integer integer) {
                         if (integer == 0) {
-                            new AlertDialog.Builder(mContext)
+                            if (Foreground.get().isForeground()) {
+                                new AlertDialog.Builder(mContext)
                                     .setTitle("No Loyalty Program Found!")
                                     .setMessage("To record a sale, you would have to start a loyalty program.")
                                     .setPositiveButton(mContext.getString(R.string.start_loyalty_program_btn_label), (dialog, which) -> {
@@ -466,6 +470,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                                         startLoyaltyProgram();
                                     })
                                     .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
+                            }
                         } else if (integer == 1) {
                             LoyaltyProgramEntity loyaltyProgramEntity = merchantEntity.getLoyaltyPrograms().get(0);
                             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
