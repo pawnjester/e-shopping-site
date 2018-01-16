@@ -87,6 +87,7 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+import timber.log.Timber;
 
 public class SaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener,
@@ -788,10 +789,8 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     .setCancelable(false)
                     .setPositiveButton("Yes", (dialog, which) -> {
                         OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
-                        if (orderSummaryItemBinding != null) {
-                            if (binding.getProduct() != null) {
-                                mSelectedProducts.delete(binding.getProduct().getId());
-                            }
+                        if (orderSummaryItemBinding != null && orderSummaryItemBinding.getProduct() != null) {
+                            mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
                             orderSummaryAdapter.queryAsync();
                             mProductsAdapter.queryAsync();
                             refreshCartCount();
@@ -802,9 +801,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     .setIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert))
                     .show());
 
-            if (binding.getProduct() != null) {
-                binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
-            }
+            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
             return new BindingHolder<>(binding);
         }
     }
@@ -831,13 +828,13 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private void setProductCountValue(int newValue, int productId) {
         if (newValue > 0) {
             mSelectedProducts.put(productId, newValue);
-            orderSummaryAdapter.queryAsync();
+            mProductsAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
             refreshCartCount();
             setCheckoutValue();
         } else {
             mSelectedProducts.delete(productId);
-            orderSummaryAdapter.queryAsync();
+            mProductsAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
             refreshCartCount();
             setCheckoutValue();
