@@ -5,10 +5,12 @@ import android.databinding.Observable;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import io.requery.Entity;
 import io.requery.Key;
 import io.requery.ManyToOne;
+import io.requery.OneToMany;
 import io.requery.Persistable;
 
 /**
@@ -31,4 +33,7 @@ public interface LoyaltyProgram extends Observable, Parcelable, Persistable {
     @Bindable
     @ManyToOne
     Merchant getOwner();
+
+    @OneToMany(mappedBy = "loyaltyProgram")
+    List<ProductEntity> getProducts();
 }

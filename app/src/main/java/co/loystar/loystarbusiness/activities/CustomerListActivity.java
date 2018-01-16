@@ -94,7 +94,6 @@ public class CustomerListActivity extends RxAppCompatActivity
     private boolean mTwoPane;
     public static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 104;
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
-    private static final String TAG = CustomerListActivity.class.getSimpleName();
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;
 

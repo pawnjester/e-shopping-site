@@ -112,8 +112,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncCustomers();
             syncTransactions();
             syncProductCategories();
-            syncProducts();
             syncLoyaltyPrograms();
+            syncProducts();
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
@@ -538,8 +538,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 if (productCategoryEntity != null) {
                                     productEntity.setCategory(productCategoryEntity);
                                 }
+                                LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                                if (programEntity != null) {
+                                    productEntity.setLoyaltyProgram(programEntity);
+                                }
                                 productEntity.setOwner(merchantEntity);
-
                                 mDatabaseManager.insertNewProduct(productEntity);
                             }
                         }

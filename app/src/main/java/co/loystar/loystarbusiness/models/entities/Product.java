@@ -41,4 +41,8 @@ public interface Product extends Observable, Parcelable, Persistable {
 
     @OneToMany(mappedBy = "product", cascade = {CascadeAction.SAVE})
     List<OrderItemEntity> getOrderItems();
+
+    @Bindable
+    @ManyToOne
+    LoyaltyProgramEntity getLoyaltyProgram();
 }

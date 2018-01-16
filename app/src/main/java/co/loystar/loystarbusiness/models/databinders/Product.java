@@ -35,6 +35,9 @@ public class Product {
     private Boolean deleted;
     private int merchant_product_category_id;
 
+    @JsonProperty("merchant_loyalty_program_id")
+    private int merchant_loyalty_program_id;
+
     public Product() {}
 
     public Product(
@@ -47,7 +50,8 @@ public class Product {
             double price,
             String picture,
             int merchant_product_category_id,
-            String description
+            String description,
+            int merchant_loyalty_programs_id
     ) {
         this.id  = id;
         this.merchant_id = merchant_id;
@@ -59,6 +63,7 @@ public class Product {
         this.picture = picture;
         this.description = description;
         this.merchant_product_category_id = merchant_product_category_id;
+        this.merchant_loyalty_program_id = merchant_loyalty_program_id;
     }
 
 
@@ -100,6 +105,10 @@ public class Product {
     @JsonProperty("deleted")
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public int getMerchant_loyalty_program_id() {
+        return merchant_loyalty_program_id;
     }
 
     @JsonProperty("price")

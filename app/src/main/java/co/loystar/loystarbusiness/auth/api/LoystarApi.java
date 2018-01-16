@@ -184,6 +184,7 @@ public interface LoystarApi {
             @Part("data[name]") RequestBody name,
             @Part("data[price]") RequestBody price,
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
+            @Part("data[merchant_loyalty_program_id]") RequestBody merchant_loyalty_program_id,
             @Part MultipartBody.Part file
     );
 
@@ -193,6 +194,7 @@ public interface LoystarApi {
             @Part("data[name]") RequestBody name,
             @Part("data[price]") RequestBody price,
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
+            @Part("data[merchant_loyalty_program_id]") RequestBody merchant_loyalty_program_id,
             @Part MultipartBody.Part file
     );
 

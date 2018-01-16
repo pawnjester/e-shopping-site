@@ -102,6 +102,30 @@
                 android:layout_gravity="center_horizontal"
                 android:prompt="@string/select_one_prompt"
                 android:entries="@array/empty_select"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/loyalty_program"
+                style="@style/textViewLabelTextStyle"
+                android:layout_marginTop="16dp" />
+
+            <co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:id="@+id/loyaltyProgramsSelectSpinner"
+                android:layout_gravity="center_horizontal"
+                android:prompt="@string/select_one_prompt"
+                android:entries="@array/empty_select"/>
+
+            <TextView
+                android:padding="7dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/product_loyalty_program_explanation"
+                android:layout_gravity="center_horizontal" />
         </LinearLayout>
 
     </ScrollView>

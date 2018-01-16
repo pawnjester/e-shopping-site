@@ -59,6 +59,7 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Product;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
@@ -87,7 +88,6 @@ import static android.content.DialogInterface.BUTTON_POSITIVE;
 public class ProductDetailActivity extends AppCompatActivity {
     /*static fields*/
     public static final String ARG_ITEM_ID = "item_id";
-    private static final String TAG = ProductDetailActivity.class.getCanonicalName();
     private static final int REQUEST_IMAGE_CAPTURE = 111;
     private static final int REQUEST_IMAGE_FROM_GALLERY = 133;
 
@@ -116,7 +116,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private DatabaseManager mDatabaseManager;
     private Uri imageUri;
     private boolean formIsDirty = false;
-    private ProductCategoryEntity mProductCategory;
+    private ProductCategoryEntity mSelectedProductCategory;
     private Context mContext;
     private ApiClient mApiClient;
     private String originalPrice;
@@ -124,6 +124,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ProductEntity mProductItem;
     private MyAlertDialog myAlertDialog;
     private SessionManager mSessionManager;
+    private LoyaltyProgramEntity mSelectedProgram;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,7 +191,8 @@ public class ProductDetailActivity extends AppCompatActivity {
             originalPrice = String.format(Locale.UK, "%.2f", new BigDecimal(mProductItem.getPrice()));
 
             productPriceView.setText(originalPrice);
-            mProductCategory = mProductItem.getCategory();
+            mSelectedProductCategory = mProductItem.getCategory();
+            mSelectedProgram = mProductItem.getLoyaltyProgram();
 
 
             Drawable cancelDrawable = AppCompatResources.getDrawable(mContext, R.drawable.ic_cancel_white_24px);
@@ -199,7 +201,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 willBeWhite.mutate().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
                 removePictureBtn.setImageDrawable(willBeWhite);
             }
-
             SpinnerButton productCategoriesSpinner = findViewById(R.id.productCategoriesSelectSpinner);
             List<ProductCategoryEntity> productCategories = mDatabaseManager.getMerchantProductCategories(mSessionManager.getMerchantId());
             final CharSequence[] spinnerItems = new CharSequence[productCategories.size()];
@@ -208,9 +209,23 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
             productCategoriesSpinner.setEntries(spinnerItems);
 
-            SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> mProductCategory = productCategories.get(position);
+            SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> mSelectedProductCategory = productCategories.get(position);
             productCategoriesSpinner.setListener(onItemSelectedListener);
-            productCategoriesSpinner.setSelection(productCategories.indexOf(mProductItem.getCategory()));
+            productCategoriesSpinner.setSelection(productCategories.indexOf(mSelectedProductCategory));
+
+            SpinnerButton loyaltyProgramsSpinner = findViewById(R.id.loyaltyProgramsSelectSpinner);
+            List<LoyaltyProgramEntity> programEntities = mDatabaseManager.getMerchantLoyaltyPrograms(mSessionManager.getMerchantId());
+            CharSequence[] charSequences = new CharSequence[programEntities.size()];
+            for (int i = 0; i < programEntities.size(); i++) {
+                charSequences[i] = programEntities.get(i).getName();
+            }
+            loyaltyProgramsSpinner.setEntries(charSequences);
+
+            SpinnerButton.OnItemSelectedListener selectedListener = position -> mSelectedProgram = programEntities.get(position);
+            loyaltyProgramsSpinner.setListener(selectedListener);
+            if (mSelectedProgram != null) {
+                loyaltyProgramsSpinner.setSelection(programEntities.indexOf(mSelectedProgram));
+            }
 
             baseFloatBtn.setOnClickListener(view -> {
                 if (isFabMenuOpen) {
@@ -389,12 +404,18 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
+        if (mSelectedProgram == null) {
+            Snackbar.make(mLayout, getString(R.string.error_loyalty_program_required), Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
         if (imageUri == null) {
             try {
                 mProgressBar.setIndeterminate(true);
                 showProgress(true);
                 JSONObject req = new JSONObject();
-                req.put("merchant_product_category_id", String.valueOf(mProductCategory.getId()));
+                req.put("merchant_product_category_id", mSelectedProductCategory.getId());
+                req.put("merchant_loyalty_program_id", mSelectedProgram.getId());
                 req.put("name", productNameView.getText().toString());
                 req.put("price", productPriceView.getFormattedValue(productPriceView.getRawValue()));
 
@@ -419,6 +440,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
                                 if (productCategoryEntity != null) {
                                     mProductItem.setCategory(productCategoryEntity);
+                                }
+                                LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                                if (programEntity != null) {
+                                    mProductItem.setLoyaltyProgram(programEntity);
                                 }
                                 mDatabaseManager.updateProduct(mProductItem);
 
@@ -458,7 +483,11 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
                 RequestBody merchant_product_category_id =
                         RequestBody.create(
-                                okhttp3.MultipartBody.FORM, String.valueOf(mProductCategory.getId()));
+                                okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProductCategory.getId()));
+
+                RequestBody merchant_loyalty_program_id =
+                    RequestBody.create(
+                        okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
 
                 String mimeType = contentResolver.getType(imageUri);
                 if (mimeType == null) {
@@ -476,6 +505,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                             name,
                             price,
                             merchant_product_category_id,
+                            merchant_loyalty_program_id,
                             body
                         ).enqueue(new Callback<Product>() {
                     @Override
@@ -492,6 +522,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
                                if (productCategoryEntity != null) {
                                    mProductItem.setCategory(productCategoryEntity);
+                               }
+                               LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                               if (programEntity != null) {
+                                   mProductItem.setLoyaltyProgram(programEntity);
                                }
                                mDatabaseManager.updateProduct(mProductItem);
 
@@ -585,9 +619,30 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private boolean isFormDirty() {
+        boolean productCategoryHasChanged = false;
+        if (mSelectedProductCategory != null) {
+            if (mProductItem.getCategory() == null) {
+                productCategoryHasChanged = true;
+            } else {
+                if (mSelectedProductCategory.getId() != mProductItem.getCategory().getId()) {
+                    productCategoryHasChanged = true;
+                }
+            }
+        }
+        boolean loyaltyProgramHasChanged = false;
+        if (mSelectedProgram != null) {
+            if (mProductItem.getLoyaltyProgram() == null) {
+                loyaltyProgramHasChanged = true;
+            } else {
+                if (mSelectedProgram.getId() != mProductItem.getLoyaltyProgram().getId()) {
+                    loyaltyProgramHasChanged = true;
+                }
+            }
+        }
         return formIsDirty ||
                 !productNameView.getText().toString().equals(mProductItem.getName()) ||
-                !(mProductCategory.getName().equals(mProductItem.getCategory().getName())) ||
+                productCategoryHasChanged ||
+                loyaltyProgramHasChanged ||
                 !(originalPrice.equals(productPriceView.getFormattedValue(productPriceView.getRawValue())));
 
     }
