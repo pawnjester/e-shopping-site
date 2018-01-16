@@ -3,11 +3,7 @@ package co.loystar.loystarbusiness.activities;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -15,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -83,7 +78,6 @@ import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
-import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -108,15 +102,12 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private SessionManager mSessionManager;
     private BottomSheetBehavior.BottomSheetCallback mOrderSummaryBottomSheetCallback;
     private SparseIntArray mSelectedProducts = new SparseIntArray();
-    private SparseIntArray mSelectedLoyaltyPrograms = new SparseIntArray();
     private BottomSheetBehavior orderSummaryBottomSheetBehavior;
     private boolean orderSummaryDraggingStateUp = false;
     private double totalCharge = 0;
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
     private CustomerEntity mSelectedCustomer;
-    private List<LoyaltyProgramEntity> mLoyaltyPrograms;
-    private MyAlertDialog myAlertDialog;
 
     /*Views*/
     private View collapsedToolbar;
@@ -135,7 +126,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private final String KEY_SELECTED_PRODUCTS_STATE = "selected_products_state";
     private final String KEY_ORDER_SUMMARY_RECYCLER_STATE = "order_summary_recycler_state";
     private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
-    private final String KEY_SELECTED_PROGRAMS_STATE = "selected_programs_state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -246,11 +236,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             }
         };
 
-        Selection<ReactiveResult<LoyaltyProgramEntity>> programsSelection = mDataStore.select(LoyaltyProgramEntity.class);
-        programsSelection.where(LoyaltyProgramEntity.OWNER.eq(merchantEntity));
-        programsSelection.where(LoyaltyProgramEntity.DELETED.notEqual(true));
-        mLoyaltyPrograms = programsSelection.get().toList();
-
         customerAutoCompleteDialog = CustomerAutoCompleteDialog.newInstance(getString(R.string.order_owner));
         customerAutoCompleteDialog.setSelectedCustomerListener(this);
 
@@ -267,6 +252,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             setOrderSummaryView(mSelectedCustomer, false);
         }
 
+        MyAlertDialog myAlertDialog;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             myAlertDialog = MyAlertDialog.newInstance(android.R.style.Theme_Material_Dialog_Alert);
         } else {
@@ -405,24 +391,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         });
 
         RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
-            Drawable drawable = ContextCompat.getDrawable(mContext, android.R.drawable.ic_dialog_alert);
-            int color = ContextCompat.getColor(mContext, R.color.white);
-            assert drawable != null;
-            drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
-            if (mSelectedProducts.size() > mSelectedLoyaltyPrograms.size()) {
-                AlertDialog.Builder builder;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(mContext, android.R.style.Theme_Material_Dialog_Alert);
-                } else {
-                    builder = new AlertDialog.Builder(mContext);
-                }
-                builder.setTitle("Loyalty Program Required!")
-                    .setMessage("Please select a loyalty program for each cart item. This will allow a customer to earn points or stamps for each item purchased.")
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
-                    .setIcon(drawable)
-                    .show();
-                return;
-            }
             ArrayList<Integer> ids = new ArrayList<>();
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 ids.add(mSelectedProducts.keyAt(i));
@@ -437,8 +405,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
             for (int i = 0; i < productEntities.size(); i ++) {
                 ProductEntity product = productEntities.get(i);
-                int programId = mSelectedLoyaltyPrograms.get(product.getId());
-                LoyaltyProgramEntity loyaltyProgram = mDataStore.findByKey(LoyaltyProgramEntity.class, programId).blockingGet();
+                LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
                 if (loyaltyProgram != null) {
                     SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
                     // set temporary id
@@ -454,7 +421,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
 
                     transactionEntity.setSynced(false);
                     transactionEntity.setAmount(totalCost);
-                    transactionEntity.setMerchantLoyaltyProgramId(programId);
+                    transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
 
                     if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
                         transactionEntity.setPoints(totalCost);
@@ -481,9 +448,13 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             }
 
             ArrayList<Integer> programIds = new ArrayList<>();
-            for (int i = 0; i < mSelectedLoyaltyPrograms.size(); i++) {
-                if (!programIds.contains(mSelectedLoyaltyPrograms.valueAt(i))) {
-                    programIds.add(mSelectedLoyaltyPrograms.valueAt(i));
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, mSelectedProducts.keyAt(i)).blockingGet();
+                if (productEntity != null) {
+                    int programId = productEntity.getLoyaltyProgram().getId();
+                    if (!programIds.contains(programId)) {
+                        programIds.add(productEntity.getLoyaltyProgram().getId());
+                    }
                 }
             }
 
@@ -491,7 +462,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                 .delay(1, TimeUnit.SECONDS)
                 .compose(bindToLifecycle())
                 .doOnComplete(() -> {
-
                     for (int i = 0; i < programIds.size(); i++) {
                         int programId = programIds.get(i);
                         TransactionSmsEntity transactionSmsEntity = new TransactionSmsEntity();
@@ -533,7 +503,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, which) -> {
                     mSelectedProducts.clear();
-                    mSelectedLoyaltyPrograms.clear();
                     totalCharge = 0;
                     orderSummaryAdapter.queryAsync();
                     mProductsAdapter.queryAsync();
@@ -804,25 +773,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             double totalCostOfItem = item.getPrice() * mSelectedProducts.get(item.getId());
             String cText = String.format(Locale.UK, template, totalCostOfItem);
             holder.binding.productCost.setText(getString(R.string.product_price, merchantCurrencySymbol, cText));
-
-            CharSequence[] programLabels = new CharSequence[mLoyaltyPrograms.size()];
-            for (int i = 0; i < mLoyaltyPrograms.size(); i++) {
-                programLabels[i] = mLoyaltyPrograms.get(i).getName();
-            }
-            holder.binding.selectProgramSpinner.setEntries(programLabels);
-            if (mLoyaltyPrograms.size() == 1) {
-                holder.binding.selectProgramSpinner.setSelection(0);
-                mSelectedLoyaltyPrograms.put(item.getId(), mLoyaltyPrograms.get(0).getId());
-            }
-            if (mSelectedLoyaltyPrograms.size() > 0) {
-                int selectedProgramId = mSelectedLoyaltyPrograms.get(item.getId());
-                for (int i=0; i < mLoyaltyPrograms.size(); i++) {
-                    LoyaltyProgramEntity loyaltyProgramEntity = mLoyaltyPrograms.get(i);
-                    if (loyaltyProgramEntity.getId() == selectedProgramId) {
-                        holder.binding.selectProgramSpinner.setSelection(i);
-                    }
-                }
-            }
         }
 
         @Override
@@ -839,8 +789,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     .setPositiveButton("Yes", (dialog, which) -> {
                         OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
                         if (orderSummaryItemBinding != null) {
-                            mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
-                            mSelectedLoyaltyPrograms.delete(orderSummaryItemBinding.getProduct().getId());
+                            if (binding.getProduct() != null) {
+                                mSelectedProducts.delete(binding.getProduct().getId());
+                            }
                             orderSummaryAdapter.queryAsync();
                             mProductsAdapter.queryAsync();
                             refreshCartCount();
@@ -851,11 +802,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                     .setIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert))
                     .show());
 
-            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
-
-            SpinnerButton.OnItemSelectedListener programItemSelectedListener = position -> mSelectedLoyaltyPrograms.put(binding.getProduct().getId(), mLoyaltyPrograms.get(position).getId());
-            binding.selectProgramSpinner.setListener(programItemSelectedListener);
-
+            if (binding.getProduct() != null) {
+                binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
+            }
             return new BindingHolder<>(binding);
         }
     }
@@ -888,7 +837,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             setCheckoutValue();
         } else {
             mSelectedProducts.delete(productId);
-            mSelectedLoyaltyPrograms.delete(productId);
             orderSummaryAdapter.queryAsync();
             orderSummaryAdapter.queryAsync();
             refreshCartCount();
@@ -996,12 +944,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         }
         outState.putSerializable(KEY_SELECTED_PRODUCTS_STATE, orderSummaryItems);
 
-        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> selectedPrograms = new HashMap<>(mSelectedLoyaltyPrograms.size());
-        for (int x = 0; x < mSelectedLoyaltyPrograms.size(); x++) {
-            selectedPrograms.put(mSelectedLoyaltyPrograms.keyAt(x), mSelectedLoyaltyPrograms.valueAt(x));
-        }
-        outState.putSerializable(KEY_SELECTED_PROGRAMS_STATE, selectedPrograms);
-
         Parcelable productsListState = mProductsRecyclerView.getLayoutManager().onSaveInstanceState();
         Parcelable orderSummaryListState = mOrderSummaryRecyclerView.getLayoutManager().onSaveInstanceState();
         outState.putParcelable(KEY_PRODUCTS_RECYCLER_STATE, productsListState);
@@ -1035,13 +977,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
                 mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
                 setProductCountValue(orderItem.getValue(), orderItem.getKey());
-            }
-        }
-
-        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> selectedPrograms = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PROGRAMS_STATE);
-        if (selectedPrograms != null) {
-            for (Map.Entry<Integer, Integer> program: selectedPrograms.entrySet()) {
-                mSelectedLoyaltyPrograms.put(program.getKey(), program.getValue());
             }
         }
 
