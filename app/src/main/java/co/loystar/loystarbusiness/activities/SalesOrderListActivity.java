@@ -298,21 +298,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
            SalesOrderItemBinding binding = SalesOrderItemBinding.inflate(inflater);
            binding.getRoot().setTag(binding);
 
-           binding.processBtn.setOnClickListener(view -> {
-               if (mTwoPane) {
-                   Bundle arguments = new Bundle();
-                   arguments.putInt(SalesOrderDetailFragment.ARG_ITEM_ID, binding.getSalesOrder().getId());
-                   SalesOrderDetailFragment salesOrderDetailFragment = new SalesOrderDetailFragment();
-                   salesOrderDetailFragment.setArguments(arguments);
-                   fragmentManager.beginTransaction()
-                       .replace(R.id.sales_order_detail_container, salesOrderDetailFragment)
-                       .commit();
-               } else {
-                   Intent intent = new Intent(mContext, SalesOrderDetailActivity.class);
-                   intent.putExtra(SalesOrderDetailFragment.ARG_ITEM_ID, binding.getSalesOrder().getId());
-                   startActivity(intent);
-               }
-           });
+           binding.processBtn.setOnClickListener(view -> processOrder(binding.getSalesOrder()));
 
            binding.printOrderReceipt.setOnClickListener(view -> {
                 mSelectedOrderEntity = mDataStore.findByKey(SalesOrderEntity.class, binding.getSalesOrder().getId()).blockingGet();
@@ -347,7 +333,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                    }
                });
                myAlertDialog.setNegativeButtonText(getString(android.R.string.no));
-               if (myAlertDialog.isAdded()) {
+               if (!myAlertDialog.isAdded()) {
                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
                }
            });

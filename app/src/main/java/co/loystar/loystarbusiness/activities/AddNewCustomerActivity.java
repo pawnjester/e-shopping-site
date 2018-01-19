@@ -65,6 +65,7 @@ import permissions.dispatcher.RuntimePermissions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 
 @RuntimePermissions
@@ -140,6 +141,7 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         datePickerFromContacts.setDatePickedListener(onDatePickedListener1);
 
         if (getIntent().hasExtra(Constants.PHONE_NUMBER)) {
+            Timber.e("NUMBER: %s", getIntent().getStringExtra(Constants.PHONE_NUMBER));
             customerPhoneView.setNumber(getIntent().getStringExtra(Constants.PHONE_NUMBER));
         }
 

@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +16,14 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.jakewharton.rxbinding2.widget.RxTextView;
+
 import java.util.ArrayList;
+
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -43,6 +45,7 @@ public class InternationalPhoneInput extends RelativeLayout
     private CountryPhoneSpinnerDialog countryPhoneSpinnerDialog;
     private Country mSelectedCountry;
     private Context mContext;
+    private SessionManager mSessionManager;
 
     private View.OnTouchListener mSpinnerOnTouch = new View.OnTouchListener() {
         @SuppressLint("ClickableViewAccessibility")
@@ -73,6 +76,7 @@ public class InternationalPhoneInput extends RelativeLayout
     }
 
     private void init() {
+        mSessionManager = new SessionManager(mContext);
         inflate(mContext, R.layout.international_phone_input, this);
         mPhoneEdit = findViewById(R.id.international_phone_edit_text);
         mSpinner = findViewById(R.id.country_phone_spinner);
@@ -116,8 +120,7 @@ public class InternationalPhoneInput extends RelativeLayout
                 setCountrySelection(iso);
             }
         } catch (SecurityException e) {
-            SessionManager sessionManager = new SessionManager(mContext);
-            String merchantCurrency = sessionManager.getCurrency();
+            String merchantCurrency = mSessionManager.getCurrency();
             if (merchantCurrency == null) {
                 setCountrySelection();
             } else {
@@ -175,10 +178,16 @@ public class InternationalPhoneInput extends RelativeLayout
      */
     public void setNumber(String number) {
         try {
-            String iso = null;
+            String merchantCurrency = mSessionManager.getCurrency();
+            if (merchantCurrency != null) {
+                String iso = merchantCurrency.substring(0, 2);
+                mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
+            }
+            String iso = "";
             if (mSelectedCountry != null) {
                 iso = mSelectedCountry.getIso();
             }
+
             Phonenumber.PhoneNumber phoneNumber = mPhoneUtil.parse(number, iso);
             String regionCode = mPhoneUtil.getRegionCodeForNumber(phoneNumber);
             if (regionCode != null) {
@@ -188,7 +197,7 @@ public class InternationalPhoneInput extends RelativeLayout
                 mSpinner.setSelection(countryIdx, false);
             }
         } catch (NumberParseException e) {
-            Log.e(TAG, "setNumber:NumberParseException " +  e.getMessage());
+            Timber.e("setNumber:NumberParseException %s", e.getMessage());
         }
     }
 

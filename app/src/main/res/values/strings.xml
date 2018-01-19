@@ -444,7 +444,7 @@
     <string name="status_pending">PENDING</string>
     <string name="status_rejected">REJECTED</string>
     <string name="status_completed">COMPLETED</string>
-    <string name="action_reject_order">Reject Order</string>
+    <string name="action_reject_order">Cancel Order</string>
     <string name="action_process_order">Process Order</string>
     <string name="pending">pending</string>
     <string name="completed">completed</string>

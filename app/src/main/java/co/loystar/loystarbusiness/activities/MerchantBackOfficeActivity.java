@@ -182,9 +182,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     startActivity(intent);
                 });
                 myAlertDialog.setNegativeButtonText(getString(android.R.string.cancel));
-                if (Foreground.get().isForeground()) {
-                    myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
-                }
+                myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         }
 
