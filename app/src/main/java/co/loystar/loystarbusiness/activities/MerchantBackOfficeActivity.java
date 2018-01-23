@@ -27,6 +27,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -144,6 +147,14 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     if (intent.getStringExtra(Constants.NOTIFICATION_TYPE).equals(Constants.ORDER_RECEIVED_NOTIFICATION)) {
                         mainLayout.setVisibility(View.GONE);
                         orderReceivedLayout.setVisibility(View.VISIBLE);
+
+                        Animation animation = new AlphaAnimation(1, 0);
+                        animation.setDuration(1000);
+                        animation.setInterpolator(new LinearInterpolator());
+                        animation.setRepeatCount(Animation.INFINITE);
+                        animation.setRepeatMode(Animation.REVERSE);
+                        orderReceivedImgView.startAnimation(animation);
+
                         int orderId = intent.getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
                         viewOrderBtn.setOnClickListener(view -> {
                             Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
@@ -216,6 +227,14 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 int orderId = getIntent().getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
                 mainLayout.setVisibility(View.GONE);
                 orderReceivedLayout.setVisibility(View.VISIBLE);
+
+                Animation animation = new AlphaAnimation(1, 0);
+                animation.setDuration(1000);
+                animation.setInterpolator(new LinearInterpolator());
+                animation.setRepeatCount(Animation.INFINITE);
+                animation.setRepeatMode(Animation.REVERSE);
+                orderReceivedImgView.startAnimation(animation);
+
                 viewOrderBtn.setOnClickListener(view -> {
                     Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
                     orderListIntent.putExtra(Constants.SALES_ORDER_ID, orderId);
