@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -66,6 +67,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
@@ -99,24 +102,56 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private SessionManager mSessionManager;
     private Context mContext;
-    private View mLayout;
     private ReactiveEntityStore<Persistable> mDataStore;
     private BottomBar bottomNavigationBar;
     private String merchantCurrencySymbol;
     private BarChart barChart;
-    private View chartLayout;
-    private View emptyStateLayout;
     private ImageView stateWelcomeImageView;
     private TextView stateWelcomeTextView;
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
 
+    @BindView(R.id.merchant_back_office_layout)
+    View mainLayout;
+
+    @BindView(R.id.merchant_back_office_order_received_layout)
+    View orderReceivedLayout;
+
+    @BindView(R.id.orderReceivedImg)
+    ImageView orderReceivedImgView;
+
+    @BindView(R.id.viewBtn)
+    Button viewOrderBtn;
+
+    @BindView(R.id.backToHomeBtn)
+    Button backToHomeBtn;
+
+    @BindView(R.id.merchant_back_office_wrapper)
+    View mLayout;
+
+    @BindView(R.id.chartLayout)
+    View chartLayout;
+
+    @BindView(R.id.emptyStateLayout)
+    View emptyStateLayout;
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null && intent.getAction().equals(Constants.PUSH_NOTIFICATION)) {
-                Timber.d("New Notification: %s", intent.getStringExtra(Constants.NOTIFICATION_MESSAGE));
+                if (intent.hasExtra(Constants.NOTIFICATION_TYPE)) {
+                    if (intent.getStringExtra(Constants.NOTIFICATION_TYPE).equals(Constants.ORDER_RECEIVED_NOTIFICATION)) {
+                        mainLayout.setVisibility(View.GONE);
+                        orderReceivedLayout.setVisibility(View.VISIBLE);
+                        int orderId = intent.getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
+                        viewOrderBtn.setOnClickListener(view -> {
+                            Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
+                            orderListIntent.putExtra(Constants.SALES_ORDER_ID, orderId);
+                            startActivity(orderListIntent);
+                        });
+                    }
+                }
             }
 
         }
@@ -128,6 +163,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         setContentView(R.layout.activity_merchant_back_office);
         Toolbar toolbar = findViewById(R.id.activity_merchant_back_office_toolbar);
         setSupportActionBar(toolbar);
+
+        ButterKnife.bind(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create channel to show notifications.
@@ -141,15 +178,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
             }
         }
 
-        mLayout = findViewById(R.id.merchant_back_office_wrapper);
-        chartLayout = findViewById(R.id.chartLayout);
-        emptyStateLayout = findViewById(R.id.emptyStateLayout);
-        MyAlertDialog myAlertDialog = new MyAlertDialog();
 
         stateWelcomeImageView = emptyStateLayout.findViewById(R.id.stateImage);
         stateWelcomeTextView = emptyStateLayout.findViewById(R.id.stateIntroText);
         stateDescriptionTextView = emptyStateLayout.findViewById(R.id.stateDescriptionText);
         stateActionBtn = emptyStateLayout.findViewById(R.id.stateActionBtn);
+        orderReceivedImgView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_order));
+
+        backToHomeBtn.setOnClickListener(view -> {
+            mainLayout.setVisibility(View.VISIBLE);
+            orderReceivedLayout.setVisibility(View.GONE);
+        });
 
         mContext = this;
         mSessionManager = new SessionManager(this);
@@ -175,14 +214,13 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
             if (getIntent().getStringExtra(Constants.NOTIFICATION_TYPE).equals(Constants.ORDER_RECEIVED_NOTIFICATION)) {
 
                 int orderId = getIntent().getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
-                myAlertDialog.setTitle("New Order Received!");
-                myAlertDialog.setPositiveButton(getString(R.string.view), (dialogInterface, i) -> {
-                    Intent intent = new Intent(mContext, SalesOrderListActivity.class);
-                    intent.putExtra(Constants.SALES_ORDER_ID, orderId);
-                    startActivity(intent);
+                mainLayout.setVisibility(View.GONE);
+                orderReceivedLayout.setVisibility(View.VISIBLE);
+                viewOrderBtn.setOnClickListener(view -> {
+                    Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
+                    orderListIntent.putExtra(Constants.SALES_ORDER_ID, orderId);
+                    startActivity(orderListIntent);
                 });
-                myAlertDialog.setNegativeButtonText(getString(android.R.string.cancel));
-                myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
             }
         }
 

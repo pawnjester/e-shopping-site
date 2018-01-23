@@ -14,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottom_navigation_bar"
+        android:id="@+id/merchant_back_office_layout"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
         android:paddingTop="32dp">
@@ -132,6 +133,51 @@
             </android.support.constraint.ConstraintLayout>
 
         </android.support.constraint.ConstraintLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        android:id="@+id/merchant_back_office_order_received_layout"
+        android:layout_above="@+id/bottom_navigation_bar">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:text="@string/order_received"
+            android:gravity="center"
+            android:textColor="@color/titleColor"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:contentDescription="@string/image"
+            android:layout_width="150dp"
+            android:layout_marginTop="12dp"
+            android:id="@+id/orderReceivedImg"
+            android:layout_height="150dp" />
+
+        <Button
+            android:id="@+id/viewBtn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/titleColor"
+            android:textSize="14sp"
+            android:text="@string/view" />
+
+        <Button
+            android:id="@+id/backToHomeBtn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/titleColor"
+            android:textSize="14sp"
+            android:text="@string/back_to_home" />
 
     </LinearLayout>
 

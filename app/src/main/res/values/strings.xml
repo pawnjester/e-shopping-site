@@ -462,4 +462,6 @@
     <string name="product_loyalty_program_explanation">By setting a loyalty program, customers can target the reward of this program by spending on this product or service.</string>
     <string name="error_product_category_required">Please select product category</string>
     <string name="update_product">Update product</string>
+    <string name="back_to_home">Back to home</string>
+    <string name="order_received">You have received a new order!</string>
 </resources>
