@@ -46,6 +46,7 @@ import io.smooch.ui.ConversationActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -59,6 +60,9 @@ import retrofit2.Response;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+    private Header mInitialHeader;
+    private boolean headerHasChanged = false;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -225,16 +229,28 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
-            setHasOptionsMenu(true);
 
-            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_app_version_key)));
-            Preference prefPrivacyPolicy = findPreference(getString(R.string.pref_privacy_policy_key));
-            prefPrivacyPolicy.setOnPreferenceClickListener(preference -> {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-privacy-policy/"));
-                startActivity(browserIntent);
-                return true;
-            });
+            String settingsKey = getArguments().getString("settings");
+
+            if (getActivity().getString(R.string.pref_support_key).equals(settingsKey)) {
+                /* prevent blank screen from showing when not in multi-pane mode*/
+                if (!isXLargeTablet(getActivity())) {
+                    Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+                    startActivity(intent);
+                }
+            } else {
+                addPreferencesFromResource(R.xml.pref_general);
+                setHasOptionsMenu(true);
+
+                bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_app_version_key)));
+                Preference prefPrivacyPolicy = findPreference(getString(R.string.pref_privacy_policy_key));
+                prefPrivacyPolicy.setOnPreferenceClickListener(preference -> {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-privacy-policy/"));
+                    startActivity(browserIntent);
+                    return true;
+                });
+            }
         }
 
         @Override
@@ -350,12 +366,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         .show();
                 return true;
             });
-
-            Preference prefSupport = findPreference(getString(R.string.pref_support_key));
-            prefSupport.setOnPreferenceClickListener(preference -> {
-                ConversationActivity.show(getActivity());
-                return true;
-            });
         }
 
         @Override
@@ -369,6 +379,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class ProductsAndServices extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -424,14 +435,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             Preference prefMyProducts = findPreference(getString(R.string.pref_my_products_key));
             prefMyProducts.setOnPreferenceClickListener(preference -> {
-                Intent ProductsViewIntent = new Intent(getActivity(), ProductListActivity.class);
-                startActivity(ProductsViewIntent);
+                Intent productsViewIntent = new Intent(getActivity(), ProductListActivity.class);
+                productsViewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(productsViewIntent);
                 return true;
             });
 
             Preference prefProductCategories = findPreference(getString(R.string.pref_product_categories_key));
             prefProductCategories.setOnPreferenceClickListener(preference -> {
                 Intent categoriesIntent = new Intent(getActivity(), ProductCategoryListActivity.class);
+                categoriesIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(categoriesIntent);
                 return true;
             });
@@ -439,7 +452,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             Preference offersAndMessaging = findPreference(getString(R.string.pref_birthday_messages_and_offers_key));
             offersAndMessaging.setOnPreferenceClickListener(preference -> {
                 Intent offersAndMessagingIntent = new Intent(getActivity(), BirthdayOffersAndMessagingActivity.class);
+                offersAndMessagingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(offersAndMessagingIntent);
+                return true;
+            });
+
+            Preference prefLoyaltyPrograms = findPreference(getString(R.string.pref_loyalty_programs_key));
+            prefLoyaltyPrograms.setOnPreferenceClickListener(preference -> {
+                Intent programsIntent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
+                programsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(programsIntent);
                 return true;
             });
         }
@@ -500,6 +522,23 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (headerHasChanged) {
+            if (mInitialHeader != null) {
+                switchToHeader(mInitialHeader);
+            }
+        }
+    }
+
+    @Override
+    public Header onGetInitialHeader() {
+        Header header = super.onGetInitialHeader();
+        mInitialHeader = header;
+        return header;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
@@ -507,5 +546,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onHeaderClick(Header header, int position) {
+        super.onHeaderClick(header, position);
+        headerHasChanged = true;
+        if (header.id == R.id.loystar_support_pref_header) {
+            ConversationActivity.show(this);
+        }
     }
 }

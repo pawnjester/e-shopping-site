@@ -17,4 +17,8 @@
         android:key="@string/pref_birthday_messages_and_offers_key"
         android:title="@string/birthday_messages_and_offers">
     </Preference>
+    <Preference
+        android:key="@string/pref_loyalty_programs_key"
+        android:title="@string/pref_loyalty_programs">
+    </Preference>
 </PreferenceScreen>
