@@ -140,10 +140,10 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
                     customerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(customerIntent);
                     break;
-                case R.id.campaigns:
-                    Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramListActivity.class);
-                    loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(loyaltyIntent);
+                case R.id.orders:
+                    Intent ordersIntent = new Intent(this, SalesOrderListActivity.class);
+                    ordersIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(ordersIntent);
                     break;
             }
         });

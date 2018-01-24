@@ -216,11 +216,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
             sendFirebaseRegistrationToken.sendRegistrationToServer();
         }
 
-        RxView.clicks(findViewById(R.id.viewOrdersBtn)).subscribe(o -> {
-            Intent intent = new Intent(this, SalesOrderListActivity.class);
-            startActivity(intent);
-        });
-
         if (getIntent().hasExtra(Constants.NOTIFICATION_MESSAGE)) {
             if (getIntent().getStringExtra(Constants.NOTIFICATION_TYPE).equals(Constants.ORDER_RECEIVED_NOTIFICATION)) {
 
@@ -485,10 +480,10 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     break;
-                case R.id.campaigns:
-                    Intent loyaltyIntent = new Intent(mContext, LoyaltyProgramListActivity.class);
-                    loyaltyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(loyaltyIntent);
+                case R.id.orders:
+                    Intent ordersIntent = new Intent(this, SalesOrderListActivity.class);
+                    ordersIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(ordersIntent);
                     break;
             }
         });

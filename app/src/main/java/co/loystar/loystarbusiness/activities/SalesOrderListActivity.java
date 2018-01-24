@@ -204,7 +204,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
     }
 
     private void setupRecyclerView() {
-        TextView emptyView = findViewById(R.id.no_orders_empty_view);
+        View emptyView = findViewById(R.id.no_orders_empty_view);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLayoutManager);

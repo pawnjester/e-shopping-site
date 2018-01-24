@@ -165,6 +165,7 @@ dependencies {
     implementation 'id.zelory:compressor:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
+    implementation 'com.github.ittianyu:BottomNavigationViewEx:1.2.4'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
     implementation("com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion") {

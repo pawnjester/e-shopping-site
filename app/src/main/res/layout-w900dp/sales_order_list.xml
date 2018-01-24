@@ -25,14 +25,7 @@
         app:layoutManager="LinearLayoutManager"
         tools:context="co.loystar.loystarbusiness.activities.SalesOrderListActivity" />
 
-    <TextView
-        android:id="@+id/no_orders_empty_view"
-        android:layout_width="match_parent"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:visibility="gone"
-        android:text="@string/no_orders_recieved"
-        android:layout_height="match_parent" />
+    <include layout="@layout/empty_orders_recycler_state" />
 
     <FrameLayout
         android:id="@+id/sales_order_detail_container"

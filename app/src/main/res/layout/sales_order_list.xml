@@ -12,13 +12,6 @@
         android:id="@+id/sales_order_list_rv"
         android:layout_height="match_parent" />
 
-    <TextView
-        android:id="@+id/no_orders_empty_view"
-        android:layout_centerInParent="true"
-        android:layout_width="match_parent"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:text="@string/no_orders_recieved"
-        android:layout_height="wrap_content" />
+    <include layout="@layout/empty_orders_recycler_state" />
 
 </RelativeLayout>
