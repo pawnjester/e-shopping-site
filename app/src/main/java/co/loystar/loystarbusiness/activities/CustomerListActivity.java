@@ -547,9 +547,9 @@ public class CustomerListActivity extends RxAppCompatActivity
                 //
                 navigateUpFromSameTask(this);
                 return true;
-            case R.id.filter_customer_list:
+            /*case R.id.filter_customer_list:
                 showFilterMenu(toolbar);
-                return true;
+                return true;*/
             case R.id.download_customer_list:
                 CustomerListActivityPermissionsDispatcher.startCustomerListDownloadWithCheck(CustomerListActivity.this);
                 return true;

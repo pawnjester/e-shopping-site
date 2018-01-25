@@ -5,15 +5,15 @@
         android:icon="@drawable/ic_search_white_48px"
         android:title="@string/action_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="collapseActionView"/>
+        app:showAsAction="ifRoom"/>
 
-    <item android:id="@+id/filter_customer_list"
+    <!--<item android:id="@+id/filter_customer_list"
         android:icon="@drawable/ic_filter_list_white_48px"
         android:title="@string/filter_list"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 
     <item android:id="@+id/download_customer_list"
         android:icon="@drawable/ic_cloud_download_white_48px"
         android:title="@string/export_list"
-        app:showAsAction="collapseActionView" />
+        app:showAsAction="ifRoom" />
 </menu>
