@@ -3,38 +3,44 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$AccountPreferenceFragment"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_account_circle_black_24px"
         android:title="@string/account">
+        <extra android:name="settings" android:value="@string/settings_account" />
     </header>
 
     <header
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$ProductsAndServices"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_shopping_cart_black_24px"
         android:title="@string/my_products_and_services">
+        <extra android:name="settings" android:value="@string/settings_products_and_services" />
     </header>
 
     <header
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_info_black_24dp"
-        android:title="@string/pref_header_general" />
+        android:title="@string/pref_header_general" >
+        <extra android:name="settings" android:value="@string/settings_general" />
+    </header>
 
     <header
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$NotificationPreferenceFragment"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/pref_header_notifications" />
+        android:title="@string/pref_header_notifications">
+        <extra android:name="settings" android:value="@string/settings_notifications" />
+    </header>
 
     <header
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_data_sync" />
+        android:title="@string/pref_header_data_sync">
+        <extra android:name="settings" android:value="@string/settings_data_and_sync" />
+    </header>
 
     <header
         android:id="@+id/loystar_support_pref_header"
-        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_customer_support"
         android:title="@string/pref_support_title">
-        <extra android:name="settings" android:value="@string/pref_support_key" />
     </header>
 
 </preference-headers>

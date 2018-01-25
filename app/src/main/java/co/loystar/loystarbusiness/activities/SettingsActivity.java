@@ -46,7 +46,6 @@ import io.smooch.ui.ConversationActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import timber.log.Timber;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -60,9 +59,6 @@ import timber.log.Timber;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-
-    private Header mInitialHeader;
-    private boolean headerHasChanged = false;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -213,33 +209,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
-                || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
-                || NotificationPreferenceFragment.class.getName().equals(fragmentName)
-                || ProductsAndServices.class.getName().equals(fragmentName)
-                || AccountPreferenceFragment.class.getName().equals(fragmentName);
+                || SettingsFragment.class.getName().equals(fragmentName);
     }
 
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
+    public static class SettingsFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-
             String settingsKey = getArguments().getString("settings");
 
-            if (getActivity().getString(R.string.pref_support_key).equals(settingsKey)) {
-                /* prevent blank screen from showing when not in multi-pane mode*/
-                if (!isXLargeTablet(getActivity())) {
-                    Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
-                    startActivity(intent);
-                }
-            } else {
+            if (getActivity().getString(R.string.settings_general).equals(settingsKey)){
                 addPreferencesFromResource(R.xml.pref_general);
                 setHasOptionsMenu(true);
 
@@ -250,160 +230,83 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     startActivity(browserIntent);
                     return true;
                 });
-            }
-        }
+            } else if (getActivity().getString(R.string.settings_notifications).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.pref_notification);
+                setHasOptionsMenu(true);
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
+                // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+                // to their values. When their values change, their summaries are
+                // updated to reflect the new value, per the Android Design
+                // guidelines.
+                bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
+            } else if (getActivity().getString(R.string.settings_data_and_sync).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.pref_data_sync);
+                setHasOptionsMenu(true);
 
-    /**
-     * This fragment shows notification preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class NotificationPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notification);
-            setHasOptionsMenu(true);
+                // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+                // to their values. When their values change, their summaries are
+                // updated to reflect the new value, per the Android Design
+                // guidelines.
+                bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+            } else if (getActivity().getString(R.string.settings_account).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.pref_account);
+                setHasOptionsMenu(true);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
-        }
+                final SessionManager sessionManager = new SessionManager(getActivity());
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
+                Preference paySubscriptionPreference = findPreference(getString(R.string.pref_pay_subscription_key));
+                paySubscriptionPreference.setOnPreferenceClickListener(preference -> {
+                    Intent subsIntent = new Intent(getActivity(), PaySubscriptionActivity.class);
+                    startActivity(subsIntent);
+                    return true;
+                });
 
-    /**
-     * This fragment shows data and sync preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class DataSyncPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_data_sync);
-            setHasOptionsMenu(true);
+                bindPreferenceSummaryToValue(paySubscriptionPreference);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("sync_frequency"));
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class AccountPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_account);
-            setHasOptionsMenu(true);
-
-            final SessionManager sessionManager = new SessionManager(getActivity());
-
-            Preference paySubscriptionPreference = findPreference(getString(R.string.pref_pay_subscription_key));
-            paySubscriptionPreference.setOnPreferenceClickListener(preference -> {
-                Intent subsIntent = new Intent(getActivity(), PaySubscriptionActivity.class);
-                startActivity(subsIntent);
-                return true;
-            });
-
-            bindPreferenceSummaryToValue(paySubscriptionPreference);
-
-            Preference prefEditAccountPref = findPreference(getString(R.string.pref_edit_account_key));
-            prefEditAccountPref.setOnPreferenceClickListener(preference -> {
-                Intent editAccountIntent = new Intent(getActivity(), MyAccountProfileActivity.class);
-                startActivity(editAccountIntent);
-                return true;
-            });
+                Preference prefEditAccountPref = findPreference(getString(R.string.pref_edit_account_key));
+                prefEditAccountPref.setOnPreferenceClickListener(preference -> {
+                    Intent editAccountIntent = new Intent(getActivity(), MyAccountProfileActivity.class);
+                    startActivity(editAccountIntent);
+                    return true;
+                });
 
 
-            Preference prefCheckSmsBal = findPreference(getString(R.string.pref_check_sms_bal_key));
-            prefCheckSmsBal.setOnPreferenceClickListener(preference -> {
-                checkSmsBalance(getActivity());
-                return true;
-            });
+                Preference prefCheckSmsBal = findPreference(getString(R.string.pref_check_sms_bal_key));
+                prefCheckSmsBal.setOnPreferenceClickListener(preference -> {
+                    checkSmsBalance(getActivity());
+                    return true;
+                });
 
-            Preference prefSignOut = findPreference(getString(R.string.pref_sign_out_key));
-            prefSignOut.setOnPreferenceClickListener(preference -> {
-                new AlertDialog.Builder(getActivity())
+                Preference prefSignOut = findPreference(getString(R.string.pref_sign_out_key));
+                prefSignOut.setOnPreferenceClickListener(preference -> {
+                    new AlertDialog.Builder(getActivity())
                         .setTitle("Are you sure you want to sign out?")
                         .setPositiveButton(getString(R.string.sign_out), (dialog, which) -> sessionManager.signOutMerchant(getActivity()))
                         .setNeutralButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                         .show();
-                return true;
-            });
-        }
+                    return true;
+                });
+            } else if (getActivity().getString(R.string.settings_products_and_services).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.pref_products_and_services);
+                setHasOptionsMenu(true);
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
+                final Preference turnOnPosPref = findPreference(getString(R.string.pref_turn_on_pos_key));
+                final SharedPreferences tSharedPref = turnOnPosPref.getSharedPreferences();
+                boolean isTurnedOn = tSharedPref.getBoolean(turnOnPosPref.getKey(), false);
+                if (!isTurnedOn) {
+                    turnOnPosPref.setSummary(getString(R.string.pos_turned_off_explanation));
+                } else {
+                    turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
+                }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class ProductsAndServices extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_products_and_services);
-            setHasOptionsMenu(true);
+                turnOnPosPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean isTurnedOn1 = (Boolean) newValue;
+                    SessionManager sessionManager = new SessionManager(getActivity());
+                    final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
+                    final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
 
-            final Preference turnOnPosPref = findPreference(getString(R.string.pref_turn_on_pos_key));
-            final SharedPreferences tSharedPref = turnOnPosPref.getSharedPreferences();
-            boolean isTurnedOn = tSharedPref.getBoolean(turnOnPosPref.getKey(), false);
-            if (!isTurnedOn) {
-                turnOnPosPref.setSummary(getString(R.string.pos_turned_off_explanation));
-            } else {
-                turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
-            }
-
-            turnOnPosPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean isTurnedOn1 = (Boolean) newValue;
-                SessionManager sessionManager = new SessionManager(getActivity());
-                final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
-                final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
-
-                if (!isTurnedOn1) {
-                    new AlertDialog.Builder(getActivity())
+                    if (!isTurnedOn1) {
+                        new AlertDialog.Builder(getActivity())
                             .setTitle("Are you sure?")
                             .setMessage("Loystar won't capture product information when recording sales.")
                             .setPositiveButton(getString(R.string.turn_off), (dialog, which) -> {
@@ -420,50 +323,51 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .show();
-                } else {
-                    if (merchantEntity != null) {
-                        merchantEntity.setPosTurnedOn(true);
-                        merchantEntity.setUpdateRequired(true);
-                        databaseManager.updateMerchant(merchantEntity);
-                        SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                    } else {
+                        if (merchantEntity != null) {
+                            merchantEntity.setPosTurnedOn(true);
+                            merchantEntity.setUpdateRequired(true);
+                            databaseManager.updateMerchant(merchantEntity);
+                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                        }
+                        Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
+                        turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
                     }
-                    Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
-                    turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
-                }
-                return isTurnedOn1;
-            });
+                    return isTurnedOn1;
+                });
 
-            Preference prefMyProducts = findPreference(getString(R.string.pref_my_products_key));
-            prefMyProducts.setOnPreferenceClickListener(preference -> {
-                Intent productsViewIntent = new Intent(getActivity(), ProductListActivity.class);
-                productsViewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(productsViewIntent);
-                return true;
-            });
+                Preference prefMyProducts = findPreference(getString(R.string.pref_my_products_key));
+                prefMyProducts.setOnPreferenceClickListener(preference -> {
+                    Intent productsViewIntent = new Intent(getActivity(), ProductListActivity.class);
+                    productsViewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(productsViewIntent);
+                    return true;
+                });
 
-            Preference prefProductCategories = findPreference(getString(R.string.pref_product_categories_key));
-            prefProductCategories.setOnPreferenceClickListener(preference -> {
-                Intent categoriesIntent = new Intent(getActivity(), ProductCategoryListActivity.class);
-                categoriesIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(categoriesIntent);
-                return true;
-            });
+                Preference prefProductCategories = findPreference(getString(R.string.pref_product_categories_key));
+                prefProductCategories.setOnPreferenceClickListener(preference -> {
+                    Intent categoriesIntent = new Intent(getActivity(), ProductCategoryListActivity.class);
+                    categoriesIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(categoriesIntent);
+                    return true;
+                });
 
-            Preference offersAndMessaging = findPreference(getString(R.string.pref_birthday_messages_and_offers_key));
-            offersAndMessaging.setOnPreferenceClickListener(preference -> {
-                Intent offersAndMessagingIntent = new Intent(getActivity(), BirthdayOffersAndMessagingActivity.class);
-                offersAndMessagingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(offersAndMessagingIntent);
-                return true;
-            });
+                Preference offersAndMessaging = findPreference(getString(R.string.pref_birthday_messages_and_offers_key));
+                offersAndMessaging.setOnPreferenceClickListener(preference -> {
+                    Intent offersAndMessagingIntent = new Intent(getActivity(), BirthdayOffersAndMessagingActivity.class);
+                    offersAndMessagingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(offersAndMessagingIntent);
+                    return true;
+                });
 
-            Preference prefLoyaltyPrograms = findPreference(getString(R.string.pref_loyalty_programs_key));
-            prefLoyaltyPrograms.setOnPreferenceClickListener(preference -> {
-                Intent programsIntent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
-                programsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(programsIntent);
-                return true;
-            });
+                Preference prefLoyaltyPrograms = findPreference(getString(R.string.pref_loyalty_programs_key));
+                prefLoyaltyPrograms.setOnPreferenceClickListener(preference -> {
+                    Intent programsIntent = new Intent(getActivity(), LoyaltyProgramListActivity.class);
+                    programsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(programsIntent);
+                    return true;
+                });
+            }
         }
 
         @Override
@@ -522,23 +426,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (headerHasChanged) {
-            if (mInitialHeader != null) {
-                switchToHeader(mInitialHeader);
-            }
-        }
-    }
-
-    @Override
-    public Header onGetInitialHeader() {
-        Header header = super.onGetInitialHeader();
-        mInitialHeader = header;
-        return header;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
@@ -551,7 +438,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     public void onHeaderClick(Header header, int position) {
         super.onHeaderClick(header, position);
-        headerHasChanged = true;
         if (header.id == R.id.loystar_support_pref_header) {
             ConversationActivity.show(this);
         }
