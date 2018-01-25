@@ -66,6 +66,7 @@
             android:text="@string/print_receipt"
             android:paddingStart="10dp"
             android:paddingLeft="10dp"
+            android:visibility="gone"
             android:paddingEnd="10dp"
             app:backgroundDrawable="@drawable/ic_print_white_24dp"
             android:paddingRight="10dp"/>

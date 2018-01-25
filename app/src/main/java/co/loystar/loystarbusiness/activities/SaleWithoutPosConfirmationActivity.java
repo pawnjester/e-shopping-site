@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
@@ -46,7 +48,6 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
-import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -66,8 +67,6 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
     private View mLayout;
     private TextView programTypeTextView;
     private TextView customerLoyaltyWorthView;
-    private BrandButtonNormal continueBtn;
-    private BrandButtonTransparent printReceiptBtn;
 
     /*bluetooth print*/
     BluetoothAdapter mBluetoothAdapter;
@@ -80,6 +79,12 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
     int readBufferPosition;
     volatile boolean stopWorker;
 
+    @BindView(R.id.btn_continue)
+    BrandButtonNormal continueBtn;
+
+    @BindView(R.id.printReceipt)
+    BrandButtonNormal printReceiptBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +95,8 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        ButterKnife.bind(this);
 
         mContext = this;
         mSessionManager = new SessionManager(this);
@@ -106,15 +113,13 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
         mLayout = findViewById(R.id.activity_sale_without_pos_confirmation_container);
         programTypeTextView = findViewById(R.id.program_type_text);
         customerLoyaltyWorthView = findViewById(R.id.customer_loyalty_worth);
-        continueBtn = findViewById(R.id.activity_transactions_confirmation_continue_btn);
-        printReceiptBtn = findViewById(R.id.printReceipt);
 
-        if (!isPrintReceipt) {
-            printReceiptBtn.setVisibility(View.GONE);
+        if (isPrintReceipt) {
+            printReceiptBtn.setVisibility(View.VISIBLE);
         }
 
-        if (!showContinueButton) {
-            continueBtn.setVisibility(View.GONE);
+        if (showContinueButton) {
+            continueBtn.setVisibility(View.VISIBLE);
         }
 
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);

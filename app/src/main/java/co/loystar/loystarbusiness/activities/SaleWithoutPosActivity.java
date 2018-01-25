@@ -2,7 +2,9 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +34,7 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     private Context mContext;
     private LoyaltyProgramEntity mLoyaltyProgram;
     private BottomBar bottomNavigationBar;
+    private boolean bluetoothPrintEnabled;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,9 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
         mLoyaltyProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
         mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
 
         if (savedInstanceState == null) {
             if (getIntent().getBooleanExtra(Constants.ADD_POINTS, false)) {
@@ -94,7 +100,7 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     private void addPoints(Bundle data) {
         mCustomerId = data.getInt(Constants.CUSTOMER_ID, 0);
         Bundle bundle = new Bundle();
-        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, bluetoothPrintEnabled);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
         bundle.putInt(
@@ -111,7 +117,7 @@ public class SaleWithoutPosActivity extends AppCompatActivity implements
     public void onAddPointsFragmentInteraction(Bundle data) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, bluetoothPrintEnabled);
         bundle.putInt(Constants.CASH_SPENT, data.getInt(Constants.CASH_SPENT, 0));
         bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, data.getInt(Constants.TOTAL_CUSTOMER_POINTS, 0));
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);

@@ -63,10 +63,11 @@
         </RelativeLayout>
 
         <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
-            android:id="@+id/activity_transactions_confirmation_continue_btn"
+            android:id="@+id/btn_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/continue_label"
+            android:visibility="gone"
             android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
             android:textAppearance="?android:textAppearanceMedium" />
@@ -78,6 +79,7 @@
             android:layout_height="wrap_content"
             android:text="@string/print_receipt"
             android:paddingStart="10dp"
+            android:visibility="gone"
             android:paddingLeft="10dp"
             android:paddingEnd="10dp"
             app:backgroundDrawable="@drawable/ic_print_white_24dp"

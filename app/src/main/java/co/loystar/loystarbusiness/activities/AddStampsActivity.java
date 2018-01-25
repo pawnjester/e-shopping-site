@@ -2,7 +2,9 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -54,6 +56,7 @@ public class AddStampsActivity extends AppCompatActivity {
     private CustomerEntity mCustomer;
     private MerchantEntity merchantEntity;
     private List<StampItem> mStampItems = new ArrayList<>();
+    private boolean bluetoothPrintEnabled;
 
     /*views*/
     private TextView totalStampsTextView;
@@ -85,6 +88,9 @@ public class AddStampsActivity extends AppCompatActivity {
                 actionBar.setTitle(title);
             }
         }
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
 
         BrandButtonNormal addStampsBtn = findViewById(R.id.add_stamps);
         RxView.clicks(addStampsBtn).subscribe(o -> addStamps());
@@ -133,7 +139,7 @@ public class AddStampsActivity extends AppCompatActivity {
 
         Bundle bundle = new Bundle();
         bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-        bundle.putBoolean(Constants.PRINT_RECEIPT, true);
+        bundle.putBoolean(Constants.PRINT_RECEIPT, bluetoothPrintEnabled);
         bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
         bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
         bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);

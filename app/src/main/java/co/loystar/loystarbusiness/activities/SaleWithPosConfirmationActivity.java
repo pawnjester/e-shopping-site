@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -47,6 +49,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
@@ -88,6 +92,12 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
     int readBufferPosition;
     volatile boolean stopWorker;
 
+    @BindView(R.id.btn_continue)
+    BrandButtonNormal continueBtn;
+
+    @BindView(R.id.printReceipt)
+    BrandButtonNormal printReceiptBtn;
+
     @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +110,8 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        ButterKnife.bind(this);
 
         mLayout = findViewById(R.id.activity_sale_with_pos_confirmation_wrapper);
         mContext = this;
@@ -124,8 +136,11 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
             );
         }
 
-        BrandButtonNormal continueBtn = findViewById(R.id.btn_continue);
-        BrandButtonTransparent printReceiptBtn = findViewById(R.id.printReceipt);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
+        if (bluetoothPrintEnabled) {
+            printReceiptBtn.setVisibility(View.VISIBLE);
+        }
 
         DealsAdapter mAdapter = new DealsAdapter(loyaltyDeals, mCustomer);
         RecyclerView mRecyclerView = findViewById(R.id.deals_recycler_view);

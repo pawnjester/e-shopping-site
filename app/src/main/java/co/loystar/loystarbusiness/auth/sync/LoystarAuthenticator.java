@@ -139,6 +139,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                        editor.putBoolean(mContext.getString(R.string.pref_enable_bluetooth_print_key), merchant.getEnable_bluetooth_printing() != null && merchant.getEnable_bluetooth_printing());
                         editor.putString("sync_frequency", String.valueOf(merchant.getSync_frequency()));
                         editor.apply();
                     }
