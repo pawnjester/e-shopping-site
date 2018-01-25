@@ -4,7 +4,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
@@ -91,7 +93,9 @@ public class AccountGeneral {
      */
     public static void SetSyncAccount(Context c, Account account) {
         final String AUTHORITY = AccountGeneral.AUTHORITY;
-        final long SYNC_FREQUENCY = 60 * 60; // 1 hour (seconds)
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(c);
+        int syncFrequency = Integer.parseInt(sharedPreferences.getString("sync_frequency", "60"));
+        final long SYNC_FREQUENCY = syncFrequency * 60;
 
         // Inform the system that this account supports sync
         ContentResolver.setIsSyncable(account, AUTHORITY, 1);

@@ -23,12 +23,12 @@
         <extra android:name="settings" android:value="@string/settings_general" />
     </header>
 
-    <header
+    <!--<header
         android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_notifications">
         <extra android:name="settings" android:value="@string/settings_notifications" />
-    </header>
+    </header>-->
 
     <header
         android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"

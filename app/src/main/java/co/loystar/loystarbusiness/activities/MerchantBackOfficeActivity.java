@@ -51,7 +51,6 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.jakewharton.rxbinding2.view.RxView;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
@@ -80,7 +79,6 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
@@ -88,7 +86,6 @@ import co.loystar.loystarbusiness.utils.GraphCoordinates;
 import co.loystar.loystarbusiness.utils.NotificationUtils;
 import co.loystar.loystarbusiness.utils.fcm.SendFirebaseRegistrationToken;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Observer;
@@ -97,7 +94,6 @@ import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.smooch.core.Smooch;
 import io.smooch.core.User;
-import timber.log.Timber;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity
@@ -188,7 +184,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     channelName, NotificationManager.IMPORTANCE_LOW));
             }
         }
-
 
         stateWelcomeImageView = emptyStateLayout.findViewById(R.id.stateImage);
         stateWelcomeTextView = emptyStateLayout.findViewById(R.id.stateIntroText);

@@ -119,23 +119,23 @@ public class ProductListActivity
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.products_list_empty_container);
-        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
-        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
+        ImageView stateImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateIntroTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
         String merchantBusinessType = mSessionManager.getBusinessType();
         if (merchantBusinessType.equals(getString(R.string.hair_and_beauty))) {
-            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_beauty));
+            stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_beauty));
         } else if (merchantBusinessType.equals(getString(R.string.fashion_and_accessories))) {
-            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_fashion));
+            stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_fashion));
         } else if (merchantBusinessType.equals(getString(R.string.beverages_and_deserts)) || merchantBusinessType.equals(getString(R.string.bakery_and_pastry))) {
-            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_food));
+            stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_food));
         } else {
-            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_others));
+            stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_no_product_others));
         }
 
-        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateIntroTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
         stateDescriptionTextView.setText(getString(R.string.no_products_found));
 
         stateActionBtn.setText(getString(R.string.start_adding_products_label));

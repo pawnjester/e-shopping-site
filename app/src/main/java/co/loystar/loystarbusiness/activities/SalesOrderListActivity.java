@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -205,6 +206,8 @@ public class SalesOrderListActivity extends RxAppCompatActivity
 
     private void setupRecyclerView() {
         View emptyView = findViewById(R.id.no_orders_empty_view);
+        TextView stateIntroTextView = emptyView.findViewById(R.id.stateIntroText);
+        stateIntroTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLayoutManager);

@@ -447,7 +447,7 @@
     <string name="action_process_order">Process Order</string>
     <string name="pending">pending</string>
     <string name="completed">completed</string>
-    <string name="no_orders_received">Sorry! you have not received any orders yet.</string>
+    <string name="no_orders_received">You have not received any orders yet.</string>
     <string name="view_orders"><u>View Orders</u></string>
     <string name="rejected">rejected</string>
     <string name="view">View</string>

@@ -5,6 +5,7 @@ import android.content.ContextWrapper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -69,7 +70,7 @@ public class CurrencyPicker extends AppCompatSpinner
     public void setDefault() {
         SessionManager sessionManager = new SessionManager(mContext);
         String merchantCurrency = sessionManager.getCurrency();
-        if (merchantCurrency == null) {
+        if (TextUtils.isEmpty(merchantCurrency)) {
             setCurrencySelection();
         } else {
             setCurrencySelection(merchantCurrency);

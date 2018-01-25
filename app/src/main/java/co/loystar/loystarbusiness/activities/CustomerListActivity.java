@@ -214,14 +214,14 @@ public class CustomerListActivity extends RxAppCompatActivity
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.empty_items_container);
-        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
-        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
+        ImageView stateImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateIntroTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
-        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_nocustomers));
-        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
-        stateWelcomeTextView.setTextColor(ContextCompat.getColor(this, R.color.wallet_hint_foreground_holo_dark));
+        stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_nocustomers));
+        stateIntroTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateIntroTextView.setTextColor(ContextCompat.getColor(this, R.color.wallet_hint_foreground_holo_dark));
         stateDescriptionTextView.setText(getString(R.string.no_customers_found));
         stateDescriptionTextView.setTextColor(ContextCompat.getColor(this, R.color.wallet_hint_foreground_holo_dark));
 

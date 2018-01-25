@@ -131,13 +131,13 @@ public class LoyaltyProgramListActivity extends RxAppCompatActivity {
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.loyalty_programs_list_empty_container);
-        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
-        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
+        ImageView stateImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateIntroTextView = emptyView.findViewById(R.id.stateIntroText);
         TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
         BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
 
-        stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_campaigns));
-        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateImageView.setImageDrawable(AppCompatResources.getDrawable(mContext, R.drawable.ic_campaigns));
+        stateIntroTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
         stateDescriptionTextView.setText(getString(R.string.no_programs_found));
 
         stateActionBtn.setText(getString(R.string.start_loyalty_program_btn_label));

@@ -6,6 +6,7 @@ import android.content.ContextWrapper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -121,12 +122,14 @@ public class InternationalPhoneInput extends RelativeLayout
             }
         } catch (SecurityException e) {
             String merchantCurrency = mSessionManager.getCurrency();
-            if (merchantCurrency == null) {
+            if (TextUtils.isEmpty(merchantCurrency)) {
                 setCountrySelection();
             } else {
-                String iso = merchantCurrency.substring(0, 2);
-                mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
-                setCountrySelection(iso);
+                try {
+                    String iso = merchantCurrency.substring(0, 2);
+                    mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
+                    setCountrySelection(iso);
+                } catch (ArrayIndexOutOfBoundsException ignored) {}
             }
         }
     }
@@ -136,8 +139,8 @@ public class InternationalPhoneInput extends RelativeLayout
             // set default country iso to US
             iso = "us";
         }
-        int defaultIdx = mCountries.indexOfIso(iso);
         try {
+            int defaultIdx = mCountries.indexOfIso(iso);
             mSelectedCountry = mCountries.get(defaultIdx);
             mSpinner.setSelection(defaultIdx);
         }
@@ -178,14 +181,19 @@ public class InternationalPhoneInput extends RelativeLayout
      */
     public void setNumber(String number) {
         try {
-            String merchantCurrency = mSessionManager.getCurrency();
-            if (merchantCurrency != null) {
-                String iso = merchantCurrency.substring(0, 2);
-                mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
-            }
-            String iso = "";
+            String iso = null;
             if (mSelectedCountry != null) {
                 iso = mSelectedCountry.getIso();
+            }
+
+            if (iso == null) {
+                String merchantCurrency = mSessionManager.getCurrency();
+                if (!TextUtils.isEmpty(merchantCurrency)) {
+                    try {
+                        iso = merchantCurrency.substring(0, 2);
+                        mSelectedCountry = mCountries.get(mCountries.indexOfIso(iso));
+                    } catch (ArrayIndexOutOfBoundsException ignored){}
+                }
             }
 
             Phonenumber.PhoneNumber phoneNumber = mPhoneUtil.parse(number, iso);
