@@ -135,7 +135,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         merchantEntity.getContactNumber(),
                         merchantEntity.getBusinessType(),
                         merchantEntity.getCurrency(),
-                        merchantEntity.isPosTurnedOn()
+                        merchantEntity.isPosTurnedOn(),
+                        merchantEntity.getSyncFrequency(),
+                        merchantEntity.isBluetoothPrintEnabled()
                 ).enqueue(new Callback<MerchantWrapper>() {
                     @Override
                     public void onResponse(@NonNull Call<MerchantWrapper> call, @NonNull Response<MerchantWrapper> response) {

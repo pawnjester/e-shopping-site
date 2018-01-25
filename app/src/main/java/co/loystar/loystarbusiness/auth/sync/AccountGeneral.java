@@ -94,7 +94,7 @@ public class AccountGeneral {
     public static void SetSyncAccount(Context c, Account account) {
         final String AUTHORITY = AccountGeneral.AUTHORITY;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(c);
-        int syncFrequency = Integer.parseInt(sharedPreferences.getString("sync_frequency", "60"));
+        int syncFrequency = Integer.parseInt(sharedPreferences.getString("sync_frequency", "360"));
         final long SYNC_FREQUENCY = syncFrequency * 60;
 
         // Inform the system that this account supports sync

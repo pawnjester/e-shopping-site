@@ -115,6 +115,8 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                         merchantEntity.setEmail(merchant.getEmail());
                         merchantEntity.setBusinessType(merchant.getBusiness_type());
                         merchantEntity.setContactNumber(merchant.getContact_number());
+                        merchantEntity.setSyncFrequency(merchant.getSync_frequency());
+                        merchantEntity.setBluetoothPrintEnabled(merchant.getEnable_bluetooth_printing());
                         merchantEntity.setCurrency(merchant.getCurrency());
                         if (merchant.getSubscription_expires_on() != null) {
                             merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
@@ -137,6 +139,7 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
+                        editor.putString("sync_frequency", String.valueOf(merchant.getSync_frequency()));
                         editor.apply();
                     }
                 }

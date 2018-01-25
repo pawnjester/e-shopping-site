@@ -266,6 +266,7 @@
     <string name="birthday_messages_and_offers">Birthday Messages &amp; Offers</string>
     <string name="pref_birthday_messages_and_offers_key">pref_birthday_messages_and_offers</string>
     <string name="pref_turn_on_pos_key">turn_on_point_of_sale</string>
+    <string name="pref_enable_bluetooth_print_key">pref_enable_bluetooth_print</string>
     <string name="pref_turn_on_pos_title">Turn on POS</string>
     <string name="pref_product_categories_key">pref_product_categories</string>
     <string name="pref_product_categories_title">My Product Categories</string>
@@ -274,10 +275,11 @@
     <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
     <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
     <string name="pos_turn_on_notice">POS has been enabled.</string>
+    <string name="bluetooth_print_enabled_notice">Bluetooth print has been enabled.</string>
 
     <string name="account">Account</string>
     <string name="title_activity_my_account_profile">My Profile</string>
-    <string name="turn_off">Yes, turn off</string>
+    <string name="action_confirm_turn_off">Yes, turn off</string>
     <string name="title_product_list">My products / services</string>
     <string name="title_product_detail">Product Detail</string>
     <string name="title_productcategory_list">My Product Categories</string>
@@ -473,4 +475,10 @@
     <string name="settings_data_and_sync">settings_data_and_sync</string>
     <string name="settings_account">settings_account</string>
     <string name="settings_products_and_services">settings_products_and_services</string>
+    <string name="pref_header_print_options">Print</string>
+    <string name="settings_print">settings_print</string>
+    <string name="pref_enable_bluetooth_print_tile">Enable Bluetooth Print</string>
+    <string name="bluetooth_print_disabled_summary">Bluetooth print is disabled</string>
+    <string name="bluetooth_print_enabled_summary">Bluetooth print is enabled</string>
+    <string name="action_confirm_disable">Yes, disable</string>
 </resources>

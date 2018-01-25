@@ -189,7 +189,10 @@ public class MyAccountProfileActivity extends AppCompatActivity
                 phoneInput.getNumber(),
                 selectedBusinessType,
                 selectedCurrency,
-                null).enqueue(new Callback<MerchantWrapper>() {
+                null,
+            null,
+            null
+        ).enqueue(new Callback<MerchantWrapper>() {
 
             @Override
             public void onResponse(@NonNull Call<MerchantWrapper> call, @NonNull Response<MerchantWrapper> response) {
@@ -209,6 +212,8 @@ public class MyAccountProfileActivity extends AppCompatActivity
                         merchantEntity.setBusinessType(merchant.getBusiness_type());
                         merchantEntity.setContactNumber(merchant.getContact_number());
                         merchantEntity.setCurrency(merchant.getCurrency());
+                        merchantEntity.setSyncFrequency(merchant.getSync_frequency());
+                        merchantEntity.setBluetoothPrintEnabled(merchant.getEnable_bluetooth_printing());
                         mDatabaseManager.updateMerchant(merchantEntity);
 
                         sessionManager.setMerchantSessionData(

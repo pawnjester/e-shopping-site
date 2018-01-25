@@ -1,5 +1,6 @@
 package co.loystar.loystarbusiness.activities;
 
+import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +48,7 @@ import io.smooch.ui.ConversationActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -234,20 +237,41 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 addPreferencesFromResource(R.xml.pref_notification);
                 setHasOptionsMenu(true);
 
-                // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-                // to their values. When their values change, their summaries are
-                // updated to reflect the new value, per the Android Design
-                // guidelines.
                 bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
             } else if (getActivity().getString(R.string.settings_data_and_sync).equals(settingsKey)){
                 addPreferencesFromResource(R.xml.pref_data_sync);
                 setHasOptionsMenu(true);
 
-                // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-                // to their values. When their values change, their summaries are
-                // updated to reflect the new value, per the Android Design
-                // guidelines.
                 bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+
+                ListPreference syncPreference = (ListPreference) findPreference("sync_frequency");
+                syncPreference.setOnPreferenceChangeListener((preference, o) -> {
+                    CharSequence newValue = (CharSequence) o;
+                    List<CharSequence> values = Arrays.asList(getResources().getStringArray(R.array.pref_sync_frequency_values));
+                    List<CharSequence> titles = Arrays.asList(getResources().getStringArray(R.array.pref_sync_frequency_titles));
+                    int titleIndex = values.indexOf(newValue);
+                    syncPreference.setSummary(titles.get(titleIndex));
+
+                    SessionManager sessionManager = new SessionManager(getActivity());
+                    final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
+                    final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
+                    if (merchantEntity != null) {
+                        int newValueAsInt = Integer.parseInt(newValue.toString());
+                        if (merchantEntity.getSyncFrequency() == null || merchantEntity.getSyncFrequency() != newValueAsInt) {
+                            merchantEntity.setSyncFrequency(newValueAsInt);
+                            merchantEntity.setUpdateRequired(true);
+                            databaseManager.updateMerchant(merchantEntity);
+
+                            Account account = AccountGeneral.getUserAccount(getActivity(), sessionManager.getEmail());
+                            if (account != null) {
+                                AccountGeneral.SetSyncAccount(getActivity(), account);
+                            }
+                        }
+                    }
+
+                   return true;
+                });
+
             } else if (getActivity().getString(R.string.settings_account).equals(settingsKey)){
                 addPreferencesFromResource(R.xml.pref_account);
                 setHasOptionsMenu(true);
@@ -286,6 +310,61 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         .show();
                     return true;
                 });
+            } else if (getActivity().getString(R.string.settings_print).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.pref_print);
+                setHasOptionsMenu(true);
+
+                final Preference enableBluetoothPrintPref = findPreference(getString(R.string.pref_enable_bluetooth_print_key));
+                final SharedPreferences tSharedPref = enableBluetoothPrintPref.getSharedPreferences();
+                boolean isEnabled = tSharedPref.getBoolean(enableBluetoothPrintPref.getKey(), false);
+                if (isEnabled) {
+                    enableBluetoothPrintPref.setSummary(getString(R.string.bluetooth_print_enabled_summary));
+                } else {
+                    enableBluetoothPrintPref.setSummary(getString(R.string.bluetooth_print_disabled_summary));
+                }
+
+                enableBluetoothPrintPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean isEnabledState = (Boolean) newValue;
+                    SessionManager sessionManager = new SessionManager(getActivity());
+                    final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
+                    final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
+
+                    if (isEnabledState) {
+                        if (merchantEntity != null) {
+                            merchantEntity.setBluetoothPrintEnabled(true);
+                            merchantEntity.setUpdateRequired(true);
+                            databaseManager.updateMerchant(merchantEntity);
+                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                        }
+                        Toast.makeText(getActivity(), getActivity().getString(R.string.bluetooth_print_enabled_notice), Toast.LENGTH_LONG).show();
+                        enableBluetoothPrintPref.setSummary(getString(R.string.bluetooth_print_enabled_summary));
+                    } else {
+                        AlertDialog.Builder builder;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                        } else {
+                            builder = new AlertDialog.Builder(getActivity());
+                        }
+                        builder.setTitle("Are you sure?")
+                            .setPositiveButton(getString(R.string.action_confirm_disable), (dialog, which) -> {
+                                TwoStatePreference statePreference = (TwoStatePreference) enableBluetoothPrintPref;
+                                statePreference.setChecked(false);
+
+                                if (merchantEntity != null) {
+                                    merchantEntity.setBluetoothPrintEnabled(false);
+                                    merchantEntity.setUpdateRequired(true);
+                                    databaseManager.updateMerchant(merchantEntity);
+                                    SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> {
+                                dialog.dismiss();
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    }
+                    return isEnabledState;
+                });
             } else if (getActivity().getString(R.string.settings_products_and_services).equals(settingsKey)){
                 addPreferencesFromResource(R.xml.pref_products_and_services);
                 setHasOptionsMenu(true);
@@ -293,23 +372,37 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 final Preference turnOnPosPref = findPreference(getString(R.string.pref_turn_on_pos_key));
                 final SharedPreferences tSharedPref = turnOnPosPref.getSharedPreferences();
                 boolean isTurnedOn = tSharedPref.getBoolean(turnOnPosPref.getKey(), false);
-                if (!isTurnedOn) {
-                    turnOnPosPref.setSummary(getString(R.string.pos_turned_off_explanation));
-                } else {
+                if (isTurnedOn) {
                     turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
+                } else {
+                    turnOnPosPref.setSummary(getString(R.string.pos_turned_off_explanation));
                 }
 
                 turnOnPosPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    boolean isTurnedOn1 = (Boolean) newValue;
+                    boolean isTurnedOnState = (Boolean) newValue;
                     SessionManager sessionManager = new SessionManager(getActivity());
                     final DatabaseManager databaseManager = DatabaseManager.getInstance(getActivity());
                     final MerchantEntity merchantEntity = databaseManager.getMerchant(sessionManager.getMerchantId());
 
-                    if (!isTurnedOn1) {
-                        new AlertDialog.Builder(getActivity())
-                            .setTitle("Are you sure?")
+                    if (isTurnedOnState) {
+                        if (merchantEntity != null) {
+                            merchantEntity.setPosTurnedOn(true);
+                            merchantEntity.setUpdateRequired(true);
+                            databaseManager.updateMerchant(merchantEntity);
+                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
+                        }
+                        Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
+                        turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
+                    } else {
+                        AlertDialog.Builder builder;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                        } else {
+                            builder = new AlertDialog.Builder(getActivity());
+                        }
+                        builder.setTitle("Are you sure?")
                             .setMessage("Loystar won't capture product information when recording sales.")
-                            .setPositiveButton(getString(R.string.turn_off), (dialog, which) -> {
+                            .setPositiveButton(getString(R.string.action_confirm_turn_off), (dialog, which) -> {
                                 TwoStatePreference statePreference = (TwoStatePreference) turnOnPosPref;
                                 statePreference.setChecked(false);
 
@@ -320,20 +413,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                     SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
                                 }
                             })
-                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                            .setNegativeButton(android.R.string.no, (dialog, which) -> {
+                                dialog.dismiss();
+                            })
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .show();
-                    } else {
-                        if (merchantEntity != null) {
-                            merchantEntity.setPosTurnedOn(true);
-                            merchantEntity.setUpdateRequired(true);
-                            databaseManager.updateMerchant(merchantEntity);
-                            SyncAdapter.performSync(getActivity(), merchantEntity.getEmail());
-                        }
-                        Toast.makeText(getActivity(), getActivity().getString(R.string.pos_turn_on_notice), Toast.LENGTH_LONG).show();
-                        turnOnPosPref.setSummary(getString(R.string.pos_turned_on_explanation));
                     }
-                    return isTurnedOn1;
+                    return isTurnedOnState;
                 });
 
                 Preference prefMyProducts = findPreference(getString(R.string.pref_my_products_key));
