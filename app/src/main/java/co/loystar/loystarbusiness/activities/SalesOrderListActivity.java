@@ -5,10 +5,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -94,6 +96,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
     private SalesOrderListAdapter mAdapter;
     private MyAlertDialog myAlertDialog;
     private SalesOrderEntity mSelectedOrderEntity;
+    private boolean bluetoothPrintEnabled;
 
     /*bluetooth print*/
     BluetoothAdapter mBluetoothAdapter;
@@ -134,6 +137,9 @@ public class SalesOrderListActivity extends RxAppCompatActivity
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
 
         mAdapter = new SalesOrderListAdapter();
         executor = Executors.newSingleThreadExecutor();
@@ -255,7 +261,7 @@ public class SalesOrderListActivity extends RxAppCompatActivity
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
             } else if (item.getStatus().equals(getString(R.string.completed))) {
                 holder.binding.salesOrderActionsWrapper.setVisibility(View.GONE);
-                holder.binding.printOrderReceipt.setVisibility(View.VISIBLE);
+                holder.binding.printOrderReceipt.setVisibility(bluetoothPrintEnabled ? View.VISIBLE : View.GONE);
                 holder.binding.statusText.setText(getString(R.string.status_completed));
                 holder.binding.statusText.setBackgroundColor(ContextCompat.getColor(mContext, R.color.green));
             } else if (item.getStatus().equals(getString(R.string.rejected))){

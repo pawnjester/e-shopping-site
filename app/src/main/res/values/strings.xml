@@ -456,8 +456,7 @@
     <string name="confirm_reject">Yes, reject</string>
     <string name="yes">Yes</string>
     <string name="customer_only">CustomerOnly</string>
-    <string name="cashier_only">CashierOnly</string>
-    <string name="kitchen_only">KitchenOnly</string>
+    <string name="staff_only">StaffOnly</string>
     <string name="print_for">Print for</string>
     <string name="loyalty_program">Loyalty Program</string>
     <string name="product_loyalty_program_explanation">By setting a loyalty program, customers can target the reward of this program by spending on this product or service.</string>

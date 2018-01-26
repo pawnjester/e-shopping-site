@@ -4,11 +4,7 @@
     "title": "Customer Only"
   },
   {
-    "id": "CashierOnly",
-    "title": "Cashier Only"
-  },
-  {
-    "id": "KitchenOnly",
-    "title": "Kitchen Only"
+    "id": "StaffOnly",
+    "title": "Staff Only"
   }
 ]
