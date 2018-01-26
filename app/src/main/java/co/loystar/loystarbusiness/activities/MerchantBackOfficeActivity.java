@@ -151,6 +151,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                         animation.setRepeatMode(Animation.REVERSE);
                         orderReceivedImgView.startAnimation(animation);
 
+                        NotificationUtils notificationUtils = new NotificationUtils(MerchantBackOfficeActivity.this);
+                        notificationUtils.playNotificationSound();
+
                         int orderId = intent.getIntExtra(Constants.NOTIFICATION_ORDER_ID, 0);
                         viewOrderBtn.setOnClickListener(view -> {
                             Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
@@ -224,6 +227,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 animation.setRepeatCount(Animation.INFINITE);
                 animation.setRepeatMode(Animation.REVERSE);
                 orderReceivedImgView.startAnimation(animation);
+
+                NotificationUtils notificationUtils = new NotificationUtils(MerchantBackOfficeActivity.this);
+                notificationUtils.playNotificationSound();
 
                 viewOrderBtn.setOnClickListener(view -> {
                     Intent orderListIntent = new Intent(mContext, SalesOrderListActivity.class);
