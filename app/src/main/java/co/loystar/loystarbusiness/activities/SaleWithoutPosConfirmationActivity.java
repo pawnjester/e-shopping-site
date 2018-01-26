@@ -48,6 +48,7 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -83,7 +84,7 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
     BrandButtonNormal continueBtn;
 
     @BindView(R.id.printReceipt)
-    BrandButtonNormal printReceiptBtn;
+    BrandButtonTransparent printReceiptBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

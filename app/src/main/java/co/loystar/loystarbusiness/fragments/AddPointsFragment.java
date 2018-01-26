@@ -31,7 +31,6 @@ import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 
 
 public class AddPointsFragment extends Fragment {
-    private static final String TAG = AddPointsFragment.class.getSimpleName();
     private DatabaseManager mDatabaseManager;
     private CurrencyEditText mCurrencyEditText;
     private SessionManager mSessionManager;
@@ -44,12 +43,11 @@ public class AddPointsFragment extends Fragment {
 
     public AddPointsFragment() {}
 
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mSessionManager = new SessionManager(getActivity());
-        int mCustomerId = 0;
+        int mCustomerId;
         int amountSpent = 0;
         View rootView = inflater.inflate(R.layout.fragment_add_points, container, false);
 

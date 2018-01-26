@@ -96,7 +96,7 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
     BrandButtonNormal continueBtn;
 
     @BindView(R.id.printReceipt)
-    BrandButtonNormal printReceiptBtn;
+    BrandButtonTransparent printReceiptBtn;
 
     @SuppressWarnings("unchecked")
     @Override

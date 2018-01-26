@@ -3,9 +3,11 @@ package co.loystar.loystarbusiness.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -27,7 +29,6 @@ import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 
 public class SaleWithoutPosFragment extends Fragment {
-    private static final String TAG = SaleWithoutPosFragment.class.getSimpleName();
     private CustomerEntity mSelectedCustomer;
     private int mCustomerId;
     private CurrencyEditText mCurrencyEditText;
@@ -36,6 +37,11 @@ public class SaleWithoutPosFragment extends Fragment {
 
     public SaleWithoutPosFragment() {}
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -96,6 +102,11 @@ public class SaleWithoutPosFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_add_customer, menu);
     }
 
     @Override
