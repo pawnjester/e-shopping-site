@@ -22,7 +22,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 87
+        versionCode 88
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -106,6 +106,7 @@ ext {
     requeryVersion = "1.4.0"
     permissionsDispatcherVersion = "2.4.0"
     butterKnifeVersion = "8.8.1"
+    retrofit2Version = "2.3.0"
 }
 
 dependencies {
@@ -147,9 +148,9 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.3.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.0'
-    implementation 'com.squareup.retrofit2:converter-jackson:2.3.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    implementation "com.squareup.retrofit2:converter-jackson:${retrofit2Version}"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:${retrofit2Version}"
+    implementation "com.squareup.retrofit2:retrofit:${retrofit2Version}"
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
     implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
@@ -165,7 +166,6 @@ dependencies {
     implementation 'id.zelory:compressor:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
-    implementation 'com.github.ittianyu:BottomNavigationViewEx:1.2.4'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
     implementation("com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion") {

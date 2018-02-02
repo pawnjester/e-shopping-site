@@ -130,9 +130,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.SmoochActivityLauncher"
-            android:label="@string/pref_support_title"/>
-        <activity
             android:name=".activities.MerchantBackOfficeActivity"
             android:label="@string/title_activity_merchant_back_office"
             android:theme="@style/AppTheme.NoActionBar" />

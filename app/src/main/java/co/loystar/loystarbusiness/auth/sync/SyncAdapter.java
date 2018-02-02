@@ -67,7 +67,6 @@ import timber.log.Timber;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private final AccountManager mAccountManager;
-    private static final String TAG = SyncAdapter.class.getSimpleName();
     private ApiClient mApiClient;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;

@@ -30,7 +30,6 @@ public class AccountGeneral {
     static final String AUTH_TOKEN_TYPE_READ_ONLY = "Read only";
     static final String AUTH_TOKEN_TYPE_READ_ONLY_LABEL = "Read only access to a Loystar account";
     static final String AUTH_TOKEN_TYPE_FULL_ACCESS_LABEL = "Full access to Loystar account";
-    private static final String TAG = AccountGeneral.class.getSimpleName();
 
     /**
      * Gets the current sync account for the app.
