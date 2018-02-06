@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -64,7 +63,6 @@ import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
@@ -76,7 +74,6 @@ import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerVi
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
-import co.loystar.loystarbusiness.utils.ui.buttons.AddCustomerButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
@@ -89,7 +86,6 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import timber.log.Timber;
 
 public class SaleWithPosActivity extends RxAppCompatActivity
         implements CustomerAutoCompleteDialog.SelectedCustomerListener,
@@ -172,26 +168,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         orderSummaryDraggingStateUp = true;
-                        if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
-                            ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(true);
-                        }
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         orderSummaryDraggingStateUp = false;
-                        if (mSelectedCustomer == null) {
-                            if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
-                                ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
-                            }
-                        }
-                        break;
-                    case BottomSheetBehavior.STATE_DRAGGING:
-                        if (mSelectedCustomer == null) {
-                            if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
-                                ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
-                            }
-                        }
-                        break;
-                    case BottomSheetBehavior.STATE_SETTLING:
                         break;
                 }
             }
@@ -252,9 +231,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
 
         setUpBottomSheetView();
-        if (mSelectedCustomer != null) {
-            setOrderSummaryView(mSelectedCustomer, false);
-        }
     }
 
     private void setupProductsRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -303,7 +279,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         View emptyView = findViewById(R.id.empty_cart);
         BrandButtonNormal addToCartBtn = emptyView.findViewById(R.id.add_to_cart);
-        addToCartBtn.setOnClickListener(view -> orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED));
+        addToCartBtn.setOnClickListener(view -> showBottomSheet(false));
 
         mOrderSummaryRecyclerView = recyclerView;
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -340,15 +316,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             }
         });
 
-        RxView.clicks(proceedToCheckoutBtn).subscribe(o -> {
-            if (mSelectedCustomer == null) {
-                if (!customerAutoCompleteDialog.isAdded()) {
-                    customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
-                }
-            } else {
-                setOrderSummaryView(mSelectedCustomer, true);
-            }
-        });
+        RxView.clicks(proceedToCheckoutBtn).subscribe(o -> showBottomSheet(true));
 
         RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
             DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
@@ -469,36 +437,14 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                 .setIcon(AppCompatResources.getDrawable(mContext, android.R.drawable.ic_dialog_alert))
                 .show());
 
-        orderSummaryExpandedToolbar.setNavigationOnClickListener(view -> orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED));
+        orderSummaryExpandedToolbar.setNavigationOnClickListener(view -> showBottomSheet(false));
     }
 
-    private void setOrderSummaryView(@Nullable CustomerEntity customerEntity, boolean show) {
-        View customerDetailWrapper = findViewById(R.id.customerDetailWrapper);
-        View AddCustomerWrapper = findViewById(R.id.addCustomerWrapper);
-        AddCustomerButton addCustomerButton = AddCustomerWrapper.findViewById(R.id.addCustomerButton);
-        RxView.clicks(addCustomerButton).subscribe(o -> {
-            if (!customerAutoCompleteDialog.isAdded()) {
-                customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
-            }
-        });
-        if (customerEntity == null) {
-            AddCustomerWrapper.setVisibility(View.VISIBLE);
-            customerDetailWrapper.setVisibility(View.GONE);
-        } else {
-            AddCustomerWrapper.setVisibility(View.GONE);
-            customerDetailWrapper.setVisibility(View.VISIBLE);
-
-            ((TextView) customerDetailWrapper.findViewById(R.id.customerName)).setText(customerEntity.getFirstName());
-            ((TextView) customerDetailWrapper.findViewById(R.id.customerNumber)).setText(customerEntity.getPhoneNumber());
-
-            RxView.clicks(customerDetailWrapper.findViewById(R.id.changeCustomerBtn)).subscribe(o -> {
-                mSelectedCustomer = null;
-                AddCustomerWrapper.setVisibility(View.VISIBLE);
-                customerDetailWrapper.setVisibility(View.GONE);
-            });
-        }
+    private void showBottomSheet(boolean show) {
         if (show) {
             orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 
@@ -521,7 +467,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     @Override
     public void onCustomerSelected(@NonNull CustomerEntity customerEntity) {
         mSelectedCustomer = customerEntity;
-        setOrderSummaryView(mSelectedCustomer, true);
     }
 
     @Override
@@ -913,7 +858,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                                     Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 } else {
                                     mSelectedCustomer = customerEntity;
-                                    setOrderSummaryView(customerEntity, true);
                                 }
                             });
                 }
@@ -984,7 +928,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
         }
 
-        orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        showBottomSheet(false);
         ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
         treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -1000,7 +944,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     @Override
     public void onBackPressed() {
         if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            showBottomSheet(false);
         } else {
             super.onBackPressed();
         }
