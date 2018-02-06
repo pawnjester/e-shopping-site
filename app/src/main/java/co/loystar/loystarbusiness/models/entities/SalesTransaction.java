@@ -22,13 +22,11 @@ public interface SalesTransaction extends Observable, Parcelable, Persistable {
     int getId();
 
     boolean isSynced();
-
     int getUserId();
     int getProductId();
     int getMerchantLoyaltyProgramId();
     boolean isSendSms();
     int getAmount();
-
     int getPoints();
     int getStamps();
     String getProgramType();

@@ -367,6 +367,15 @@ public class DatabaseManager implements IDatabaseManager{
         return query.get().toList();
     }
 
+    @NonNull
+    @Override
+    public List<SaleEntity> getUnsyncedSaleEnties(@NonNull MerchantEntity merchantEntity) {
+        Selection<ReactiveResult<SaleEntity>> query = mDataStore.select(SaleEntity.class);
+        query.where(SaleEntity.SYNCED.eq(false));
+        query.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        return query.get().toList();
+    }
+
     @Override
     public int getTotalCustomerStamps(int merchantId, int customerId) {
         int stamps = 0;

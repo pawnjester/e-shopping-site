@@ -13,6 +13,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
@@ -111,6 +112,9 @@ public interface IDatabaseManager {
 
     @NonNull
     List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<SaleEntity> getUnsyncedSaleEnties(@NonNull MerchantEntity  merchantEntity);
 
     int getTotalCustomerStamps(int merchantId, int customerId);
 

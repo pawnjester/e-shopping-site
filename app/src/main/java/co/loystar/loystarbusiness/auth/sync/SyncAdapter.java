@@ -9,10 +9,12 @@ import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,10 +75,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
+    private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
 
     SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
+        mContext = context;
         mAccountManager = AccountManager.get(context);
         mApiClient = new ApiClient(context);
         mDatabaseManager = DatabaseManager.getInstance(context);
@@ -805,6 +809,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
                                         newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
                                         newSaleEntity.setTotal(sale.getTotal());
+                                        newSaleEntity.setSynced(true);
                                         newSaleEntity.setCustomer(customerEntity);
 
                                         mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
@@ -841,6 +846,118 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 });
             } catch (JSONException e) {
                 Timber.e(e);
+            }
+
+            List<SaleEntity> unsyncedSaleEntities = mDatabaseManager.getUnsyncedSaleEnties(merchantEntity);
+            if (!unsyncedSaleEntities.isEmpty()) {
+                /*sync sales records with the server*/
+                SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
+                String deviceId = sharedPreferences.getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
+                for (SaleEntity saleEntity: unsyncedSaleEntities) {
+                    try {
+                        JSONObject jsonObjectData = new JSONObject();
+                        jsonObjectData.put("user_id", saleEntity.getCustomer().getUserId());
+                        jsonObjectData.put("device_id", deviceId);
+                        jsonObjectData.put("is_paid_with_cash", saleEntity.isPayedWithCash());
+                        jsonObjectData.put("is_paid_with_card", saleEntity.isPayedWithCard());
+                        jsonObjectData.put("is_paid_with_mobile", saleEntity.isPayedWithMobile());
+
+                        JSONArray jsonArray = new JSONArray();
+
+                        for (SalesTransactionEntity transactionEntity: saleEntity.getTransactions()) {
+                            LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
+                            if (programEntity != null) {
+                                JSONObject jsonObject = new JSONObject();
+
+                                jsonObject.put("user_id", transactionEntity.getUserId());
+                                jsonObject.put("merchant_id", merchantEntity.getId());
+                                jsonObject.put("amount", transactionEntity.getAmount());
+                                jsonObject.put("product_id", transactionEntity.getProductId());
+                                jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                                jsonObject.put("program_type", transactionEntity.getProgramType());
+                                if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
+                                    jsonObjectData.put("points", transactionEntity.getPoints());
+                                }
+                                else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
+                                    jsonObjectData.put("stamps", transactionEntity.getStamps());
+                                }
+
+                                jsonArray.put(jsonObject);
+                            }
+                        }
+
+                        jsonObjectData.put("transactions", jsonArray);
+                        JSONObject requestData = new JSONObject();
+                        requestData.put("sale", jsonObjectData);
+
+                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                        mApiClient.getLoystarApi(false).createSale(requestBody).enqueue(new Callback<Sale>() {
+                            @Override
+                            public void onResponse(@NonNull Call<Sale> call, @NonNull Response<Sale> response) {
+                                if (response.isSuccessful()) {
+                                    Sale sale = response.body();
+                                    if (sale != null) {
+                                        for (int i = 0; i < saleEntity.getTransactions().size(); i++) {
+                                            SalesTransactionEntity transactionEntity = saleEntity.getTransactions().get(i);
+                                            transactionEntity.setSale(null);
+
+                                            if (i + 1 == saleEntity.getTransactions().size()) {
+                                                mDataStore.delete(transactionEntity).toObservable().subscribe(o -> mDataStore.delete(saleEntity).subscribe());
+                                            } else {
+                                                mDataStore.delete(transactionEntity).subscribe(/*no-op*/);
+                                            }
+                                        }
+
+                                        CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
+                                        if (customerEntity != null) {
+                                            SaleEntity newSaleEntity = new SaleEntity();
+                                            newSaleEntity.setId(sale.getId());
+                                            newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
+                                            newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
+                                            newSaleEntity.setMerchant(merchantEntity);
+                                            newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
+                                            newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
+                                            newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
+                                            newSaleEntity.setTotal(sale.getTotal());
+                                            newSaleEntity.setSynced(true);
+                                            newSaleEntity.setCustomer(customerEntity);
+
+                                            mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+                                                for (Transaction transaction: sale.getTransactions()) {
+                                                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                                                    transactionEntity.setId(transaction.getId());
+                                                    transactionEntity.setAmount(transaction.getAmount());
+                                                    transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                                    transactionEntity.setPoints(transaction.getPoints());
+                                                    transactionEntity.setStamps(transaction.getStamps());
+                                                    transactionEntity.setSynced(true);
+                                                    transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                                    transactionEntity.setProductId(transaction.getProduct_id());
+                                                    transactionEntity.setProgramType(transaction.getProgram_type());
+                                                    transactionEntity.setUserId(transaction.getUser_id());
+
+                                                    transactionEntity.setSale(saleEntity);
+                                                    transactionEntity.setMerchant(merchantEntity);
+                                                    transactionEntity.setCustomer(saleEntity.getCustomer());
+
+                                                    mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<Sale> call, @NonNull Throwable t) {
+
+                            }
+                        });
+
+                    } catch (JSONException e) {
+                        Timber.e(e);
+                    }
+                }
             }
         }
     }

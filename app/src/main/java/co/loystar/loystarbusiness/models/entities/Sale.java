@@ -26,6 +26,7 @@ public interface Sale extends Observable, Parcelable, Persistable {
     boolean isPayedWithCash();
     boolean isPayedWithCard();
     boolean isPayedWithMobile();
+    boolean isSynced();
 
     Timestamp getCreatedAt();
     Timestamp getUpdatedAt();

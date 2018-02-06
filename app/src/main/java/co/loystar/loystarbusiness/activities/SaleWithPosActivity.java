@@ -362,6 +362,8 @@ public class SaleWithPosActivity extends RxAppCompatActivity
             List<ProductEntity> productEntities = result.toList();
             DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
             SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
+
+
             for (int i = 0; i < productEntities.size(); i ++) {
                 ProductEntity product = productEntities.get(i);
                 LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
@@ -397,7 +399,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                         transactionEntity.setCustomer(mSelectedCustomer);
                     }
                     transactionEntity.setMerchant(merchantEntity);
-                    transactionEntity.setSendSms(false);
+                    //transactionEntity.setSendSms(false);
                     databaseManager.insertNewSalesTransaction(transactionEntity);
 
                     if (i + 1 == productEntities.size()) {
