@@ -53,6 +53,9 @@ public interface IDatabaseManager {
     String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable
+    String getMerchantSalesLastRecordDate(@NonNull MerchantEntity merchantEntity);
+
+    @Nullable
     String getMerchantLoyaltyProgramsLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable

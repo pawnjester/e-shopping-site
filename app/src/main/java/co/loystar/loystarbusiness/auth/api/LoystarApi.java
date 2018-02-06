@@ -14,6 +14,7 @@ import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
+import co.loystar.loystarbusiness.models.databinders.Sale;
 import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
@@ -214,4 +215,10 @@ public interface LoystarApi {
 
     @PATCH("merchants/orders/{id}")
     Call<ResponseBody> updateMerchantOrder(@Path("id") int id, @Body RequestBody requestBody);
+
+    @POST("sales")
+    Call<Sale> createSale(@Body RequestBody requestBody);
+
+    @POST("latest_merchant_sales")
+    Call<ArrayList<Sale>> getLatestMerchantSales(@Body RequestBody requestBody);
 }

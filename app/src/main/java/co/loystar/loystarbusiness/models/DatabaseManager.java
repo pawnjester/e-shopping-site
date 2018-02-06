@@ -20,6 +20,7 @@ import co.loystar.loystarbusiness.models.entities.Models;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
@@ -156,6 +157,19 @@ public class DatabaseManager implements IDatabaseManager{
         SalesTransactionEntity transactionEntity = transactions.firstOrNull();
         if (transactionEntity != null) {
             return mDateFormat.format(transactionEntity.getCreatedAt());
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getMerchantSalesLastRecordDate(@NonNull MerchantEntity merchantEntity) {
+        Result<SaleEntity> saleEntities = mDataStore.select(SaleEntity.class)
+            .where(SaleEntity.MERCHANT.eq(merchantEntity)).orderBy(SaleEntity.CREATED_AT.desc()).get();
+
+        SaleEntity saleEntity = saleEntities.firstOrNull();
+        if (saleEntity != null) {
+            return mDateFormat.format(saleEntity.getCreatedAt());
         }
         return null;
     }

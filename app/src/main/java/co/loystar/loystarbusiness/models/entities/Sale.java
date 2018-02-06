@@ -5,34 +5,30 @@ import android.databinding.Observable;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.List;
 
-import io.requery.Column;
 import io.requery.Entity;
 import io.requery.Key;
 import io.requery.ManyToOne;
+import io.requery.OneToMany;
 import io.requery.Persistable;
 
 /**
- * Created by ordgen on 11/10/17.
+ * Created by ordgen on 2/6/18.
  */
 
 @Entity
-public interface SalesTransaction extends Observable, Parcelable, Persistable {
+public interface Sale extends Observable, Parcelable, Persistable {
     @Key
     int getId();
 
-    boolean isSynced();
+    double getTotal();
+    boolean isPayedWithCash();
+    boolean isPayedWithCard();
+    boolean isPayedWithMobile();
 
-    int getUserId();
-    int getProductId();
-    int getMerchantLoyaltyProgramId();
-    boolean isSendSms();
-    int getAmount();
-
-    int getPoints();
-    int getStamps();
-    String getProgramType();
     Timestamp getCreatedAt();
+    Timestamp getUpdatedAt();
 
     @Bindable
     @ManyToOne
@@ -42,7 +38,6 @@ public interface SalesTransaction extends Observable, Parcelable, Persistable {
     @ManyToOne
     CustomerEntity getCustomer();
 
-    @Bindable
-    @ManyToOne
-    SaleEntity getSale();
+    @OneToMany(mappedBy = "sale")
+    List<SalesTransactionEntity> getTransactions();
 }

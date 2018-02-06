@@ -35,6 +35,7 @@ import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.OrderItem;
 import co.loystar.loystarbusiness.models.databinders.Product;
 import co.loystar.loystarbusiness.models.databinders.ProductCategory;
+import co.loystar.loystarbusiness.models.databinders.Sale;
 import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
@@ -46,6 +47,7 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
@@ -109,14 +111,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             getContext().sendBroadcast(intent);
             syncMerchant();
             syncCustomers();
-            syncTransactions();
+            syncSales();
             syncProductCategories();
             syncLoyaltyPrograms();
             syncProducts();
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
-            syncTransactionSms();
             syncSalesOrders();
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
@@ -767,6 +768,77 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     });
                 }
+            } catch (JSONException e) {
+                Timber.e(e);
+            }
+        }
+
+        @Override
+        public void syncSales() {
+            try {
+                String timeStamp = mDatabaseManager.getMerchantSalesLastRecordDate(merchantEntity);
+                JSONObject jsonObjectData = new JSONObject();
+                if (timeStamp == null) {
+                    jsonObjectData.put("time_stamp", 0);
+                } else {
+                    jsonObjectData.put("time_stamp", timeStamp);
+                }
+                JSONObject requestData = new JSONObject();
+                requestData.put("data", jsonObjectData);
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                mApiClient.getLoystarApi(false).getLatestMerchantSales(requestBody).enqueue(new Callback<ArrayList<Sale>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ArrayList<Sale>> call, @NonNull Response<ArrayList<Sale>> response) {
+                        if (response.isSuccessful()) {
+                            ArrayList<Sale> sales = response.body();
+                            if (sales != null) {
+                                for (Sale sale: sales) {
+                                    CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
+                                    if (customerEntity != null) {
+                                        SaleEntity newSaleEntity = new SaleEntity();
+                                        newSaleEntity.setId(sale.getId());
+                                        newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
+                                        newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
+                                        newSaleEntity.setMerchant(merchantEntity);
+                                        newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
+                                        newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
+                                        newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
+                                        newSaleEntity.setTotal(sale.getTotal());
+                                        newSaleEntity.setCustomer(customerEntity);
+
+                                        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+                                            for (Transaction transaction: sale.getTransactions()) {
+                                                SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                                                transactionEntity.setId(transaction.getId());
+                                                transactionEntity.setAmount(transaction.getAmount());
+                                                transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                                transactionEntity.setPoints(transaction.getPoints());
+                                                transactionEntity.setStamps(transaction.getStamps());
+                                                transactionEntity.setSynced(true);
+                                                transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                                transactionEntity.setProductId(transaction.getProduct_id());
+                                                transactionEntity.setProgramType(transaction.getProgram_type());
+                                                transactionEntity.setUserId(transaction.getUser_id());
+
+                                                transactionEntity.setSale(saleEntity);
+                                                transactionEntity.setMerchant(merchantEntity);
+                                                transactionEntity.setCustomer(saleEntity.getCustomer());
+
+                                                mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ArrayList<Sale>> call, @NonNull Throwable t) {
+
+                    }
+                });
             } catch (JSONException e) {
                 Timber.e(e);
             }

@@ -324,7 +324,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         barChart = findViewById(R.id.chart);
         barChart.setDrawValueAboveBar(true);
         barChart.setDescription(null);
-        barChart.setNoDataText("No Sales Recorded");
+        barChart.setNoDataText("No Sale Recorded");
 
         // scaling can now only be done on x- and y-axis separately
         barChart.setPinchZoom(false);
@@ -388,7 +388,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 YAxis rightAxis = barChart.getAxisRight();
                 rightAxis.setEnabled(false);
 
-                BarDataSet barDataSet = new BarDataSet(yVals, "Total Sales");
+                BarDataSet barDataSet = new BarDataSet(yVals, "Total Sale");
                 barDataSet.setValueTypeface(App.getInstance().getTypeface());
                 barDataSet.setValueTextSize(14);
                 barDataSet.setValueFormatter(new MyAxisValueFormatter());
