@@ -63,6 +63,9 @@ public interface IDatabaseManager {
     SalesTransactionEntity getMerchantTransactionsLastRecord(int merchantId);
 
     @Nullable
+    SaleEntity getMerchantLastSaleRecord(int merchantId);
+
+    @Nullable
     String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable

@@ -820,7 +820,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                                 transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
                                                 transactionEntity.setPoints(transaction.getPoints());
                                                 transactionEntity.setStamps(transaction.getStamps());
-                                                transactionEntity.setSynced(true);
                                                 transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
                                                 transactionEntity.setProductId(transaction.getProduct_id());
                                                 transactionEntity.setProgramType(transaction.getProgram_type());
@@ -930,7 +929,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                                     transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
                                                     transactionEntity.setPoints(transaction.getPoints());
                                                     transactionEntity.setStamps(transaction.getStamps());
-                                                    transactionEntity.setSynced(true);
                                                     transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
                                                     transactionEntity.setProductId(transaction.getProduct_id());
                                                     transactionEntity.setProgramType(transaction.getProgram_type());

@@ -202,6 +202,19 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
+    public SaleEntity getMerchantLastSaleRecord(int merchantId) {
+        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
+            .where(MerchantEntity.ID.eq(merchantId))
+            .get()
+            .firstOrNull();
+        Result<SaleEntity> saleEntities = mDataStore.select(SaleEntity.class)
+            .where(SaleEntity.MERCHANT.eq(merchantEntity)).orderBy(SaleEntity.CREATED_AT.desc()).get();
+
+        return saleEntities.firstOrNull();
+    }
+
+    @Nullable
+    @Override
     public String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
         Result<ProductEntity> productEntities = mDataStore.select(ProductEntity.class)
                 .where(ProductEntity.OWNER.eq(merchantEntity)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
