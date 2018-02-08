@@ -30,6 +30,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
@@ -216,6 +217,7 @@ public interface LoystarApi {
     @PATCH("merchants/orders/{id}")
     Call<ResponseBody> updateMerchantOrder(@Path("id") int id, @Body RequestBody requestBody);
 
+    @Headers("Cache-Control: no-cache")
     @POST("sales")
     Call<Sale> createSale(@Body RequestBody requestBody);
 

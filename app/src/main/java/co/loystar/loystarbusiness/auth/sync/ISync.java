@@ -10,11 +10,9 @@ public interface ISync {
     void syncMerchantBirthdayOffer();
     void syncMerchantBirthdayOfferPresetSms();
     void syncCustomers();
-    void syncTransactions();
     void syncProductCategories();
     void syncProducts();
     void syncLoyaltyPrograms();
-    void syncTransactionSms();
     void syncSalesOrders();
     void syncSales();
 }

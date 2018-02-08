@@ -491,6 +491,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
                         transactionEntity.setCustomer(mSelectedCustomer);
                     }
 
+                    transactionEntity.setSynced(false);
                     transactionEntity.setSale(saleEntity);
                     transactionEntity.setMerchant(merchantEntity);
                     mDataStore.upsert(transactionEntity).subscribe();
@@ -507,7 +508,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
             .compose(bindToLifecycle())
             .doOnComplete(() -> {
                 Bundle bundle = new Bundle();
-                bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+                if (mSelectedCustomer != null) {
+                    bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+                }
 
                 @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
                 for (int x = 0; x < mSelectedProducts.size(); x++) {

@@ -98,6 +98,15 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
     @BindView(R.id.printReceipt)
     BrandButtonTransparent printReceiptBtn;
 
+    @BindView(R.id.deals_recycler_view)
+    RecyclerView mRecyclerView;
+
+    @BindView(R.id.no_customer_wrapper)
+    View noCustomerWrapper;
+
+    @BindView(R.id.deals_wrapper)
+    View dealsWrapper;
+
     @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,19 +129,37 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
 
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         mOrderSummaryItems = (HashMap<Integer, Integer>) getIntent().getSerializableExtra(Constants.ORDER_SUMMARY_ITEMS);
-
         CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
-        List<LoyaltyProgramEntity> programs = mDatabaseManager.getMerchantLoyaltyPrograms(mSessionManager.getMerchantId());
 
-        for (LoyaltyProgramEntity programEntity: programs) {
-            int total_user_points = mDatabaseManager.getTotalCustomerPointsForProgram(programEntity.getId(), mCustomerId);
-            int total_user_stamps = mDatabaseManager.getTotalCustomerStampsForProgram(programEntity.getId(), mCustomerId);
-            loyaltyDeals.add(new LoyaltyDeal(
-                programEntity.getThreshold(),
-                programEntity.getReward(),
-                programEntity.getProgramType(),
-                total_user_points,
-                total_user_stamps)
+        if (mCustomer == null) {
+            noCustomerWrapper.setVisibility(View.VISIBLE);
+            dealsWrapper.setVisibility(View.GONE);
+        } else {
+            noCustomerWrapper.setVisibility(View.GONE);
+            dealsWrapper.setVisibility(View.VISIBLE);
+
+            List<LoyaltyProgramEntity> programs = mDatabaseManager.getMerchantLoyaltyPrograms(mSessionManager.getMerchantId());
+            for (LoyaltyProgramEntity programEntity: programs) {
+                int total_user_points = mDatabaseManager.getTotalCustomerPointsForProgram(programEntity.getId(), mCustomerId);
+                int total_user_stamps = mDatabaseManager.getTotalCustomerStampsForProgram(programEntity.getId(), mCustomerId);
+                loyaltyDeals.add(new LoyaltyDeal(
+                    programEntity.getThreshold(),
+                    programEntity.getReward(),
+                    programEntity.getProgramType(),
+                    total_user_points,
+                    total_user_stamps)
+                );
+            }
+
+            DealsAdapter mAdapter = new DealsAdapter(loyaltyDeals, mCustomer);
+            mRecyclerView.setHasFixedSize(true);
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
+            mRecyclerView.setLayoutManager(mLayoutManager);
+            mRecyclerView.setAdapter(mAdapter);
+            mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+            mRecyclerView.addItemDecoration(new SpacingItemDecoration(
+                getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
+                getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
             );
         }
 
@@ -141,18 +168,6 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
         if (bluetoothPrintEnabled) {
             printReceiptBtn.setVisibility(View.VISIBLE);
         }
-
-        DealsAdapter mAdapter = new DealsAdapter(loyaltyDeals, mCustomer);
-        RecyclerView mRecyclerView = findViewById(R.id.deals_recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new SpacingItemDecoration(
-            getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
-            getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
-        );
 
         if (!AccountGeneral.isAccountActive(this)) {
             Drawable drawable = ContextCompat.getDrawable(mContext, android.R.drawable.ic_dialog_alert);

@@ -22,7 +22,7 @@
     </android.support.design.widget.AppBarLayout>
 
     <FrameLayout
-        app:layout_behavior="co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior"
+        app:layout_behavior="@string/bottom_sheet_behavior"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
