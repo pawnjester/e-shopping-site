@@ -7,14 +7,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
-
-import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,34 +18,27 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.utils.ui.buttons.GreenButton;
 
 /**
- * Created by ordgen on 2/6/18.
+ * Created by ordgen on 2/8/18.
  */
 
-public class CashPaymentDialog extends AppCompatDialogFragment {
+public class CardPaymentDialog extends AppCompatDialogFragment {
     private static final String TOTAL_CHARGE = "totalCharge";
-    public static final String TAG = CashPaymentDialog.class.getSimpleName();
+    public static final String TAG = CardPaymentDialog.class.getSimpleName();
 
     @BindView(R.id.totalCharge)
     TextView totalChargeView;
 
-    @BindView(R.id.cash_collected_input)
-    EditText cashCollectedInput;
-
-    @BindView(R.id.cashChange)
-    TextView cashChangeView;
-
-    @BindView(R.id.completePayment)
-    GreenButton completePaymentBtn;
+    @BindView(R.id.confirmCardPayment)
+    GreenButton confirmCardPaymentBtn;
 
     @BindView(R.id.includeCustomerDetail)
     CheckBox includeCustomerDetailCheckBox;
 
-    private Double mTotalCharge;
     private boolean showCustomerDialog = true;
-    private CashPaymentDialogOnCompleteListener mListener;
+    private CardPaymentDialogOnCompleteListener mListener;
 
-    public static CashPaymentDialog newInstance(double totalCharge) {
-        CashPaymentDialog cashPaymentDialog = new CashPaymentDialog();
+    public static CardPaymentDialog newInstance(double totalCharge) {
+        CardPaymentDialog cashPaymentDialog = new CardPaymentDialog();
         Bundle args = new Bundle();
         args.putDouble(TOTAL_CHARGE, totalCharge);
         cashPaymentDialog.setArguments(args);
@@ -71,31 +60,18 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
         }
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
-        @SuppressLint("InflateParams") View rootView = inflater.inflate(R.layout.cash_payment_dialog, null);
+        @SuppressLint("InflateParams") View rootView = inflater.inflate(R.layout.card_payment_dialog, null);
 
         ButterKnife.bind(this, rootView);
 
         if (getArguments() != null) {
-            mTotalCharge = getArguments().getDouble(TOTAL_CHARGE);
+            Double mTotalCharge = getArguments().getDouble(TOTAL_CHARGE);
             totalChargeView.setText(String.valueOf(mTotalCharge));
         }
 
-        RxTextView.textChangeEvents(cashCollectedInput).subscribe(textViewTextChangeEvent -> {
-            CharSequence s = textViewTextChangeEvent.text();
-            if (TextUtils.isEmpty(s)) {
-                cashChangeView.setText(null);
-            } else {
-                int cashCollected = Integer.parseInt(String.valueOf(s));
-                if (mTotalCharge != null) {
-                    double change = cashCollected - mTotalCharge;
-                    cashChangeView.setText(String.valueOf(change));
-                }
-            }
-        });
-
-        completePaymentBtn.setOnClickListener(view -> {
+        confirmCardPaymentBtn.setOnClickListener(view -> {
             if (mListener != null) {
-                mListener.onCashPaymentDialogComplete(showCustomerDialog);
+                mListener.onCardPaymentDialogComplete(showCustomerDialog);
                 dismiss();
             }
         });
@@ -108,18 +84,18 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
         });
 
         builder.setView(rootView);
-        builder.setTitle(getString(R.string.cash_payment));
+        builder.setTitle(getString(R.string.card_payment));
         builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> {
             dialogInterface.dismiss();
         });
         return builder.create();
     }
 
-    public interface CashPaymentDialogOnCompleteListener {
-        void onCashPaymentDialogComplete(boolean showCustomerDialog);
+    public interface CardPaymentDialogOnCompleteListener {
+        void onCardPaymentDialogComplete(boolean showCustomerDialog);
     }
 
-    public void setListener(CashPaymentDialogOnCompleteListener mListener) {
+    public void setListener(CardPaymentDialogOnCompleteListener mListener) {
         this.mListener = mListener;
     }
 }

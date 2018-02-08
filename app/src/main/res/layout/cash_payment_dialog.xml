@@ -24,7 +24,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/totalCash"
+            android:id="@+id/totalCharge"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="@color/titleColor"

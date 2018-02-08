@@ -25,4 +25,5 @@
     <color name="Smooch_accentLight">@color/colorAccentLight</color>
     <color name="grayish_blue">#8899A6</color>
     <color name="wallet_hint_foreground_holo_dark">#808080</color>
+    <color name="bg_material_dark">#ff212121</color>
 </resources>

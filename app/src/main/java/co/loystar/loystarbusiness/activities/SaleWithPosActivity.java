@@ -69,6 +69,7 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CardPaymentDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
@@ -96,6 +97,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
     CustomerAutoCompleteDialog.SelectedCustomerListener,
     PayOptionsDialog.PayOptionsDialogClickListener,
     CashPaymentDialog.CashPaymentDialogOnCompleteListener,
+    CardPaymentDialog.CardPaymentDialogOnCompleteListener,
     SearchView.OnQueryTextListener {
 
     public static final String TAG = SaleWithPosActivity.class.getSimpleName();
@@ -423,7 +425,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
 
     @Override
     public void onPayWithCardClick() {
-
+        CardPaymentDialog cardPaymentDialog = CardPaymentDialog.newInstance(totalCharge);
+        cardPaymentDialog.setListener(this);
+        cardPaymentDialog.show(getSupportFragmentManager(), CardPaymentDialog.TAG);
     }
 
     @Override
@@ -538,6 +542,16 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
                 startActivity(intent);
             })
             .subscribe();
+    }
+
+    @Override
+    public void onCardPaymentDialogComplete(boolean showCustomerDialog) {
+        isPaidWithCard = true;
+        if (showCustomerDialog) {
+            customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+        } else {
+            createSale();
+        }
     }
 
     private class ProductsAdapter
