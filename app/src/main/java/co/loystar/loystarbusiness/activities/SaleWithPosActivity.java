@@ -437,14 +437,8 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
     }
 
     private void createSale() {
-        String saleQuery = "SELECT ROWID from Sale order by ROWID DESC limit 1";
-        Tuple lastSaleTuple = mDataStore.raw(saleQuery).firstOrNull();
-        Integer lastSaleId = null;
-        if (lastSaleTuple != null) {
-            lastSaleId = lastSaleTuple.get(0);
-            Timber.e("lastSaleId: %s", lastSaleId);
-        }
         DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+        Integer lastSaleId = databaseManager.getLastSaleRecordId();
 
         SaleEntity newSaleEntity = new SaleEntity();
         if (lastSaleId == null) {
@@ -462,12 +456,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
         newSaleEntity.setCustomer(mSelectedCustomer);
 
         mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
-            String transactionQuery = "SELECT ROWID from SalesTransaction order by ROWID DESC limit 1";
-            Tuple lastTransactionTuple = mDataStore.raw(transactionQuery).firstOrNull();
-            Integer lastTransactionId = null;
-            if (lastTransactionTuple != null) {
-                lastTransactionId = lastTransactionTuple.get(0);
-            }
             ArrayList<Integer> productIds = new ArrayList<>();
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 productIds.add(mSelectedProducts.keyAt(i));
@@ -478,6 +466,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
                 .get();
             List<ProductEntity> productEntities = result.toList();
 
+            Integer lastTransactionId = databaseManager.getLastTransactionRecordId();
             ArrayList<Integer> newTransactionIds = new ArrayList<>();
             for (int x = 0; x < productEntities.size(); x++) {
                 if (lastTransactionId == null) {

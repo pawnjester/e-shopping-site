@@ -30,6 +30,7 @@ import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
 import io.requery.query.Result;
 import io.requery.query.Selection;
+import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
@@ -150,19 +151,6 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
-    public String getMerchantTransactionsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
-        Result<SalesTransactionEntity> transactions = mDataStore.select(SalesTransactionEntity.class)
-                .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesTransactionEntity.CREATED_AT.desc()).get();
-
-        SalesTransactionEntity transactionEntity = transactions.firstOrNull();
-        if (transactionEntity != null) {
-            return mDateFormat.format(transactionEntity.getCreatedAt());
-        }
-        return null;
-    }
-
-    @Nullable
-    @Override
     public String getMerchantSalesLastRecordDate(@NonNull MerchantEntity merchantEntity) {
         Result<SaleEntity> saleEntities = mDataStore.select(SaleEntity.class)
             .where(SaleEntity.MERCHANT.eq(merchantEntity)).orderBy(SaleEntity.CREATED_AT.desc()).get();
@@ -189,28 +177,26 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
-    public SalesTransactionEntity getMerchantTransactionsLastRecord(int merchantId) {
-        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-                .where(MerchantEntity.ID.eq(merchantId))
-                .get()
-                .firstOrNull();
-        Result<SalesTransactionEntity> transactions = mDataStore.select(SalesTransactionEntity.class)
-                .where(SalesTransactionEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesTransactionEntity.CREATED_AT.desc()).get();
-
-        return transactions.firstOrNull();
+    public Integer getLastTransactionRecordId() {
+        String transactionQuery = "SELECT ROWID from SalesTransaction order by ROWID DESC limit 1";
+        Tuple lastTransactionTuple = mDataStore.raw(transactionQuery).firstOrNull();
+        Integer lastTransactionId = null;
+        if (lastTransactionTuple != null) {
+            lastTransactionId = lastTransactionTuple.get(0);
+        }
+        return lastTransactionId;
     }
 
     @Nullable
     @Override
-    public SaleEntity getMerchantLastSaleRecord(int merchantId) {
-        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-            .where(MerchantEntity.ID.eq(merchantId))
-            .get()
-            .firstOrNull();
-        Result<SaleEntity> saleEntities = mDataStore.select(SaleEntity.class)
-            .where(SaleEntity.MERCHANT.eq(merchantEntity)).orderBy(SaleEntity.CREATED_AT.desc()).get();
-
-        return saleEntities.firstOrNull();
+    public Integer getLastSaleRecordId() {
+        String saleQuery = "SELECT ROWID from Sale order by ROWID DESC limit 1";
+        Tuple lastSaleTuple = mDataStore.raw(saleQuery).firstOrNull();
+        Integer lastSaleId = null;
+        if (lastSaleTuple != null) {
+            lastSaleId = lastSaleTuple.get(0);
+        }
+        return lastSaleId;
     }
 
     @Nullable

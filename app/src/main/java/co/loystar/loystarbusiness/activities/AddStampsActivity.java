@@ -109,13 +109,12 @@ public class AddStampsActivity extends AppCompatActivity {
         int userStampsForThisTransaction = totalCustomerStamps - initialCustomerStamps;
 
         SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-        SalesTransactionEntity lastTransactionRecord = mDatabaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
+        Integer lastTransactionId = mDatabaseManager.getLastTransactionRecordId();
 
-        /* set temporary id*/
-        if (lastTransactionRecord == null) {
+        if (lastTransactionId == null) {
             transactionEntity.setId(1);
         } else {
-            transactionEntity.setId(lastTransactionRecord.getId() + 1);
+            transactionEntity.setId(lastTransactionId + 1);
         }
         transactionEntity.setSynced(false);
         transactionEntity.setSendSms(true);
