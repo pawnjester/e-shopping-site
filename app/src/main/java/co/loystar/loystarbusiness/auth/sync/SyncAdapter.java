@@ -741,6 +741,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 if (response.isSuccessful()) {
                                     Sale sale = response.body();
                                     if (sale != null) {
+                                        /*
+                                        * Local data needs to be in-sync with the remote server.
+                                        * We could just set the synced flag to true,
+                                        * however since we fetch latest records using
+                                        * the last local record date, the date for records on
+                                        * the server must be same as the records locally.
+                                        * Hence, to avoid any unforeseen bugs, we delete
+                                        * the synced records locally and insert the new records
+                                        * from the server.
+                                        * */
                                         for (int i = 0; i < saleEntity.getTransactions().size(); i++) {
                                             SalesTransactionEntity transactionEntity = saleEntity.getTransactions().get(i);
                                             transactionEntity.setSale(null);
