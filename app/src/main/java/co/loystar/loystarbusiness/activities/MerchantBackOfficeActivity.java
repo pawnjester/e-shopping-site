@@ -94,6 +94,7 @@ import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.smooch.core.Smooch;
 import io.smooch.core.User;
+import timber.log.Timber;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity

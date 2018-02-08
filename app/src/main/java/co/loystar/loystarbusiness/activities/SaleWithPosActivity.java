@@ -30,6 +30,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,8 +87,10 @@ import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.query.Selection;
+import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+import timber.log.Timber;
 
 public class SaleWithPosActivity extends RxAppCompatActivity implements
     CustomerAutoCompleteDialog.SelectedCustomerListener,
@@ -371,10 +374,19 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
     }
 
     private void showProceedToCheckoutBtn(boolean show) {
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        );
+
         if (show) {
             orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+            params.setMargins(0, 0, 0, proceedToCheckoutBtnHeight);
+            mProductsRecyclerView.setLayoutParams(params);
         } else {
             orderSummaryBottomSheetBehavior.setPeekHeight(0);
+            params.setMargins(0, 0, 0, 0);
+            mProductsRecyclerView.setLayoutParams(params);
         }
     }
 
@@ -425,16 +437,20 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
     }
 
     private void createSale() {
+        String saleQuery = "SELECT ROWID from Sale order by ROWID DESC limit 1";
+        Tuple lastSaleTuple = mDataStore.raw(saleQuery).firstOrNull();
+        Integer lastSaleId = null;
+        if (lastSaleTuple != null) {
+            lastSaleId = lastSaleTuple.get(0);
+            Timber.e("lastSaleId: %s", lastSaleId);
+        }
         DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-        SaleEntity lastSaleRecord = databaseManager.getMerchantLastSaleRecord(mSessionManager.getMerchantId());
 
         SaleEntity newSaleEntity = new SaleEntity();
-        // set temporary id
-        if (lastSaleRecord == null) {
+        if (lastSaleId == null) {
             newSaleEntity.setId(1);
         } else {
-            int id = lastSaleRecord.getId() + 1;
-            newSaleEntity.setId(id);
+            newSaleEntity.setId(lastSaleId + 1);
         }
         newSaleEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
         newSaleEntity.setMerchant(merchantEntity);
@@ -445,30 +461,39 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
         newSaleEntity.setSynced(false);
         newSaleEntity.setCustomer(mSelectedCustomer);
 
-        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
-            SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
-            ArrayList<Integer> ids = new ArrayList<>();
+        mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
+            String transactionQuery = "SELECT ROWID from SalesTransaction order by ROWID DESC limit 1";
+            Tuple lastTransactionTuple = mDataStore.raw(transactionQuery).firstOrNull();
+            Integer lastTransactionId = null;
+            if (lastTransactionTuple != null) {
+                lastTransactionId = lastTransactionTuple.get(0);
+            }
+            ArrayList<Integer> productIds = new ArrayList<>();
             for (int i = 0; i < mSelectedProducts.size(); i++) {
-                ids.add(mSelectedProducts.keyAt(i));
+                productIds.add(mSelectedProducts.keyAt(i));
             }
             Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
-                .where(ProductEntity.ID.in(ids))
+                .where(ProductEntity.ID.in(productIds))
                 .orderBy(ProductEntity.UPDATED_AT.desc())
                 .get();
             List<ProductEntity> productEntities = result.toList();
 
-            for (int i = 0; i < productEntities.size(); i ++) {
+            ArrayList<Integer> newTransactionIds = new ArrayList<>();
+            for (int x = 0; x < productEntities.size(); x++) {
+                if (lastTransactionId == null) {
+                    newTransactionIds.add(x, x + 1);
+                } else {
+                    newTransactionIds.add(x, (lastTransactionId + x + 1));
+                }
+            }
+
+            for (int i = 0; i < productEntities.size(); i++) {
                 ProductEntity product = productEntities.get(i);
                 LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
                 if (loyaltyProgram != null) {
                     SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                    // set temporary id
-                    if (lastTransactionRecord == null) {
-                        transactionEntity.setId(1);
-                    } else {
-                        int id = lastTransactionRecord.getId() + i + 1;
-                        transactionEntity.setId(id);
-                    }
+                    transactionEntity.setId(newTransactionIds.get(i));
+
                     String template = "%.2f";
                     double tc = product.getPrice() * mSelectedProducts.get(product.getId());
                     int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
@@ -494,7 +519,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
                     transactionEntity.setSynced(false);
                     transactionEntity.setSale(saleEntity);
                     transactionEntity.setMerchant(merchantEntity);
-                    mDataStore.upsert(transactionEntity).subscribe();
+                    mDataStore.insert(transactionEntity).blockingGet();
 
                     if (i + 1 == productEntities.size()) {
                         SyncAdapter.performSync(mContext, mSessionManager.getEmail());

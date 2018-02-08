@@ -752,14 +752,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                             }
                                         }
 
-                                        /*saleEntity.setSynced(true);
-                                        mDataStore.update(saleEntity).subscribe(*//*no-op*//*);
-
-                                        for (SalesTransactionEntity transactionEntity: saleEntity.getTransactions()) {
-                                            transactionEntity.setSynced(true);
-                                            mDataStore.update(transactionEntity).subscribe(*//*no-op*//*);
-                                        }*/
-
                                         CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
                                         SaleEntity newSaleEntity = new SaleEntity();
                                         newSaleEntity.setId(sale.getId());
