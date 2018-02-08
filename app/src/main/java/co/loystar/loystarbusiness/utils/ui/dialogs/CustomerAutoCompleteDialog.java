@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils.ui;
+package co.loystar.loystarbusiness.utils.ui.dialogs;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -23,6 +23,7 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 
 /**
  * Created by ordgen on 11/27/17.

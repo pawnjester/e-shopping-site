@@ -35,6 +35,11 @@
         <item name="android:ellipsize">end</item>
     </style>
 
+    <style name="FullBorderEditTextStyle">
+        <item name="android:background">@drawable/full_border_edit_text_shape</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
     <style name="MenuButtonsStyle">
         <item name="fab_size">mini</item>
         <item name="fab_showAnimation">@anim/jump_from_down</item>

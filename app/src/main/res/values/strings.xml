@@ -480,4 +480,13 @@
     <string name="bluetooth_print_disabled_summary">Bluetooth print is disabled</string>
     <string name="bluetooth_print_enabled_summary">Bluetooth print is enabled</string>
     <string name="action_confirm_disable">Yes, disable</string>
+    <string name="cash">Cash</string>
+    <string name="card">Card</string>
+    <string name="pay_with">Pay with:</string>
+    <string name="total_label_extra">Total:</string>
+    <string name="cash_collected_label">Cash collected</string>
+    <string name="change">Change</string>
+    <string name="complete_payment">Complete Payment</string>
+    <string name="include_customer_detail">Include customer detail</string>
+    <string name="total_charge_label">Total charge</string>
 </resources>

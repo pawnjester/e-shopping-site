@@ -39,4 +39,8 @@
     <declare-styleable name="BrandButtonTransparent">
         <attr name="backgroundDrawable"/>
     </declare-styleable>
+
+    <declare-styleable name="GreenButton">
+        <attr name="backGroundColor" />
+    </declare-styleable>
 </resources>

@@ -25,7 +25,7 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
-import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialogAdapter;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 
 public class SaleWithoutPosFragment extends Fragment {

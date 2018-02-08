@@ -788,7 +788,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     jsonObjectData.put("time_stamp", timeStamp);
                 }
                 JSONObject requestData = new JSONObject();
-                requestData.put("data", jsonObjectData);
+                requestData.put("sale", jsonObjectData);
 
                 RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
                 mApiClient.getLoystarApi(false).getLatestMerchantSales(requestBody).enqueue(new Callback<ArrayList<Sale>>() {
@@ -875,10 +875,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
                                 jsonObject.put("program_type", transactionEntity.getProgramType());
                                 if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
-                                    jsonObjectData.put("points", transactionEntity.getPoints());
+                                    jsonObject.put("points", transactionEntity.getPoints());
                                 }
                                 else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
-                                    jsonObjectData.put("stamps", transactionEntity.getStamps());
+                                    jsonObject.put("stamps", transactionEntity.getStamps());
                                 }
 
                                 jsonArray.put(jsonObject);

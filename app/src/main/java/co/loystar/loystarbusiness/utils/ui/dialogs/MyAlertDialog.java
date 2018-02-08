@@ -1,4 +1,4 @@
-package co.loystar.loystarbusiness.utils.ui;
+package co.loystar.loystarbusiness.utils.ui.dialogs;
 
 import android.app.Dialog;
 import android.content.DialogInterface;

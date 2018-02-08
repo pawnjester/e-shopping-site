@@ -63,7 +63,7 @@ import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.DownloadCustomerList;
 import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
@@ -81,7 +81,6 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
-import timber.log.Timber;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;

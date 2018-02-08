@@ -27,7 +27,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,8 +61,8 @@ import co.loystar.loystarbusiness.models.pojos.OrderPrintOption;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.TimeUtils;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
-import co.loystar.loystarbusiness.utils.ui.OrderPrintOptionsDialogFragment;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.OrderPrintOptionsDialogFragment;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;

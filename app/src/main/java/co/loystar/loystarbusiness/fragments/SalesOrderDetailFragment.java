@@ -27,12 +27,11 @@ import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
-import timber.log.Timber;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;

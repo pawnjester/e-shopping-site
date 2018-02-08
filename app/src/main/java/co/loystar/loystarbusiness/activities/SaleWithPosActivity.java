@@ -68,8 +68,9 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.CustomerAutoCompleteDialog;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -77,6 +78,7 @@ import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
+import co.loystar.loystarbusiness.utils.ui.dialogs.PayOptionsDialog;
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -87,8 +89,10 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-public class SaleWithPosActivity extends RxAppCompatActivity
-        implements CustomerAutoCompleteDialog.SelectedCustomerListener,
+public class SaleWithPosActivity extends RxAppCompatActivity implements
+    CustomerAutoCompleteDialog.SelectedCustomerListener,
+    PayOptionsDialog.PayOptionsDialogClickListener,
+    CashPaymentDialog.CashPaymentDialogOnCompleteListener,
     SearchView.OnQueryTextListener {
 
     public static final String TAG = SaleWithPosActivity.class.getSimpleName();
@@ -107,6 +111,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private String merchantCurrencySymbol;
     private MerchantEntity merchantEntity;
     private CustomerEntity mSelectedCustomer;
+    private boolean isPaidWithCash = false;
+    private boolean isPaidWithCard = false;
+    private boolean isPaidWithMobile = false;
 
     /*Views*/
     private View collapsedToolbar;
@@ -119,6 +126,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     private EmptyRecyclerView mProductsRecyclerView;
     private EmptyRecyclerView mOrderSummaryRecyclerView;
     private CustomerAutoCompleteDialog customerAutoCompleteDialog;
+    private PayOptionsDialog payOptionsDialog;
     private int proceedToCheckoutBtnHeight = 0;
     private MyAlertDialog myAlertDialog;
 
@@ -222,6 +230,9 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         customerAutoCompleteDialog = CustomerAutoCompleteDialog.newInstance(getString(R.string.order_owner));
         customerAutoCompleteDialog.setSelectedCustomerListener(this);
 
+        payOptionsDialog = PayOptionsDialog.newInstance();
+        payOptionsDialog.setListener(this);
+
         EmptyRecyclerView productsRecyclerView = findViewById(R.id.points_sale_order_items_rv);
         assert productsRecyclerView != null;
         setupProductsRecyclerView(productsRecyclerView);
@@ -318,104 +329,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
 
         RxView.clicks(proceedToCheckoutBtn).subscribe(o -> showBottomSheet(true));
 
-        RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> {
-            DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
-            SaleEntity lastSaleRecord = databaseManager.getMerchantLastSaleRecord(mSessionManager.getMerchantId());
-
-            SaleEntity newSaleEntity = new SaleEntity();
-            // set temporary id
-            if (lastSaleRecord == null) {
-                newSaleEntity.setId(1);
-            } else {
-                int id = lastSaleRecord.getId() + 1;
-                newSaleEntity.setId(id);
-            }
-            newSaleEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
-            newSaleEntity.setMerchant(merchantEntity);
-            newSaleEntity.setPayedWithCard(false);
-            newSaleEntity.setPayedWithCash(false);
-            newSaleEntity.setPayedWithMobile(false);
-            newSaleEntity.setTotal(totalCharge);
-            newSaleEntity.setSynced(false);
-            newSaleEntity.setCustomer(mSelectedCustomer);
-
-            mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
-                SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
-                ArrayList<Integer> ids = new ArrayList<>();
-                for (int i = 0; i < mSelectedProducts.size(); i++) {
-                    ids.add(mSelectedProducts.keyAt(i));
-                }
-                Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
-                    .where(ProductEntity.ID.in(ids))
-                    .orderBy(ProductEntity.UPDATED_AT.desc())
-                    .get();
-                List<ProductEntity> productEntities = result.toList();
-
-                for (int i = 0; i < productEntities.size(); i ++) {
-                    ProductEntity product = productEntities.get(i);
-                    LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
-                    if (loyaltyProgram != null) {
-                        SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                        // set temporary id
-                        if (lastTransactionRecord == null) {
-                            transactionEntity.setId(1);
-                        } else {
-                            int id = lastTransactionRecord.getId() + i + 1;
-                            transactionEntity.setId(id);
-                        }
-                        String template = "%.2f";
-                        double tc = product.getPrice() * mSelectedProducts.get(product.getId());
-                        int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
-
-                        transactionEntity.setAmount(totalCost);
-                        transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
-
-                        if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
-                            transactionEntity.setPoints(totalCost);
-                            transactionEntity.setProgramType(getString(R.string.simple_points));
-                        } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
-                            int stampsEarned = mSelectedProducts.get(product.getId());
-                            transactionEntity.setStamps(stampsEarned);
-                            transactionEntity.setProgramType(getString(R.string.stamps_program));
-                        }
-                        transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
-                        transactionEntity.setProductId(product.getId());
-                        if (mSelectedCustomer != null) {
-                            transactionEntity.setUserId(mSelectedCustomer.getUserId());
-                            transactionEntity.setCustomer(mSelectedCustomer);
-                        }
-
-                        transactionEntity.setSale(saleEntity);
-                        transactionEntity.setMerchant(merchantEntity);
-                        mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
-
-                        if (i + 1 == productEntities.size()) {
-                            SyncAdapter.performSync(mContext, mSessionManager.getEmail());
-                        }
-                    }
-                }
-            });
-
-            Completable.complete()
-                .delay(1, TimeUnit.SECONDS)
-                .compose(bindToLifecycle())
-                .doOnComplete(() -> {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
-
-                    @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
-                    for (int x = 0; x < mSelectedProducts.size(); x++) {
-                        orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
-                    }
-                    bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
-
-                    Intent intent = new Intent(mContext, SaleWithPosConfirmationActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                })
-                .subscribe();
-        });
+        RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> payOptionsDialog.show(getSupportFragmentManager(), PayOptionsDialog.TAG));
 
         if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
             ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
@@ -467,6 +381,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
     @Override
     public void onCustomerSelected(@NonNull CustomerEntity customerEntity) {
         mSelectedCustomer = customerEntity;
+        createSale();
     }
 
     @Override
@@ -485,6 +400,127 @@ public class SaleWithPosActivity extends RxAppCompatActivity
         }
         mProductsRecyclerView.scrollToPosition(0);
         return true;
+    }
+
+    @Override
+    public void onPayWithCashClick() {
+        CashPaymentDialog cashPaymentDialog = CashPaymentDialog.newInstance(totalCharge);
+        cashPaymentDialog.setListener(this);
+        cashPaymentDialog.show(getSupportFragmentManager(), CashPaymentDialog.TAG);
+    }
+
+    @Override
+    public void onPayWithCardClick() {
+
+    }
+
+    @Override
+    public void onCashPaymentDialogComplete(boolean showCustomerDialog) {
+        isPaidWithCash = true;
+        if (showCustomerDialog) {
+            customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+        } else {
+            createSale();
+        }
+    }
+
+    private void createSale() {
+        DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+        SaleEntity lastSaleRecord = databaseManager.getMerchantLastSaleRecord(mSessionManager.getMerchantId());
+
+        SaleEntity newSaleEntity = new SaleEntity();
+        // set temporary id
+        if (lastSaleRecord == null) {
+            newSaleEntity.setId(1);
+        } else {
+            int id = lastSaleRecord.getId() + 1;
+            newSaleEntity.setId(id);
+        }
+        newSaleEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+        newSaleEntity.setMerchant(merchantEntity);
+        newSaleEntity.setPayedWithCard(isPaidWithCard);
+        newSaleEntity.setPayedWithCash(isPaidWithCash);
+        newSaleEntity.setPayedWithMobile(isPaidWithMobile);
+        newSaleEntity.setTotal(totalCharge);
+        newSaleEntity.setSynced(false);
+        newSaleEntity.setCustomer(mSelectedCustomer);
+
+        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+            SalesTransactionEntity lastTransactionRecord = databaseManager.getMerchantTransactionsLastRecord(mSessionManager.getMerchantId());
+            ArrayList<Integer> ids = new ArrayList<>();
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                ids.add(mSelectedProducts.keyAt(i));
+            }
+            Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                .where(ProductEntity.ID.in(ids))
+                .orderBy(ProductEntity.UPDATED_AT.desc())
+                .get();
+            List<ProductEntity> productEntities = result.toList();
+
+            for (int i = 0; i < productEntities.size(); i ++) {
+                ProductEntity product = productEntities.get(i);
+                LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
+                if (loyaltyProgram != null) {
+                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                    // set temporary id
+                    if (lastTransactionRecord == null) {
+                        transactionEntity.setId(1);
+                    } else {
+                        int id = lastTransactionRecord.getId() + i + 1;
+                        transactionEntity.setId(id);
+                    }
+                    String template = "%.2f";
+                    double tc = product.getPrice() * mSelectedProducts.get(product.getId());
+                    int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
+
+                    transactionEntity.setAmount(totalCost);
+                    transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
+
+                    if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                        transactionEntity.setPoints(totalCost);
+                        transactionEntity.setProgramType(getString(R.string.simple_points));
+                    } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                        int stampsEarned = mSelectedProducts.get(product.getId());
+                        transactionEntity.setStamps(stampsEarned);
+                        transactionEntity.setProgramType(getString(R.string.stamps_program));
+                    }
+                    transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+                    transactionEntity.setProductId(product.getId());
+                    if (mSelectedCustomer != null) {
+                        transactionEntity.setUserId(mSelectedCustomer.getUserId());
+                        transactionEntity.setCustomer(mSelectedCustomer);
+                    }
+
+                    transactionEntity.setSale(saleEntity);
+                    transactionEntity.setMerchant(merchantEntity);
+                    mDataStore.upsert(transactionEntity).subscribe();
+
+                    if (i + 1 == productEntities.size()) {
+                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                    }
+                }
+            }
+        });
+
+        Completable.complete()
+            .delay(1, TimeUnit.SECONDS)
+            .compose(bindToLifecycle())
+            .doOnComplete(() -> {
+                Bundle bundle = new Bundle();
+                bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+
+                @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                for (int x = 0; x < mSelectedProducts.size(); x++) {
+                    orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+                }
+                bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+
+                Intent intent = new Intent(mContext, SaleWithPosConfirmationActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            })
+            .subscribe();
     }
 
     private class ProductsAdapter
@@ -858,6 +894,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity
                                     Toast.makeText(mContext, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 } else {
                                     mSelectedCustomer = customerEntity;
+                                    createSale();
                                 }
                             });
                 }

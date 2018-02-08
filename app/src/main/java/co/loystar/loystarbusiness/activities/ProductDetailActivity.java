@@ -65,7 +65,7 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
 import co.loystar.loystarbusiness.utils.RequestBodyWithProgress;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
-import co.loystar.loystarbusiness.utils.ui.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import id.zelory.compressor.Compressor;
 import okhttp3.MediaType;
