@@ -29,14 +29,14 @@ public class Sale {
     @JsonProperty("updated_at")
     private DateTime updated_at;
 
-    @JsonProperty("paid_with_card")
-    private boolean paid_with_card;
+    @JsonProperty("is_paid_with_card")
+    private boolean is_paid_with_card;
 
-    @JsonProperty("paid_with_cash")
-    private boolean paid_with_cash;
+    @JsonProperty("is_paid_with_cash")
+    private boolean is_paid_with_cash;
 
-    @JsonProperty("paid_with_mobile")
-    private boolean paid_with_mobile;
+    @JsonProperty("is_paid_with_mobile")
+    private boolean is_paid_with_mobile;
 
     @JsonProperty("transactions")
     private List<Transaction> transactions;
@@ -50,9 +50,9 @@ public class Sale {
         int user_id,
         DateTime created_at,
         DateTime updated_at,
-        boolean paid_with_card,
-        boolean paid_with_cash,
-        boolean paid_with_mobile,
+        boolean is_paid_with_card,
+        boolean is_paid_with_cash,
+        boolean is_paid_with_mobile,
         List<Transaction> transactions
     ) {
         this.id = id;
@@ -61,9 +61,9 @@ public class Sale {
         this.user_id = user_id;
         this.created_at = created_at;
         this.updated_at = updated_at;
-        this.paid_with_card = paid_with_card;
-        this.paid_with_cash = paid_with_cash;
-        this.paid_with_mobile = paid_with_mobile;
+        this.is_paid_with_card = is_paid_with_card;
+        this.is_paid_with_cash = is_paid_with_cash;
+        this.is_paid_with_mobile = is_paid_with_mobile;
         this.transactions = transactions;
     }
 
@@ -116,27 +116,27 @@ public class Sale {
     }
 
     public boolean isPaid_with_card() {
-        return paid_with_card;
+        return is_paid_with_card;
     }
 
     public void setPaid_with_card(boolean paid_with_card) {
-        this.paid_with_card = paid_with_card;
+        this.is_paid_with_card = paid_with_card;
     }
 
     public boolean isPaid_with_cash() {
-        return paid_with_cash;
+        return is_paid_with_cash;
     }
 
     public void setPaid_with_cash(boolean paid_with_cash) {
-        this.paid_with_cash = paid_with_cash;
+        this.is_paid_with_cash = paid_with_cash;
     }
 
     public boolean isPaid_with_mobile() {
-        return paid_with_mobile;
+        return is_paid_with_mobile;
     }
 
     public void setPaid_with_mobile(boolean paid_with_mobile) {
-        this.paid_with_mobile = paid_with_mobile;
+        this.is_paid_with_mobile = paid_with_mobile;
     }
 
     public List<Transaction> getTransactions() {

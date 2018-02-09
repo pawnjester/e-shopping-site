@@ -55,6 +55,7 @@ import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -79,6 +80,7 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
@@ -91,7 +93,10 @@ import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.requery.Persistable;
+import io.requery.query.Selection;
+import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
+import io.requery.reactivex.ReactiveResult;
 import io.smooch.core.Smooch;
 import io.smooch.core.User;
 import timber.log.Timber;
@@ -346,14 +351,19 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     }
 
     private void addGraphDataset() {
-        mDataStore.select(SalesTransactionEntity.class).where(
-                SalesTransactionEntity.MERCHANT.eq(merchantEntity))
+        mDataStore.select(SaleEntity.class).where(
+                SaleEntity.MERCHANT.eq(merchantEntity))
                 .get()
                 .observableResult().subscribe(entities -> {
-            List<SalesTransactionEntity> salesTransactionEntities = entities.toList();
-            if (!salesTransactionEntities.isEmpty()) {
-                ArrayList<GraphCoordinates> graphValues = getGraphValues(salesTransactionEntities);
-                String[] xVals = new String[graphValues.size()];
+            if (!entities.toList().isEmpty()) {
+                ArrayList<GraphCoordinates> graphCoordinates = getGraphValues(entities.toList());
+                ArrayList<GraphCoordinates> cashGraphValues = getCashOnlyGraphValues(graphCoordinates);
+                ArrayList<GraphCoordinates> cardGraphValues = getCardOnlyGraphValues(graphCoordinates);
+
+                Collections.sort(cashGraphValues, new GraphCoordinatesComparator());
+                Collections.sort(cardGraphValues, new GraphCoordinatesComparator());
+
+                String[] xVals = new String[cashGraphValues.size()];
                 ArrayList<BarEntry> yVals = new ArrayList<>();
                 DateFormat outFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
                 Calendar todayCalendar = Calendar.getInstance();
@@ -361,16 +371,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 try {
                     String todayDate = TextUtilsHelper.getFormattedDateString(todayCalendar);
                     Date todayDateWithoutTimeStamp = outFormatter.parse(todayDate);
-                    for (int i = 0; i < graphValues.size(); i++) {
-                        GraphCoordinates gc = graphValues.get(i);
-                        cal.setTime(gc.getX());
+                    for (int i = 0; i < cashGraphValues.size(); i++) {
+                        GraphCoordinates cashGc = cashGraphValues.get(i);
+                        GraphCoordinates cardGc = cardGraphValues.get(i);
+                        cal.setTime(cashGc.getX());
                         String dateString = TextUtilsHelper.getFormattedDateString(cal);
                         Date salesCreatedAt = outFormatter.parse(dateString);
                         if (salesCreatedAt.equals(todayDateWithoutTimeStamp)) {
                             dateString = "today";
                         }
                         xVals[i] = dateString;
-                        yVals.add(new BarEntry(i, gc.getY()));
+                        yVals.add(new BarEntry(i, new float[]{cashGc.getY(), cardGc.getY()}));
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
@@ -389,11 +400,15 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 YAxis rightAxis = barChart.getAxisRight();
                 rightAxis.setEnabled(false);
 
-                BarDataSet barDataSet = new BarDataSet(yVals, "Total Sale");
+                BarDataSet barDataSet = new BarDataSet(yVals, "");
                 barDataSet.setValueTypeface(App.getInstance().getTypeface());
                 barDataSet.setValueTextSize(14);
+                barDataSet.setDrawValues(false);
                 barDataSet.setValueFormatter(new MyAxisValueFormatter());
-                barDataSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentLight));
+                barDataSet.setColors(Arrays.asList(
+                    ContextCompat.getColor(mContext, R.color.colorPrimaryDark),
+                    ContextCompat.getColor(mContext, R.color.colorAccentLight)));
+                barDataSet.setStackLabels(new String[]{"Cash Sales", "Card Sales"});
 
                 ArrayList<IBarDataSet> dataSets = new ArrayList<>();
                 dataSets.add(barDataSet);
@@ -408,10 +423,64 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 barChart.notifyDataSetChanged();
                 barChart.invalidate();
             }
-                });
+        });
     }
 
-    private ArrayList<GraphCoordinates> getGraphValues(List<SalesTransactionEntity> entities) {
+    private ArrayList<GraphCoordinates> getCardOnlyGraphValues(ArrayList<GraphCoordinates> graphCoordinates) {
+        ArrayList<GraphCoordinates> cardOnlyGraphCoordinates = new ArrayList<>();
+
+        for (GraphCoordinates gc: graphCoordinates) {
+            Calendar startDayCal = Calendar.getInstance();
+            startDayCal.setTime(gc.getX());
+
+            Calendar nextDayCal = Calendar.getInstance();
+            nextDayCal.setTime(gc.getX());
+            nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
+
+            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+            resultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
+            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+
+            Tuple tuple = resultSelection.get().firstOrNull();
+            if (tuple == null || tuple.get(0) == null) {
+                cardOnlyGraphCoordinates.add(new GraphCoordinates(gc.getX(), 0));
+            } else {
+                Double total = tuple.get(0);
+                cardOnlyGraphCoordinates.add(new GraphCoordinates(gc.getX(), total.intValue()));
+            }
+        }
+        return cardOnlyGraphCoordinates;
+    }
+
+    private ArrayList<GraphCoordinates> getCashOnlyGraphValues(ArrayList<GraphCoordinates> graphCoordinates) {
+        ArrayList<GraphCoordinates> cashOnlyGraphCoordinates = new ArrayList<>();
+        for (GraphCoordinates gc: graphCoordinates) {
+            Calendar startDayCal = Calendar.getInstance();
+            startDayCal.setTime(gc.getX());
+
+            Calendar nextDayCal = Calendar.getInstance();
+            nextDayCal.setTime(gc.getX());
+            nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
+
+
+            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+            resultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
+            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+
+            Tuple tuple = resultSelection.get().firstOrNull();
+            if (tuple == null || tuple.get(0) == null) {
+                cashOnlyGraphCoordinates.add(new GraphCoordinates(gc.getX(), 0));
+            } else {
+                Double total = tuple.get(0);
+                cashOnlyGraphCoordinates.add(new GraphCoordinates(gc.getX(), total.intValue()));
+            }
+        }
+        return cashOnlyGraphCoordinates;
+    }
+
+    private ArrayList<GraphCoordinates> getGraphValues(List<SaleEntity> entities) {
         HashMap<Date, Integer> dateToAmount = new HashMap<>();
         ArrayList<GraphCoordinates> graphCoordinates = new ArrayList<>();
         Calendar todayCalendar = Calendar.getInstance();
@@ -420,9 +489,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         try {
             Date todayDateWithoutTimeStamp = outFormatter.parse(todayDateString);
             ArrayList<Date> transactionDatesFor2day = new ArrayList<>();
-            for (SalesTransactionEntity transactionEntity: entities) {
-                Date createdAt = transactionEntity.getCreatedAt();
-                Integer amount = transactionEntity.getAmount();
+            for (SaleEntity saleEntity: entities) {
+                Date createdAt = saleEntity.getCreatedAt();
+                Integer amount = (int) saleEntity.getTotal();
 
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(createdAt);
@@ -450,7 +519,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     allSalesRecords.add(new GraphCoordinates(entry.getKey(), entry.getValue()));
                 }
 
-                Collections.sort(allSalesRecords, new pairObjectDateComparator());
+                Collections.sort(allSalesRecords, new GraphCoordinatesComparator());
                 Collections.reverse(allSalesRecords);
 
                 if (allSalesRecords.size() > 3) {
@@ -463,7 +532,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     graphCoordinates.addAll(allSalesRecords);
                 }
 
-                Collections.sort(graphCoordinates, new pairObjectDateComparator());
+                Collections.sort(graphCoordinates, new GraphCoordinatesComparator());
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -688,7 +757,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
     }
 
-    private class pairObjectDateComparator implements Comparator<GraphCoordinates> {
+    private class GraphCoordinatesComparator implements Comparator<GraphCoordinates> {
         @Override
         public int compare(GraphCoordinates o1, GraphCoordinates o2) {
             return o1.getX().compareTo(o2.getX());
