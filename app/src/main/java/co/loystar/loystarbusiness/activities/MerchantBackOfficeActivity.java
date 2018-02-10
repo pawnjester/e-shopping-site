@@ -381,7 +381,9 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                             dateString = "today";
                         }
                         xVals[i] = dateString;
-                        yVals.add(new BarEntry(i, new float[]{cashGc.getY(), cardGc.getY()}));
+                        BarEntry entry = new BarEntry(i, new float[]{cashGc.getY(), cardGc.getY()});
+                        entry.setData(cashGc.getX());
+                        yVals.add(entry);
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
@@ -749,7 +751,19 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
-
+        // h.getStackIndex()
+        // e.getData()
+        // e.getY() returns double
+        if (e.getY() > 0) {
+            if (h.getStackIndex() == 0) {
+                // cash sale selected
+                // go to transactions history screen with
+                // cash sale and e.getData() as params
+            } else if (h.getStackIndex() == 1) {
+                // card sale selected
+            }
+        }
+        Timber.e("ENTRYX: %s, ENTRYY: %s", e.getY(), e.getData());
     }
 
     @Override
