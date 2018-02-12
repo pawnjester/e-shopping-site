@@ -150,7 +150,7 @@
             android:layout_width="match_parent"
             android:text="@string/order_received"
             android:gravity="center"
-            android:textColor="@color/titleColor"
+            android:textColor="@color/primaryTextColor"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_height="wrap_content" />
 
@@ -166,7 +166,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/titleColor"
+            android:textColor="@color/primaryTextColor"
             android:textSize="14sp"
             android:text="@string/view" />
 
@@ -175,7 +175,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/titleColor"
+            android:textColor="@color/primaryTextColor"
             android:textSize="14sp"
             android:text="@string/back_to_home" />
 

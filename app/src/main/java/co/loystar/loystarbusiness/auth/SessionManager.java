@@ -5,12 +5,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import com.google.firebase.auth.FirebaseAuth;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.activities.SplashActivity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -99,10 +101,14 @@ public class SessionManager {
 
     public String getFullName() {
         String lastName = getLastName();
-        if (!lastName.isEmpty()) {
-            lastName = " " + lastName;
+
+        if (TextUtils.isEmpty(lastName)) {
+            lastName = "";
+        } else {
+            lastName = " " + TextUtilsHelper.capitalize(lastName);
         }
-        return getFirstName() + lastName;
+
+        return TextUtilsHelper.capitalize(getFirstName()) + lastName;
     }
 
     public String getBusinessName() {

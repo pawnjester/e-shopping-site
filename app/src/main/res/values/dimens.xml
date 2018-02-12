@@ -9,8 +9,9 @@
 
     <dimen name="empty_state_text_title">20sp</dimen>
     <dimen name="chart_padding">5dp</dimen>
-    <dimen name="item_space_medium">15dp</dimen>
-    <dimen name="item_space">10dp</dimen>
+    <dimen name="item_space_medium">16dp</dimen>
+    <dimen name="item_space">8dp</dimen>
+    <dimen name="item_space_small">4dp</dimen>
     <dimen name="card_list_padding">16dp</dimen>
     <dimen name="text_view_label_text_size">16sp</dimen>
     <!-- login -->

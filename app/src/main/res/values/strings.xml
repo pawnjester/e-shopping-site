@@ -73,6 +73,11 @@
         <item>-1</item>
     </string-array>
 
+    <string-array name="type_of_sale">
+        <item>@string/cash_sales</item>
+        <item>@string/card_sales</item>
+    </string-array>
+
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
@@ -322,6 +327,8 @@
     <string name="monthly">Monthly</string>
     <string name="try_again">Try again!</string>
     <string name="total_label">Total</string>
+    <string name="total_label_cash">Total (cash)</string>
+    <string name="total_label_card">Total (card)</string>
     <string name="make_payments">Make payment</string>
     <string name="how_to_pay">Select How to pay:</string>
     <string name="saving_msg_12">1200 bonus sms when you pay for a year</string>
@@ -413,6 +420,7 @@
     <string name="order_owner">This order belongs to</string>
     <string name="change_customer">Change Customer</string>
     <string name="product_price">%1$s %2$s</string>
+    <string name="total_sale_value">%1$s %2$s</string>
     <string name="title_activity_add_stamps">Add Stamps</string>
     <string name="confirm_transaction">Confirm Transaction</string>
     <string name="total_stamps">Total Stamps: %1$s</string>
@@ -498,12 +506,18 @@
     <string name="tab_text_2">Tab 2</string>
     <string name="tab_text_3">Tab 3</string>
     <string name="section_format">Hello World from section: %1$d</string>
-    <string name="cash_sales">Cash Sales</string>
-    <string name="card_sales">Card Sales</string>
+    <string name="cash_sales">Cash sales</string>
+    <string name="card_sales">Card sales</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="view_details">View details</string>
     <string name="sales_recorded">sales recorded</string>
     <string name="pick_a_date">Pick a date</string>
+    <string name="type_of_sale">Type of sale</string>
+    <string name="error_type_of_sale_required">Please select type of sale</string>
+    <string name="no_sales_records">No sales recorded for this date.</string>
+    <string name="detailed_sales_history">Detailed sales history</string>
+    <string name="sales_summary">Sales Summary</string>
+    <string name="guest_customer">Guest Customer</string>
 </resources>

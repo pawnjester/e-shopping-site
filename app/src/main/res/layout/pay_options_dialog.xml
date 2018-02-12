@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/cash"
-            android:textColor="@color/titleColor"
+            android:textColor="@color/primaryTextColor"
             android:gravity="center" />
 
     </LinearLayout>
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/card"
-            android:textColor="@color/titleColor"
+            android:textColor="@color/primaryTextColor"
             android:gravity="center" />
 
     </LinearLayout>

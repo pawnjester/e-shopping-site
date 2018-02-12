@@ -11,7 +11,7 @@
     <color name="greenDarK">#044700</color>
     <color name="green">#328A2E</color>
     <color name="translucent">#80000000</color>
-    <color name="titleColor">#666666</color>
+    <color name="primaryTextColor">#666666</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="white">#ffffff</color>

@@ -9,22 +9,32 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.darwindeveloper.onecalendar.clases.Day;
 import com.darwindeveloper.onecalendar.views.OneCalendarView;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.adapters.SalesHistoryAdapter;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
@@ -32,11 +42,18 @@ import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
+import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.requery.Persistable;
+import io.requery.query.Selection;
+import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
+import io.requery.reactivex.ReactiveResult;
 import timber.log.Timber;
 
 public class SalesHistoryActivity extends AppCompatActivity {
@@ -64,10 +81,33 @@ public class SalesHistoryActivity extends AppCompatActivity {
     @BindView(R.id.stateActionBtn)
     BrandButtonNormal stateActionBtn;
 
+    @BindView(R.id.typeOfSaleSpinner)
+    SpinnerButton typeOfSaleSpinner;
+
+    @BindView(R.id.sales_detail_bs_toolbar)
+    Toolbar salesDetailToolbar;
+
+    @BindView(R.id.sales_detail_rv)
+    RecyclerView recyclerView;
+
+    @BindView(R.id.sales_date)
+    TextView salesDateView;
+
+    @BindView(R.id.total_sales)
+    TextView totalSalesView;
+
+    @BindView(R.id.total_label)
+    TextView totalLabelView;
+
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
+    private String typeOfSaleSelected;
+    private Date selectedDate;
+    private double totalSalesForDateSelected;
+
+    private BottomSheetBehavior bottomSheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,20 +126,31 @@ public class SalesHistoryActivity extends AppCompatActivity {
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
 
-        Date preselectedSaleDate = null;
-        if (getIntent().hasExtra(Constants.SALE_DATE)) {
-            preselectedSaleDate = (Date) getIntent().getSerializableExtra(Constants.SALE_DATE);
-        }
-        String preselectedTypeOfSale = getIntent().getStringExtra(Constants.TYPE_OF_SALE);
+        final CharSequence[] typeOfSaleEntries = getResources().getStringArray(R.array.type_of_sale);
+        SpinnerButton.OnItemSelectedListener typeOfSaleItemSelectedListener = position -> {
+            String selected = (String) typeOfSaleEntries[position];
+            if (selected.equals(getString(R.string.cash_sales))) {
+                typeOfSaleSelected = Constants.CASH_SALE;
+            } else if (selected.equals(getString(R.string.card_sales))) {
+                typeOfSaleSelected = Constants.CARD_SALE;
+            }
+        };
 
-        if (preselectedSaleDate != null && preselectedTypeOfSale != null) {
-
-        }
+        typeOfSaleSpinner.setListener(typeOfSaleItemSelectedListener);
 
         calendarView.setOneCalendarClickListener(new OneCalendarView.OneCalendarClickListener() {
             @Override
             public void dateOnClick(Day day, int position) {
-                Timber.e("DATE: %s", day);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(day.getDate());
+                calendar.set(Calendar.YEAR, 2018);
+
+                selectedDate = calendar.getTime();
+                if (TextUtils.isEmpty(typeOfSaleSelected)) {
+                    Toast.makeText(mContext, getString(R.string.error_type_of_sale_required), Toast.LENGTH_LONG).show();
+                } else {
+                    setTotalSales();
+                }
             }
 
             @Override
@@ -127,6 +178,85 @@ public class SalesHistoryActivity extends AppCompatActivity {
                 showNoSalesView();
             }
         });
+
+        setUpBottomSheet();
+        Date preselectedSaleDate = null;
+        if (getIntent().hasExtra(Constants.SALE_DATE)) {
+            preselectedSaleDate = (Date) getIntent().getSerializableExtra(Constants.SALE_DATE);
+        }
+        String preselectedTypeOfSale = getIntent().getStringExtra(Constants.TYPE_OF_SALE);
+
+        if (preselectedSaleDate != null && preselectedTypeOfSale != null) {
+            selectedDate = preselectedSaleDate;
+            typeOfSaleSelected = preselectedTypeOfSale;
+            if (typeOfSaleSelected.equals(Constants.CASH_SALE)) {
+                int index = Arrays.asList(typeOfSaleEntries).indexOf(getString(R.string.cash_sales));
+                typeOfSaleSpinner.setSelection(index);
+            } else if (typeOfSaleSelected.equals(Constants.CARD_SALE)) {
+                int index = Arrays.asList(typeOfSaleEntries).indexOf(getString(R.string.card_sales));
+                typeOfSaleSpinner.setSelection(index);
+            }
+            setTotalSales();
+        }
+    }
+
+    private void setTotalSales() {
+        Calendar startDayCal = Calendar.getInstance();
+        startDayCal.setTime(selectedDate);
+
+        Calendar nextDayCal = Calendar.getInstance();
+        nextDayCal.setTime(selectedDate);
+        nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
+
+        if (typeOfSaleSelected.equals(Constants.CASH_SALE)) {
+            totalLabelView.setText(getString(R.string.total_label_cash));
+
+            Timber.e("DATE: %s", selectedDate);
+
+            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+            resultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
+            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+
+            Tuple tuple = resultSelection.get().firstOrNull();
+            Timber.e("TUPLE: %s", tuple);
+            if (tuple == null || tuple.get(0) == null) {
+                Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+            } else {
+                Double total = tuple.get(0);
+                if (total > 0) {
+                    totalSalesForDateSelected = total;
+                    showBottomSheet(true);
+                } else {
+                    Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+                }
+            }
+        } else if (typeOfSaleSelected.equals(Constants.CARD_SALE)) {
+            totalLabelView.setText(getString(R.string.total_label_card));
+
+            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+            resultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
+            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+
+            Tuple tuple = resultSelection.get().firstOrNull();
+            if (tuple == null || tuple.get(0) == null) {
+                Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+            } else {
+                Double total = tuple.get(0);
+                if (total > 0) {
+                    totalSalesForDateSelected = total;
+                    showBottomSheet(true);
+                } else {
+                    Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    private void setUpBottomSheet() {
+        bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.sale_detail_bottom_sheet_container));
+        salesDetailToolbar.setNavigationOnClickListener(view -> showBottomSheet(false));
     }
 
     /**
@@ -231,4 +361,39 @@ public class SalesHistoryActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void showBottomSheet(boolean show) {
+        if (show) {
+            SalesHistoryAdapter mAdapter = new SalesHistoryAdapter(mContext, merchantEntity, selectedDate, typeOfSaleSelected);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(selectedDate);
+
+            salesDateView.setText(TextUtilsHelper.getFormattedDateString(calendar));
+            String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
+            totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalSalesForDateSelected)));
+
+            recyclerView.setHasFixedSize(true);
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
+            recyclerView.setLayoutManager(mLayoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.addItemDecoration(new SpacingItemDecoration(
+                getResources().getDimensionPixelOffset(R.dimen.item_space_small),
+                getResources().getDimensionPixelOffset(R.dimen.item_space_small))
+            );
+            recyclerView.setAdapter(mAdapter);
+
+            mAdapter.queryAsync();
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            showBottomSheet(false);
+        } else {
+            super.onBackPressed();
+        }
+    }
 }
