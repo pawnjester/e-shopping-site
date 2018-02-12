@@ -17,42 +17,57 @@
         android:id="@+id/merchant_back_office_layout"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
-        android:paddingTop="32dp">
+        android:paddingTop="24dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <android.support.constraint.ConstraintLayout
-                android:layout_width="match_parent"
                 android:id="@+id/chartLayout"
-                android:visibility="gone"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="visible"
                 tools:context="co.loystar.loystarbusiness.fragments.ChartFragment">
 
                 <TextView
                     android:id="@+id/barTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="175dp"
                     android:layout_height="wrap_content"
                     android:text="@string/sales_overview"
-                    android:textSize="16sp"
-                    android:textColor="@color/primaryTextColor"
+                    android:textColor="@color/greenDarK"
+                    app:layout_constraintEnd_toStartOf="@+id/viewHistoryBtn"
+                    app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/viewHistoryBtn"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="175dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_all"
+                    android:textColor="@color/greenDarK"
+                    app:layout_constraintBottom_toBottomOf="@+id/barTitle"
+                    app:layout_constraintEnd_toStartOf="@+id/barTitle"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/barTitle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/barTitle" />
 
                 <android.support.v7.widget.CardView
+                    android:id="@+id/chartCardView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    card_view:cardUseCompatPadding="true"
-                    card_view:cardElevation="4dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginStart="1dp"
+                    android:layout_marginEnd="1dp"
                     android:layout_marginLeft="1dp"
                     android:layout_marginRight="1dp"
-                    android:layout_marginEnd="1dp"
+                    android:layout_marginStart="1dp"
+                    android:layout_marginTop="16dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/barTitle"
-                    android:id="@+id/chartCardView">
+                    card_view:cardElevation="4dp"
+                    card_view:cardUseCompatPadding="true">
 
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/chart"
@@ -62,6 +77,16 @@
                         android:paddingTop="@dimen/activity_vertical_margin" />
 
                 </android.support.v7.widget.CardView>
+
+                <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+                    android:id="@+id/startSaleBtn"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/record_sale"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/chartCardView" />
 
             </android.support.constraint.ConstraintLayout>
 
@@ -177,6 +202,6 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
-        app:bb_tabXmlResource="@xml/bottom_bar_tabs" />
+        app:bb_tabXmlResource="@xml/merchant_back_office_bottom_bar_tabs" />
 
 </RelativeLayout>

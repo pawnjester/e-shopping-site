@@ -141,6 +141,12 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     @BindView(R.id.emptyStateLayout)
     View emptyStateLayout;
 
+    @BindView(R.id.startSaleBtn)
+    BrandButtonNormal startSaleBtn;
+
+    @BindView(R.id.viewHistoryBtn)
+    Button viewHistoryBtn;
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -245,6 +251,12 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 });
             }
         }
+
+        startSaleBtn.setOnClickListener(view -> startSale());
+        viewHistoryBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(mContext, SalesHistoryActivity.class);
+            startActivity(intent);
+        });
 
         setupView();
         setupGraph();
@@ -546,9 +558,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         bottomNavigationBar = findViewById(R.id.bottom_navigation_bar);
         bottomNavigationBar.setOnTabSelectListener(tabId -> {
             switch (tabId) {
-                case R.id.record_sale:
-                    startSale();
-                    break;
                 case R.id.customers:
                     Intent intent = new Intent(mContext, CustomerListActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
