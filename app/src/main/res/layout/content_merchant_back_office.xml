@@ -36,6 +36,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sales_overview"
                     android:textSize="16sp"
+                    android:textColor="@color/titleColor"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 

@@ -505,4 +505,5 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="view_details">View details</string>
     <string name="sales_recorded">sales recorded</string>
+    <string name="pick_a_date">Pick a date</string>
 </resources>

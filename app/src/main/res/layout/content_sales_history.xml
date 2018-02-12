@@ -1,14 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment">
+    android:background="@color/colorPrimary"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="co.loystar.loystarbusiness.activities.SalesHistoryActivity"
+    tools:showIn="@layout/activity_sales_history"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="vertical"
+        android:id="@+id/calendarBloc"
         android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_marginTop="24dp"
+            android:id="@+id/titleView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pick_a_date"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:textColor="@color/white"/>
 
         <com.darwindeveloper.onecalendar.views.OneCalendarView
             android:id="@+id/saleDateCalendarSelect"
@@ -28,6 +44,6 @@
 
     </LinearLayout>
 
-    <include layout="@layout/empty_sales_recycler_state" />
+    <include layout="@layout/no_sales_view" />
 
 </RelativeLayout>
