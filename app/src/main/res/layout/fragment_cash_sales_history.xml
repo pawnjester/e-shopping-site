@@ -1,0 +1,33 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <com.darwindeveloper.onecalendar.views.OneCalendarView
+            android:id="@+id/saleDateCalendarSelect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:backgroundColorDaysOfAnotherMonth="@color/colorPrimary"
+            app:backgroundColorDaysOfMonth="#53c0c0c1"
+            app:backgroundColorSelectedDay="#d2d2d2"
+            app:calendarBackgroundColor="@color/colorPrimary"
+            app:calendarLanguage="EN"
+            app:currentDayBackgroundColor="@color/green"
+            app:mainBackgroundColor="@color/colorPrimary"
+            app:textColorDaysOfAnotherMonth="#fff"
+            app:textColorDaysOfMonth="#fff"
+            app:textColorMonthAndYear="@color/colorPrimary"
+            app:textColorSelectedDay="#000000" />
+
+    </LinearLayout>
+
+    <include layout="@layout/empty_sales_recycler_state" />
+
+</RelativeLayout>

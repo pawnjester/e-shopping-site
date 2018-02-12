@@ -493,4 +493,16 @@
     <string name="card_payment_extra">* from card payment device</string>
     <string name="card_payment">Card Payment</string>
     <string name="cash_payment">Cash Payment</string>
+    <string name="title_activity_sales_history">Sales History</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="cash_sales">Cash Sales</string>
+    <string name="card_sales">Card Sales</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="view_details">View details</string>
+    <string name="sales_recorded">sales recorded</string>
 </resources>

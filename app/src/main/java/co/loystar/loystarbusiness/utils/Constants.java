@@ -44,4 +44,8 @@ public class Constants {
     public static final String NOTIFICATION_TYPE = "NOTIFICATION_TYPE";
     public static final String ORDER_RECEIVED_NOTIFICATION = "ORDER_RECEIVED_NOTIFICATION";
     public static final String NOTIFICATION_ORDER_ID = "NOTIFICATION_ORDER_ID";
+    public static final String TYPE_OF_SALE = "TYPE_OF_SALE";
+    public static final String CASH_SALE = "CASH_SALE";
+    public static final String CARD_SALE = "CARD_SALE";
+    public static final String SALE_DATE = "SALE_DATE";
 }

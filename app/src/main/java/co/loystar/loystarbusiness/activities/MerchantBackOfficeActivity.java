@@ -751,19 +751,25 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
-        // h.getStackIndex()
-        // e.getData()
-        // e.getY() returns double
         if (e.getY() > 0) {
             if (h.getStackIndex() == 0) {
                 // cash sale selected
-                // go to transactions history screen with
-                // cash sale and e.getData() as params
+                Intent intent = new Intent(mContext, SalesHistoryActivity.class);
+                Bundle args = new Bundle();
+                args.putString(Constants.TYPE_OF_SALE, Constants.CASH_SALE);
+                args.putSerializable(Constants.SALE_DATE, (Date) e.getData());
+                intent.putExtras(args);
+                startActivity(intent);
             } else if (h.getStackIndex() == 1) {
                 // card sale selected
+                Intent intent = new Intent(mContext, SalesHistoryActivity.class);
+                Bundle args = new Bundle();
+                args.putString(Constants.TYPE_OF_SALE, Constants.CARD_SALE);
+                args.putSerializable(Constants.SALE_DATE, (Date) e.getData());
+                intent.putExtras(args);
+                startActivity(intent);
             }
         }
-        Timber.e("ENTRYX: %s, ENTRYY: %s", e.getY(), e.getData());
     }
 
     @Override
