@@ -51,10 +51,14 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crash.FirebaseCrash;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
 import com.uxcam.UXCam;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -105,6 +109,7 @@ import timber.log.Timber;
 
 public class MerchantBackOfficeActivity extends AppCompatActivity
     implements OnChartValueSelectedListener {
+
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
     private SessionManager mSessionManager;
     private Context mContext;
@@ -117,6 +122,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     private TextView stateDescriptionTextView;
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
+    private MixpanelAPI mixpanelAPI;
 
     @BindView(R.id.merchant_back_office_layout)
     View mainLayout;
@@ -269,6 +275,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         if (!BuildConfig.DEBUG) {
             List<String> debugEmails = new ArrayList<>(Arrays.asList("loystarapp@gmail.com", "niinyarko1@gmail.com", "boxxy@gmail.com"));
             if (!debugEmails.contains(mSessionManager.getEmail())) {
+                /* FirebaseAnalytics */
                 FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
                 mFirebaseAnalytics.setUserProperty("BusinessName", mSessionManager.getBusinessName());
                 mFirebaseAnalytics.setUserProperty("ContactNumber", mSessionManager.getContactNumber());
@@ -276,8 +283,10 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 mFirebaseAnalytics.setUserProperty("FirstName", mSessionManager.getFirstName());
                 mFirebaseAnalytics.setUserProperty("LastName", mSessionManager.getLastName());
 
-                MixpanelAPI mixpanelAPI = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
+                /* Mixpanel */
+                mixpanelAPI = MixpanelAPI.getInstance(mContext, BuildConfig.MIXPANEL_TOKEN);
                 mixpanelAPI.identify(mSessionManager.getEmail());
+                // create a user profile
                 mixpanelAPI.getPeople().identify(mixpanelAPI.getDistinctId());
                 mixpanelAPI.getPeople().identify(mSessionManager.getEmail());
                 mixpanelAPI.getPeople().set("BusinessType", mSessionManager.getBusinessType());
@@ -287,21 +296,40 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 mixpanelAPI.getPeople().set("name", mSessionManager.getBusinessName());
                 mixpanelAPI.getPeople().showNotificationIfAvailable(this);
 
+                JSONObject props = new JSONObject();
+                try {
+                    /* these properties will be included with each event sent*/
+                    props.put("BusinessType", mSessionManager.getBusinessType());
+                    props.put("ContactNumber", mSessionManager.getContactNumber());
+                    props.put("BusinessName", mSessionManager.getBusinessName());
+                    props.put("Email", mSessionManager.getEmail());
+
+                    mixpanelAPI.registerSuperProperties(props);
+                } catch (JSONException e) {
+                    FirebaseCrash.report(e);
+                    e.printStackTrace();
+                }
+
+                /* Smooch */
                 Smooch.login(mSessionManager.getEmail(), "jwt", null);
                 User.getCurrentUser().setEmail(mSessionManager.getEmail());
                 User.getCurrentUser().setFirstName(mSessionManager.getFirstName());
+
                 final Map<String, Object> customProperties = new HashMap<>();
                 customProperties.put("BusinessName", mSessionManager.getBusinessName());
                 customProperties.put("ContactNumber", mSessionManager.getContactNumber());
                 customProperties.put("BusinessType", mSessionManager.getBusinessType());
+
                 boolean isProgramCreated = mDataStore.count(LoyaltyProgramEntity.class)
                         .where(LoyaltyProgramEntity.OWNER.eq(merchantEntity)).get().single().blockingGet() > 0;
                 customProperties.put("createdLoyaltyProgram", isProgramCreated);
                 User.getCurrentUser().addProperties(customProperties);
 
+                /* OneSignal */
                 OneSignal.sendTag("user", mSessionManager.getEmail());
                 OneSignal.syncHashedEmail(mSessionManager.getEmail());
 
+                /* UXCam */
                 UXCam.startWithKey(BuildConfig.UXCAM_TOKEN);
                 UXCam.tagUsersName(mSessionManager.getEmail());
             }
@@ -827,5 +855,13 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 startSaleWithoutPos(programId);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mixpanelAPI != null) {
+            mixpanelAPI.flush();
+        }
+        super.onDestroy();
     }
 }
