@@ -6,7 +6,12 @@ apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 apply plugin: 'com.google.firebase.firebase-crash'
 
 repositories {
-    maven { url 'https://maven.google.com' }
+    maven {
+        url 'https://maven.google.com'
+    }
+    maven{
+        url 'http://sdk.uxcam.com/android/'
+    }
 }
 
 Properties props = new Properties()
@@ -22,7 +27,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 88
+        versionCode 89
         versionName '1.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -146,6 +151,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     implementation 'com.github.armcha:Vertical-Intro:2.0.0'
     implementation 'com.github.bumptech.glide:glide:4.3.1'
+    implementation 'com.uxcam:uxcam:2.6.4@aar'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.0'
     implementation "com.squareup.retrofit2:converter-jackson:${retrofit2Version}"

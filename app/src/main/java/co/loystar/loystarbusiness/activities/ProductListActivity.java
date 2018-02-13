@@ -241,7 +241,7 @@ public class ProductListActivity
                 productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
                 productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
-                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+                return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
             } else {
                 String query = "%" + searchFilterText.toLowerCase() + "%";
                 Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
@@ -249,7 +249,7 @@ public class ProductListActivity
                 productsSelection.where(ProductEntity.NAME.like(query));
                 productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
-                return productsSelection.orderBy(ProductEntity.UPDATED_AT.desc()).get();
+                return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
             }
         }
 

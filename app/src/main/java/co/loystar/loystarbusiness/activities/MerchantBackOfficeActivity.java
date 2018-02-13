@@ -54,6 +54,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
+import com.uxcam.UXCam;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -298,6 +299,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
                 OneSignal.sendTag("user", mSessionManager.getEmail());
                 OneSignal.syncHashedEmail(mSessionManager.getEmail());
+
+                UXCam.startWithKey(BuildConfig.UXCAM_TOKEN);
             }
         }
     }
