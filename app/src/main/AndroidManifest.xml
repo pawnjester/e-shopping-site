@@ -113,6 +113,7 @@
             android:name=".utils.GenericFileProvider"
             android:authorities="${applicationId}.co.loystar.loystarbusiness.provider"
             android:exported="false"
+            tools:replace="android:authorities"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

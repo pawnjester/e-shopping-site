@@ -32,9 +32,11 @@ public class App extends MultiDexApplication{
         extractLato();
         setGlobalFontType();
         singleton.initializeInstance();
-        Smooch.init(this, new Settings(BuildConfig.SMOOCH_TOKEN), response -> {
 
-        });
+        Settings settings = new Settings(BuildConfig.SMOOCH_TOKEN);
+        settings.setFileProviderAuthorities(getPackageName() + ".co.loystar.loystarbusiness.provider");
+        Smooch.init(this, settings, response -> {});
+
         FirebaseApp.initializeApp(this);
         Timber.plant(new Timber.DebugTree());
     }

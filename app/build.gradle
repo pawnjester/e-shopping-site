@@ -112,6 +112,7 @@ ext {
     permissionsDispatcherVersion = "2.4.0"
     butterKnifeVersion = "8.8.1"
     retrofit2Version = "2.3.0"
+    smoochVersion = "5.8.0"
 }
 
 dependencies {
@@ -140,8 +141,8 @@ dependencies {
     implementation "com.google.firebase:firebase-crash:$firebaseVersion"
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation 'com.firebaseui:firebase-ui-auth:3.1.0'
-    implementation 'io.smooch:core:5.4.0'
-    implementation 'io.smooch:ui:5.4.0'
+    implementation "io.smooch:core:${smoochVersion}"
+    implementation "io.smooch:ui:${smoochVersion}"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:3.9.0'
