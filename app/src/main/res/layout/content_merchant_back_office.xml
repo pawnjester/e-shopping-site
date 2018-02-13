@@ -17,7 +17,7 @@
         android:id="@+id/merchant_back_office_layout"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
-        android:paddingTop="24dp">
+        android:paddingTop="16dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -27,33 +27,17 @@
                 android:id="@+id/chartLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="visible"
+                android:visibility="gone"
                 tools:context="co.loystar.loystarbusiness.fragments.ChartFragment">
-
-                <TextView
-                    android:id="@+id/barTitle"
-                    android:layout_width="175dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sales_overview"
-                    android:textColor="@color/greenDarK"
-                    app:layout_constraintEnd_toStartOf="@+id/viewHistoryBtn"
-                    app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
                     android:id="@+id/viewHistoryBtn"
                     style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="175dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/view_all"
-                    android:textColor="@color/greenDarK"
-                    app:layout_constraintBottom_toBottomOf="@+id/barTitle"
-                    app:layout_constraintEnd_toStartOf="@+id/barTitle"
-                    app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintStart_toEndOf="@+id/barTitle"
+                    android:text="@string/sales_overview"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/barTitle" />
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
                 <android.support.v7.widget.CardView
                     android:id="@+id/chartCardView"
@@ -65,7 +49,7 @@
                     android:layout_marginStart="1dp"
                     android:layout_marginTop="16dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/barTitle"
+                    app:layout_constraintTop_toBottomOf="@+id/viewHistoryBtn"
                     card_view:cardElevation="4dp"
                     card_view:cardUseCompatPadding="true">
 

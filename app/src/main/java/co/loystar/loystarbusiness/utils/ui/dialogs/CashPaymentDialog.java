@@ -13,8 +13,11 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.widget.RxTextView;
+
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -87,13 +90,19 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
             } else {
                 int cashCollected = Integer.parseInt(String.valueOf(s));
                 if (mTotalCharge != null) {
-                    double change = cashCollected - mTotalCharge;
+                    double c = cashCollected - mTotalCharge;
+                    String template = "%.2f";
+                    double change = Double.valueOf(String.format(Locale.UK, template, c));
                     cashChangeView.setText(String.valueOf(change));
                 }
             }
         });
 
         completePaymentBtn.setOnClickListener(view -> {
+            if (TextUtils.isEmpty(cashCollectedInput.getText().toString())) {
+                Toast.makeText(getActivity(), getString(R.string.error_cash_collected_required), Toast.LENGTH_LONG).show();
+                return;
+            }
             if (mListener != null) {
                 mListener.onCashPaymentDialogComplete(showCustomerDialog);
                 dismiss();

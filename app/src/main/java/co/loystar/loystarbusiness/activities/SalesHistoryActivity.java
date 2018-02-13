@@ -54,7 +54,6 @@ import io.requery.query.Selection;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import timber.log.Timber;
 
 public class SalesHistoryActivity extends AppCompatActivity {
 
@@ -211,15 +210,12 @@ public class SalesHistoryActivity extends AppCompatActivity {
         if (typeOfSaleSelected.equals(Constants.CASH_SALE)) {
             totalLabelView.setText(getString(R.string.total_label_cash));
 
-            Timber.e("DATE: %s", selectedDate);
-
             Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
             resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
             resultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
             resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
             Tuple tuple = resultSelection.get().firstOrNull();
-            Timber.e("TUPLE: %s", tuple);
             if (tuple == null || tuple.get(0) == null) {
                 Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
             } else {

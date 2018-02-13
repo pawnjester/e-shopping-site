@@ -283,6 +283,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 mixpanelAPI.getPeople().set("BusinessType", mSessionManager.getBusinessType());
                 mixpanelAPI.getPeople().set("ContactNumber", mSessionManager.getContactNumber());
                 mixpanelAPI.getPeople().set("BusinessName", mSessionManager.getBusinessName());
+                mixpanelAPI.getPeople().set("phone", mSessionManager.getContactNumber());
+                mixpanelAPI.getPeople().set("name", mSessionManager.getBusinessName());
                 mixpanelAPI.getPeople().showNotificationIfAvailable(this);
 
                 Smooch.login(mSessionManager.getEmail(), "jwt", null);
@@ -301,6 +303,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 OneSignal.syncHashedEmail(mSessionManager.getEmail());
 
                 UXCam.startWithKey(BuildConfig.UXCAM_TOKEN);
+                UXCam.tagUsersName(mSessionManager.getEmail());
             }
         }
     }
