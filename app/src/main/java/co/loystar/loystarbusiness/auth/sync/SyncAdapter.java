@@ -711,7 +711,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             if (programEntity != null) {
                                 JSONObject jsonObject = new JSONObject();
 
-                                if (transactionEntity.getUserId() != null && transactionEntity.getUserId() > 0) {
+                                if (transactionEntity.getUserId() > 0) {
                                     jsonObject.put("user_id", transactionEntity.getUserId());
                                 }
                                 jsonObject.put("merchant_id", merchantEntity.getId());
