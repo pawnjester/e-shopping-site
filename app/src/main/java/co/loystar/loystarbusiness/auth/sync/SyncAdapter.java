@@ -716,7 +716,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 }
                                 jsonObject.put("merchant_id", merchantEntity.getId());
                                 jsonObject.put("amount", transactionEntity.getAmount());
-                                jsonObject.put("product_id", transactionEntity.getProductId());
+
+                                if (transactionEntity.getProductId() > 0) {
+                                    jsonObject.put("product_id", transactionEntity.getProductId());
+                                }
+
                                 jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
                                 jsonObject.put("program_type", transactionEntity.getProgramType());
                                 if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {

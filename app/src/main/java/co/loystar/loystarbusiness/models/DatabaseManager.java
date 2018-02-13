@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.google.firebase.crash.FirebaseCrash;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,13 +39,14 @@ import io.requery.reactor.ReactorResult;
 import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.TableCreationMode;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/1/17.
  */
 
 public class DatabaseManager implements IDatabaseManager{
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 11;
     private static DatabaseManager mInstance;
     private ReactiveEntityStore<Persistable> mDataStore;
     private StdDateFormat mDateFormat;
@@ -182,7 +184,18 @@ public class DatabaseManager implements IDatabaseManager{
         Tuple lastTransactionTuple = mDataStore.raw(transactionQuery).firstOrNull();
         Integer lastTransactionId = null;
         if (lastTransactionTuple != null) {
-            lastTransactionId = lastTransactionTuple.get(0);
+            try {
+                lastTransactionId = lastTransactionTuple.get(0);
+            } catch (ClassCastException e) {
+                FirebaseCrash.report(e);
+                try {
+                    Long id = lastTransactionTuple.get(0);
+                    lastTransactionId = id.intValue();
+                } catch (ClassCastException e1) {
+                    e1.printStackTrace();
+                    FirebaseCrash.report(e1);
+                }
+            }
         }
         return lastTransactionId;
     }
@@ -194,7 +207,18 @@ public class DatabaseManager implements IDatabaseManager{
         Tuple lastSaleTuple = mDataStore.raw(saleQuery).firstOrNull();
         Integer lastSaleId = null;
         if (lastSaleTuple != null) {
-            lastSaleId = lastSaleTuple.get(0);
+            try {
+                lastSaleId = lastSaleTuple.get(0);
+            } catch (ClassCastException e) {
+                FirebaseCrash.report(e);
+                try {
+                    Long id = lastSaleTuple.get(0);
+                    lastSaleId = id.intValue();
+                } catch (ClassCastException e1) {
+                    e1.printStackTrace();
+                    FirebaseCrash.report(e1);
+                }
+            }
         }
         return lastSaleId;
     }
