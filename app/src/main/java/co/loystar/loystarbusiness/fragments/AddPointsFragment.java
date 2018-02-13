@@ -24,10 +24,13 @@ import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
+import io.requery.Persistable;
+import io.requery.reactivex.ReactiveEntityStore;
 
 
 public class AddPointsFragment extends Fragment {
@@ -38,6 +41,7 @@ public class AddPointsFragment extends Fragment {
     private MerchantEntity merchantEntity;
     private int mProgramId;
     private int totalCustomerPoints = 0;
+    private ReactiveEntityStore<Persistable> mDataStore;
 
     private OnAddPointsFragmentInteractionListener mListener;
 
@@ -46,12 +50,18 @@ public class AddPointsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mSessionManager = new SessionManager(getActivity());
         int mCustomerId;
         int amountSpent = 0;
-        View rootView = inflater.inflate(R.layout.fragment_add_points, container, false);
 
-        if (getActivity() != null && getArguments() != null) {
+        View rootView = inflater.inflate(R.layout.fragment_add_points, container, false);
+        if (getActivity() == null) {
+            return rootView;
+        }
+
+        mSessionManager = new SessionManager(getActivity());
+        mDataStore = DatabaseManager.getDataStore(getActivity());
+
+        if (getArguments() != null) {
             mDatabaseManager = DatabaseManager.getInstance(getActivity());
             merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
 
@@ -87,48 +97,68 @@ public class AddPointsFragment extends Fragment {
         }
 
         Integer amountSpent = Integer.valueOf(mCurrencyEditText.getFormattedValue(mCurrencyEditText.getRawValue()));
-        SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-        Integer lastTransactionId = mDatabaseManager.getLastTransactionRecordId();
+        Integer lastSaleId = mDatabaseManager.getLastSaleRecordId();
 
-        if (lastTransactionId == null) {
-            transactionEntity.setId(1);
+        SaleEntity newSaleEntity = new SaleEntity();
+        if (lastSaleId == null) {
+            newSaleEntity.setId(1);
         } else {
-            transactionEntity.setId(lastTransactionId + 1);
+            newSaleEntity.setId(lastSaleId + 1);
         }
-        transactionEntity.setSynced(false);
-        transactionEntity.setSendSms(true);
-        transactionEntity.setAmount(amountSpent);
-        transactionEntity.setMerchantLoyaltyProgramId(mProgramId);
-        transactionEntity.setPoints(amountSpent);
-        transactionEntity.setStamps(0);
-        transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
-        transactionEntity.setProgramType(getString(R.string.simple_points));
-        if (mCustomer != null) {
-            transactionEntity.setUserId(mCustomer.getUserId());
-        }
+        newSaleEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+        newSaleEntity.setMerchant(merchantEntity);
+        newSaleEntity.setPayedWithCard(false);
+        newSaleEntity.setPayedWithCash(true);
+        newSaleEntity.setPayedWithMobile(false);
+        newSaleEntity.setTotal(amountSpent);
+        newSaleEntity.setSynced(false);
+        newSaleEntity.setCustomer(mCustomer);
 
-        transactionEntity.setMerchant(merchantEntity);
-        transactionEntity.setCustomer(mCustomer);
+        mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
+            SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+            Integer lastTransactionId = mDatabaseManager.getLastTransactionRecordId();
 
-        mDatabaseManager.insertNewSalesTransaction(transactionEntity);
-        SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
+            if (lastTransactionId == null) {
+                transactionEntity.setId(1);
+            } else {
+                transactionEntity.setId(lastTransactionId + 1);
+            }
+            transactionEntity.setSynced(false);
+            transactionEntity.setSendSms(true);
+            transactionEntity.setAmount(amountSpent);
+            transactionEntity.setMerchantLoyaltyProgramId(mProgramId);
+            transactionEntity.setPoints(amountSpent);
+            transactionEntity.setStamps(0);
+            transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+            transactionEntity.setProgramType(getString(R.string.simple_points));
+            if (mCustomer != null) {
+                transactionEntity.setUserId(mCustomer.getUserId());
+            }
 
-        int newTotalPoints = totalCustomerPoints + amountSpent;
+            transactionEntity.setSale(saleEntity);
+            transactionEntity.setMerchant(merchantEntity);
+            transactionEntity.setCustomer(mCustomer);
 
-        Bundle bundle = new Bundle();
-        bundle.putInt(Constants.CASH_SPENT, amountSpent);
-        bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, newTotalPoints);
+            mDataStore.insert(transactionEntity).blockingGet();
+            SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
-        if (getActivity() != null) {
-            View view = getActivity().getCurrentFocus();
-            if (view != null) {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            int newTotalPoints = totalCustomerPoints + amountSpent;
+
+            Bundle bundle = new Bundle();
+            bundle.putInt(Constants.CASH_SPENT, amountSpent);
+            bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, newTotalPoints);
+
+            if (getActivity() != null) {
+                View view = getActivity().getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                 }
             }
-        }
-        mListener.onAddPointsFragmentInteraction(bundle);
+            mListener.onAddPointsFragmentInteraction(bundle);
+        });
     }
 
     @Override
