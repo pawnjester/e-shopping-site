@@ -459,7 +459,7 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
         newSaleEntity.setSynced(false);
         newSaleEntity.setCustomer(mSelectedCustomer);
 
-        mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
+        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
             ArrayList<Integer> productIds = new ArrayList<>();
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 productIds.add(mSelectedProducts.keyAt(i));
@@ -512,36 +512,35 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
                     transactionEntity.setSynced(false);
                     transactionEntity.setSale(saleEntity);
                     transactionEntity.setMerchant(merchantEntity);
-                    mDataStore.insert(transactionEntity).blockingGet();
+                    mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
 
                     if (i + 1 == productEntities.size()) {
                         SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                        Completable.complete()
+                            .delay(1, TimeUnit.SECONDS)
+                            .compose(bindToLifecycle())
+                            .doOnComplete(() -> {
+                                Bundle bundle = new Bundle();
+                                if (mSelectedCustomer != null) {
+                                    bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+                                }
+
+                                @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                                for (int x = 0; x < mSelectedProducts.size(); x++) {
+                                    orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+                                }
+                                bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+
+                                Intent intent = new Intent(mContext, SaleWithPosConfirmationActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                intent.putExtras(bundle);
+                                startActivity(intent);
+                            })
+                            .subscribe();
                     }
                 }
             }
         });
-
-        Completable.complete()
-            .delay(1, TimeUnit.SECONDS)
-            .compose(bindToLifecycle())
-            .doOnComplete(() -> {
-                Bundle bundle = new Bundle();
-                if (mSelectedCustomer != null) {
-                    bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
-                }
-
-                @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
-                for (int x = 0; x < mSelectedProducts.size(); x++) {
-                    orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
-                }
-                bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
-
-                Intent intent = new Intent(mContext, SaleWithPosConfirmationActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtras(bundle);
-                startActivity(intent);
-            })
-            .subscribe();
     }
 
     @Override

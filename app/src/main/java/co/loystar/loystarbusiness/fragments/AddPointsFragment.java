@@ -114,7 +114,7 @@ public class AddPointsFragment extends Fragment {
         newSaleEntity.setSynced(false);
         newSaleEntity.setCustomer(mCustomer);
 
-        mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
+        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
             SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
             Integer lastTransactionId = mDatabaseManager.getLastTransactionRecordId();
 
@@ -139,7 +139,7 @@ public class AddPointsFragment extends Fragment {
             transactionEntity.setMerchant(merchantEntity);
             transactionEntity.setCustomer(mCustomer);
 
-            mDataStore.insert(transactionEntity).blockingGet();
+            mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
             SyncAdapter.performSync(getActivity(), mSessionManager.getEmail());
 
             int newTotalPoints = totalCustomerPoints + amountSpent;

@@ -755,11 +755,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         * the synced records locally and insert the new records
                                         * from the server.
                                         * */
-                                        for (int i = 0; i < saleEntity.getTransactions().size(); i++) {
-                                            SalesTransactionEntity transactionEntity = saleEntity.getTransactions().get(i);
+                                        List<SalesTransactionEntity> entityList = saleEntity.getTransactions();
+                                        for (int i = 0; i < entityList.size(); i++) {
+                                            SalesTransactionEntity transactionEntity = entityList.get(i);
                                             transactionEntity.setSale(null);
 
-                                            if (i + 1 == saleEntity.getTransactions().size()) {
+                                            if (i + 1 == entityList.size()) {
                                                 mDataStore.delete(transactionEntity).toObservable().subscribe(o -> mDataStore.delete(saleEntity).subscribe());
                                             } else {
                                                 mDataStore.delete(transactionEntity).subscribe(/*no-op*/);

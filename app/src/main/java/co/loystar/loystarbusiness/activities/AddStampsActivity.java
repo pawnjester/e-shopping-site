@@ -133,7 +133,7 @@ public class AddStampsActivity extends RxAppCompatActivity {
         newSaleEntity.setSynced(false);
         newSaleEntity.setCustomer(mCustomer);
 
-        mDataStore.insert(newSaleEntity).subscribe(saleEntity -> {
+        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
             SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
             Integer lastTransactionId = mDatabaseManager.getLastTransactionRecordId();
 
@@ -157,7 +157,7 @@ public class AddStampsActivity extends RxAppCompatActivity {
             transactionEntity.setMerchant(merchantEntity);
             transactionEntity.setCustomer(mCustomer);
 
-            mDataStore.insert(transactionEntity).blockingGet();
+            mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
             SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
             Completable.complete()
