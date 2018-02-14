@@ -99,10 +99,18 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
         });
 
         completePaymentBtn.setOnClickListener(view -> {
-            if (TextUtils.isEmpty(cashCollectedInput.getText().toString())) {
+            String cashCollected = cashCollectedInput.getText().toString();
+            if (TextUtils.isEmpty(cashCollected)) {
                 Toast.makeText(getActivity(), getString(R.string.error_cash_collected_required), Toast.LENGTH_LONG).show();
                 return;
             }
+
+            double c = Double.valueOf(cashCollected);
+            if (mTotalCharge != null && mTotalCharge > c) {
+                Toast.makeText(getActivity(), getString(R.string.error_cash_collected_amount), Toast.LENGTH_LONG).show();
+                return;
+            }
+
             if (mListener != null) {
                 mListener.onCashPaymentDialogComplete(showCustomerDialog);
                 dismiss();
