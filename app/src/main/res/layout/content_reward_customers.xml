@@ -27,7 +27,7 @@
             android:layout_below="@+id/redemption_code_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/enter_code"
+            android:hint="@string/enter_reset_token"
             android:maxLength="6"
             android:id="@+id/redemption_code"/>
 

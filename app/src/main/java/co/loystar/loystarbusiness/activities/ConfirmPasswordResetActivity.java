@@ -1,11 +1,10 @@
 package co.loystar.loystarbusiness.activities;
 
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -32,6 +31,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 public class ConfirmPasswordResetActivity extends AppCompatActivity {
 
@@ -78,6 +78,7 @@ public class ConfirmPasswordResetActivity extends AppCompatActivity {
         String resetCode = resetCodeInput.getText().toString();
         String password = resetPasswordInput.getText().toString();
         String confirmPassword = confirmPasswordInput.getText().toString();
+
         if (TextUtils.isEmpty(resetCode)) {
             resetCodeInput.setError(getString(R.string.error_reset_code_required));
             resetCodeInput.requestFocus();

@@ -4,14 +4,12 @@ import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -25,12 +23,15 @@ import com.jakewharton.rxbinding2.view.RxView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.TimeUnit;
+
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.databinders.PasswordReset;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
+import io.reactivex.Completable;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -65,7 +66,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         mResetPassFormView = findViewById(R.id.reset_password_email_form);
         mProgressView = findViewById(R.id.password_reset_email_progress);
 
-        RxView.clicks(findViewById(R.id.i_have_code)).subscribe(o -> {
+        RxView.clicks(findViewById(R.id.i_have_token)).subscribe(o -> {
             Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
             startActivity(intent);
         });
@@ -94,24 +95,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     public void onResponse(@NonNull Call<PasswordReset> call, @NonNull Response<PasswordReset> response) {
                         showProgress(false);
 
-                        if (response.isSuccessful()) {
-                            new AlertDialog.Builder(mContext)
-                                    .setTitle("Reset Code Sent")
-                                    .setMessage(getString(R.string.reset_code_instructions))
-                                    .setPositiveButton(getString(R.string.enter_code), (dialog, which) -> {
-                                        dialog.dismiss();
-                                        Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
-                                        startActivity(intent);
-                                    })
-                                    .show();
-                        }
-                        else {
-                            new AlertDialog.Builder(mContext)
-                                    .setTitle(getString(R.string.title_invalid_email))
-                                    .setMessage(getString(R.string.feedback_pwdreset_noemail) + email.getText().toString())
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> dialog.dismiss())
-                                    .show();
-                        }
+                        showSnackbar(R.string.reset_password_email_set);
+
+                        Completable.complete()
+                            .delay(1, TimeUnit.SECONDS)
+                            .doOnComplete(() -> {
+                                Intent intent = new Intent(ForgotPasswordActivity.this, ConfirmPasswordResetActivity.class);
+                                startActivity(intent);
+                            })
+                            .subscribe();
                     }
 
                     @Override
@@ -175,8 +167,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     @MainThread
-    private void showSnackbar(@StringRes int errorMessageRes) {
-        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    private void showSnackbar(@StringRes int message) {
+        Snackbar.make(mLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
