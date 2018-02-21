@@ -825,24 +825,13 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+        // check if there is value for entry selected
         if (e.getY() > 0) {
-            if (h.getStackIndex() == 0) {
-                // cash sale selected
-                Intent intent = new Intent(mContext, SalesHistoryActivity.class);
-                Bundle args = new Bundle();
-                args.putString(Constants.TYPE_OF_SALE, Constants.CASH_SALE);
-                args.putSerializable(Constants.SALE_DATE, (Date) e.getData());
-                intent.putExtras(args);
-                startActivity(intent);
-            } else if (h.getStackIndex() == 1) {
-                // card sale selected
-                Intent intent = new Intent(mContext, SalesHistoryActivity.class);
-                Bundle args = new Bundle();
-                args.putString(Constants.TYPE_OF_SALE, Constants.CARD_SALE);
-                args.putSerializable(Constants.SALE_DATE, (Date) e.getData());
-                intent.putExtras(args);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(mContext, SalesHistoryActivity.class);
+            Bundle args = new Bundle();
+            args.putSerializable(Constants.SALE_DATE, (Date) e.getData());
+            intent.putExtras(args);
+            startActivity(intent);
         }
     }
 

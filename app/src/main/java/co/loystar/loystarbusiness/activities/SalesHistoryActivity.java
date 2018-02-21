@@ -17,7 +17,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,7 +26,6 @@ import com.darwindeveloper.onecalendar.clases.Day;
 import com.darwindeveloper.onecalendar.views.OneCalendarView;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -46,7 +44,6 @@ import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
-import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.requery.Persistable;
@@ -80,9 +77,6 @@ public class SalesHistoryActivity extends AppCompatActivity {
     @BindView(R.id.stateActionBtn)
     BrandButtonNormal stateActionBtn;
 
-    @BindView(R.id.typeOfSaleSpinner)
-    SpinnerButton typeOfSaleSpinner;
-
     @BindView(R.id.sales_detail_bs_toolbar)
     Toolbar salesDetailToolbar;
 
@@ -92,19 +86,19 @@ public class SalesHistoryActivity extends AppCompatActivity {
     @BindView(R.id.sales_date)
     TextView salesDateView;
 
-    @BindView(R.id.total_sales)
-    TextView totalSalesView;
+    @BindView(R.id.total_card_sales)
+    TextView totalCardSalesView;
 
-    @BindView(R.id.total_label)
-    TextView totalLabelView;
+    @BindView(R.id.total_cash_sales)
+    TextView totalCashSalesView;
 
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
-    private String typeOfSaleSelected;
     private Date selectedDate;
-    private double totalSalesForDateSelected;
+    private double totalCashSalesForDateSelected;
+    private double totalCardSalesForDateSelected;
 
     private BottomSheetBehavior bottomSheetBehavior;
 
@@ -125,18 +119,6 @@ public class SalesHistoryActivity extends AppCompatActivity {
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
 
-        final CharSequence[] typeOfSaleEntries = getResources().getStringArray(R.array.type_of_sale);
-        SpinnerButton.OnItemSelectedListener typeOfSaleItemSelectedListener = position -> {
-            String selected = (String) typeOfSaleEntries[position];
-            if (selected.equals(getString(R.string.cash_sales))) {
-                typeOfSaleSelected = Constants.CASH_SALE;
-            } else if (selected.equals(getString(R.string.card_sales))) {
-                typeOfSaleSelected = Constants.CARD_SALE;
-            }
-        };
-
-        typeOfSaleSpinner.setListener(typeOfSaleItemSelectedListener);
-
         calendarView.setOneCalendarClickListener(new OneCalendarView.OneCalendarClickListener() {
             @Override
             public void dateOnClick(Day day, int position) {
@@ -145,11 +127,7 @@ public class SalesHistoryActivity extends AppCompatActivity {
                 calendar.set(Calendar.YEAR, 2018);
 
                 selectedDate = calendar.getTime();
-                if (TextUtils.isEmpty(typeOfSaleSelected)) {
-                    Toast.makeText(mContext, getString(R.string.error_type_of_sale_required), Toast.LENGTH_LONG).show();
-                } else {
-                    setTotalSales();
-                }
+                setTotalSales();
             }
 
             @Override
@@ -183,18 +161,9 @@ public class SalesHistoryActivity extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.SALE_DATE)) {
             preselectedSaleDate = (Date) getIntent().getSerializableExtra(Constants.SALE_DATE);
         }
-        String preselectedTypeOfSale = getIntent().getStringExtra(Constants.TYPE_OF_SALE);
 
-        if (preselectedSaleDate != null && preselectedTypeOfSale != null) {
+        if (preselectedSaleDate != null) {
             selectedDate = preselectedSaleDate;
-            typeOfSaleSelected = preselectedTypeOfSale;
-            if (typeOfSaleSelected.equals(Constants.CASH_SALE)) {
-                int index = Arrays.asList(typeOfSaleEntries).indexOf(getString(R.string.cash_sales));
-                typeOfSaleSpinner.setSelection(index);
-            } else if (typeOfSaleSelected.equals(Constants.CARD_SALE)) {
-                int index = Arrays.asList(typeOfSaleEntries).indexOf(getString(R.string.card_sales));
-                typeOfSaleSpinner.setSelection(index);
-            }
             setTotalSales();
         }
     }
@@ -207,46 +176,44 @@ public class SalesHistoryActivity extends AppCompatActivity {
         nextDayCal.setTime(selectedDate);
         nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
 
-        if (typeOfSaleSelected.equals(Constants.CASH_SALE)) {
-            totalLabelView.setText(getString(R.string.total_label_cash));
+        Selection<ReactiveResult<Tuple>> cashResultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+        cashResultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        cashResultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
+        cashResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
-            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
-            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
-            resultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
-            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
-
-            Tuple tuple = resultSelection.get().firstOrNull();
-            if (tuple == null || tuple.get(0) == null) {
-                Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+        Tuple cashTuple = cashResultSelection.get().firstOrNull();
+        if (cashTuple == null || cashTuple.get(0) == null) {
+            totalCashSalesForDateSelected = 0;
+        } else {
+            Double total = cashTuple.get(0);
+            if (total > 0) {
+                totalCashSalesForDateSelected = total;
             } else {
-                Double total = tuple.get(0);
-                if (total > 0) {
-                    totalSalesForDateSelected = total;
-                    showBottomSheet(true);
-                } else {
-                    Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
-                }
+                totalCashSalesForDateSelected = 0;
             }
-        } else if (typeOfSaleSelected.equals(Constants.CARD_SALE)) {
-            totalLabelView.setText(getString(R.string.total_label_card));
+        }
 
-            Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
-            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
-            resultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
-            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+        Selection<ReactiveResult<Tuple>> cardResultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
+        cardResultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        cardResultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
+        cardResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
-            Tuple tuple = resultSelection.get().firstOrNull();
-            if (tuple == null || tuple.get(0) == null) {
-                Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+        Tuple cardTuple = cardResultSelection.get().firstOrNull();
+        if (cardTuple == null || cardTuple.get(0) == null) {
+            totalCardSalesForDateSelected = 0;
+        } else {
+            Double total = cardTuple.get(0);
+            if (total > 0) {
+                totalCardSalesForDateSelected = total;
             } else {
-                Double total = tuple.get(0);
-                if (total > 0) {
-                    totalSalesForDateSelected = total;
-                    showBottomSheet(true);
-                } else {
-                    Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
-                }
+                totalCardSalesForDateSelected = 0;
             }
+        }
+
+        if (totalCardSalesForDateSelected == 0 && totalCashSalesForDateSelected == 0) {
+            Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+        } else {
+            showBottomSheet(true);
         }
     }
 
@@ -359,13 +326,14 @@ public class SalesHistoryActivity extends AppCompatActivity {
 
     private void showBottomSheet(boolean show) {
         if (show) {
-            SalesHistoryAdapter mAdapter = new SalesHistoryAdapter(mContext, merchantEntity, selectedDate, typeOfSaleSelected);
+            SalesHistoryAdapter mAdapter = new SalesHistoryAdapter(mContext, merchantEntity, selectedDate);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(selectedDate);
 
             salesDateView.setText(TextUtilsHelper.getFormattedDateString(calendar));
             String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
-            totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalSalesForDateSelected)));
+            totalCashSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalCashSalesForDateSelected)));
+            totalCardSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalCardSalesForDateSelected)));
 
             recyclerView.setHasFixedSize(true);
             RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);

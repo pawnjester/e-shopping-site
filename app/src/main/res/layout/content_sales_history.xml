@@ -16,26 +16,6 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:layout_marginTop="24dp"
-            android:id="@+id/typeOfSale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/type_of_sale"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:layout_marginBottom="8dp"
-            android:layout_gravity="center"
-            android:textColor="@color/white"/>
-
-        <co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton
-            android:id="@+id/typeOfSaleSpinner"
-            android:layout_width="200dp"
-            android:layout_gravity="center"
-            android:layout_height="wrap_content"
-            android:prompt="@string/select_one_prompt"
-            android:entries="@array/type_of_sale"/>
-
-        <TextView
             android:layout_marginTop="16dp"
             android:id="@+id/titleView"
             android:layout_width="wrap_content"

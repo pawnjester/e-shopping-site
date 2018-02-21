@@ -1,7 +1,6 @@
 package co.loystar.loystarbusiness.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -12,24 +11,21 @@ import java.util.Calendar;
 import java.util.Date;
 
 import co.loystar.loystarbusiness.R;
-import co.loystar.loystarbusiness.activities.CustomerListActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.databinding.SalesHistoryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
-import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
-import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import timber.log.Timber;
 
 /**
  * Created by ordgen on 2/10/18.
@@ -39,7 +35,6 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
 
     private Date saleDate;
     private MerchantEntity merchantEntity;
-    private String typeOfSale;
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
@@ -47,15 +42,13 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
     public SalesHistoryAdapter(
         Context context,
         MerchantEntity merchantEntity,
-        Date saleDate,
-        String typeOfSale
+        Date saleDate
     ) {
         super(SaleEntity.$TYPE);
 
         mContext = context;
         this.merchantEntity = merchantEntity;
         this.saleDate = saleDate;
-        this.typeOfSale = typeOfSale;
         mSessionManager = new SessionManager(mContext);
         mDataStore = DatabaseManager.getDataStore(context);
     }
@@ -69,24 +62,11 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
         nextDayCal.setTime(saleDate);
         nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
 
-        Selection<ReactiveResult<SaleEntity>> resultSelection;
+        Selection<ReactiveResult<SaleEntity>> resultSelection = mDataStore.select(SaleEntity.class);
+        resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
-        if (typeOfSale.equals(Constants.CASH_SALE)) {
-            resultSelection = mDataStore.select(SaleEntity.class);
-            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
-            resultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
-            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
-
-            return resultSelection.orderBy(SaleEntity.CREATED_AT.desc()).get();
-        } else if (typeOfSale.equals(Constants.CARD_SALE)) {
-            resultSelection = mDataStore.select(SaleEntity.class);
-            resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
-            resultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
-            resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
-
-            return resultSelection.orderBy(SaleEntity.CREATED_AT.desc()).get();
-        }
-        return null;
+        return resultSelection.orderBy(SaleEntity.CREATED_AT.desc()).get();
     }
 
     @Override
@@ -96,27 +76,34 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         );
 
-      if (item.getCustomer() == null) {
-          holder.binding.customerNameLabel.setText(mContext.getString(R.string.guest_customer));
-      } else {
-          CustomerEntity customerEntity = item.getCustomer();
-          String lastName = customerEntity.getLastName();
+        StringBuilder sb = new StringBuilder("");
+        int i = 0;
+        boolean hasProductId = false;
+        for (SalesTransactionEntity transactionEntity: item.getTransactions()) {
+            hasProductId = transactionEntity.getProductId() > 0;
+            ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, transactionEntity.getProductId()).blockingGet();
+            if (productEntity != null) {
+                Double price = productEntity.getPrice();
+                int count = transactionEntity.getAmount() / price.intValue();
+                sb.append(productEntity.getName()).append(" (").append(count).append(")");
+            }
+            if (i + 1 < item.getTransactions().size() && !TextUtils.isEmpty(sb)) {
+                sb.append(", ");
+            }
+            i++;
+        }
 
-          if (TextUtils.isEmpty(lastName)) {
-              lastName = "";
-          } else {
-              lastName = " " + TextUtilsHelper.capitalize(lastName);
-          }
-
-          String customerName = TextUtilsHelper.capitalize(customerEntity.getFirstName()) + lastName;
-          holder.binding.customerNameLabel.setText(customerName);
-
-          holder.binding.customerNameLabel.setOnClickListener(view -> {
-              Intent customerDetailIntent = new Intent(mContext, CustomerListActivity.class);
-              customerDetailIntent.putExtra(Constants.CUSTOMER_ID, customerEntity.getId());
-              mContext.startActivity(customerDetailIntent);
-          });
-      }
+        if (TextUtils.isEmpty(sb)) {
+            if (hasProductId) {
+                // this would occur if product has since been deleted
+                holder.binding.productsBought.setText(mContext.getString(R.string.product_not_found));
+            } else {
+                // this would occur if sale is a non-pos sale
+                holder.binding.productsBought.setText(mContext.getString(R.string.cash));
+            }
+        } else {
+            holder.binding.productsBought.setText(sb.toString());
+        }
 
       String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
       holder.binding.totalSales.setText(mContext.getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(item.getTotal())));
