@@ -39,6 +39,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="asset_statements"
+            android:resource="@string/asset_statements" />
         <provider
             android:name=".auth.sync.StubProvider"
             android:authorities="co.loystar.loystarbusiness.provider"
@@ -294,9 +297,35 @@
             android:label="@string/title_activity_confirm_password_reset"
             android:parentActivityName=".activities.ForgotPasswordActivity"
             android:theme="@style/AppTheme.NoActionBar">
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.ForgotPasswordActivity" />
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="loystar-api.herokuapp.com"
+                    android:pathPrefix="/reset_password" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="http"
+                    android:host="app.loystar.co"
+                    android:pathPrefix="/reset_password" />
+            </intent-filter>
+
+
         </activity>
         <activity
             android:name=".activities.AddProductActivity"

@@ -31,7 +31,6 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import timber.log.Timber;
 
 public class ConfirmPasswordResetActivity extends AppCompatActivity {
 
@@ -60,12 +59,22 @@ public class ConfirmPasswordResetActivity extends AppCompatActivity {
         resetCodeInput = findViewById(R.id.reset_code);
         resetPasswordInput = findViewById(R.id.reset_password);
         confirmPasswordInput = findViewById(R.id.reset_confirm_password);
+
         TextInputLayout resetCodeInputLayout = findViewById(R.id.reset_code_layout);
         TextInputLayout resetPasswordInputLayout = findViewById(R.id.reset_pass_layout);
         TextInputLayout confirmPasswordInputLayout = findViewById(R.id.confirm_reset_pass_layout);
         resetCodeInputLayout.setPasswordVisibilityToggleEnabled(true);
         resetPasswordInputLayout.setPasswordVisibilityToggleEnabled(true);
         confirmPasswordInputLayout.setPasswordVisibilityToggleEnabled(true);
+
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data != null) {
+            String resetToken = data.getQueryParameter("access_token");
+            if (!TextUtils.isEmpty(resetToken)) {
+                resetCodeInput.setText(resetToken);
+            }
+        }
 
         BrandButtonNormal submitBtn = findViewById(R.id.confirm_reset_pass_submit);
         mProgressView = findViewById(R.id.confirm_password_reset_email_progress);

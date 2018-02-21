@@ -379,7 +379,7 @@
     <string name="title_invalid_email">Invalid email</string>
     <string name="feedback_pwdreset_noemail">No account registered with email:  </string>
 
-    <string name="title_activity_confirm_password_reset">Confirm Password Reset</string>
+    <string name="title_activity_confirm_password_reset">Password Reset</string>
     <string name="error_password_required">Please enter password</string>
 
     <!--POS-->
@@ -527,4 +527,5 @@
     <string name="total_sales_for_today_label">(Total sales today)</string>
     <string name="error_cash_collected_amount">Cash collected should not be lower than total charge</string>
     <string name="reset_password_email_set">Reset password  instructions sent.</string>
+    <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"https://app.loystar.co\",\n  }\n}]</string>
 </resources>

@@ -61,7 +61,7 @@ android {
             minSdkVersion 16
         }
         production {
-            buildConfigField "String", "HOST", '"http://app.loystar.co/"'
+            buildConfigField "String", "HOST", '"https://app.loystar.co/"'
             buildConfigField "String", "URL_PREFIX", '"api/v2/"'
             minSdkVersion 16
         }
