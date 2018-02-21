@@ -31,8 +31,7 @@
             android:layout_height="wrap_content"
             android:text="@string/transaction_complete"
             android:layout_marginTop="5dp"
-            android:gravity="center"
-            android:layout_gravity="center"
+            android:textAlignment="center"
             android:textSize="18sp" />
 
     </LinearLayout>
@@ -42,6 +41,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
         android:layout_height="0dp">
 
         <ImageView
@@ -52,17 +52,18 @@
             android:src="@drawable/ic_tick" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:text="@string/transaction_complete"
             android:layout_marginTop="5dp"
-            android:layout_gravity="center"
             android:gravity="center"
+            android:layout_gravity="center"
             android:textSize="18sp" />
 
         <android.support.v7.widget.RecyclerView
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:scrollbars="vertical"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:id="@+id/deals_recycler_view"
             android:layout_height="match_parent" />
@@ -79,7 +80,7 @@
 
         <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
             android:id="@+id/btn_continue"
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:text="@string/continue_label"
             android:layout_marginTop="10dp"
@@ -89,13 +90,14 @@
         <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonTransparent
             android:id="@+id/printReceipt"
             android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:text="@string/print_receipt"
             android:paddingStart="10dp"
             android:paddingLeft="10dp"
             android:visibility="gone"
             android:paddingEnd="10dp"
+            android:layout_gravity="center_horizontal"
             app:backgroundDrawable="@drawable/ic_print_white_24dp"
             android:paddingRight="10dp"/>
 

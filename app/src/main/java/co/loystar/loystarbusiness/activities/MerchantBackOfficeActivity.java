@@ -386,14 +386,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         DateTime tomorrowStart = now.plusDays( 1 ).withTimeAtStartOfDay();
         Interval today = new Interval( todayStart, tomorrowStart );
 
-        Selection<ReactiveResult<SalesTransactionEntity>> reactiveResultSelection = mDataStore.select(SalesTransactionEntity.class);
-        reactiveResultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
-        reactiveResultSelection.where(SalesTransactionEntity.CREATED_AT.between(new Timestamp(today.getStartMillis()), new Timestamp(today.getEndMillis())));
-
-        for (SalesTransactionEntity saleEntity: reactiveResultSelection.get().toList()) {
-            Timber.e("SALEENTITY: %s, %s", saleEntity.getCreatedAt(), saleEntity.getId());
-        }
-
         Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
         resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
         resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(today.getStartMillis()), new Timestamp(today.getEndMillis())));

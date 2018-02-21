@@ -49,6 +49,7 @@ public class BrandButtonTransparent extends AppCompatButton {
         }
 
         setBackgroundResource(R.drawable.brand_button_transparent);
+        setPadding(30, 0, 30, 0);
         setTextAppearance(context, android.R.style.TextAppearance_Medium);
         setTextColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
         setTypeface(App.getInstance().getTypeface());
