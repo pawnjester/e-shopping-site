@@ -287,30 +287,41 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Override
     public void deleteCustomer(@NonNull CustomerEntity customerEntity) {
+        customerEntity.setOwner(null);
         mDataStore.delete(customerEntity)
                 .subscribe();
     }
 
     @Override
     public void deleteLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
+        loyaltyProgramEntity.setOwner(null);
         mDataStore.delete(loyaltyProgramEntity)
                 .subscribe(/*no-op*/);
     }
 
     @Override
     public void deleteProduct(@NonNull ProductEntity productEntity) {
+        // clear parent associations - possible fix for `Expected 1 row affected actual 0` bug
+        productEntity.setLoyaltyProgram(null);
+        productEntity.setCategory(null);
+        productEntity.setOwner(null);
         mDataStore.delete(productEntity)
                 .subscribe(/*no-op*/);
     }
 
     @Override
     public void deleteSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity) {
+        // clear parent associations - possible fix for `Expected 1 row affected actual 0` bug
+        salesTransactionEntity.setSale(null);
+        salesTransactionEntity.setCustomer(null);
+        salesTransactionEntity.setMerchant(null);
         mDataStore.delete(salesTransactionEntity)
                 .subscribe(/*no-op*/);
     }
 
     @Override
     public void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
+        productCategoryEntity.setOwner(null);
         mDataStore.delete(productCategoryEntity)
                 .subscribe(/*no-op*/);
     }

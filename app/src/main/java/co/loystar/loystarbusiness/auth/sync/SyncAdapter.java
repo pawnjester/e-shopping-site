@@ -755,50 +755,40 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         * the synced records locally and insert the new records
                                         * from the server.
                                         * */
-                                        List<SalesTransactionEntity> entityList = saleEntity.getTransactions();
-                                        for (int i = 0; i < entityList.size(); i++) {
-                                            SalesTransactionEntity transactionEntity = entityList.get(i);
-                                            transactionEntity.setSale(null);
+                                        mDataStore.delete(saleEntity).toObservable().subscribe(o -> {
+                                            CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
+                                            SaleEntity newSaleEntity = new SaleEntity();
+                                            newSaleEntity.setId(sale.getId());
+                                            newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
+                                            newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
+                                            newSaleEntity.setMerchant(merchantEntity);
+                                            newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
+                                            newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
+                                            newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
+                                            newSaleEntity.setTotal(sale.getTotal());
+                                            newSaleEntity.setSynced(true);
+                                            newSaleEntity.setCustomer(customerEntity);
 
-                                            if (i + 1 == entityList.size()) {
-                                                mDataStore.delete(transactionEntity).toObservable().subscribe(o -> mDataStore.delete(saleEntity).subscribe());
-                                            } else {
-                                                mDataStore.delete(transactionEntity).subscribe(/*no-op*/);
-                                            }
-                                        }
+                                            mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+                                                for (Transaction transaction: sale.getTransactions()) {
+                                                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                                                    transactionEntity.setId(transaction.getId());
+                                                    transactionEntity.setAmount(transaction.getAmount());
+                                                    transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                                    transactionEntity.setPoints(transaction.getPoints());
+                                                    transactionEntity.setStamps(transaction.getStamps());
+                                                    transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                                    transactionEntity.setProductId(transaction.getProduct_id());
+                                                    transactionEntity.setProgramType(transaction.getProgram_type());
+                                                    transactionEntity.setUserId(transaction.getUser_id());
 
-                                        CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
-                                        SaleEntity newSaleEntity = new SaleEntity();
-                                        newSaleEntity.setId(sale.getId());
-                                        newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
-                                        newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
-                                        newSaleEntity.setMerchant(merchantEntity);
-                                        newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
-                                        newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
-                                        newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
-                                        newSaleEntity.setTotal(sale.getTotal());
-                                        newSaleEntity.setSynced(true);
-                                        newSaleEntity.setCustomer(customerEntity);
+                                                    transactionEntity.setSale(saleEntity);
+                                                    transactionEntity.setMerchant(merchantEntity);
+                                                    transactionEntity.setCustomer(saleEntity.getCustomer());
 
-                                        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
-                                            for (Transaction transaction: sale.getTransactions()) {
-                                                SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                                                transactionEntity.setId(transaction.getId());
-                                                transactionEntity.setAmount(transaction.getAmount());
-                                                transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
-                                                transactionEntity.setPoints(transaction.getPoints());
-                                                transactionEntity.setStamps(transaction.getStamps());
-                                                transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
-                                                transactionEntity.setProductId(transaction.getProduct_id());
-                                                transactionEntity.setProgramType(transaction.getProgram_type());
-                                                transactionEntity.setUserId(transaction.getUser_id());
-
-                                                transactionEntity.setSale(saleEntity);
-                                                transactionEntity.setMerchant(merchantEntity);
-                                                transactionEntity.setCustomer(saleEntity.getCustomer());
-
-                                                mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
-                                            }
+                                                    mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+                                                }
+                                            });
                                         });
                                     }
                                 }

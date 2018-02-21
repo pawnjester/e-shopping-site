@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import java.sql.Timestamp;
 import java.util.List;
 
+import io.requery.CascadeAction;
 import io.requery.Entity;
 import io.requery.Key;
 import io.requery.ManyToOne;
@@ -39,6 +40,6 @@ public interface Sale extends Observable, Parcelable, Persistable {
     @ManyToOne
     CustomerEntity getCustomer();
 
-    @OneToMany(mappedBy = "sale")
+    @OneToMany(mappedBy = "sale", cascade = {CascadeAction.SAVE})
     List<SalesTransactionEntity> getTransactions();
 }
