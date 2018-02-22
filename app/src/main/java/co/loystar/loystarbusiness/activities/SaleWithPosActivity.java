@@ -489,13 +489,13 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
 
                     String template = "%.2f";
                     double tc = product.getPrice() * mSelectedProducts.get(product.getId());
-                    int totalCost = Double.valueOf(String.format(Locale.UK, template, tc)).intValue();
+                    double totalCost = Double.valueOf(String.format(Locale.UK, template, tc));
 
                     transactionEntity.setAmount(totalCost);
                     transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
 
                     if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
-                        transactionEntity.setPoints(totalCost);
+                        transactionEntity.setPoints(Double.valueOf(totalCost).intValue());
                         transactionEntity.setProgramType(getString(R.string.simple_points));
                     } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
                         int stampsEarned = mSelectedProducts.get(product.getId());

@@ -5,17 +5,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -28,12 +27,11 @@ import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
+import co.loystar.loystarbusiness.models.pojos.OrderSummaryItem;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.EventBus.SalesDetailFragmentEventBus;
+import co.loystar.loystarbusiness.utils.EventBus.SaleHistoryPrintEventBus;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
-import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.requery.Persistable;
 import io.requery.query.Selection;
 import io.requery.query.Tuple;
@@ -43,25 +41,15 @@ import io.requery.reactivex.ReactiveResult;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CashSalesHistoryFragment extends Fragment implements SalesHistoryActivity.UpdateSelectedDateInterface {
+public class CashSalesHistoryFragment extends Fragment
+    implements SalesHistoryActivity.UpdateSelectedDateInterface,
+    CashSalesHistoryAdapter.CashSalesHistoryAdapterPrintListener {
 
     @BindView(R.id.total_cash_sales)
     TextView totalCashSalesView;
 
     @BindView(R.id.cash_sales_detail_rv)
-    EmptyRecyclerView recyclerView;
-
-    @BindView(R.id.stateImage)
-    ImageView stateImage;
-
-    @BindView(R.id.stateIntroText)
-    TextView stateIntroText;
-
-    @BindView(R.id.stateDescriptionText)
-    TextView stateDescriptionText;
-
-    @BindView(R.id.stateActionBtn)
-    BrandButtonNormal stateActionBtn;
+    RecyclerView recyclerView;
 
     private Date selectedDate;
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -110,14 +98,6 @@ public class CashSalesHistoryFragment extends Fragment implements SalesHistoryAc
         if (selectedDate != null) {
             setTotalSales();
         }
-
-        stateActionBtn.setOnClickListener(view -> {
-            Bundle bundle = new Bundle();
-            bundle.putInt(Constants.FRAGMENT_EVENT_ID, SalesDetailFragmentEventBus.ACTION_START_SALE);
-            SalesDetailFragmentEventBus
-                .getInstance()
-                .postFragmentAction(bundle);
-        });
         return rootView;
     }
 
@@ -157,11 +137,6 @@ public class CashSalesHistoryFragment extends Fragment implements SalesHistoryAc
             return;
         }
 
-        stateImage.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_firstsale));
-        stateIntroText.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
-        stateDescriptionText.setText(getString(R.string.start_sale_empty_state));
-        stateActionBtn.setText(getString(R.string.start_sale_btn_label));
-
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -172,6 +147,7 @@ public class CashSalesHistoryFragment extends Fragment implements SalesHistoryAc
         );
         recyclerView.setAdapter(mAdapter);
 
+        mAdapter.setListener(this);
         mAdapter.queryAsync();
     }
 
@@ -184,5 +160,15 @@ public class CashSalesHistoryFragment extends Fragment implements SalesHistoryAc
             date);
 
         setTotalSales();
+    }
+
+    @Override
+    public void onPrintClick(ArrayList<OrderSummaryItem> orderSummaryItems) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(Constants.FRAGMENT_EVENT_ID, SaleHistoryPrintEventBus.ACTION_START_PRINT);
+        bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+        SaleHistoryPrintEventBus
+            .getInstance()
+            .postFragmentAction(bundle);
     }
 }

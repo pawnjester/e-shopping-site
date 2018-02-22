@@ -46,7 +46,7 @@ import timber.log.Timber;
  */
 
 public class DatabaseManager implements IDatabaseManager{
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 13;
     private static DatabaseManager mInstance;
     private ReactiveEntityStore<Persistable> mDataStore;
     private StdDateFormat mDateFormat;

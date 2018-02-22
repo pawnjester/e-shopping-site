@@ -1,12 +1,14 @@
 package co.loystar.loystarbusiness.adapters;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -14,31 +16,38 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.databinding.SalesHistoryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.models.pojos.OrderSummaryItem;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
+import co.loystar.loystarbusiness.utils.ui.dialogs.SaleDetailDialogFragment;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import timber.log.Timber;
 
 /**
  * Created by ordgen on 2/22/18.
  */
 
-public class CashSalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, BindingHolder<SalesHistoryItemBinding>> {
+public class CashSalesHistoryAdapter extends
+    QueryRecyclerAdapter<SaleEntity, BindingHolder<SalesHistoryItemBinding>>
+    implements SaleDetailDialogFragment.SaleDetailDialogPrintListener {
 
     private Date saleDate;
     private MerchantEntity merchantEntity;
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
+    private CashSalesHistoryAdapterPrintListener mListener;
+    private ArrayList<OrderSummaryItem> mOrderSummaryItems = new ArrayList<>();
 
     public CashSalesHistoryAdapter(
         Context context,
@@ -77,34 +86,41 @@ public class CashSalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bi
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         );
 
-        StringBuilder sb = new StringBuilder("");
-        int i = 0;
-        boolean hasProductId = false;
-        for (SalesTransactionEntity transactionEntity: item.getTransactions()) {
-            hasProductId = transactionEntity.getProductId() > 0;
-            ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, transactionEntity.getProductId()).blockingGet();
-            if (productEntity != null) {
-                Double price = productEntity.getPrice();
-                int count = transactionEntity.getAmount() / price.intValue();
-                sb.append(productEntity.getName()).append(" (").append(count).append(")");
-            }
-            if (i + 1 < item.getTransactions().size() && !TextUtils.isEmpty(sb)) {
-                sb.append(", ");
-            }
-            i++;
-        }
-
-        if (TextUtils.isEmpty(sb)) {
-            if (hasProductId) {
-                // this would occur if product has since been deleted
-                holder.binding.productsBought.setText(mContext.getString(R.string.product_not_found));
-            } else {
-                // this would occur if sale is a non-pos sale
-                holder.binding.productsBought.setText(mContext.getString(R.string.cash));
-            }
+        String customerName;
+        if (item.getCustomer() == null) {
+            customerName = mContext.getString(R.string.guest_customer);
+            holder.binding.customerNameLabel.setText(mContext.getString(R.string.guest_customer));
         } else {
-            holder.binding.productsBought.setText(sb.toString());
+            CustomerEntity customerEntity = item.getCustomer();
+            String lastName = customerEntity.getLastName();
+
+            if (TextUtils.isEmpty(lastName)) {
+                lastName = "";
+            } else {
+                lastName = " " + TextUtilsHelper.capitalize(lastName);
+            }
+
+            customerName = TextUtilsHelper.capitalize(customerEntity.getFirstName()) + lastName;
         }
+        holder.binding.customerNameLabel.setText(customerName);
+
+        holder.binding.itemWrapper.setOnClickListener(view -> {
+            ArrayList<OrderSummaryItem> orderSummaryItems = new ArrayList<>();
+            for (SalesTransactionEntity transactionEntity: item.getTransactions()) {
+                ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, transactionEntity.getProductId()).blockingGet();
+                if (productEntity != null) {
+                    Double price = productEntity.getPrice();
+                    int count = Double.valueOf(transactionEntity.getAmount()).intValue() / price.intValue();
+                    orderSummaryItems.add(new OrderSummaryItem(productEntity.getName(), count, price, transactionEntity.getAmount()));
+                }
+            }
+            if (!orderSummaryItems.isEmpty()) {
+                mOrderSummaryItems = orderSummaryItems;
+                SaleDetailDialogFragment dialogFragment = SaleDetailDialogFragment.newInstance(orderSummaryItems);
+                dialogFragment.setListener(CashSalesHistoryAdapter.this);
+                dialogFragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), SaleDetailDialogFragment.TAG);
+            }
+        });
 
         String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
         holder.binding.totalSales.setText(mContext.getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(item.getTotal())));
@@ -116,5 +132,20 @@ public class CashSalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bi
         SalesHistoryItemBinding binding = SalesHistoryItemBinding.inflate(inflater);
         binding.getRoot().setTag(binding);
         return new BindingHolder<>(binding);
+    }
+
+    @Override
+    public void onClickPrint() {
+        if(mListener != null) {
+            mListener.onPrintClick(mOrderSummaryItems);
+        }
+    }
+
+    public interface CashSalesHistoryAdapterPrintListener {
+        void onPrintClick(ArrayList<OrderSummaryItem> orderSummaryItems);
+    }
+
+    public void setListener(CashSalesHistoryAdapterPrintListener mListener) {
+        this.mListener = mListener;
     }
 }

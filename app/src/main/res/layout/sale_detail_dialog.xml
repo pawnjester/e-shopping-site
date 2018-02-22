@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/top_view"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textStyle="bold"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:layout_height="48dp"
+            android:text="@string/sale_detail"/>
+
+        <ImageButton
+            android:layout_weight="1"
+            android:contentDescription="@string/image"
+            android:layout_width="0dp"
+            android:paddingTop="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_gravity="end"
+            android:id="@+id/printReceipt"
+            android:background="@drawable/image_btn_bg"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_marginTop="16dp"
+        android:layout_below="@+id/top_view"
+        android:id="@+id/sale_detail_dialog_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical" />
+
+</RelativeLayout>

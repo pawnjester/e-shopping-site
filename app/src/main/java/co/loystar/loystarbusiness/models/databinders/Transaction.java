@@ -30,7 +30,7 @@ public class Transaction {
     private int user_id;
     private int product_id;
     private int merchant_loyalty_program_id;
-    private int amount;
+    private double amount;
     private int points;
     private int stamps;
     private boolean synced;
@@ -47,7 +47,7 @@ public class Transaction {
             int user_id,
             int product_id,
             int merchant_loyalty_program_id,
-            int amount,
+            double amount,
             int points,
             int stamps,
             DateTime created_at,
@@ -100,7 +100,7 @@ public class Transaction {
     }
 
     @JsonProperty("amount")
-    public int getAmount() {
+    public double getAmount() {
         return amount;
     }
 

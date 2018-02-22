@@ -530,4 +530,5 @@
     <string name="reset_password_email_set">Reset password  instructions sent.</string>
     <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"https://app.loystar.co\",\n  }\n}]</string>
     <string name="product_not_found">Product is missing!</string>
+    <string name="sale_detail">Sale details</string>
 </resources>

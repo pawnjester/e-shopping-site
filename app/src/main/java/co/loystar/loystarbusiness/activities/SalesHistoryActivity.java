@@ -3,14 +3,22 @@ package co.loystar.loystarbusiness.activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
+import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,9 +37,17 @@ import com.darwindeveloper.onecalendar.clases.Day;
 import com.darwindeveloper.onecalendar.views.OneCalendarView;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,14 +58,22 @@ import co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
+import co.loystar.loystarbusiness.models.pojos.OrderSummaryItem;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.EventBus.SaleHistoryPrintEventBus;
 import co.loystar.loystarbusiness.utils.EventBus.SalesDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.Foreground;
+import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.exceptions.Exceptions;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.query.Selection;
 import io.requery.query.Tuple;
@@ -94,11 +118,26 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
     @BindView(R.id.activity_sales_history_vp)
     ViewPager mViewPager;
 
+    @BindView(R.id.sales_history_container)
+    View mLayout;
+
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
     private Date selectedDate;
+    private ArrayList<OrderSummaryItem> orderSummaryItems = new ArrayList<>();
+
+    /*bluetooth print*/
+    BluetoothAdapter mBluetoothAdapter;
+    BluetoothSocket mmSocket;
+    BluetoothDevice mmDevice;
+    OutputStream mmOutputStream;
+    InputStream mmInputStream;
+    Thread workerThread;
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
 
     private BottomSheetBehavior bottomSheetBehavior;
 
@@ -395,6 +434,7 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void onResume() {
         super.onResume();
@@ -406,6 +446,17 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
             .subscribe(bundle -> {
                 if (bundle.getInt(Constants.FRAGMENT_EVENT_ID, 0) == SalesDetailFragmentEventBus.ACTION_START_SALE) {
                     startSale();
+                }
+            });
+
+        SaleHistoryPrintEventBus
+            .getInstance()
+            .getFragmentEventObservable()
+            .compose(bindToLifecycle())
+            .subscribe(bundle -> {
+                if (bundle.getInt(Constants.FRAGMENT_EVENT_ID, 0) == SaleHistoryPrintEventBus.ACTION_START_PRINT) {
+                    orderSummaryItems = (ArrayList<OrderSummaryItem>) bundle.getSerializable(Constants.ORDER_SUMMARY_ITEMS);
+                    printViaBT();
                 }
             });
     }
@@ -424,5 +475,274 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
 
     public interface UpdateSelectedDateInterface {
         void update(Date date);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            closeBT();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // close the connection to bluetooth printer.
+    void closeBT() throws IOException {
+        try {
+            stopWorker = true;
+            mmOutputStream.close();
+            mmInputStream.close();
+            mmSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void printViaBT() {
+
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if(mBluetoothAdapter == null) {
+                showSnackbar(R.string.no_bluetooth_adapter_available);
+                return;
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+                return;
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+            if(pairedDevices.size() > 0) {
+                for (BluetoothDevice device : pairedDevices) {
+
+                    // RPP300 is the name of the bluetooth printer device
+                    // we got this name from the list of paired devices
+                    if (device.getName().equals("Wari P1 BT")) {
+                        mmDevice = device;
+                        break;
+                    }
+                }
+            }
+
+            if (mmDevice == null) {
+                showSnackbar(R.string.no_printer_devises_available);
+            } else {
+                openBT();
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // tries to open a connection to the bluetooth printer device
+    void openBT() {
+        Observable.fromCallable(() -> {
+            try {
+                mmDevice.fetchUuidsWithSdp();
+                ParcelUuid[] parcelUuid = mmDevice.getUuids();
+                if (parcelUuid != null) {
+                    UUID uuid = parcelUuid[0].getUuid();
+                    mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+                    mmSocket.connect();
+                    mmOutputStream = mmSocket.getOutputStream();
+                    mmInputStream = mmSocket.getInputStream();
+                }
+            } catch (IOException e) {
+                try {
+                    mmSocket.close();
+                } catch (IOException ignored){}
+
+                throw Exceptions.propagate(e);
+            }
+            return true;
+        }).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(bindToLifecycle())
+            .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
+            .subscribe(t -> {
+                if (mmOutputStream == null) {
+                    Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
+                } else {
+                    beginListenForData();
+                    sendData();
+                }
+            }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+    }
+
+    /*
+* after opening a connection to bluetooth printer device,
+* we have to listen and check if a data were sent to be printed.
+*/
+    void beginListenForData() {
+        try {
+            final Handler handler = new Handler();
+
+            // this is the ASCII code for a newline character
+            final byte delimiter = 10;
+
+            stopWorker = false;
+            readBufferPosition = 0;
+            readBuffer = new byte[1024];
+
+            workerThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+                    try {
+                        int bytesAvailable = mmInputStream.available();
+
+                        if (bytesAvailable > 0) {
+
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            //noinspection ResultOfMethodCallIgnored
+                            mmInputStream.read(packetBytes);
+
+                            for (int i = 0; i < bytesAvailable; i++) {
+
+                                byte b = packetBytes[i];
+                                if (b == delimiter) {
+
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(
+                                        readBuffer, 0,
+                                        encodedBytes, 0,
+                                        encodedBytes.length
+                                    );
+
+                                    // specify US-ASCII encoding
+                                    final String data = new String(encodedBytes, "US-ASCII");
+                                    readBufferPosition = 0;
+
+                                    // tell the user data were sent to bluetooth printer device
+                                    handler.post(() -> {});
+
+                                } else {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+
+                    } catch (IOException ex) {
+                        stopWorker = true;
+                    }
+
+                }
+            });
+
+            workerThread.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // this will send text data to be printed by the bluetooth printer
+    void sendData() throws IOException{
+        Observable.fromCallable(() -> {
+            try {
+                PrintTextFormatter formatter = new PrintTextFormatter();
+                String td = "%.2f";
+                double totalCharge = 0;
+                StringBuilder BILL = new StringBuilder();
+
+                /*print business name start*/
+                BILL.append("\n").append(mSessionManager.getBusinessName());
+                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.centerAlign());
+                BILL = new StringBuilder();
+                /* print business name end*/
+
+                /*print timestamp start*/
+                BILL.append("\n").append(TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()));
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.centerAlign());
+                BILL = new StringBuilder();
+                /*print timestamp end*/
+
+                BILL.append("\n").append("-------------------------------");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                for (OrderSummaryItem orderItem: orderSummaryItems) {
+                    totalCharge += orderItem.getTotal();
+
+                    BILL.append("\n").append(orderItem.getName());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+
+                    BILL.append("\n").append(orderItem.getCount())
+                        .append(" ")
+                        .append("x")
+                        .append(" ")
+                        .append(orderItem.getPrice())
+                        .append("          ").append(orderItem.getTotal());
+                    writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                    BILL = new StringBuilder();
+                }
+
+                BILL.append("\n").append("-------------------------------");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+                BILL.append("\n").append("TOTAL").append("               ").append(totalCharge).append("\n");
+                writeWithFormat(BILL.toString().getBytes(), formatter.bold(), formatter.leftAlign());
+                BILL = new StringBuilder();
+
+                BILL.append("\nThank you for your patronage.").append("\n\nPOWERED BY LOYSTAR");
+                writeWithFormat(BILL.toString().getBytes(), formatter.get(), formatter.leftAlign());
+
+                mmOutputStream.write(0x0D);
+                mmOutputStream.write(0x0D);
+                mmOutputStream.write(0x0D);
+                return true;
+            } catch (IOException e) {
+                try {
+                    closeBT();
+                } catch (IOException ignored){}
+                throw Exceptions.propagate(e);
+            }
+        }).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .compose(bindToLifecycle())
+            .doOnError(throwable -> showSnackbar(throwable.getMessage()))
+            .subscribe(o -> {
+                try {
+                    closeBT();
+                } catch (IOException ignored){}
+            }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+    }
+
+    /**
+     * Method to write with a given format
+     *
+     * @param buffer     the array of bytes to actually write
+     * @param pFormat    The format byte array
+     * @param pAlignment The alignment byte array
+     */
+    private void writeWithFormat(byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
+        try {
+            // Notify printer it should be printed with given alignment:
+            mmOutputStream.write(pAlignment);
+            // Notify printer it should be printed in the given format:
+            mmOutputStream.write(pFormat);
+            // Write the actual data:
+            mmOutputStream.write(buffer, 0, buffer.length);
+
+        } catch (IOException e) {
+            Timber.e(e);
+        }
+    }
+
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mLayout, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    @MainThread
+    private void showSnackbar(String message) {
+        Snackbar.make(mLayout, message, Snackbar.LENGTH_LONG).show();
     }
 }
