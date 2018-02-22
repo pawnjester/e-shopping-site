@@ -9,13 +9,16 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,6 +27,7 @@ import android.widget.Toast;
 
 import com.darwindeveloper.onecalendar.clases.Day;
 import com.darwindeveloper.onecalendar.views.OneCalendarView;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -32,16 +36,16 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
-import co.loystar.loystarbusiness.adapters.SalesHistoryAdapter;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.fragments.CardSalesHistoryFragment;
+import co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.EventBus.SalesDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.Foreground;
-import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.reactivex.Observer;
@@ -51,8 +55,9 @@ import io.requery.query.Selection;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+import timber.log.Timber;
 
-public class SalesHistoryActivity extends AppCompatActivity {
+public class SalesHistoryActivity extends RxAppCompatActivity {
 
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
 
@@ -80,25 +85,20 @@ public class SalesHistoryActivity extends AppCompatActivity {
     @BindView(R.id.sales_detail_bs_toolbar)
     Toolbar salesDetailToolbar;
 
-    @BindView(R.id.sales_detail_rv)
-    RecyclerView recyclerView;
-
     @BindView(R.id.sales_date)
     TextView salesDateView;
 
-    @BindView(R.id.total_card_sales)
-    TextView totalCardSalesView;
+    @BindView(R.id.tabs)
+    TabLayout tabLayout;
 
-    @BindView(R.id.total_cash_sales)
-    TextView totalCashSalesView;
+    @BindView(R.id.activity_sales_history_vp)
+    ViewPager mViewPager;
 
     private Context mContext;
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
     private MerchantEntity merchantEntity;
     private Date selectedDate;
-    private double totalCashSalesForDateSelected;
-    private double totalCardSalesForDateSelected;
 
     private BottomSheetBehavior bottomSheetBehavior;
 
@@ -182,6 +182,7 @@ public class SalesHistoryActivity extends AppCompatActivity {
         cashResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
         Tuple cashTuple = cashResultSelection.get().firstOrNull();
+        double totalCashSalesForDateSelected;
         if (cashTuple == null || cashTuple.get(0) == null) {
             totalCashSalesForDateSelected = 0;
         } else {
@@ -199,6 +200,7 @@ public class SalesHistoryActivity extends AppCompatActivity {
         cardResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
         Tuple cardTuple = cardResultSelection.get().firstOrNull();
+        double totalCardSalesForDateSelected;
         if (cardTuple == null || cardTuple.get(0) == null) {
             totalCardSalesForDateSelected = 0;
         } else {
@@ -239,11 +241,11 @@ public class SalesHistoryActivity extends AppCompatActivity {
             .setDuration(shortAnimTime)
             .alpha(1)
             .setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                calendarBloc.setVisibility(View.GONE);
-            }
-        });
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    calendarBloc.setVisibility(View.GONE);
+                }
+            });
     }
 
     private void startSale() {
@@ -326,27 +328,19 @@ public class SalesHistoryActivity extends AppCompatActivity {
 
     private void showBottomSheet(boolean show) {
         if (show) {
-            SalesHistoryAdapter mAdapter = new SalesHistoryAdapter(mContext, merchantEntity, selectedDate);
+            SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+
+            mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+            tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
+            tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(getApplicationContext(), R.color.white));
+
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(selectedDate);
 
             salesDateView.setText(TextUtilsHelper.getFormattedDateString(calendar));
-            String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
-            totalCashSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalCashSalesForDateSelected)));
-            totalCardSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalCardSalesForDateSelected)));
-
-            recyclerView.setHasFixedSize(true);
-            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
-            recyclerView.setLayoutManager(mLayoutManager);
-            recyclerView.setItemAnimator(new DefaultItemAnimator());
-            recyclerView.addItemDecoration(new SpacingItemDecoration(
-                getResources().getDimensionPixelOffset(R.dimen.item_space_small),
-                getResources().getDimensionPixelOffset(R.dimen.item_space_small))
-            );
-            recyclerView.setAdapter(mAdapter);
-
-            mAdapter.queryAsync();
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            mSectionsPagerAdapter.notifyDataSetChanged();
         } else {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
@@ -359,5 +353,76 @@ public class SalesHistoryActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * one of the sections/tabs/pages.
+     */
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment fragment = null;
+            switch (position) {
+                case 0:
+                    fragment = CashSalesHistoryFragment.getInstance(selectedDate);
+                    break;
+                case 1:
+                    fragment = CardSalesHistoryFragment.getInstance(selectedDate);
+                    break;
+            }
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            if (object instanceof  CardSalesHistoryFragment) {
+                ((CardSalesHistoryFragment) object).update(selectedDate);
+            } else if (object instanceof CashSalesHistoryFragment) {
+                ((CashSalesHistoryFragment) object).update(selectedDate);
+            }
+            return super.getItemPosition(object);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SalesDetailFragmentEventBus
+            .getInstance()
+            .getFragmentEventObservable()
+            .compose(bindToLifecycle())
+            .subscribe(bundle -> {
+                if (bundle.getInt(Constants.FRAGMENT_EVENT_ID, 0) == SalesDetailFragmentEventBus.ACTION_START_SALE) {
+                    startSale();
+                }
+            });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CHOOSE_PROGRAM) {
+                int programId = data.getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
+                startSaleWithoutPos(programId);
+            }
+
+        }
+    }
+
+    public interface UpdateSelectedDateInterface {
+        void update(Date date);
     }
 }

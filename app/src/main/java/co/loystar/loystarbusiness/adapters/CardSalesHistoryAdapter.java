@@ -31,7 +31,8 @@ import io.requery.reactivex.ReactiveResult;
  * Created by ordgen on 2/10/18.
  */
 
-public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, BindingHolder<SalesHistoryItemBinding>> {
+public class CardSalesHistoryAdapter
+    extends QueryRecyclerAdapter<SaleEntity, BindingHolder<SalesHistoryItemBinding>> {
 
     private Date saleDate;
     private MerchantEntity merchantEntity;
@@ -39,7 +40,7 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
     private ReactiveEntityStore<Persistable> mDataStore;
     private SessionManager mSessionManager;
 
-    public SalesHistoryAdapter(
+    public CardSalesHistoryAdapter(
         Context context,
         MerchantEntity merchantEntity,
         Date saleDate
@@ -65,22 +66,20 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
         Selection<ReactiveResult<SaleEntity>> resultSelection = mDataStore.select(SaleEntity.class);
         resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
         resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
-
+        resultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
         return resultSelection.orderBy(SaleEntity.CREATED_AT.desc()).get();
     }
 
     @Override
     public void onBindViewHolder(SaleEntity item, BindingHolder<SalesHistoryItemBinding> holder, int position) {
-      holder.binding.setSale(item);
+        holder.binding.setSale(item);
         holder.binding.getRoot().setLayoutParams(new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         );
 
         StringBuilder sb = new StringBuilder("");
         int i = 0;
-        boolean hasProductId = false;
         for (SalesTransactionEntity transactionEntity: item.getTransactions()) {
-            hasProductId = transactionEntity.getProductId() > 0;
             ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, transactionEntity.getProductId()).blockingGet();
             if (productEntity != null) {
                 Double price = productEntity.getPrice();
@@ -94,19 +93,13 @@ public class SalesHistoryAdapter extends QueryRecyclerAdapter<SaleEntity, Bindin
         }
 
         if (TextUtils.isEmpty(sb)) {
-            if (hasProductId) {
-                // this would occur if product has since been deleted
-                holder.binding.productsBought.setText(mContext.getString(R.string.product_not_found));
-            } else {
-                // this would occur if sale is a non-pos sale
-                holder.binding.productsBought.setText(mContext.getString(R.string.cash));
-            }
+            holder.binding.productsBought.setText(mContext.getString(R.string.product_not_found));
         } else {
             holder.binding.productsBought.setText(sb.toString());
         }
 
-      String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
-      holder.binding.totalSales.setText(mContext.getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(item.getTotal())));
+        String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
+        holder.binding.totalSales.setText(mContext.getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(item.getTotal())));
     }
 
     @Override

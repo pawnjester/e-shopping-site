@@ -2,36 +2,33 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/sales_detail_bs_toolbar"
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        app:title="@string/detailed_sales_history"
-        android:minHeight="?attr/actionBarSize"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-    <LinearLayout
-        android:layout_below="@+id/sales_detail_bs_toolbar"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:background="@color/white"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/sales_summary_bloc"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
             android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:background="@color/colorPrimary"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/appbar_padding_top"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/sales_detail_bs_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_weight="1"
+                android:background="?attr/colorPrimary"
+                app:layout_scrollFlags="scroll|enterAlways"
+                app:title="@string/detailed_sales_history"
+                app:navigationIcon="?attr/homeAsUpIndicator"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            </android.support.v7.widget.Toolbar>
 
             <TextView
                 android:layout_width="match_parent"
@@ -41,94 +38,33 @@
                 android:gravity="center"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:text="@string/total_label"
-                android:gravity="end|center_vertical"/>
-
-            <LinearLayout
-                android:layout_marginTop="4dp"
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
                 android:layout_height="wrap_content">
 
-                <TextView
+                <android.support.design.widget.TabItem
+                    android:id="@+id/tabItem"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/cash_sales"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:text="@string/cash_sales" />
 
-                <RelativeLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/total_cash_sales"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@color/green"
-                        android:padding="8dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                </RelativeLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_marginTop="4dp"
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:layout_height="wrap_content">
-
-                <TextView
+                <android.support.design.widget.TabItem
+                    android:id="@+id/tabItem2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/card_sales"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:text="@string/card_sales" />
 
-                <RelativeLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content">
+            </android.support.design.widget.TabLayout>
+        </android.support.design.widget.AppBarLayout>
 
-                    <TextView
-                        android:id="@+id/total_card_sales"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@color/green"
-                        android:padding="8dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                </RelativeLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <android.support.v7.widget.RecyclerView
-            android:layout_weight="1"
+        <android.support.v4.view.ViewPager
+            android:id="@+id/activity_sales_history_vp"
+            android:background="@color/white"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:scrollbars="vertical"
-            android:id="@+id/sales_detail_rv" />
-    </LinearLayout>
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    </android.support.design.widget.CoordinatorLayout>
 
 </RelativeLayout>

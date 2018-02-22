@@ -524,6 +524,7 @@
     <string name="view_all">View all</string>
     <string name="error_cash_collected_required">Please enter cash collected</string>
     <string name="view_sales_history">View Sales History</string>
+    <string name="total_sales">Total Sales</string>
     <string name="total_sales_for_today_label">(Total sales today)</string>
     <string name="error_cash_collected_amount">Cash collected should not be lower than total charge</string>
     <string name="reset_password_email_set">Reset password  instructions sent.</string>

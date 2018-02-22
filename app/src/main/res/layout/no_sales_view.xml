@@ -20,7 +20,7 @@
         android:id="@+id/stateImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_no_orders"
+        android:src="@drawable/ic_firstsale"
         app:layout_constraintTop_toBottomOf="@+id/guideline"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
@@ -45,7 +45,6 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="@string/no_orders_received"
         app:layout_constraintEnd_toEndOf="parent"
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"

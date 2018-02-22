@@ -40,7 +40,6 @@ import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.International
  * on handsets.
  */
 public class CustomerDetailFragment extends Fragment {
-    private static final String TAG = CustomerDetailFragment.class.getSimpleName();
     public static final String ARG_ITEM_ID = "item_id";
     private CustomerEntity mItem;
     private boolean mTwoPane;
