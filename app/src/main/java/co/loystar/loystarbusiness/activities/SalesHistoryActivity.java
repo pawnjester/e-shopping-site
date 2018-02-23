@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,13 +57,13 @@ import co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.pojos.OrderSummaryItem;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.EventBus.SaleHistoryPrintEventBus;
 import co.loystar.loystarbusiness.utils.EventBus.SalesDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.Foreground;
+import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
@@ -112,6 +111,9 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
     @BindView(R.id.sales_date)
     TextView salesDateView;
 
+    @BindView(R.id.total_sales)
+    TextView totalSalesView;
+
     @BindView(R.id.tabs)
     TabLayout tabLayout;
 
@@ -140,6 +142,8 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
     volatile boolean stopWorker;
 
     private BottomSheetBehavior bottomSheetBehavior;
+    private double totalCardSalesForDateSelected;
+    private double totalCashSalesForDateSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,7 +225,6 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
         cashResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
         Tuple cashTuple = cashResultSelection.get().firstOrNull();
-        double totalCashSalesForDateSelected;
         if (cashTuple == null || cashTuple.get(0) == null) {
             totalCashSalesForDateSelected = 0;
         } else {
@@ -239,7 +242,6 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
         cardResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
 
         Tuple cardTuple = cardResultSelection.get().firstOrNull();
-        double totalCardSalesForDateSelected;
         if (cardTuple == null || cardTuple.get(0) == null) {
             totalCardSalesForDateSelected = 0;
         } else {
@@ -378,6 +380,10 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
             calendar.setTime(selectedDate);
 
             salesDateView.setText(TextUtilsHelper.getFormattedDateString(calendar));
+            double totalSales = totalCardSalesForDateSelected + totalCashSalesForDateSelected;
+            String merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(mContext).getCurrency(mSessionManager.getCurrency()).getSymbol();
+            totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalSales)));
+
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             mSectionsPagerAdapter.notifyDataSetChanged();
         } else {

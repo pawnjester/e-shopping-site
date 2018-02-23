@@ -2,7 +2,9 @@ package co.loystar.loystarbusiness.utils.ui.dialogs;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
@@ -79,6 +81,10 @@ public class SaleDetailDialogFragment extends AppCompatDialogFragment {
             );
             recyclerView.setAdapter(mAdapter);
 
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            boolean bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
+
+            printReceiptBtn.setVisibility(bluetoothPrintEnabled ? View.VISIBLE :View.GONE);
             printReceiptBtn.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_print));
 
             printReceiptBtn.setOnClickListener(view -> {
