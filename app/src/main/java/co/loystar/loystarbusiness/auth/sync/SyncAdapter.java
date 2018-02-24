@@ -683,7 +683,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     @Override
                     public void onFailure(@NonNull Call<ArrayList<Sale>> call, @NonNull Throwable t) {
-
                     }
                 });
             } catch (JSONException e) {
