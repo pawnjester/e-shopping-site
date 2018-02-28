@@ -110,6 +110,10 @@ public class PaySubscriptionActivity extends AppCompatActivity {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/loystar-lite-pay/"));
                 startActivity(browserIntent);
                 return;
+            } else if (sessionManager.getCurrency().equals("USD")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://loystar.co/paypal-subscribe/"));
+                startActivity(browserIntent);
+                return;
             }
             setupPayChoiceDialog();
             payChoiceDialog.show();

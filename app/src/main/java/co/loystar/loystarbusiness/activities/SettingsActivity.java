@@ -401,10 +401,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             builder = new AlertDialog.Builder(getActivity());
                         }
                         builder.setTitle("Are you sure?")
-                            .setMessage("Loystar won't capture product information when recording sales.")
+                            .setMessage("Pictures of items would not be displayed for fast checkout.")
                             .setPositiveButton(getString(R.string.action_confirm_turn_off), (dialog, which) -> {
                                 TwoStatePreference statePreference = (TwoStatePreference) turnOnPosPref;
                                 statePreference.setChecked(false);
+                                turnOnPosPref.setSummary(getString(R.string.pos_turned_off_explanation));
 
                                 if (merchantEntity != null) {
                                     merchantEntity.setPosTurnedOn(false);

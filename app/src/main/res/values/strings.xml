@@ -272,14 +272,14 @@
     <string name="pref_birthday_messages_and_offers_key">pref_birthday_messages_and_offers</string>
     <string name="pref_turn_on_pos_key">turn_on_point_of_sale</string>
     <string name="pref_enable_bluetooth_print_key">pref_enable_bluetooth_print</string>
-    <string name="pref_turn_on_pos_title">Turn on POS</string>
+    <string name="pref_turn_on_pos_title">Enable Quick Sale</string>
     <string name="pref_product_categories_key">pref_product_categories</string>
     <string name="pref_product_categories_title">My Product Categories</string>
     <string name="pref_my_products_key">pref_my_products</string>
     <string name="pref_my_products_title">My Products / Services</string>
-    <string name="pos_turned_off_explanation">POS is disabled. Loystar won\'t capture product information when recording sales.</string>
-    <string name="pos_turned_on_explanation">POS is enabled. Loystar will automatically capture product info when recording sales.</string>
-    <string name="pos_turn_on_notice">POS has been enabled.</string>
+    <string name="pos_turned_off_explanation">Quick sales is disabled. Pictures of items would not be displayed during sales.</string>
+    <string name="pos_turned_on_explanation">Quick sale is enabled. Pictures of items would be displayed for fast checkout.</string>
+    <string name="pos_turn_on_notice">Quick sale has been enabled.</string>
     <string name="bluetooth_print_enabled_notice">Bluetooth print has been enabled.</string>
 
     <string name="account">Account</string>

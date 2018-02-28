@@ -57,9 +57,6 @@ import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
 import com.uxcam.UXCam;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,7 +104,6 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.smooch.core.Smooch;
 import io.smooch.core.User;
-import timber.log.Timber;
 
 
 public class MerchantBackOfficeActivity extends AppCompatActivity
@@ -372,35 +368,10 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                             stateActionBtn.setOnClickListener(view -> startSale());
                         }
                     } else {
-                        setTotalSaleView();
                         chartLayout.setVisibility(View.VISIBLE);
                         emptyStateLayout.setVisibility(View.GONE);
                     }
                 });
-    }
-
-    private void setTotalSaleView() {
-        DateTimeZone timeZone = DateTimeZone.forID( "UTC" );
-        DateTime now = DateTime.now( timeZone );
-        DateTime todayStart = now.withTimeAtStartOfDay();
-        DateTime tomorrowStart = now.plusDays( 1 ).withTimeAtStartOfDay();
-        Interval today = new Interval( todayStart, tomorrowStart );
-
-        Selection<ReactiveResult<Tuple>> resultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
-        resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
-        resultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(today.getStartMillis()), new Timestamp(today.getEndMillis())));
-
-        Tuple tuple = resultSelection.get().firstOrNull();
-        if (tuple == null || tuple.get(0) == null) {
-            totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, "0.0"));
-        } else {
-            Double total = tuple.get(0);
-            if (total > 0) {
-                totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(total)));
-            } else {
-                totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, "0.0"));
-            }
-        }
     }
 
     private void setupGraph() {
@@ -445,6 +416,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 DateFormat outFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
                 Calendar todayCalendar = Calendar.getInstance();
                 Calendar cal = Calendar.getInstance();
+                double totalSalesToday = 0.0;
                 try {
                     String todayDate = TextUtilsHelper.getFormattedDateString(todayCalendar);
                     Date todayDateWithoutTimeStamp = outFormatter.parse(todayDate);
@@ -456,6 +428,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                         Date salesCreatedAt = outFormatter.parse(dateString);
                         if (salesCreatedAt.equals(todayDateWithoutTimeStamp)) {
                             dateString = "today";
+                            totalSalesToday += cashGc.getY();
+                            totalSalesToday += cardGc.getY();
                         }
                         xVals[i] = dateString;
                         BarEntry entry = new BarEntry(i, new float[]{cashGc.getY(), cardGc.getY()});
@@ -482,7 +456,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 BarDataSet barDataSet = new BarDataSet(yVals, "");
                 barDataSet.setValueTypeface(App.getInstance().getTypeface());
                 barDataSet.setValueTextSize(14);
-                //barDataSet.setDrawValues(false);
+                // don't draw values on bars
+                barDataSet.setDrawValues(false);
                 barDataSet.setValueFormatter(new MyAxisValueFormatter());
                 barDataSet.setColors(Arrays.asList(
                     ContextCompat.getColor(mContext, R.color.colorPrimaryDark),
@@ -501,6 +476,8 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 barChart.setData(data);
                 barChart.notifyDataSetChanged();
                 barChart.invalidate();
+
+                totalSalesView.setText(String.valueOf(totalSalesToday));
             }
         });
     }
