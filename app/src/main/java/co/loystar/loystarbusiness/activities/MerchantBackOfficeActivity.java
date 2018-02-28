@@ -477,7 +477,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 barChart.notifyDataSetChanged();
                 barChart.invalidate();
 
-                totalSalesView.setText(String.valueOf(totalSalesToday));
+                totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalSalesToday)));
             }
         });
     }
