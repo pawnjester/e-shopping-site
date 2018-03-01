@@ -525,8 +525,5 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     public void onHeaderClick(Header header, int position) {
         super.onHeaderClick(header, position);
-        if (header.id == R.id.loystar_support_pref_header) {
-            ConversationActivity.show(this);
-        }
     }
 }

@@ -44,10 +44,10 @@
         <extra android:name="settings" android:value="@string/settings_print" />
     </header>
 
-    <header
+    <!--<header
         android:id="@+id/loystar_support_pref_header"
         android:icon="@drawable/ic_customer_support_green_24px"
         android:title="@string/pref_support_title">
-    </header>
+    </header>-->
 
 </preference-headers>
