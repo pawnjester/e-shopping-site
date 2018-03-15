@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 
 import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxAutoCompleteTextView;
-import com.roughike.bottombar.BottomBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
+import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialogAdapter;
 
@@ -38,14 +39,10 @@ public class SaleWithoutPosActivity extends BaseActivity {
     @BindView(R.id.record_direct_sales_customer_autocomplete)
     AutoCompleteTextView mAutoCompleteTextView;
 
-    @BindView(R.id.activity_sale_without_pos_bottom_bar)
-    BottomBar bottomNavigationBar;
-
     @BindView(R.id.sale_without_pos_continue_btn)
     BrandButtonNormal submitBtn;
 
     private int mLoyaltyProgramId;
-    private int mCustomerId;
     private int mCashSpent;
     private Context mContext;
     private LoyaltyProgramEntity mLoyaltyProgram;
@@ -65,16 +62,16 @@ public class SaleWithoutPosActivity extends BaseActivity {
 
         mLoyaltyProgramId = getIntent().getIntExtra(Constants.LOYALTY_PROGRAM_ID, 0);
         mLoyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mLoyaltyProgramId);
-        mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
+        int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         mSelectedCustomer = mDatabaseManager.getCustomerById(mCustomerId);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
 
         RxView.clicks(submitBtn).subscribe(o -> {
-            if (mCurrencyEditText.getText().toString().isEmpty()) {
-                mCurrencyEditText.setError(getString(R.string.error_amount_required));
-                mCurrencyEditText.requestFocus();
+            if (TextUtils.isEmpty(mAutoCompleteTextView.getText().toString())) {
+                mAutoCompleteTextView.setError(getString(R.string.error_select_customer));
+                mAutoCompleteTextView.requestFocus();
                 return;
             }
 
@@ -82,13 +79,19 @@ public class SaleWithoutPosActivity extends BaseActivity {
 
             if (mSelectedCustomer == null) {
                 Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
+                String txt = mAutoCompleteTextView.getText().toString();
+                if (TextUtilsHelper.isInteger(txt)) {
+                    addCustomerIntent.putExtra(Constants.PHONE_NUMBER, txt);
+                }
+                else {
+                    addCustomerIntent.putExtra(Constants.CUSTOMER_NAME, txt);
+                }
                 startActivityForResult(addCustomerIntent, ADD_NEW_CUSTOMER_REQUEST);
             } else {
                 AddPointsOrStamps();
             }
         });
         setupAutoCompleteTextView();
-        setupBottomNavigation();
     }
 
     @Override
@@ -104,13 +107,13 @@ public class SaleWithoutPosActivity extends BaseActivity {
             Intent addPointsIntent = new Intent(mContext, AddPointsActivity.class);
             addPointsIntent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
             addPointsIntent.putExtra(Constants.CASH_SPENT, mCashSpent);
-            addPointsIntent.putExtra(Constants.CUSTOMER_ID, mCustomerId);
+            addPointsIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
             startActivityForResult(addPointsIntent, ADD_POINTS_REQUEST);
         } else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
             Intent addStampsIntent = new Intent(mContext, AddStampsActivity.class);
             addStampsIntent.putExtra(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
             addStampsIntent.putExtra(Constants.CASH_SPENT, mCashSpent);
-            addStampsIntent.putExtra(Constants.CUSTOMER_ID, mCustomerId);
+            addStampsIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
             startActivityForResult(addStampsIntent, ADD_STAMPS_REQUEST);
         }
     }
@@ -138,44 +141,13 @@ public class SaleWithoutPosActivity extends BaseActivity {
         }
     }
 
-    private void setupBottomNavigation() {
-        bottomNavigationBar.selectTabWithId(R.id.record_sale);
-        bottomNavigationBar.setOnTabSelectListener(tabId -> {
-            switch (tabId) {
-                case R.id.home:
-                    Intent homeIntent = new Intent(mContext, MerchantBackOfficeActivity.class);
-                    homeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(homeIntent);
-                    break;
-                case R.id.record_sale:
-                    break;
-                case R.id.customers:
-                    Intent customerIntent = new Intent(mContext, CustomerListActivity.class);
-                    customerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(customerIntent);
-                    break;
-                case R.id.orders:
-                    Intent ordersIntent = new Intent(this, SalesOrderListActivity.class);
-                    ordersIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(ordersIntent);
-                    break;
-            }
-        });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        bottomNavigationBar.selectTabWithId(R.id.record_sale);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == ADD_NEW_CUSTOMER_REQUEST) {
             if (resultCode == RESULT_OK) {
-                mCustomerId = data.getIntExtra(Constants.CUSTOMER_ID, 0);
+               int  mCustomerId = data.getIntExtra(Constants.CUSTOMER_ID, 0);
                 mSelectedCustomer = mDatabaseManager.getCustomerById(mCustomerId);
                 if (mSelectedCustomer != null) {
                     AddPointsOrStamps();
@@ -189,7 +161,7 @@ public class SaleWithoutPosActivity extends BaseActivity {
                 bundle.putInt(Constants.CASH_SPENT, data.getIntExtra(Constants.CASH_SPENT, 0));
                 bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, data.getIntExtra(Constants.TOTAL_CUSTOMER_POINTS, 0));
                 bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
-                bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
+                bundle.putInt(Constants.CUSTOMER_ID, data.getIntExtra(Constants.CUSTOMER_ID, 0));
 
                 Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -203,7 +175,7 @@ public class SaleWithoutPosActivity extends BaseActivity {
                 bundle.putBoolean(Constants.PRINT_RECEIPT, bluetoothPrintEnabled);
                 bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, data.getIntExtra(Constants.TOTAL_CUSTOMER_STAMPS, 0));
                 bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mLoyaltyProgramId);
-                bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
+                bundle.putInt(Constants.CUSTOMER_ID, data.getIntExtra(Constants.CUSTOMER_ID, 0));
                 bundle.putInt(Constants.CASH_SPENT, mCashSpent);
 
                 Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);

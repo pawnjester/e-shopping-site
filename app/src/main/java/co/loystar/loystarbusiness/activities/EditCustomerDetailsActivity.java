@@ -8,9 +8,6 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,7 +44,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class EditCustomerDetailsActivity extends AppCompatActivity {
+public class EditCustomerDetailsActivity extends BaseActivity {
     private DatabaseManager mDatabaseManager;
     private CustomerEntity mCustomer;
     /*Views*/
@@ -65,13 +62,6 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_customer_details);
-        Toolbar toolbar = findViewById(R.id.edit_customer_detail_toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mDatabaseManager = DatabaseManager.getInstance(this);
@@ -128,6 +118,14 @@ public class EditCustomerDetailsActivity extends AppCompatActivity {
                 }
             }
 
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

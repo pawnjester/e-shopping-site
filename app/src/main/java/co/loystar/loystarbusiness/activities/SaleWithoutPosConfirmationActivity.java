@@ -19,14 +19,12 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.view.RxView;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +35,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
@@ -54,7 +51,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.schedulers.Schedulers;
 
-public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
+public class SaleWithoutPosConfirmationActivity extends BaseActivity {
     private static final String TAG = SaleWithoutPosConfirmationActivity.class.getSimpleName();
     private Context mContext;
     private SessionManager mSessionManager;
@@ -90,14 +87,6 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sale_without_pos_confirmation);
-        Toolbar toolbar = findViewById(R.id.activity_sale_without_pos_confirmation_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
-        ButterKnife.bind(this);
 
         mContext = this;
         mSessionManager = new SessionManager(this);
@@ -153,6 +142,14 @@ public class SaleWithoutPosConfirmationActivity extends RxAppCompatActivity {
                 .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                 .setIcon(drawable)
                 .show();
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

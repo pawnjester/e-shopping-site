@@ -14,7 +14,6 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,8 +21,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,7 +46,7 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
-public class LoyaltyProgramListActivity extends RxAppCompatActivity {
+public class LoyaltyProgramListActivity extends BaseActivity {
     private final String KEY_RECYCLER_STATE = "recycler_state";
     public static final int REQ_CREATE_PROGRAM = 110;
     private Bundle mBundleRecyclerViewState;
@@ -69,13 +66,6 @@ public class LoyaltyProgramListActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loyaltyprogram_list);
-
-        Toolbar toolbar = findViewById(R.id.activity_loyalty_program_list_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         if (getIntent().hasExtra(Constants.CREATE_LOYALTY_PROGRAM)) {
             Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
@@ -126,6 +116,14 @@ public class LoyaltyProgramListActivity extends RxAppCompatActivity {
         boolean programUpdated = getIntent().getBooleanExtra(Constants.LOYALTY_PROGRAM_UPDATED, false);
         if (programUpdated) {
             showSnackbar(R.string.program_update_success);
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

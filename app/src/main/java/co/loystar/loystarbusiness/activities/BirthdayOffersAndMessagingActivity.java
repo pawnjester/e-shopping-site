@@ -6,25 +6,17 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.fragments.BirthdayMessageTextFragment;
 import co.loystar.loystarbusiness.fragments.BirthdayOffersFragment;
 
-public class BirthdayOffersAndMessagingActivity extends AppCompatActivity {
+public class BirthdayOffersAndMessagingActivity extends BaseActivity {
     private ViewPager mViewPager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_birthday_offers_and_messaging);
-        Toolbar toolbar = findViewById(R.id.activity_birthday_offers_and_messaging_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         TabLayout tabLayout = findViewById(R.id.activity_birthday_offers_and_messaging_tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Birthday Offer"));
@@ -53,6 +45,14 @@ public class BirthdayOffersAndMessagingActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private class BirthdayOffersAndMessagingActivityPagerAdapter extends FragmentStatePagerAdapter {

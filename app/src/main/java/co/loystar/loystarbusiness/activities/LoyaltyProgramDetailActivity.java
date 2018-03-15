@@ -2,22 +2,17 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.fragments.LoyaltyProgramDetailFragment;
 
-public class LoyaltyProgramDetailActivity extends RxAppCompatActivity {
+public class LoyaltyProgramDetailActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loyalty_program_detail);
-        Toolbar toolbar = findViewById(R.id.activity_loyalty_program_detail_toolbar);
-        setSupportActionBar(toolbar);
 
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();

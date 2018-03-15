@@ -21,7 +21,6 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,8 +28,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +41,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -61,12 +57,12 @@ import co.loystar.loystarbusiness.models.pojos.OrderPrintOption;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.TimeUtils;
-import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
-import co.loystar.loystarbusiness.utils.ui.dialogs.OrderPrintOptionsDialogFragment;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.OrderPrintOptionsDialogFragment;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.exceptions.Exceptions;
@@ -81,7 +77,7 @@ import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
 
-public class SalesOrderListActivity extends RxAppCompatActivity
+public class SalesOrderListActivity extends BaseActivity
     implements OrderPrintOptionsDialogFragment.OnPrintOptionSelectedListener {
 
     private boolean mTwoPane;
@@ -119,12 +115,6 @@ public class SalesOrderListActivity extends RxAppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_salesorder_list);
-
-        ButterKnife.bind(this);
-
-        Toolbar toolbar = findViewById(R.id.activity_sales_order_list_toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
 
         fragmentManager = getSupportFragmentManager();
         mContext = this;

@@ -139,16 +139,16 @@
         <activity
             android:name=".activities.MerchantBackOfficeActivity"
             android:label="@string/title_activity_merchant_back_office"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.AuthenticatorActivity"
             android:label="@string/title_activity_authenticator"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.MerchantSignUpActivity"
             android:label="@string/title_activity_merchant_sign_up"
             android:parentActivityName=".activities.AuthenticatorActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.AuthenticatorActivity" />
@@ -156,19 +156,20 @@
         <activity
             android:name=".activities.ForgotPasswordActivity"
             android:label="@string/title_activity_forgot_password"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.AppIntro"
             android:label="@string/title_activity_app_intro"
             android:theme="@style/VerticalIntroStyle" />
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppThemeWithActionBar"/>
         <activity
             android:name=".activities.CustomerListActivity"
             android:label="@string/title_customer_list"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -178,7 +179,7 @@
             android:label="@string/title_customer_detail"
             android:parentActivityName=".activities.CustomerListActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
@@ -186,12 +187,12 @@
         <activity
             android:name=".activities.AddNewCustomerActivity"
             android:label="@string/title_activity_add_new_customer"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.EditCustomerDetailsActivity"
             android:label="@string/title_activity_edit_customer_details"
             android:parentActivityName=".activities.CustomerDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerDetailActivity" />
@@ -200,7 +201,7 @@
             android:name=".activities.RewardCustomersActivity"
             android:label="@string/title_activity_reward_customers"
             android:parentActivityName=".activities.CustomerListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
@@ -209,7 +210,7 @@
             android:name=".activities.MessageBroadcastActivity"
             android:label="@string/title_activity_message_broadcast"
             android:parentActivityName=".activities.CustomerListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.CustomerListActivity" />
@@ -218,7 +219,7 @@
             android:name=".activities.PaySubscriptionActivity"
             android:label="@string/title_activity_pay_subscription"
             android:parentActivityName=".activities.SettingsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
@@ -226,16 +227,16 @@
         <activity
             android:name=".activities.SendSmsActivity"
             android:label="@string/title_activity_send_sms"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.LoyaltyProgramListActivity"
             android:label="@string/title_loyaltyprogram_list"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.LoyaltyProgramDetailActivity"
             android:label="@string/title_loyaltyprogram_detail"
             android:parentActivityName=".activities.LoyaltyProgramListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.LoyaltyProgramListActivity" />
@@ -244,7 +245,7 @@
             android:name=".activities.NewLoyaltyProgramListActivity"
             android:label="@string/title_activity_new_loyalty_program_list"
             android:parentActivityName=".activities.LoyaltyProgramListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.LoyaltyProgramListActivity" />
@@ -253,7 +254,7 @@
             android:name=".activities.CreateNewLoyaltyProgramActivity"
             android:label="@string/title_activity_create_new_loyalty_program"
             android:parentActivityName=".activities.NewLoyaltyProgramListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.NewLoyaltyProgramListActivity" />
@@ -262,7 +263,7 @@
             android:name=".activities.MyAccountProfileActivity"
             android:label="@string/title_activity_my_account_profile"
             android:parentActivityName=".activities.SettingsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
@@ -270,12 +271,12 @@
         <activity
             android:name=".activities.ProductListActivity"
             android:label="@string/title_product_list"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.ProductDetailActivity"
             android:label="@string/title_product_detail"
             android:parentActivityName=".activities.ProductListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.ProductListActivity" />
@@ -283,12 +284,12 @@
         <activity
             android:name=".activities.ProductCategoryListActivity"
             android:label="@string/title_productcategory_list"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.BirthdayOffersAndMessagingActivity"
             android:label="@string/title_activity_birthday_offers_and_messaging"
             android:parentActivityName=".activities.SettingsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
@@ -297,7 +298,7 @@
             android:name=".activities.ConfirmPasswordResetActivity"
             android:label="@string/title_activity_confirm_password_reset"
             android:parentActivityName=".activities.ForgotPasswordActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.ForgotPasswordActivity" />
@@ -329,7 +330,7 @@
             android:name=".activities.AddProductActivity"
             android:label="@string/title_activity_add_product"
             android:parentActivityName=".activities.ProductListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.ProductListActivity" />
@@ -341,7 +342,7 @@
             android:name=".activities.SaleWithPosActivity"
             android:label="@string/title_activity_points_sale_with_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -350,7 +351,7 @@
             android:name=".activities.SaleWithoutPosActivity"
             android:label="@string/title_activity_sale_without_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -358,16 +359,16 @@
         <activity
             android:name=".activities.ChooseProgramActivity"
             android:label="@string/title_activity_choose_program"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.AddStampsActivity"
             android:label="@string/title_activity_add_stamps"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.SearchableActivity"
             android:label="@string/title_activity_searchable"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -385,12 +386,12 @@
         <activity
             android:name=".activities.SaleWithPosConfirmationActivity"
             android:label="@string/title_activity_pos_sale_confirmation"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.SaleWithoutPosConfirmationActivity"
             android:label="@string/title_activity_sale_without_pos_confirmation"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -400,7 +401,7 @@
             android:label="@string/title_salesorder_list"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -409,7 +410,7 @@
             android:name=".activities.SalesOrderDetailActivity"
             android:label="@string/title_salesorder_detail"
             android:parentActivityName=".activities.SalesOrderListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SalesOrderListActivity" />
@@ -418,7 +419,7 @@
             android:name=".activities.SalesHistoryActivity"
             android:label="@string/title_activity_sales_history"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.MerchantBackOfficeActivity" />
@@ -427,7 +428,7 @@
             android:name=".activities.AddPointsActivity"
             android:label="@string/title_activity_add_points"
             android:parentActivityName=".activities.SaleWithoutPosActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SaleWithoutPosActivity" />

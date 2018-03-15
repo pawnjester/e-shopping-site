@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,7 +46,7 @@ import io.reactivex.Completable;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
-public class AddStampsActivity extends BaseActivity {
+public class AddStampsActivity extends RxAppCompatActivity {
 
     private int mProgramId;
     private int amountSpent;
@@ -67,6 +68,7 @@ public class AddStampsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_stamps);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         mContext = this;
         mSessionManager = new SessionManager(this);
@@ -79,22 +81,10 @@ public class AddStampsActivity extends BaseActivity {
         mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
 
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        if (mCustomer == null) {
+            return;
+        }
 
-        BrandButtonNormal addStampsBtn = findViewById(R.id.add_stamps);
-        RxView.clicks(addStampsBtn).subscribe(o -> addStamps());
-
-        RecyclerView recyclerView = findViewById(R.id.stamps_rv);
-        LoyaltyProgramEntity loyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mProgramId);
-        assert loyaltyProgram != null;
-        int stampsThreshold = loyaltyProgram.getThreshold();
-        totalCustomerStamps = mDatabaseManager.getTotalCustomerStampsForProgram(mProgramId, mCustomerId);
-
-        setUpGridView(recyclerView, totalCustomerStamps, stampsThreshold);
-    }
-
-    @Override
-    protected void setupToolbar() {
-        super.setupToolbar();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -103,6 +93,19 @@ public class AddStampsActivity extends BaseActivity {
                 actionBar.setTitle(title);
             }
         }
+
+        BrandButtonNormal addStampsBtn = findViewById(R.id.add_stamps);
+        RxView.clicks(addStampsBtn).subscribe(o -> addStamps());
+
+        RecyclerView recyclerView = findViewById(R.id.stamps_rv);
+        LoyaltyProgramEntity loyaltyProgram = mDatabaseManager.getLoyaltyProgramById(mProgramId);
+        if (loyaltyProgram == null) {
+            return;
+        }
+        int stampsThreshold = loyaltyProgram.getThreshold();
+        totalCustomerStamps = mDatabaseManager.getTotalCustomerStampsForProgram(mProgramId, mCustomerId);
+
+        setUpGridView(recyclerView, totalCustomerStamps, stampsThreshold);
     }
 
     private void addStamps() {
@@ -159,6 +162,7 @@ public class AddStampsActivity extends BaseActivity {
                 .doOnComplete(() -> {
                     int newTotalStamps = initialCustomerStamps + userStampsForThisTransaction;
                     Bundle bundle = new Bundle();
+                    bundle.putInt(Constants.CUSTOMER_ID, mCustomer.getId());
                     bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
 
                     Intent intent = new Intent();

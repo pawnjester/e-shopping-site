@@ -37,7 +37,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.jakewharton.rxbinding2.view.RxView;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import org.joda.time.DateTime;
 
@@ -69,10 +68,6 @@ import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.Foreground;
 import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
-import co.loystar.loystarbusiness.utils.ui.dialogs.CardPaymentDialog;
-import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
-import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
-import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
@@ -80,6 +75,10 @@ import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CardPaymentDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.PayOptionsDialog;
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -88,12 +87,10 @@ import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.query.Selection;
-import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
-import timber.log.Timber;
 
-public class SaleWithPosActivity extends RxAppCompatActivity implements
+public class SaleWithPosActivity extends BaseActivity implements
     CustomerAutoCompleteDialog.SelectedCustomerListener,
     PayOptionsDialog.PayOptionsDialogClickListener,
     CashPaymentDialog.CashPaymentDialogOnCompleteListener,
@@ -144,12 +141,6 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sale_with_pos);
-        Toolbar toolbar = findViewById(R.id.activity_sale_with_pos_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         View mLayout = findViewById(R.id.activity_sale_with_pos_container);
         boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
@@ -247,6 +238,14 @@ public class SaleWithPosActivity extends RxAppCompatActivity implements
         setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
 
         setUpBottomSheetView();
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void setupProductsRecyclerView(@NonNull EmptyRecyclerView recyclerView) {

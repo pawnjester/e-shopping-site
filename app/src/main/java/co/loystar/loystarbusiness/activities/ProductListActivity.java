@@ -7,15 +7,12 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -57,7 +54,7 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
 public class ProductListActivity
-    extends AppCompatActivity implements SearchView.OnQueryTextListener {
+    extends BaseActivity implements SearchView.OnQueryTextListener {
 
     public static final String TAG = ProductListActivity.class.getSimpleName();
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -76,13 +73,6 @@ public class ProductListActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
-
-        Toolbar toolbar = findViewById(R.id.activity_product_list_toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         FloatingActionButton fab = findViewById(R.id.activity_product_list_toolbar_fab);
         fab.setOnClickListener(view -> {
@@ -113,6 +103,14 @@ public class ProductListActivity
         EmptyRecyclerView recyclerView = findViewById(R.id.products_list_rv);
         assert recyclerView != null;
         setupRecyclerView(recyclerView);
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {

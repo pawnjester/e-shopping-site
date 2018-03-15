@@ -8,10 +8,7 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,15 +40,15 @@ import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.AlphaNumericInputFilter;
-import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialogAdapter;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialogAdapter;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RewardCustomersActivity extends AppCompatActivity {
+public class RewardCustomersActivity extends BaseActivity {
     private Context mContext;
     private DatabaseManager mDatabaseManager;
     private SessionManager mSessionManager;
@@ -69,13 +66,6 @@ public class RewardCustomersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reward_customers);
-        Toolbar toolbar = findViewById(R.id.reward_customers_toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mDatabaseManager = DatabaseManager.getInstance(this);
@@ -291,6 +281,14 @@ public class RewardCustomersActivity extends AppCompatActivity {
             });
 
         });
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @MainThread

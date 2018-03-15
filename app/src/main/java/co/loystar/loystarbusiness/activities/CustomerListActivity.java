@@ -17,13 +17,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -63,12 +65,12 @@ import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.DownloadCustomerList;
 import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
-import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
@@ -96,16 +98,20 @@ public class CustomerListActivity extends RxAppCompatActivity
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;
 
+    @BindView(R.id.customer_list_wrapper)
+    View mLayout;
+
+    @BindView(R.id.customers_rv)
+    EmptyRecyclerView recyclerView;
+
     private EmptyRecyclerView mRecyclerView;
     private Context mContext;
-    private View mLayout;
     private ExecutorService executor;
     private SessionManager mSessionManager;
     private CustomerListAdapter mAdapter;
     private ReactiveEntityStore<Persistable> mDataStore;
     private MyAlertDialog myAlertDialog;
     private Customer mSelectedCustomer;
-    private Toolbar toolbar;
     private int customerId;
     private String searchFilterText;
     private MerchantEntity merchantEntity;
@@ -114,12 +120,12 @@ public class CustomerListActivity extends RxAppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_list);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
-        toolbar = findViewById(R.id.customer_list_toolbar);
+        ButterKnife.bind(this);
 
         searchFilterText = getString(R.string.all_contacts);
         myAlertDialog = new MyAlertDialog();
-        mLayout = findViewById(R.id.customer_list_wrapper);
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
@@ -181,33 +187,24 @@ public class CustomerListActivity extends RxAppCompatActivity
         rewardCustomer.setOnClickListener(clickListener);
         sendAnnouncement.setOnClickListener(clickListener);
 
-        EmptyRecyclerView recyclerView = findViewById(R.id.customers_rv);
-        assert recyclerView != null;
         setupRecyclerView(recyclerView);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            Result<CustomerEntity> result = mAdapter.performQuery();
+            if (result.toList().size() == 1) {
+                actionBar.setTitle(getString(R.string.customer_count, "1"));
+            } else {
+                actionBar.setTitle(getString(R.string.customers_count, String.valueOf(result.toList().size())));
+            }
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         boolean customerUpdated = getIntent().getBooleanExtra(Constants.CUSTOMER_UPDATE_SUCCESS, false);
 
         if (customerUpdated) {
             showSnackbar(R.string.customer_update_success);
             mAdapter.queryAsync();
-        }
-
-        if (toolbar != null) {
-            Result<CustomerEntity> result = mAdapter.performQuery();
-            if (result.toList().size() == 1) {
-                toolbar.setTitle(
-                    getString(R.string.customer_count, "1")
-                );
-            } else {
-                toolbar.setTitle(
-                    getString(R.string.customers_count, String.valueOf(result.toList().size()))
-                );
-            }
-        }
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 

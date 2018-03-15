@@ -12,8 +12,6 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -32,7 +30,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ConfirmPasswordResetActivity extends AppCompatActivity {
+public class ConfirmPasswordResetActivity extends BaseActivity {
 
     private EditText resetPasswordInput;
     private EditText confirmPasswordInput;
@@ -46,12 +44,6 @@ public class ConfirmPasswordResetActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_confirm_password_reset);
-        Toolbar toolbar = findViewById(R.id.activity_confirm_password_reset_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mLayout = findViewById(R.id.activity_confirm_password_reset_container);
         mApiClient = new ApiClient(this);
@@ -81,6 +73,14 @@ public class ConfirmPasswordResetActivity extends AppCompatActivity {
         confirmResetPassView = findViewById(R.id.confirm_password_reset_view);
 
         submitBtn.setOnClickListener(view -> validateForm());
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void validateForm() {

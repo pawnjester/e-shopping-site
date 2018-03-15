@@ -12,8 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -44,7 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MerchantSignUpActivity extends AppCompatActivity implements
+public class MerchantSignUpActivity extends BaseActivity implements
         MerchantSignUpStepOneFragment.OnMerchantSignUpStepOneFragmentInteractionListener,
         MerchantSignUpStepTwoFragment.OnMerchantSignUpStepTwoFragmentInteractionListener{
 
@@ -57,12 +55,6 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merchant_sign_up);
-        Toolbar toolbar = findViewById(R.id.activity_merchant_sign_up_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mLayout = findViewById(R.id.activity_merchant_sign_up_wrapper);
@@ -74,7 +66,14 @@ public class MerchantSignUpActivity extends AppCompatActivity implements
         MerchantSignUpStepOneFragment stepOneFragment = new MerchantSignUpStepOneFragment();
         stepOneFragment.setArguments(data);
         getSupportFragmentManager().beginTransaction().replace(R.id.activity_merchant_sign_up_container, stepOneFragment).commit();
+    }
 
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override

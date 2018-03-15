@@ -10,8 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -47,7 +45,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PaySubscriptionActivity extends AppCompatActivity {
+public class PaySubscriptionActivity extends BaseActivity {
 
     private static final String TAG = PaySubscriptionActivity.class.getCanonicalName();
     private static Integer selectedDuration = 1;
@@ -80,12 +78,6 @@ public class PaySubscriptionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pay_subscription);
-        Toolbar toolbar = findViewById(R.id.activity_pay_subscription_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         sessionManager = new SessionManager(this);
@@ -125,6 +117,14 @@ public class PaySubscriptionActivity extends AppCompatActivity {
         });
 
         fetchPricingInfo();
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void fetchPricingInfo() {

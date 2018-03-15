@@ -21,12 +21,10 @@ import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.view.RxView;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +47,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
@@ -71,7 +67,7 @@ import io.reactivex.exceptions.Exceptions;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
+public class SaleWithPosConfirmationActivity extends BaseActivity {
     private Context mContext;
     private SessionManager mSessionManager;
     @SuppressLint("UseSparseArrays")
@@ -112,15 +108,6 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sale_with_pos_confirmation);
-        Toolbar toolbar = findViewById(R.id.activity_sale_with_pos_confirmation_toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        ButterKnife.bind(this);
 
         mLayout = findViewById(R.id.activity_sale_with_pos_confirmation_wrapper);
         mContext = this;
@@ -199,6 +186,14 @@ public class SaleWithPosConfirmationActivity extends RxAppCompatActivity {
         });
 
         RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override

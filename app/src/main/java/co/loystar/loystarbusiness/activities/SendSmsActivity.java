@@ -8,9 +8,8 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -37,7 +36,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SendSmsActivity extends AppCompatActivity {
+public class SendSmsActivity extends BaseActivity {
 
     private String customerNumber;
     private TextView charCounterView;
@@ -52,26 +51,6 @@ public class SendSmsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_sms);
-        Toolbar toolbar = findViewById(R.id.send_sms_activity_toolbar);
-
-        if (getIntent().getExtras() != null) {
-            String customerName = getIntent().getExtras().getString(Constants.CUSTOMER_NAME, "");
-            if (!customerName.isEmpty()) {
-                String title_temp = "Message %s";
-                String cName = customerName.replace("\"", "").substring(0, 1).toUpperCase() +
-                        customerName.replace("\"", "").substring(1);
-                String titleTxt = String.format(title_temp, cName);
-
-                if (toolbar != null) {
-                    toolbar.setTitle(titleTxt);
-                }
-            }
-        }
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mLayout = findViewById(R.id.send_sms_activity_wrapper);
@@ -113,6 +92,25 @@ public class SendSmsActivity extends AppCompatActivity {
             }
             sendMessage();
         });
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null && getIntent().getExtras() != null) {
+            String customerName = getIntent().getExtras().getString(Constants.CUSTOMER_NAME, "");
+            if (!customerName.isEmpty()) {
+                String title_temp = "Message %s";
+                String cName = customerName.replace("\"", "").substring(0, 1).toUpperCase() +
+                    customerName.replace("\"", "").substring(1);
+                String titleTxt = String.format(title_temp, cName);
+
+                actionBar.setTitle(titleTxt);
+            }
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void sendMessage() {

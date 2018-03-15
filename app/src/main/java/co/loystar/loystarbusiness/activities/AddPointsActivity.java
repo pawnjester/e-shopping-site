@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
@@ -15,6 +17,7 @@ import org.joda.time.DateTime;
 import java.sql.Timestamp;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
@@ -30,7 +33,7 @@ import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
-public class AddPointsActivity extends BaseActivity {
+public class AddPointsActivity extends AppCompatActivity {
 
     @BindView(R.id.currencyEditText)
     CurrencyEditText mCurrencyEditText;
@@ -53,6 +56,9 @@ public class AddPointsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_points);
+        setSupportActionBar(findViewById(R.id.toolbar));
+
+        ButterKnife.bind(this);
 
         mDatabaseManager = DatabaseManager.getInstance(this);
         mSessionManager = new SessionManager(this);
@@ -65,16 +71,11 @@ public class AddPointsActivity extends BaseActivity {
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
 
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        if (mCustomer == null) {
+            return;
+        }
         totalCustomerPoints = mDatabaseManager.getTotalCustomerPointsForProgram(mProgramId, mCustomerId);
 
-        RxView.clicks(addPointsBtn).subscribe(o -> addPoints());
-        totalPointsView.setText(getString(R.string.total_points, String.valueOf(totalCustomerPoints)));
-        mCurrencyEditText.setText(String.valueOf(amountSpent));
-    }
-
-    @Override
-    protected void setupToolbar() {
-        super.setupToolbar();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -83,6 +84,10 @@ public class AddPointsActivity extends BaseActivity {
                 actionBar.setTitle(title);
             }
         }
+
+        RxView.clicks(addPointsBtn).subscribe(o -> addPoints());
+        totalPointsView.setText(getString(R.string.total_points, String.valueOf(totalCustomerPoints)));
+        mCurrencyEditText.setText(String.valueOf(amountSpent));
     }
 
     private void addPoints() {
@@ -150,6 +155,7 @@ public class AddPointsActivity extends BaseActivity {
             Bundle bundle = new Bundle();
             bundle.putInt(Constants.CASH_SPENT, amountSpent);
             bundle.putInt(Constants.TOTAL_CUSTOMER_POINTS, newTotalPoints);
+            bundle.putInt(Constants.CUSTOMER_ID, mCustomer.getId());
 
             Intent intent = new Intent();
             intent.putExtras(bundle);
@@ -157,5 +163,15 @@ public class AddPointsActivity extends BaseActivity {
             setResult(RESULT_OK, intent);
             finish();
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

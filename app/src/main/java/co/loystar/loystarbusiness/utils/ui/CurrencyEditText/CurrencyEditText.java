@@ -12,6 +12,7 @@ import java.util.Currency;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/16/17.
@@ -211,7 +212,7 @@ public class CurrencyEditText extends AppCompatEditText {
             this.setText(getDefaultHintValue());
         }
         else{
-            Log.i(this.getClass().getSimpleName(), "configureHint: Default Hint disabled; ignoring request.");
+            Timber.i("configureHint: Default Hint disabled; ignoring request.");
         }
     }
 

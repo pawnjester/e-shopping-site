@@ -21,9 +21,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,8 +63,8 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.FileUtils;
 import co.loystar.loystarbusiness.utils.RequestBodyWithProgress;
 import co.loystar.loystarbusiness.utils.ui.CurrencyEditText.CurrencyEditText;
-import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import id.zelory.compressor.Compressor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -85,7 +83,7 @@ import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 
 @RuntimePermissions
-public class ProductDetailActivity extends AppCompatActivity {
+public class ProductDetailActivity extends BaseActivity {
     /*static fields*/
     public static final String ARG_ITEM_ID = "item_id";
     private static final int REQUEST_IMAGE_CAPTURE = 111;
@@ -130,19 +128,6 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
-        Toolbar toolbar = findViewById(R.id.activity_product_detail_toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            DatabaseManager databaseManager = DatabaseManager.getInstance(this);
-            mProductItem = databaseManager.getProductById(getIntent().getIntExtra(ARG_ITEM_ID, 0));
-            if (mProductItem != null) {
-                actionBar.setTitle(mProductItem.getName());
-            }
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
-        }
 
         contentResolver = this.getContentResolver();
         mContext = this;
@@ -270,6 +255,21 @@ public class ProductDetailActivity extends AppCompatActivity {
             takePictureBtn.setOnClickListener(view -> ProductDetailActivityPermissionsDispatcher.takePictureWithCheck(ProductDetailActivity.this));
 
             getAnimations();
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            DatabaseManager databaseManager = DatabaseManager.getInstance(this);
+            mProductItem = databaseManager.getProductById(getIntent().getIntExtra(ARG_ITEM_ID, 0));
+            if (mProductItem != null) {
+                actionBar.setTitle(mProductItem.getName());
+            }
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
         }
     }
 

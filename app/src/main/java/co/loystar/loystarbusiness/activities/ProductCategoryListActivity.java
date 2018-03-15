@@ -11,11 +11,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -31,7 +29,6 @@ import android.widget.Toast;
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
 import com.beloo.widget.chipslayoutmanager.SpacingItemDecoration;
 import com.jakewharton.rxbinding2.widget.RxTextView;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,10 +48,10 @@ import co.loystar.loystarbusiness.models.entities.ProductCategory;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.ui.EditTextUtils;
-import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import io.reactivex.CompletableObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -75,8 +72,8 @@ import retrofit2.Response;
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 
-public class ProductCategoryListActivity extends RxAppCompatActivity implements DialogInterface.OnClickListener {
-    private static final String TAG = ProductCategoryListActivity.class.getSimpleName();
+public class ProductCategoryListActivity extends BaseActivity
+    implements DialogInterface.OnClickListener {
     private final String KEY_RECYCLER_STATE = "recycler_state";
     private Bundle mBundleRecyclerViewState;
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -96,13 +93,6 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_category_list);
-
-        Toolbar toolbar = findViewById(R.id.activity_product_category_list_toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         mLayout = findViewById(R.id.activity_product_category_list_container);
         mContext = this;
@@ -162,6 +152,14 @@ public class ProductCategoryListActivity extends RxAppCompatActivity implements 
 
             }
         }));
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void showContextMenu(View v) {

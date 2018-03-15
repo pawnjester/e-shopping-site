@@ -6,13 +6,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -26,8 +22,7 @@ import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
-public class CustomerDetailActivity extends RxAppCompatActivity {
-    private static final String TAG = CustomerDetailActivity.class.getSimpleName();
+public class CustomerDetailActivity extends BaseActivity {
     private static final int REQUEST_CHOOSE_PROGRAM = 145;
     private int customerId;
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -39,13 +34,6 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_detail);
-        Toolbar toolbar = findViewById(R.id.customer_detail_toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
@@ -86,6 +74,14 @@ public class CustomerDetailActivity extends RxAppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.customer_detail_container, fragment)
                     .commit();
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

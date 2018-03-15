@@ -32,13 +32,11 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
@@ -70,8 +68,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  * We want to use the support library hence AppCompatActivity
  * We use setAccountAuthenticatorResult() to set the result of adding an account
  * */
-public class AuthenticatorActivity extends RxAppCompatActivity implements LoaderCallbacks<Cursor> {
-    private static final String TAG = AuthenticatorActivity.class.getSimpleName();
+public class AuthenticatorActivity extends BaseActivity implements LoaderCallbacks<Cursor> {
     public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
     private final int REQ_SIGN_UP = 101;
     private static final int REQ_VERIFY_PHONE_NUMBER = 120;

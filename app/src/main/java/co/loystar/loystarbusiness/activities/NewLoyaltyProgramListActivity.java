@@ -4,11 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,15 +15,14 @@ import android.widget.TextView;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.models.LoyaltyProgramsFetcher;
 import co.loystar.loystarbusiness.models.pojos.LoyaltyProgram;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.models.LoyaltyProgramsFetcher;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
 
-public class NewLoyaltyProgramListActivity extends AppCompatActivity {
+public class NewLoyaltyProgramListActivity extends BaseActivity {
     private static final int REQ_CREATE_PROGRAM = 115;
-    private static final String TAG = NewLoyaltyProgramListActivity.class.getSimpleName();
     private Context mContext;
     private List<LoyaltyProgram> loyaltyPrograms;
 
@@ -33,18 +30,20 @@ public class NewLoyaltyProgramListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_loyalty_program_list);
-        Toolbar toolbar = findViewById(R.id.activity_new_loyalty_program_list_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
 
         View recyclerView = findViewById(R.id.new_loyalty_programs_rv);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {

@@ -8,10 +8,9 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -43,8 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
-    private static final String TAG = CreateNewLoyaltyProgramActivity.class.getSimpleName();
+public class CreateNewLoyaltyProgramActivity extends BaseActivity {
     /*views*/
     private EditText programNameView;
     private CurrencyEditText spendingTargetView;
@@ -62,13 +60,6 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_new_loyalty_program);
-        Toolbar toolbar = findViewById(R.id.activity_create_new_loyalty_program_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         SessionManager mSessionManager = new SessionManager(this);
@@ -153,6 +144,16 @@ public class CreateNewLoyaltyProgramActivity extends AppCompatActivity {
             else {
                 rewardExplanation.setText(getString(R.string.next_purchase_free));
             }
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 

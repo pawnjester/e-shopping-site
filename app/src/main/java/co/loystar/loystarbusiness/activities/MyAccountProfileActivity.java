@@ -7,8 +7,6 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,12 +28,12 @@ import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.api.ApiUtils;
+import co.loystar.loystarbusiness.models.BusinessTypesFetcher;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.pojos.BusinessType;
-import co.loystar.loystarbusiness.models.BusinessTypesFetcher;
 import co.loystar.loystarbusiness.utils.ui.Currency.Currency;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrencyPicker;
 import co.loystar.loystarbusiness.utils.ui.InternationalPhoneInput.InternationalPhoneInput;
@@ -46,10 +44,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyAccountProfileActivity extends AppCompatActivity
+public class MyAccountProfileActivity extends BaseActivity
         implements CurrencyPicker.OnCurrencySelectedListener {
 
-    private static final String TAG = MyAccountProfileActivity.class.getSimpleName();
     private SessionManager sessionManager;
     private DatabaseManager mDatabaseManager;
     private EditText fNameView;
@@ -69,12 +66,6 @@ public class MyAccountProfileActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_account_profile);
-        Toolbar toolbar = findViewById(R.id.activity_my_account_profile_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mLayout = findViewById(R.id.activity_my_account_profile_wrapper);
         mContext = this;
@@ -115,6 +106,14 @@ public class MyAccountProfileActivity extends AppCompatActivity
         }
 
         currencyPicker.setListener(this);
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override

@@ -10,8 +10,6 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -43,7 +41,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 
-public class MessageBroadcastActivity extends AppCompatActivity {
+public class MessageBroadcastActivity extends BaseActivity {
     private TextView charCounterView;
     private TextInputEditText msgBox;
     private TextView unitCounterView;
@@ -57,12 +55,6 @@ public class MessageBroadcastActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_broadcast);
-        Toolbar toolbar = findViewById(R.id.message_broadcast_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
@@ -100,6 +92,14 @@ public class MessageBroadcastActivity extends AppCompatActivity {
             charCounterView.setText(charCounterText);
             totalSmsCredits = mCustomerList.size() * sms_unit;
         });
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void sendMessages() {

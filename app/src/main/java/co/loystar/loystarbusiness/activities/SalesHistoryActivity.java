@@ -35,7 +35,6 @@ import android.widget.Toast;
 
 import com.darwindeveloper.onecalendar.clases.Day;
 import com.darwindeveloper.onecalendar.views.OneCalendarView;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +79,7 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import timber.log.Timber;
 
-public class SalesHistoryActivity extends RxAppCompatActivity {
+public class SalesHistoryActivity extends BaseActivity {
 
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
 
@@ -150,12 +149,6 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sales_history);
 
-        Toolbar toolbar = findViewById(R.id.activity_sales_history_toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
         mContext = this;
         ButterKnife.bind(this);
         mDataStore = DatabaseManager.getDataStore(this);
@@ -208,6 +201,14 @@ public class SalesHistoryActivity extends RxAppCompatActivity {
         if (preselectedSaleDate != null) {
             selectedDate = preselectedSaleDate;
             setTotalSales();
+        }
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
