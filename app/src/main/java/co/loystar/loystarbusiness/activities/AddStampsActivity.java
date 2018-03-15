@@ -1,14 +1,10 @@
 package co.loystar.loystarbusiness.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,7 +23,6 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +45,7 @@ import io.reactivex.Completable;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 
-public class AddStampsActivity extends RxAppCompatActivity {
+public class AddStampsActivity extends BaseActivity {
 
     private int mProgramId;
     private int amountSpent;
@@ -62,7 +57,6 @@ public class AddStampsActivity extends RxAppCompatActivity {
     private CustomerEntity mCustomer;
     private MerchantEntity merchantEntity;
     private List<StampItem> mStampItems = new ArrayList<>();
-    private boolean bluetoothPrintEnabled;
     private ReactiveEntityStore<Persistable> mDataStore;
 
     /*views*/
@@ -73,8 +67,6 @@ public class AddStampsActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_stamps);
-        Toolbar toolbar = findViewById(R.id.activity_add_stamps_toolbar);
-        setSupportActionBar(toolbar);
 
         mContext = this;
         mSessionManager = new SessionManager(this);
@@ -88,18 +80,6 @@ public class AddStampsActivity extends RxAppCompatActivity {
 
         mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            if (mCustomer != null) {
-                String title = "Add Stamps " + "(" + TextUtilsHelper.capitalize(mCustomer.getFirstName()) + ")";
-                actionBar.setTitle(title);
-            }
-        }
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        bluetoothPrintEnabled = sharedPreferences.getBoolean(getString(R.string.pref_enable_bluetooth_print_key), false);
-
         BrandButtonNormal addStampsBtn = findViewById(R.id.add_stamps);
         RxView.clicks(addStampsBtn).subscribe(o -> addStamps());
 
@@ -110,6 +90,19 @@ public class AddStampsActivity extends RxAppCompatActivity {
         totalCustomerStamps = mDatabaseManager.getTotalCustomerStampsForProgram(mProgramId, mCustomerId);
 
         setUpGridView(recyclerView, totalCustomerStamps, stampsThreshold);
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            if (mCustomer != null) {
+                String title = "Add Stamps " + "(" + TextUtilsHelper.capitalize(mCustomer.getFirstName()) + ")";
+                actionBar.setTitle(title);
+            }
+        }
     }
 
     private void addStamps() {
@@ -166,17 +159,12 @@ public class AddStampsActivity extends RxAppCompatActivity {
                 .doOnComplete(() -> {
                     int newTotalStamps = initialCustomerStamps + userStampsForThisTransaction;
                     Bundle bundle = new Bundle();
-                    bundle.putBoolean(Constants.SHOW_CONTINUE_BUTTON, true);
-                    bundle.putBoolean(Constants.PRINT_RECEIPT, bluetoothPrintEnabled);
                     bundle.putInt(Constants.TOTAL_CUSTOMER_STAMPS, newTotalStamps);
-                    bundle.putInt(Constants.LOYALTY_PROGRAM_ID, mProgramId);
-                    bundle.putInt(Constants.CUSTOMER_ID, mCustomerId);
-                    bundle.putInt(Constants.CASH_SPENT, amountSpent);
 
-                    Intent intent = new Intent(mContext, SaleWithoutPosConfirmationActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    Intent intent = new Intent();
                     intent.putExtras(bundle);
-                    startActivity(intent);
+                    setResult(RESULT_OK, intent);
+                    finish();
                 })
                 .subscribe();
         });

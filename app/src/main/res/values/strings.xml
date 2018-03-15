@@ -531,4 +531,5 @@
     <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"https://app.loystar.co\",\n  }\n}]</string>
     <string name="product_not_found">Product is missing!</string>
     <string name="sale_detail">Sale details</string>
+    <string name="title_activity_add_points">Add Points</string>
 </resources>

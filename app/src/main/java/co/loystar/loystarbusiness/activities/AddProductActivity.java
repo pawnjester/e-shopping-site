@@ -21,10 +21,9 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -85,9 +84,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @RuntimePermissions
-public class AddProductActivity extends AppCompatActivity {
+public class AddProductActivity extends BaseActivity {
     /*static fields*/
-    private static final String TAG = AddProductActivity.class.getCanonicalName();
     private static final int REQUEST_IMAGE_CAPTURE = 111;
     private static final int REQUEST_IMAGE_FROM_GALLERY = 133;
 
@@ -129,13 +127,6 @@ public class AddProductActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_product);
-        Toolbar toolbar = findViewById(R.id.activity_add_product_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
-        }
 
         getActivityInitiator = getIntent().getStringExtra(Constants.ACTIVITY_INITIATOR);
 
@@ -342,6 +333,16 @@ public class AddProductActivity extends AppCompatActivity {
         takePictureBtn.setOnClickListener(view -> AddProductActivityPermissionsDispatcher.takePictureWithCheck(this));
 
         getAnimations();
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     public void getAnimations() {

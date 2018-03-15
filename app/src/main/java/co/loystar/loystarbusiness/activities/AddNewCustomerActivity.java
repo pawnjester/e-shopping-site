@@ -14,9 +14,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.CursorLoader;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,7 +29,6 @@ import android.widget.RadioGroup;
 import com.google.firebase.crash.FirebaseCrash;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxRadioGroup;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,8 +68,7 @@ import timber.log.Timber;
 
 
 @RuntimePermissions
-public class AddNewCustomerActivity extends RxAppCompatActivity {
-    private static final String TAG = AddNewCustomerActivity.class.getSimpleName();
+public class AddNewCustomerActivity extends BaseActivity {
     /*Views*/
     private View mLayout;
     private AddCustomerButton addFromContactsBtn;
@@ -101,12 +99,6 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_new_customer);
-        Toolbar toolbar = findViewById(R.id.add_new_customer_toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         mContext = this;
         mLayout = findViewById(R.id.add_new_customer_wrapper);
@@ -174,6 +166,15 @@ public class AddNewCustomerActivity extends RxAppCompatActivity {
         });
     }
 
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(AppCompatResources.getDrawable(this, R.drawable.ic_close_white_24px));
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
 
     @SuppressWarnings("MissingPermission")
     @NeedsPermission(Manifest.permission.READ_CONTACTS)

@@ -163,8 +163,6 @@ public class MyAccountProfileActivity extends AppCompatActivity
         if (!phoneInput.isValid()) {
             if (phoneInput.getText() == null) {
                 showSnackbar(R.string.error_phone_required);
-                Snackbar.make(mLayout, R.string.error_phone_required, Snackbar.LENGTH_LONG).show();
-
             }
             else {
                 showSnackbar(R.string.error_phone_invalid);
