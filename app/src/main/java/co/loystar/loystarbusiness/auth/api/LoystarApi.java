@@ -37,6 +37,7 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -223,4 +224,15 @@ public interface LoystarApi {
 
     @POST("latest_merchant_sales")
     Call<ArrayList<Sale>> getLatestMerchantSales(@Body RequestBody requestBody);
+
+    @POST("latest_merchant_sales")
+    Observable<Response<ArrayList<Sale>>> getMerchantSales(@Body RequestBody requestBody);
+
+    @GET("sales_list")
+    Observable<Response<ArrayList<Sale>>> getSales(@Query("page[number]") int page,
+                                                   @Query("page[size]") int size);
+
+    @GET("customers_list")
+    Observable<Response<ArrayList<Customer>>> getCustomers(@Query("page[number]") int page,
+                                                   @Query("page[size]") int size);
 }

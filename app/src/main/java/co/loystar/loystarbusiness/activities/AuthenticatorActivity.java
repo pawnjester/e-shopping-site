@@ -147,6 +147,14 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
     }
 
     @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("");
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_SIGN_UP && resultCode == RESULT_OK) {

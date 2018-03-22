@@ -27,7 +27,8 @@ public class Constants {
     public static final String CREATE_LOYALTY_PROGRAM = "CREATE_LOYALTY_PROGRAM";
     public static final String CASH_SPENT = "CASH_SPENT";
     public static final String TOTAL_CUSTOMER_POINTS = "TOTAL_CUSTOMER_POINTS";
-    public static final String ADD_POINTS = "ADD_POINTS";
+    public static final String TOTAL_SALES_ON_SERVER = "TOTAL_SALES_ON_SERVER";
+    public static final String TOTAL_CUSTOMERS_ON_SERVER = "TOTAL_CUSTOMERS_ON_SERVER";
     public static final String PRINT_RECEIPT = "PRINT_RECEIPT";
     public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";
     public static final String SKIP_INTRO = "SKIP_INTRO";
@@ -44,8 +45,5 @@ public class Constants {
     public static final String NOTIFICATION_TYPE = "NOTIFICATION_TYPE";
     public static final String ORDER_RECEIVED_NOTIFICATION = "ORDER_RECEIVED_NOTIFICATION";
     public static final String NOTIFICATION_ORDER_ID = "NOTIFICATION_ORDER_ID";
-    public static final String TYPE_OF_SALE = "TYPE_OF_SALE";
-    public static final String CASH_SALE = "CASH_SALE";
-    public static final String CARD_SALE = "CARD_SALE";
     public static final String SALE_DATE = "SALE_DATE";
 }

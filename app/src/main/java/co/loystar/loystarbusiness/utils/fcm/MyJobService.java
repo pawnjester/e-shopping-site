@@ -46,7 +46,6 @@ import timber.log.Timber;
  */
 
 public class MyJobService extends JobService {
-    private static final String TAG = MyJobService.class.getSimpleName();
 
     @Override
     public boolean onStartJob(JobParameters job) {

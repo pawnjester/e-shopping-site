@@ -19,6 +19,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
@@ -104,7 +105,7 @@ import io.smooch.core.Smooch;
 import io.smooch.core.User;
 
 
-public class MerchantBackOfficeActivity extends BaseActivity
+public class MerchantBackOfficeActivity extends AppCompatActivity
     implements OnChartValueSelectedListener {
 
     private static final int REQUEST_CHOOSE_PROGRAM = 110;
@@ -191,6 +192,7 @@ public class MerchantBackOfficeActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merchant_back_office);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         ButterKnife.bind(this);
 

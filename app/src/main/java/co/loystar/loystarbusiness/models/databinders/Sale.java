@@ -123,6 +123,7 @@ public class Sale {
         this.is_paid_with_card = paid_with_card;
     }
 
+
     public boolean isPaid_with_cash() {
         return is_paid_with_cash;
     }

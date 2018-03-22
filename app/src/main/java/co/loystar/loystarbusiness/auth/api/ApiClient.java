@@ -5,7 +5,6 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
-import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
@@ -18,14 +17,12 @@ import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/1/17.
  */
 
 public class ApiClient {
-    private static final String TAG = ApiClient.class.getSimpleName();
     private static final String BASE_URL = BuildConfig.HOST;
     private static final String URL_PREFIX = BuildConfig.URL_PREFIX;
     private LoystarApi mLoystarApi;
@@ -45,7 +42,8 @@ public class ApiClient {
 
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(300, TimeUnit.SECONDS)
+                    .writeTimeout(300, TimeUnit.SECONDS)
                     .addInterceptor(chain -> {
                         Request originalRequest = chain.request();
                         if (mAccount == null) {
