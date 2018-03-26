@@ -235,4 +235,8 @@ public interface LoystarApi {
     @GET("customers_list")
     Observable<Response<ArrayList<Customer>>> getCustomers(@Query("page[number]") int page,
                                                    @Query("page[size]") int size);
+
+    @GET("orders_list")
+    Observable<Response<ArrayList<SalesOrder>>> getOrders(@Query("page[number]") int page,
+                                                           @Query("page[size]") int size);
 }

@@ -46,4 +46,5 @@ public class Constants {
     public static final String ORDER_RECEIVED_NOTIFICATION = "ORDER_RECEIVED_NOTIFICATION";
     public static final String NOTIFICATION_ORDER_ID = "NOTIFICATION_ORDER_ID";
     public static final String SALE_DATE = "SALE_DATE";
+    public static final String TOTAL_ORDERS_ON_SERVER = "TOTAL_ORDERS_ON_SERVER";
 }

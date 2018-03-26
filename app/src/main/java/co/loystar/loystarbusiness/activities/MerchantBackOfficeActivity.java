@@ -56,6 +56,7 @@ import com.onesignal.OneSignal;
 import com.roughike.bottombar.BottomBar;
 import com.uxcam.UXCam;
 
+import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -376,7 +377,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         barChart = findViewById(R.id.chart);
         barChart.setDrawValueAboveBar(true);
         barChart.setDescription(null);
-        barChart.setNoDataText("No Sale Recorded");
+        barChart.setNoDataText(getString(R.string.no_sale_recorded));
 
         // scaling can now only be done on x- and y-axis separately
         barChart.setPinchZoom(false);
@@ -397,12 +398,28 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     }
 
     private void addGraphDataset() {
-        mDataStore.select(SaleEntity.class).where(
-                SaleEntity.MERCHANT.eq(merchantEntity))
-                .get()
-                .observableResult().subscribe(entities -> {
-            if (!entities.toList().isEmpty()) {
-                ArrayList<GraphCoordinates> graphCoordinates = getGraphValues(entities.toList());
+        Selection<ReactiveResult<SaleEntity>> resultSelection = mDataStore.select(SaleEntity.class);
+        resultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        resultSelection.where(SaleEntity.CREATED_AT.greaterThanOrEqual(new Timestamp((new DateTime().minusDays(3)).getMillis())));
+
+        resultSelection.get()
+            .observableResult()
+            .subscribe(entities -> {
+                ArrayList<GraphCoordinates> graphCoordinates = new ArrayList<>();
+                if (entities.toList().isEmpty()) {
+                    DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+                    SaleEntity saleEntity = databaseManager.getLastSaleRecord();
+                    if (saleEntity != null) {
+                        ArrayList<SaleEntity> entityArrayList = new ArrayList<>();
+                        entityArrayList.add(saleEntity);
+                        graphCoordinates = getGraphValues(entityArrayList);
+                    }
+                } else {
+                    graphCoordinates = getGraphValues(entities.toList());
+                }
+                if (graphCoordinates.isEmpty()) {
+                    return;
+                }
                 ArrayList<GraphCoordinates> cashGraphValues = getCashOnlyGraphValues(graphCoordinates);
                 ArrayList<GraphCoordinates> cardGraphValues = getCardOnlyGraphValues(graphCoordinates);
 
@@ -476,7 +493,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                 barChart.invalidate();
 
                 totalSalesView.setText(getString(R.string.total_sale_value, merchantCurrencySymbol, String.valueOf(totalSalesToday)));
-            }
         });
     }
 

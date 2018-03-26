@@ -8,24 +8,19 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.firebase.crash.FirebaseCrash;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
-import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
@@ -35,11 +30,8 @@ import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import io.requery.reactivex.ReactiveSupport;
-import io.requery.reactor.ReactorResult;
 import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
-import io.requery.sql.TableCreationMode;
-import timber.log.Timber;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -59,11 +51,6 @@ public class DatabaseManager implements IDatabaseManager{
     public static @NonNull ReactiveEntityStore<Persistable> getDataStore(@NonNull Context context) {
         // override onUpgrade to handle migrating to a new version
         DatabaseSource source = new DatabaseSource(context, Models.DEFAULT, DATABASE_VERSION);
-
-        if (BuildConfig.DEBUG) {
-            // use this in development mode to drop and recreate the tables on every upgrade
-            //source.setTableCreationMode(TableCreationMode.DROP_CREATE);
-        }
 
         Configuration configuration = source.getConfiguration();
         return ReactiveSupport.toReactiveStore(new EntityDataStore<Persistable>(configuration));
@@ -120,29 +107,6 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
-    public SubscriptionEntity getMerchantSubscription(int merchantId) {
-        MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
-                .where(MerchantEntity.ID.eq(merchantId))
-                .get()
-                .firstOrNull();
-        return merchantEntity != null ? merchantEntity.getSubscription() : null;
-    }
-
-    @Nullable
-    @Override
-    public String getMerchantCustomersLastRecordDate(@NonNull MerchantEntity merchantEntity) {
-        Result<CustomerEntity> customerEntities = mDataStore.select(CustomerEntity.class)
-                .where(CustomerEntity.OWNER.eq(merchantEntity)).orderBy(CustomerEntity.UPDATED_AT.desc()).get();
-
-        CustomerEntity customerEntity = customerEntities.firstOrNull();
-        if (customerEntity != null) {
-            return mDateFormat.format(customerEntity.getUpdatedAt());
-        }
-        return null;
-    }
-
-    @Nullable
-    @Override
     public SalesTransactionEntity getCustomerLastTransaction(@NonNull MerchantEntity merchantEntity, @NonNull CustomerEntity customerEntity) {
         Selection<ReactiveResult<SalesTransactionEntity>> transactionsSelection = mDataStore.select(SalesTransactionEntity.class);
         transactionsSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
@@ -153,13 +117,10 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
-    public String getMerchantSalesLastRecordDate(@NonNull MerchantEntity merchantEntity) {
-        Result<SaleEntity> saleEntities = mDataStore.select(SaleEntity.class)
-            .where(SaleEntity.MERCHANT.eq(merchantEntity)).orderBy(SaleEntity.CREATED_AT.desc()).get();
-
-        SaleEntity saleEntity = saleEntities.firstOrNull();
-        if (saleEntity != null) {
-            return mDateFormat.format(saleEntity.getCreatedAt());
+    public SaleEntity getLastSaleRecord() {
+        Integer lastSaleId = getLastSaleRecordId();
+        if (lastSaleId != null) {
+            return mDataStore.findByKey(SaleEntity.class, lastSaleId).blockingGet();
         }
         return null;
     }
@@ -310,32 +271,10 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
-    public void deleteSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity) {
-        // clear parent associations - possible fix for `Expected 1 row affected actual 0` bug
-        salesTransactionEntity.setSale(null);
-        salesTransactionEntity.setCustomer(null);
-        salesTransactionEntity.setMerchant(null);
-        mDataStore.delete(salesTransactionEntity)
-                .subscribe(/*no-op*/);
-    }
-
-    @Override
     public void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity) {
         productCategoryEntity.setOwner(null);
         mDataStore.delete(productCategoryEntity)
                 .subscribe(/*no-op*/);
-    }
-
-    @Override
-    public void insertNewCustomer(@NonNull CustomerEntity customerEntity) {
-        CustomerEntity existingCustomer = mDataStore.select(CustomerEntity.class)
-                .where(CustomerEntity.PHONE_NUMBER.eq(customerEntity.getPhoneNumber()))
-                .get()
-                .firstOrNull();
-        if (existingCustomer == null) {
-            mDataStore.upsert(customerEntity)
-                    .subscribe(/*no-op*/);
-        }
     }
 
     @Override
@@ -390,15 +329,6 @@ public class DatabaseManager implements IDatabaseManager{
     public void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity) {
         mDataStore.update(loyaltyProgramEntity)
                 .subscribe(/*no-op*/);
-    }
-
-    @NonNull
-    @Override
-    public List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity merchantEntity) {
-        Selection<ReactiveResult<SalesTransactionEntity>> query = mDataStore.select(SalesTransactionEntity.class);
-        query.where(SalesTransactionEntity.SYNCED.eq(false));
-        query.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
-        return query.get().toList();
     }
 
     @NonNull
@@ -606,42 +536,6 @@ public class DatabaseManager implements IDatabaseManager{
             productCategoryEntities = selection.get().toList();
         }
         return productCategoryEntities;
-    }
-
-    @Override
-    public List<TransactionSmsEntity> getMerchantTransactionSms(int merchantId) {
-        return mDataStore.select(TransactionSmsEntity.class).where(TransactionSmsEntity.MERCHANT_ID.eq(merchantId)).get().toList();
-    }
-
-    @Override
-    public void deleteTransactionSms(@NonNull TransactionSmsEntity transactionSmsEntity) {
-        mDataStore.delete(transactionSmsEntity)
-            .subscribe(/*no-op*/);
-    }
-
-    @Override
-    public void insertSalesOrder(@NonNull SalesOrderEntity salesOrderEntity) {
-        mDataStore.upsert(salesOrderEntity)
-            .subscribe(/*no-op*/);
-    }
-
-    @Override
-    public void insertOrderItem(@NonNull OrderItemEntity orderItemEntity) {
-        mDataStore.upsert(orderItemEntity)
-            .subscribe(/*no-op*/);
-    }
-
-    @Nullable
-    @Override
-    public String getSalesOrdersLastRecordDate(@NonNull MerchantEntity merchantEntity) {
-        Result<SalesOrderEntity> salesOrderEntities = mDataStore.select(SalesOrderEntity.class)
-            .where(SalesOrderEntity.MERCHANT.eq(merchantEntity)).orderBy(SalesOrderEntity.UPDATED_AT.desc()).get();
-
-        SalesOrderEntity salesOrderEntity = salesOrderEntities.firstOrNull();
-        if (salesOrderEntity != null) {
-            return mDateFormat.format(salesOrderEntity.getUpdatedAt());
-        }
-        return null;
     }
 
     @Nullable

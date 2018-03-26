@@ -17,63 +17,44 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
-import org.joda.time.DateTime;
-
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.adapters.CustomerListAdapter;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
-import co.loystar.loystarbusiness.databinding.CustomerItemBinding;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.Customer;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.DownloadCustomerList;
 import co.loystar.loystarbusiness.utils.EventBus.CustomerDetailFragmentEventBus;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.DividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
-import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.RecyclerTouchListener;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
 import io.requery.Persistable;
-import io.requery.android.QueryRecyclerAdapter;
-import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
@@ -83,14 +64,16 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
+import timber.log.Timber;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.support.v4.app.NavUtils.navigateUpFromSameTask;
 
 @RuntimePermissions
-public class CustomerListActivity extends RxAppCompatActivity
-        implements DialogInterface.OnClickListener, SearchView.OnQueryTextListener {
+public class CustomerListActivity extends RxAppCompatActivity implements
+    DialogInterface.OnClickListener,
+    SearchView.OnQueryTextListener, CustomerListAdapter.OnCustomerItemClickListener {
 
     private boolean mTwoPane;
     public static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 104;
@@ -106,7 +89,6 @@ public class CustomerListActivity extends RxAppCompatActivity
 
     private EmptyRecyclerView mRecyclerView;
     private Context mContext;
-    private ExecutorService executor;
     private SessionManager mSessionManager;
     private CustomerListAdapter mAdapter;
     private ReactiveEntityStore<Persistable> mDataStore;
@@ -124,16 +106,21 @@ public class CustomerListActivity extends RxAppCompatActivity
 
         ButterKnife.bind(this);
 
-        searchFilterText = getString(R.string.all_contacts);
+        //searchFilterText = getString(R.string.all_contacts);
         myAlertDialog = new MyAlertDialog();
         mContext = this;
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
 
-        mAdapter = new CustomerListAdapter();
-        executor = Executors.newSingleThreadExecutor();
-        mAdapter.setExecutor(executor);
+        Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
+        customerSelection.where(CustomerEntity.DELETED.notEqual(true));
+        customerSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+        customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc());
+        customerSelection.limit(20);
+
+        ArrayList<CustomerEntity> customerEntities = new ArrayList<>(customerSelection.get().toList());
+        mAdapter = new CustomerListAdapter(customerEntities);
 
         if (findViewById(R.id.customer_detail_container) != null) {
             // The detail container view will be present only in the
@@ -161,10 +148,10 @@ public class CustomerListActivity extends RxAppCompatActivity
         }
         else {
             if (mTwoPane) {
-                Result<CustomerEntity> result = mAdapter.performQuery();
-                if (result.iterator().hasNext() && result.first() != null) {
+                ArrayList<CustomerEntity> entityArrayList = mAdapter.getCustomerEntities();
+                if (!entityArrayList.isEmpty()) {
                     Bundle arguments = new Bundle();
-                    arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, result.first().getId());
+                    arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, entityArrayList.get(0).getId());
                     CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
                     customerDetailFragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()
@@ -191,21 +178,25 @@ public class CustomerListActivity extends RxAppCompatActivity
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            Result<CustomerEntity> result = mAdapter.performQuery();
-            if (result.toList().size() == 1) {
-                actionBar.setTitle(getString(R.string.customer_count, "1"));
-            } else {
-                actionBar.setTitle(getString(R.string.customers_count, String.valueOf(result.toList().size())));
+            Integer result = mDataStore.count(CustomerEntity.class).get().value();
+            if (result != null) {
+                if (result == 1) {
+                    actionBar.setTitle(getString(R.string.customer_count, "1"));
+                } else {
+                    actionBar.setTitle(getString(R.string.customers_count, String.valueOf(result)));
+                }
+                actionBar.setDisplayHomeAsUpEnabled(true);
             }
-            actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
         boolean customerUpdated = getIntent().getBooleanExtra(Constants.CUSTOMER_UPDATE_SUCCESS, false);
 
         if (customerUpdated) {
             showSnackbar(R.string.customer_update_success);
-            mAdapter.queryAsync();
+            mAdapter.notifyDataSetChanged();
         }
+
+        mAdapter.enableLoadMore(true);
     }
 
     private void setupRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -233,46 +224,50 @@ public class CustomerListActivity extends RxAppCompatActivity
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(mContext, LinearLayoutManager.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mAdapter.setLoadMoreListener(this::loadNextCustomerData);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setEmptyView(emptyView);
+        mAdapter.setOnCustomerItemClickListener(this);
+    }
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(mContext, recyclerView, new RecyclerTouchListener.ClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                CustomerItemBinding customerItemBinding = (CustomerItemBinding) view.getTag();
-                if (customerItemBinding != null) {
-                    mSelectedCustomer = customerItemBinding.getCustomer();
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, mSelectedCustomer.getId());
-                        CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
-                        customerDetailFragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.customer_detail_container, customerDetailFragment)
-                                .commit();
-                    } else {
-                        Intent intent = new Intent(mContext, CustomerDetailActivity.class);
-                        intent.putExtra(CustomerDetailFragment.ARG_ITEM_ID, mSelectedCustomer.getId());
-                        startActivity(intent);
-                    }
-                }
+    private void loadNextCustomerData() {
+        Timber.e("loadNextCustomerData");
+        ArrayList<CustomerEntity> nextEntities;
+        if (TextUtils.isEmpty(searchFilterText)) {
+            Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
+            customerSelection.where(CustomerEntity.DELETED.notEqual(true));
+            customerSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+            customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc());
+            customerSelection.limit(mAdapter.getCustomerEntities().size() + 20);
+
+            nextEntities = new ArrayList<>(customerSelection.get().toList());
+        } else {
+            String query = searchFilterText.substring(0, 1).equals("0") ? searchFilterText.substring(1) : searchFilterText;
+            String searchQuery = "%" + query.toLowerCase() + "%";
+            if (TextUtilsHelper.isInteger(searchFilterText)) {
+                Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
+                phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
+                phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
+                phoneSelection.limit(mAdapter.getCustomerEntities().size() + 20);
+                nextEntities =  new ArrayList<>(phoneSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get().toList());
+            } else {
+                Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
+                nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                nameSelection.where(CustomerEntity.DELETED.notEqual(true));
+                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
+                nameSelection.limit(mAdapter.getCustomerEntities().size() + 20);
+                nextEntities =  new ArrayList<>(nameSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get().toList());
             }
 
-            @Override
-            public void onLongClick(View view, int position) {
-                CustomerItemBinding customerItemBinding = (CustomerItemBinding) view.getTag();
-                if (customerItemBinding != null) {
-                    mSelectedCustomer = customerItemBinding.getCustomer();
-                    if (mSelectedCustomer != null) {
-                        myAlertDialog.setTitle("Are you sure?");
-                        myAlertDialog.setMessage("All sales records for " + mSelectedCustomer.getFirstName() + " will be deleted as well.");
-                        myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), CustomerListActivity.this);
-                        myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
-                        myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
-                    }
-                }
-            }
-        }));
+        }
+
+        if (nextEntities.isEmpty() || nextEntities.size() < 20) {
+            mAdapter.enableLoadMore(false);
+        } else {
+            mAdapter.setCustomerEntities(nextEntities);
+            mAdapter.enableLoadMore(true);
+        }
     }
 
     @Override
@@ -288,7 +283,7 @@ public class CustomerListActivity extends RxAppCompatActivity
                     if (customerEntity != null) {
                         customerEntity.setDeleted(true);
                         mDataStore.update(customerEntity).subscribe(/*no-op*/);
-                        mAdapter.queryAsync();
+                        mAdapter.notifyItemChanged(mAdapter.getCustomerEntities().indexOf(customerEntity));
                         SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
                         String deleteText =  mSelectedCustomer.getFirstName() + " has been deleted!";
@@ -326,153 +321,42 @@ public class CustomerListActivity extends RxAppCompatActivity
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        mAdapter.enableLoadMore(true);
         if (TextUtils.isEmpty(newText)) {
-            searchFilterText = getString(R.string.all_contacts);
-            ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(null);
+            searchFilterText = null;
+            Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
+            customerSelection.where(CustomerEntity.DELETED.notEqual(true));
+            customerSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+            customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc());
+            customerSelection.limit(20);
+
+            ArrayList<CustomerEntity> customerEntities = new ArrayList<>(customerSelection.get().toList());
+            mAdapter.setCustomerEntities(customerEntities);
         }
         else {
-            ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(newText);
+            searchFilterText = newText;
+            String query = searchFilterText.substring(0, 1).equals("0") ? searchFilterText.substring(1) : searchFilterText;
+            String searchQuery = "%" + query.toLowerCase() + "%";
+            ArrayList<CustomerEntity> customerEntities;
+            if (TextUtilsHelper.isInteger(searchFilterText)) {
+                Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
+                phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
+                phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
+                phoneSelection.limit(20);
+                customerEntities =  new ArrayList<>(phoneSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get().toList());
+            } else {
+                Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
+                nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
+                nameSelection.where(CustomerEntity.DELETED.notEqual(true));
+                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
+                nameSelection.limit(20);
+                customerEntities =  new ArrayList<>(nameSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get().toList());
+            }
+            mAdapter.setCustomerEntities(customerEntities);
         }
         mRecyclerView.scrollToPosition(0);
         return true;
-    }
-
-    private class CustomerListAdapter extends
-            QueryRecyclerAdapter<CustomerEntity, BindingHolder<CustomerItemBinding>> implements Filterable {
-
-        private Filter filter;
-
-        CustomerListAdapter() {
-            super(CustomerEntity.$TYPE);
-        }
-
-        @Override
-        public Result<CustomerEntity> performQuery() {
-            if (merchantEntity == null) {
-                return null;
-            }
-
-            if (searchFilterText.equals(getString(R.string.all_contacts))) {
-                Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
-                customerSelection.where(CustomerEntity.DELETED.notEqual(true));
-                customerSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                return customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-            } else if (searchFilterText.equals(getString(R.string.last_visit_30_days))) {
-                List<Integer> customerIds = new ArrayList<>();
-                Selection<ReactiveResult<SalesTransactionEntity>> resultSelection = mDataStore.select(SalesTransactionEntity.class);
-                resultSelection.where(SalesTransactionEntity.MERCHANT.eq(merchantEntity));
-                resultSelection.where(SalesTransactionEntity.CREATED_AT.greaterThanOrEqual(new Timestamp((new DateTime().minusDays(30)).getMillis())));
-                for (SalesTransactionEntity transactionEntity: resultSelection.get().toList()) {
-                    customerIds.add(transactionEntity.getCustomer().getId());
-                }
-
-                Selection<ReactiveResult<CustomerEntity>> customerSelection = mDataStore.select(CustomerEntity.class);
-                customerSelection.where(CustomerEntity.DELETED.notEqual(true));
-                customerSelection.where(CustomerEntity.ID.in(customerIds));
-                return customerSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-            } else if (searchFilterText.equals(getString(R.string.male_only))) {
-                Selection<ReactiveResult<CustomerEntity>> maleSelection = mDataStore.select(CustomerEntity.class);
-                maleSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                maleSelection.where(CustomerEntity.DELETED.notEqual(true));
-                maleSelection.where(CustomerEntity.SEX.eq("M"));
-                return maleSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-            } else if (searchFilterText.equals(getString(R.string.female_only))) {
-                Selection<ReactiveResult<CustomerEntity>> femaleSelection = mDataStore.select(CustomerEntity.class);
-                femaleSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                femaleSelection.where(CustomerEntity.DELETED.notEqual(true));
-                femaleSelection.where(CustomerEntity.SEX.eq("F"));
-                return femaleSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-            } else {
-                String query = searchFilterText.substring(0, 1).equals("0") ? searchFilterText.substring(1) : searchFilterText;
-                String searchQuery = "%" + query.toLowerCase() + "%";
-                if (TextUtilsHelper.isInteger(searchFilterText)) {
-                    Selection<ReactiveResult<CustomerEntity>> phoneSelection = mDataStore.select(CustomerEntity.class);
-                    phoneSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                    phoneSelection.where(CustomerEntity.DELETED.notEqual(true));
-                    phoneSelection.where(CustomerEntity.PHONE_NUMBER.like(searchQuery));
-                    return phoneSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-                } else {
-                    Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
-                    nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
-                    nameSelection.where(CustomerEntity.DELETED.notEqual(true));
-                    nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
-                    return nameSelection.orderBy(CustomerEntity.FIRST_NAME.asc()).get();
-                }
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(CustomerEntity item, BindingHolder<CustomerItemBinding> holder, int position) {
-            holder.binding.setCustomer(item);
-            String lastName;
-            if (item.getLastName() == null) {
-                lastName = "";
-            } else {
-                lastName = item.getLastName();
-            }
-            String name = item.getFirstName() + " " + lastName;
-            holder.binding.customerName.setText(name);
-        }
-
-        @Override
-        public BindingHolder<CustomerItemBinding> onCreateViewHolder(ViewGroup parent, int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            CustomerItemBinding binding = CustomerItemBinding.inflate(inflater);
-            binding.getRoot().setTag(binding);
-            return new BindingHolder<>(binding);
-        }
-
-        @Override
-        public Filter getFilter() {
-            if (filter == null) {
-                filter =  new CustomerFilter(new ArrayList<>(mAdapter.performQuery().toList()));
-            }
-            return filter;
-        }
-
-        private class CustomerFilter extends Filter {
-            private ArrayList<CustomerEntity> mCustomers;
-
-            CustomerFilter(ArrayList<CustomerEntity> customers) {
-                mCustomers = new ArrayList<>();
-                synchronized (this) {
-                    mCustomers.addAll(customers);
-                }
-            }
-
-            @Override
-            protected FilterResults performFiltering(CharSequence charSequence) {
-                FilterResults result = new FilterResults();
-                String searchString = charSequence.toString();
-                if (!TextUtils.isEmpty(searchString)) {
-                    if (searchString.equals(getString(R.string.all_contacts))) {
-                        searchFilterText = getString(R.string.all_contacts);
-                    } else if (searchString.equals(getString(R.string.last_visit_30_days))) {
-                        searchFilterText = getString(R.string.last_visit_30_days);
-                    } else if (searchString.equals(getString(R.string.male_only))) {
-                        searchFilterText = getString(R.string.male_only);
-                    } else if (searchString.equals(getString(R.string.female_only))) {
-                        searchFilterText = getString(R.string.female_only);
-                    } else {
-                        searchFilterText = searchString;
-                    }
-                    result.count = 0;
-                    result.values = new ArrayList<>();
-                }
-                else {
-                    synchronized (this) {
-                        result.count = mCustomers.size();
-                        result.values = mCustomers;
-                    }
-                }
-                return result;
-            }
-
-            @Override
-            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                mAdapter.queryAsync();
-            }
-        }
     }
 
     @MainThread
@@ -498,7 +382,6 @@ public class CustomerListActivity extends RxAppCompatActivity
             mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
         }
 
-        mAdapter.queryAsync();
         CustomerDetailFragmentEventBus
                 .getInstance()
                 .getFragmentEventObservable()
@@ -509,13 +392,6 @@ public class CustomerListActivity extends RxAppCompatActivity
                         startSale();
                     }
                 });
-    }
-
-    @Override
-    protected void onDestroy() {
-        executor.shutdown();
-        mAdapter.close();
-        super.onDestroy();
     }
 
     @Override
@@ -543,45 +419,11 @@ public class CustomerListActivity extends RxAppCompatActivity
                 //
                 navigateUpFromSameTask(this);
                 return true;
-            /*case R.id.filter_customer_list:
-                showFilterMenu(toolbar);
-                return true;*/
             case R.id.download_customer_list:
                 CustomerListActivityPermissionsDispatcher.startCustomerListDownloadWithCheck(CustomerListActivity.this);
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showFilterMenu(View v) {
-        PopupMenu popup = new PopupMenu(mContext, v);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.menu_filter_customer, popup.getMenu());
-        popup.setOnMenuItemClickListener(new FilterMenuClickListener());
-        popup.setGravity(Gravity.END);
-        popup.show();
-    }
-
-    private class FilterMenuClickListener implements PopupMenu.OnMenuItemClickListener {
-
-        @Override
-        public boolean onMenuItemClick(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.all_contacts_filter:
-                    ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(getString(R.string.all_contacts));
-                    return true;
-                case R.id.last_visit_filter:
-                    ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(getString(R.string.last_visit_30_days));
-                    return true;
-                case R.id.male_only_filter:
-                    ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(getString(R.string.male_only));
-                    return true;
-                case R.id.female_only_filter:
-                    ((CustomerListAdapter) mRecyclerView.getAdapter()).getFilter().filter(getString(R.string.female_only));
-                    return true;
-            }
-            return false;
-        }
     }
 
     @SuppressWarnings("MissingPermission")
@@ -720,5 +562,35 @@ public class CustomerListActivity extends RxAppCompatActivity
         Intent intent = new Intent(mContext, LoyaltyProgramListActivity.class);
         intent.putExtra(Constants.CREATE_LOYALTY_PROGRAM, true);
         startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        mSelectedCustomer = mAdapter.getCustomerEntities().get(position);
+        if (mTwoPane) {
+            Bundle arguments = new Bundle();
+            arguments.putInt(CustomerDetailFragment.ARG_ITEM_ID, mSelectedCustomer.getId());
+            CustomerDetailFragment customerDetailFragment = new CustomerDetailFragment();
+            customerDetailFragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.customer_detail_container, customerDetailFragment)
+                .commit();
+        } else {
+            Intent intent = new Intent(mContext, CustomerDetailActivity.class);
+            intent.putExtra(CustomerDetailFragment.ARG_ITEM_ID, mSelectedCustomer.getId());
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onLongItemClick(View v, int position) {
+        mSelectedCustomer = mAdapter.getCustomerEntities().get(position);
+        if (mSelectedCustomer != null) {
+            myAlertDialog.setTitle("Are you sure?");
+            myAlertDialog.setMessage("All sales records for " + mSelectedCustomer.getFirstName() + " will be deleted as well.");
+            myAlertDialog.setPositiveButton(getString(R.string.confirm_delete_positive), CustomerListActivity.this);
+            myAlertDialog.setNegativeButtonText(getString(R.string.confirm_delete_negative));
+            myAlertDialog.show(getSupportFragmentManager(), MyAlertDialog.TAG);
+        }
     }
 }

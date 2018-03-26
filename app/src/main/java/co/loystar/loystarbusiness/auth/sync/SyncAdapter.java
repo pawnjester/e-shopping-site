@@ -54,6 +54,7 @@ import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import okhttp3.MediaType;
@@ -124,7 +125,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
-            syncSalesOrders();
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
             getContext().sendBroadcast(i);
@@ -180,69 +180,74 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     ArrayList<Customer> customers = arrayListResponse.body();
-                    if (customers == null) {
+                    if (customers == null || customers.isEmpty()) {
                         return Collections.emptyList();
                     } else {
                         return new ArrayList<>(customers.subList(0, 1));
                     }
                 }).subscribe(customer -> {
-                    int totalCustomersOnServer = mSharedPreferences.getInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, 0);
-                    double getNumberOfTrips = Math.floor((double) totalCustomersOnServer / 500);
-                    int numberOfTrips = (int) getNumberOfTrips + 1;
+                int totalCustomersOnServer = mSharedPreferences.getInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, 0);
+                double getNumberOfTrips = Math.floor((double) totalCustomersOnServer / 500);
+                int numberOfTrips = (int) getNumberOfTrips + 1;
 
-                    Timber.e("NUMBER_OF_TRIPS: %s", numberOfTrips);
-                    Timber.e("totalCustomersOnServer: %s", totalCustomersOnServer);
+                Timber.e("TOTAL_CUSTOMERS_ON_SERVER: %s", totalCustomersOnServer);
 
-                    for (int i = 0; i < numberOfTrips; i ++) {
-                        Integer totalCustomersLocally = mDataStore.count(CustomerEntity.class).get().value();
-                        if (totalCustomersLocally != null) {
-                            Timber.e("TOTAL_CUSTOMERS: %s", totalCustomersLocally);
-                            double page = Math.floor((double) totalCustomersLocally / 500);
+                for (int i = 0; i < numberOfTrips; i ++) {
+                    Integer totalCustomersLocally = mDataStore.count(CustomerEntity.class).get().value();
+                    if (totalCustomersLocally != null) {
+                        if (totalCustomersLocally == totalCustomersOnServer) {
+                            if (i + 1 == numberOfTrips) {
+                                syncSales();
+                            }
+                            continue;
+                        }
+                        Timber.e("TOTAL_CUSTOMERS_LOCALLY: %s", totalCustomersLocally);
+                        double page = Math.floor((double) totalCustomersLocally / 500);
 
-                            mApiClient.getLoystarApi(false).getCustomers((int) page + 1, 500)
-                                .flatMapIterable(response -> {
-                                    ArrayList<Customer> customers = response.body();
-                                    if (customers == null) {
-                                        return Collections.emptyList();
-                                    } else {
-                                        return customers;
-                                    }
-                                }).subscribe(newCustomer -> {
-                                if (newCustomer.isDeleted() != null && newCustomer.isDeleted()) {
-                                    CustomerEntity existingRecord = mDatabaseManager.getCustomerById(newCustomer.getId());
-                                    if (existingRecord != null) {
-                                        mDataStore.delete(existingRecord).subscribe(/*no-op*/);
-                                    }
+                        mApiClient.getLoystarApi(false).getCustomers((int) page + 1, 500)
+                            .flatMapIterable(response -> {
+                                ArrayList<Customer> customers = response.body();
+                                if (customers == null || customers.isEmpty()) {
+                                    return Collections.emptyList();
                                 } else {
-                                    CustomerEntity customerEntity = new CustomerEntity();
-                                    customerEntity.setId(newCustomer.getId());
-                                    if (newCustomer.getEmail() != null && !newCustomer.getEmail().contains("yopmail.com")) {
-                                        customerEntity.setEmail(newCustomer.getEmail());
-                                    }
-                                    customerEntity.setFirstName(newCustomer.getFirst_name());
-                                    customerEntity.setDeleted(false);
-                                    customerEntity.setLastName(newCustomer.getLast_name());
-                                    customerEntity.setSex(newCustomer.getSex());
-                                    customerEntity.setDateOfBirth(newCustomer.getDate_of_birth());
-                                    customerEntity.setPhoneNumber(newCustomer.getPhone_number());
-                                    customerEntity.setUserId(newCustomer.getUser_id());
-                                    customerEntity.setCreatedAt(new Timestamp(newCustomer.getCreated_at().getMillis()));
-                                    customerEntity.setUpdatedAt(new Timestamp(newCustomer.getUpdated_at().getMillis()));
-                                    customerEntity.setOwner(merchantEntity);
-
-                                    CustomerEntity oldEntity = mDataStore.select(CustomerEntity.class).where(CustomerEntity.PHONE_NUMBER.eq(newCustomer.getPhone_number())).get().firstOrNull();
-                                    if (oldEntity == null) {
-                                        mDataStore.upsert(customerEntity).subscribe(/*np-op*/);
-                                    } else {
-                                        Timber.e("CustomerEntity: %s", oldEntity.getId());
-                                    }
+                                    return customers;
                                 }
-                            }, Timber::e);
-                        }
-                        if (i + 1 == numberOfTrips) {
-                            syncSales();
-                        }
+                            }).subscribe(newCustomer -> {
+                            if (newCustomer.isDeleted() != null && newCustomer.isDeleted()) {
+                                CustomerEntity existingRecord = mDatabaseManager.getCustomerById(newCustomer.getId());
+                                if (existingRecord != null) {
+                                    mDataStore.delete(existingRecord).subscribe(/*no-op*/);
+                                }
+                            } else {
+                                CustomerEntity customerEntity = new CustomerEntity();
+                                customerEntity.setId(newCustomer.getId());
+                                if (newCustomer.getEmail() != null && !newCustomer.getEmail().contains("yopmail.com")) {
+                                    customerEntity.setEmail(newCustomer.getEmail());
+                                }
+                                customerEntity.setFirstName(newCustomer.getFirst_name());
+                                customerEntity.setDeleted(false);
+                                customerEntity.setLastName(newCustomer.getLast_name());
+                                customerEntity.setSex(newCustomer.getSex());
+                                customerEntity.setDateOfBirth(newCustomer.getDate_of_birth());
+                                customerEntity.setPhoneNumber(newCustomer.getPhone_number());
+                                customerEntity.setUserId(newCustomer.getUser_id());
+                                customerEntity.setCreatedAt(new Timestamp(newCustomer.getCreated_at().getMillis()));
+                                customerEntity.setUpdatedAt(new Timestamp(newCustomer.getUpdated_at().getMillis()));
+                                customerEntity.setOwner(merchantEntity);
+
+                                CustomerEntity oldEntity = mDataStore.select(CustomerEntity.class).where(CustomerEntity.PHONE_NUMBER.eq(newCustomer.getPhone_number())).get().firstOrNull();
+                                if (oldEntity == null) {
+                                    mDataStore.upsert(customerEntity).subscribe(/*np-op*/);
+                                } else {
+                                    Timber.e("CustomerEntity: %s", oldEntity.getId());
+                                }
+                            }
+                        }, Timber::e);
                     }
+                    if (i + 1 == numberOfTrips) {
+                        syncSales();
+                    }
+                }
             }, Timber::e);
 
             /* sync customers marked for deletion*/
@@ -279,12 +284,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     ArrayList<Sale> sales = arrayListResponse.body();
-                    if (sales == null) {
+                    if (sales == null || sales.isEmpty()) {
                         return Collections.emptyList();
                     } else {
                         return new ArrayList<>(sales.subList(0, 1));
                     }
-            }).subscribe(sale -> {
+                }).subscribe(sale -> {
                 int totalSalesOnServer = mSharedPreferences.getInt(Constants.TOTAL_SALES_ON_SERVER, 0);
                 double getNumberOfTrips = Math.floor((double) totalSalesOnServer / 500);
                 int numberOfTrips = (int) getNumberOfTrips + 1;
@@ -292,19 +297,27 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 for (int i = 0; i < numberOfTrips; i ++) {
                     Integer totalSalesLocally = mDataStore.count(SaleEntity.class).where(SaleEntity.SYNCED.eq(true)).get().value();
                     if (totalSalesLocally != null) {
-                        Timber.e("TOTAL_SALES: %s", totalSalesLocally);
+                        if (totalSalesLocally == totalSalesOnServer) {
+                            if (i + 1 == numberOfTrips) {
+                                uploadNewSales();
+                                Intent intent = new Intent(Constants.SALES_TRANSACTIONS_SYNC_FINISHED);
+                                getContext().sendBroadcast(intent);
+                            }
+                            continue;
+                        }
+                        Timber.e("TOTAL_SALES_LOCALLY: %s", totalSalesLocally);
                         double page = Math.floor((double) totalSalesLocally / 500);
 
                         mApiClient.getLoystarApi(false)
                             .getSales((int) page + 1, 500)
                             .flatMapIterable(arrayListResponse -> {
                                 ArrayList<Sale> sales = arrayListResponse.body();
-                                if (sales == null) {
+                                if (sales == null || sales.isEmpty()) {
                                     return Collections.emptyList();
                                 } else {
                                     return sales;
                                 }
-                        })
+                            })
                             .subscribe(newSale -> {
                                 SaleEntity newSaleEntity = new SaleEntity();
                                 newSaleEntity.setId(newSale.getId());
@@ -343,125 +356,261 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 });
                             }, Timber::e);
                     }
+                    if (i + 1 == numberOfTrips) {
+                        uploadNewSales();
+                        Intent intent = new Intent(Constants.SALES_TRANSACTIONS_SYNC_FINISHED);
+                        getContext().sendBroadcast(intent);
+                    }
                 }
 
             }, Timber::e);
+        }
 
-            List<SaleEntity> unsyncedSaleEntities = mDatabaseManager.getUnsyncedSaleEnties(merchantEntity);
-            if (!unsyncedSaleEntities.isEmpty()) {
-                /*sync sales records with the server*/
-                SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
-                String deviceId = sharedPreferences.getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
-                for (SaleEntity saleEntity: unsyncedSaleEntities) {
-                    try {
-                        JSONObject jsonObjectData = new JSONObject();
-                        if (saleEntity.getCustomer() != null) {
-                            jsonObjectData.put("user_id", saleEntity.getCustomer().getUserId());
+        @Override
+        public void uploadNewSales() {
+            SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
+            String deviceId = sharedPreferences.getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
+
+            for (SaleEntity saleEntity: mDatabaseManager.getUnsyncedSaleEnties(merchantEntity)) {
+                try {
+                    JSONObject jsonObjectData = new JSONObject();
+                    if (saleEntity.getCustomer() != null) {
+                        jsonObjectData.put("user_id", saleEntity.getCustomer().getUserId());
+                    }
+                    jsonObjectData.put("device_id", deviceId);
+                    jsonObjectData.put("is_paid_with_cash", saleEntity.isPayedWithCash());
+                    jsonObjectData.put("is_paid_with_card", saleEntity.isPayedWithCard());
+                    jsonObjectData.put("is_paid_with_mobile", saleEntity.isPayedWithMobile());
+
+                    JSONArray jsonArray = new JSONArray();
+
+                    for (SalesTransactionEntity transactionEntity: saleEntity.getTransactions()) {
+                        LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
+                        if (programEntity != null) {
+                            JSONObject jsonObject = new JSONObject();
+
+                            if (transactionEntity.getUserId() > 0) {
+                                jsonObject.put("user_id", transactionEntity.getUserId());
+                            }
+                            jsonObject.put("merchant_id", merchantEntity.getId());
+                            jsonObject.put("amount", transactionEntity.getAmount());
+
+                            if (transactionEntity.getProductId() > 0) {
+                                jsonObject.put("product_id", transactionEntity.getProductId());
+                            }
+
+                            jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                            jsonObject.put("program_type", transactionEntity.getProgramType());
+                            if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
+                                jsonObject.put("points", transactionEntity.getPoints());
+                            }
+                            else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
+                                jsonObject.put("stamps", transactionEntity.getStamps());
+                            }
+
+                            jsonArray.put(jsonObject);
                         }
-                        jsonObjectData.put("device_id", deviceId);
-                        jsonObjectData.put("is_paid_with_cash", saleEntity.isPayedWithCash());
-                        jsonObjectData.put("is_paid_with_card", saleEntity.isPayedWithCard());
-                        jsonObjectData.put("is_paid_with_mobile", saleEntity.isPayedWithMobile());
+                    }
 
-                        JSONArray jsonArray = new JSONArray();
+                    jsonObjectData.put("transactions", jsonArray);
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("sale", jsonObjectData);
 
-                        for (SalesTransactionEntity transactionEntity: saleEntity.getTransactions()) {
-                            LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
-                            if (programEntity != null) {
-                                JSONObject jsonObject = new JSONObject();
+                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                    mApiClient.getLoystarApi(false).createSale(requestBody).enqueue(new Callback<Sale>() {
+                        @Override
+                        public void onResponse(@NonNull Call<Sale> call, @NonNull Response<Sale> response) {
+                            if (response.isSuccessful()) {
+                                Sale sale = response.body();
+                                if (sale != null) {
+                                    /*
+                                    * Local data needs to be in-sync with the remote server.
+                                    * We could just set the synced flag to true,
+                                    * however since we fetch latest records using
+                                    * the last local record date, the date for records on
+                                    * the server must be same as the records locally.
+                                    * Hence, to avoid any unforeseen bugs, we delete
+                                    * the synced records locally and insert the new records
+                                    * from the server.
+                                    * */
+                                    mDataStore.delete(saleEntity)
+                                        .subscribeOn(Schedulers.io())
+                                        .doOnComplete(() -> {
+                                            CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
+                                            SaleEntity newSaleEntity = new SaleEntity();
+                                            newSaleEntity.setId(sale.getId());
+                                            newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
+                                            newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
+                                            newSaleEntity.setMerchant(merchantEntity);
+                                            newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
+                                            newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
+                                            newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
+                                            newSaleEntity.setTotal(sale.getTotal());
+                                            newSaleEntity.setSynced(true);
+                                            newSaleEntity.setCustomer(customerEntity);
 
-                                if (transactionEntity.getUserId() > 0) {
-                                    jsonObject.put("user_id", transactionEntity.getUserId());
+                                            mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+                                                for (Transaction transaction: sale.getTransactions()) {
+                                                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                                                    transactionEntity.setId(transaction.getId());
+                                                    transactionEntity.setAmount(transaction.getAmount());
+                                                    transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
+                                                    transactionEntity.setPoints(transaction.getPoints());
+                                                    transactionEntity.setStamps(transaction.getStamps());
+                                                    transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
+                                                    transactionEntity.setProductId(transaction.getProduct_id());
+                                                    transactionEntity.setProgramType(transaction.getProgram_type());
+                                                    transactionEntity.setUserId(transaction.getUser_id());
+
+                                                    transactionEntity.setSale(saleEntity);
+                                                    transactionEntity.setMerchant(merchantEntity);
+                                                    transactionEntity.setCustomer(saleEntity.getCustomer());
+
+                                                    mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+                                                }
+                                            });
+                                    });
                                 }
-                                jsonObject.put("merchant_id", merchantEntity.getId());
-                                jsonObject.put("amount", transactionEntity.getAmount());
-
-                                if (transactionEntity.getProductId() > 0) {
-                                    jsonObject.put("product_id", transactionEntity.getProductId());
-                                }
-
-                                jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
-                                jsonObject.put("program_type", transactionEntity.getProgramType());
-                                if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
-                                    jsonObject.put("points", transactionEntity.getPoints());
-                                }
-                                else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
-                                    jsonObject.put("stamps", transactionEntity.getStamps());
-                                }
-
-                                jsonArray.put(jsonObject);
                             }
                         }
 
-                        jsonObjectData.put("transactions", jsonArray);
-                        JSONObject requestData = new JSONObject();
-                        requestData.put("sale", jsonObjectData);
+                        @Override
+                        public void onFailure(@NonNull Call<Sale> call, @NonNull Throwable t) {
+                            Timber.e(t);
+                        }
+                    });
 
-                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                        mApiClient.getLoystarApi(false).createSale(requestBody).enqueue(new Callback<Sale>() {
-                            @Override
-                            public void onResponse(@NonNull Call<Sale> call, @NonNull Response<Sale> response) {
-                                if (response.isSuccessful()) {
-                                    Sale sale = response.body();
-                                    if (sale != null) {
-                                        /*
-                                        * Local data needs to be in-sync with the remote server.
-                                        * We could just set the synced flag to true,
-                                        * however since we fetch latest records using
-                                        * the last local record date, the date for records on
-                                        * the server must be same as the records locally.
-                                        * Hence, to avoid any unforeseen bugs, we delete
-                                        * the synced records locally and insert the new records
-                                        * from the server.
-                                        * */
-                                        mDataStore.delete(saleEntity).blockingAwait();
-                                        CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(sale.getUser_id());
-                                        SaleEntity newSaleEntity = new SaleEntity();
-                                        newSaleEntity.setId(sale.getId());
-                                        newSaleEntity.setCreatedAt(new Timestamp(sale.getCreated_at().getMillis()));
-                                        newSaleEntity.setUpdatedAt(new Timestamp(sale.getUpdated_at().getMillis()));
-                                        newSaleEntity.setMerchant(merchantEntity);
-                                        newSaleEntity.setPayedWithCard(sale.isPaid_with_card());
-                                        newSaleEntity.setPayedWithCash(sale.isPaid_with_cash());
-                                        newSaleEntity.setPayedWithMobile(sale.isPaid_with_mobile());
-                                        newSaleEntity.setTotal(sale.getTotal());
-                                        newSaleEntity.setSynced(true);
-                                        newSaleEntity.setCustomer(customerEntity);
+                } catch (JSONException e) {
+                    Timber.e(e);
+                }
+            }
+            syncSalesOrders();
+        }
 
-                                        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
-                                            for (Transaction transaction: sale.getTransactions()) {
-                                                SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
-                                                transactionEntity.setId(transaction.getId());
-                                                transactionEntity.setAmount(transaction.getAmount());
-                                                transactionEntity.setMerchantLoyaltyProgramId(transaction.getMerchant_loyalty_program_id());
-                                                transactionEntity.setPoints(transaction.getPoints());
-                                                transactionEntity.setStamps(transaction.getStamps());
-                                                transactionEntity.setCreatedAt(new Timestamp(transaction.getCreated_at().getMillis()));
-                                                transactionEntity.setProductId(transaction.getProduct_id());
-                                                transactionEntity.setProgramType(transaction.getProgram_type());
-                                                transactionEntity.setUserId(transaction.getUser_id());
+        @Override
+        public void syncSalesOrders() {
+            mApiClient.getLoystarApi(false).getOrders(1, 500)
+                .flatMapIterable(arrayListResponse -> {
+                    String getTotal = arrayListResponse.headers().get("Total");
+                    if (!TextUtils.isEmpty(getTotal)) {
+                        // Save total customers figure so we can track if we have full customers data locally
+                        SharedPreferences.Editor editor = mSharedPreferences.edit();
+                        editor.putInt(Constants.TOTAL_ORDERS_ON_SERVER, Integer.parseInt(getTotal));
+                        editor.apply();
+                    }
 
-                                                transactionEntity.setSale(saleEntity);
-                                                transactionEntity.setMerchant(merchantEntity);
-                                                transactionEntity.setCustomer(saleEntity.getCustomer());
+                    ArrayList<SalesOrder> salesOrders = arrayListResponse.body();
+                    if (salesOrders == null || salesOrders.isEmpty()) {
+                        return Collections.emptyList();
+                    } else {
+                        return new ArrayList<>(salesOrders.subList(0, 1));
+                    }
+            }).subscribe(s -> {
+                int totalOrdersOnServer = mSharedPreferences.getInt(Constants.TOTAL_ORDERS_ON_SERVER, 0);
+                double getNumberOfTrips = Math.floor((double) totalOrdersOnServer / 500);
+                int numberOfTrips = (int) getNumberOfTrips + 1;
 
-                                                mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
-                                            }
-                                        });
+                for (int i = 0; i < numberOfTrips; i ++) {
+                    Integer totalOrdersLocally = mDataStore.count(SalesOrderEntity.class).get().value();
+                    if (totalOrdersLocally != null) {
+                        if (totalOrdersLocally == totalOrdersOnServer) {
+                            if (i + 1 == numberOfTrips) {
+                                updateSalesOrders();
+                            }
+                            continue;
+                        }
+                        Timber.e("TOTAL_ORDERS_LOCALLY: %s", totalOrdersLocally);
+                        double page = Math.floor((double) totalOrdersLocally / 500);
+
+                        mApiClient.getLoystarApi(false)
+                            .getOrders((int) page + 1, 500)
+                            .flatMapIterable(arrayListResponse -> {
+                                Timber.e("RES: %s", arrayListResponse.isSuccessful());
+                                ArrayList<SalesOrder> salesOrders = arrayListResponse.body();
+                                if (salesOrders == null || salesOrders.isEmpty()) {
+                                    return Collections.emptyList();
+                                } else {
+                                    return salesOrders;
+                                }
+                            }).subscribe(salesOrder -> {
+                            CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(salesOrder.getUser_id());
+                            Timber.e("CUSTOMER: %s", customerEntity);
+                            if (customerEntity != null) {
+                                SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
+                                salesOrderEntity.setMerchant(merchantEntity);
+                                salesOrderEntity.setId(salesOrder.getId());
+                                salesOrderEntity.setStatus(salesOrder.getStatus());
+                                salesOrderEntity.setUpdateRequired(false);
+                                salesOrderEntity.setTotal(salesOrder.getTotal());
+                                salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
+                                salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
+                                salesOrderEntity.setCustomer(customerEntity);
+
+                                ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
+                                for (OrderItem orderItem: salesOrder.getOrder_items()) {
+                                    OrderItemEntity orderItemEntity = new OrderItemEntity();
+                                    orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
+                                    orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
+                                    orderItemEntity.setId(orderItem.getId());
+                                    orderItemEntity.setQuantity(orderItem.getQuantity());
+                                    orderItemEntity.setUnitPrice(orderItem.getUnit_price());
+                                    orderItemEntity.setTotalPrice(orderItem.getTotal_price());
+                                    ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
+                                    if (productEntity != null) {
+                                        orderItemEntity.setProduct(productEntity);
+                                        orderItemEntities.add(orderItemEntity);
                                     }
                                 }
+
+                                if (!orderItemEntities.isEmpty()) {
+                                    mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
+                                        for (OrderItemEntity orderItemEntity: orderItemEntities) {
+                                            orderItemEntity.setSalesOrder(orderEntity);
+                                            mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
+                                        }
+                                    });
+                                }
                             }
-
-                            @Override
-                            public void onFailure(@NonNull Call<Sale> call, @NonNull Throwable t) {
-
-                            }
-                        });
-
-                    } catch (JSONException e) {
-                        Timber.e(e);
+                        }, Timber::e);
+                    }
+                    if (i + 1 == numberOfTrips) {
+                        updateSalesOrders();
                     }
                 }
+
+            }, Timber::e);
+        }
+
+        @Override
+        public void updateSalesOrders() {
+            List<SalesOrderEntity> updateRequiredSalesOrders = mDatabaseManager.getUpdateRequiredSalesOrders(merchantEntity);
+            try {
+                for (SalesOrderEntity salesOrderEntity: updateRequiredSalesOrders) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("status", salesOrderEntity.getStatus());
+
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("order", jsonObject);
+
+                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+
+                    mApiClient.getLoystarApi(false).updateMerchantOrder(salesOrderEntity.getId(), requestBody).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                salesOrderEntity.setUpdateRequired(false);
+                                mDataStore.update(salesOrderEntity).subscribe(/*no-op*/);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                        }
+                    });
+                }
+            } catch (JSONException e) {
+                Timber.e(e);
             }
         }
 
@@ -744,122 +893,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     }
                 });
-            }
-        }
-
-        @Override
-        public void syncSalesOrders() {
-            int totalCustomersOnServer = mSharedPreferences.getInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, 0);
-            Integer totalCustomersLocally = mDataStore.count(CustomerEntity.class).get().value();
-
-            /*
-            * Only sync for new sales orders if we have full customers data locally
-            * */
-            if (totalCustomersLocally != null) {
-                if (totalCustomersLocally >= totalCustomersOnServer) {
-                    String timeStamp = mDatabaseManager.getSalesOrdersLastRecordDate(merchantEntity);
-                    JSONObject jsonObjectData = new JSONObject();
-                    try {
-                        if (timeStamp == null) {
-                            jsonObjectData.put("time_stamp", 0);
-                        } else {
-                            jsonObjectData.put("time_stamp", timeStamp);
-                        }
-                        JSONObject requestData = new JSONObject();
-                        requestData.put("data", jsonObjectData);
-
-                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                        mApiClient.getLoystarApi(false).getMerchantOrders(requestBody).enqueue(new Callback<ArrayList<SalesOrder>>() {
-                            @Override
-                            public void onResponse(@NonNull Call<ArrayList<SalesOrder>> call, @NonNull Response<ArrayList<SalesOrder>> response) {
-                                if (response.isSuccessful()) {
-                                    ArrayList<SalesOrder> salesOrders = response.body();
-                                    if (salesOrders != null) {
-                                        for (SalesOrder salesOrder: salesOrders) {
-                                            CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(salesOrder.getUser_id());
-                                            if (customerEntity != null) {
-                                                SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
-                                                salesOrderEntity.setMerchant(merchantEntity);
-                                                salesOrderEntity.setId(salesOrder.getId());
-                                                salesOrderEntity.setStatus(salesOrder.getStatus());
-                                                salesOrderEntity.setUpdateRequired(false);
-                                                salesOrderEntity.setTotal(salesOrder.getTotal());
-                                                salesOrderEntity.setCreatedAt(new Timestamp(salesOrder.getCreated_at().getMillis()));
-                                                salesOrderEntity.setUpdatedAt(new Timestamp(salesOrder.getUpdated_at().getMillis()));
-                                                salesOrderEntity.setCustomer(customerEntity);
-
-                                                ArrayList<OrderItemEntity> orderItemEntities = new ArrayList<>();
-                                                for (OrderItem orderItem: salesOrder.getOrder_items()) {
-                                                    OrderItemEntity orderItemEntity = new OrderItemEntity();
-                                                    orderItemEntity.setCreatedAt(new Timestamp(orderItem.getCreated_at().getMillis()));
-                                                    orderItemEntity.setUpdatedAt(new Timestamp(orderItem.getUpdated_at().getMillis()));
-                                                    orderItemEntity.setId(orderItem.getId());
-                                                    orderItemEntity.setQuantity(orderItem.getQuantity());
-                                                    orderItemEntity.setUnitPrice(orderItem.getUnit_price());
-                                                    orderItemEntity.setTotalPrice(orderItem.getTotal_price());
-                                                    ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, orderItem.getProduct_id()).blockingGet();
-                                                    if (productEntity != null) {
-                                                        orderItemEntity.setProduct(productEntity);
-                                                        orderItemEntities.add(orderItemEntity);
-                                                    }
-                                                }
-
-                                                if (!orderItemEntities.isEmpty()) {
-                                                    mDataStore.upsert(salesOrderEntity).subscribe(orderEntity -> {
-                                                        for (OrderItemEntity orderItemEntity: orderItemEntities) {
-                                                            orderItemEntity.setSalesOrder(orderEntity);
-                                                            mDataStore.upsert(orderItemEntity).subscribe(/*no-op*/);
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        }
-                                        Intent i = new Intent(Constants.SALES_TRANSACTIONS_SYNC_FINISHED);
-                                        getContext().sendBroadcast(i);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(@NonNull Call<ArrayList<SalesOrder>> call, @NonNull Throwable t) {
-                                Timber.e(t);
-                            }
-                        });
-                    } catch (JSONException e) {
-                        Timber.e(e);
-                    }
-                }
-            }
-
-            /*sync sales orders that need to be updated on the server*/
-            List<SalesOrderEntity> updateRequiredSalesOrders = mDatabaseManager.getUpdateRequiredSalesOrders(merchantEntity);
-            try {
-                for (SalesOrderEntity salesOrderEntity: updateRequiredSalesOrders) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("status", salesOrderEntity.getStatus());
-
-                    JSONObject requestData = new JSONObject();
-                    requestData.put("order", jsonObject);
-
-                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-
-                    mApiClient.getLoystarApi(false).updateMerchantOrder(salesOrderEntity.getId(), requestBody).enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                            if (response.isSuccessful()) {
-                                salesOrderEntity.setUpdateRequired(false);
-                                mDataStore.upsert(salesOrderEntity).subscribe(/*no-op*/);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
-                        }
-                    });
-                }
-            } catch (JSONException e) {
-                Timber.e(e);
             }
         }
     }

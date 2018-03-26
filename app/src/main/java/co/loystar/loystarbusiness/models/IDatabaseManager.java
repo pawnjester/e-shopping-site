@@ -10,15 +10,11 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
-import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
-import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
-import co.loystar.loystarbusiness.models.entities.TransactionSms;
-import co.loystar.loystarbusiness.models.entities.TransactionSmsEntity;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -39,19 +35,13 @@ public interface IDatabaseManager {
     BirthdayOfferPresetSmsEntity getMerchantBirthdayOfferPresetSms(int merchantId);
 
     @Nullable
-    SubscriptionEntity getMerchantSubscription(int merchantId);
-
-    @Nullable
-    String getMerchantCustomersLastRecordDate(@NonNull MerchantEntity merchantEntity);
-
-    @Nullable
     SalesTransactionEntity getCustomerLastTransaction(
             @NonNull MerchantEntity merchantEntity,
             @NonNull CustomerEntity customerEntity
     );
 
     @Nullable
-    String getMerchantSalesLastRecordDate(@NonNull MerchantEntity merchantEntity);
+    SaleEntity getLastSaleRecord();
 
     @Nullable
     String getMerchantLoyaltyProgramsLastRecordDate(@NonNull MerchantEntity merchantEntity);
@@ -86,11 +76,7 @@ public interface IDatabaseManager {
 
     void deleteProduct(@NonNull ProductEntity productEntity);
 
-    void deleteSalesTransaction(@NonNull SalesTransactionEntity salesTransactionEntity);
-
     void deleteProductCategory(@NonNull ProductCategoryEntity productCategoryEntity);
-
-    void insertNewCustomer(@NonNull CustomerEntity customerEntity);
 
     void insertNewProduct(@NonNull ProductEntity productEntity);
 
@@ -109,9 +95,6 @@ public interface IDatabaseManager {
     void updateProduct (@NonNull ProductEntity productEntity);
 
     void updateLoyaltyProgram(@NonNull LoyaltyProgramEntity loyaltyProgramEntity);
-
-    @NonNull
-    List<SalesTransactionEntity> getUnsyncedSalesTransactions(@NonNull MerchantEntity  merchantEntity);
 
     @NonNull
     List<SaleEntity> getUnsyncedSaleEnties(@NonNull MerchantEntity  merchantEntity);
@@ -148,17 +131,6 @@ public interface IDatabaseManager {
     List<LoyaltyProgramEntity> getMerchantLoyaltyPrograms(int merchantId);
 
     List<ProductCategoryEntity> getMerchantProductCategories(int merchantId);
-
-    List<TransactionSmsEntity> getMerchantTransactionSms(int merchantId);
-
-    void deleteTransactionSms(@NonNull TransactionSmsEntity transactionSmsEntity);
-
-    void insertSalesOrder(@NonNull SalesOrderEntity salesOrderEntity);
-
-    void insertOrderItem(@NonNull OrderItemEntity orderItemEntity);
-
-    @Nullable
-    String getSalesOrdersLastRecordDate(@NonNull MerchantEntity merchantEntity);
 
     @Nullable
     CustomerEntity getCustomerByUserId(int userId);
