@@ -157,7 +157,7 @@
     <string name="error_phone_required">Please enter phone number</string>
     <string name="error_phone_invalid">Phone number is not valid</string>
     <string name="error_gender_required">Please choose gender</string>
-    <string name="error_phone_not_unique">Phone number is already taken. Please change.</string>
+    <string name="error_phone_not_unique">Phone number is already in use</string>
     <string name="error_email_not_unique">Email is already taken. Please change.</string>
     <string name="a_moment">just a moment…</string>
     <string name="title_activity_edit_customer_details">Edit profile</string>
@@ -533,4 +533,6 @@
     <string name="sale_detail">Sale details</string>
     <string name="title_activity_add_points">Add Points</string>
     <string name="no_sale_recorded">No Sale Recorded</string>
+    <string name="no_more_item">No more item</string>
+    <string name="load_field">Load failed</string>
 </resources>
