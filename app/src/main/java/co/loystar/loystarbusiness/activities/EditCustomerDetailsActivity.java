@@ -161,15 +161,18 @@ public class EditCustomerDetailsActivity extends BaseActivity {
             userFnameField.requestFocus();
             return;
         }
-        if (!userPhoneField.isValid()) {
-            if (TextUtils.isEmpty(phoneNumber)) {
-                showSnackbar(R.string.error_phone_required);
-
-            }
-            else {
-                showSnackbar(R.string.error_phone_invalid);
-            }
+        if (TextUtils.isEmpty(phoneNumber)) {
+            showSnackbar(R.string.error_phone_required);
             return;
+        } else {
+            if (!userPhoneField.isValid()) {
+                showSnackbar(R.string.error_phone_invalid);
+                return;
+            }
+            if (!userPhoneField.isUnique()) {
+                showSnackbar(R.string.error_phone_not_unique);
+                return;
+            }
         }
         if (!validateEmail()) {
             return;
