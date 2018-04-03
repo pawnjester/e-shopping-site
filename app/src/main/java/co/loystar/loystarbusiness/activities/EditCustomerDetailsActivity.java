@@ -169,7 +169,7 @@ public class EditCustomerDetailsActivity extends BaseActivity {
                 showSnackbar(R.string.error_phone_invalid);
                 return;
             }
-            if (!userPhoneField.isUnique()) {
+            if (!mCustomer.getPhoneNumber().equals(phoneNumber) && !userPhoneField.isUnique()) {
                 showSnackbar(R.string.error_phone_not_unique);
                 return;
             }
@@ -212,11 +212,10 @@ public class EditCustomerDetailsActivity extends BaseActivity {
             apiClient.getLoystarApi(false).updateCustomer(mCustomer.getId(), requestBody).enqueue(new Callback<Customer>() {
                 @Override
                 public void onResponse(@NonNull Call<Customer> call, @NonNull Response<Customer> response) {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
                     if (response.isSuccessful()) {
-                        if (progressDialog.isShowing()) {
-                            progressDialog.dismiss();
-                        }
-
                         Customer customer = response.body();
                         if (customer == null) {
                             showSnackbar(R.string.unknown_error);
@@ -241,12 +240,20 @@ public class EditCustomerDetailsActivity extends BaseActivity {
                         ObjectMapper mapper = ApiUtils.getObjectMapper(false);
                         try {
                             ResponseBody responseBody = response.errorBody();
-                            if (responseBody != null) {
+                            if (responseBody == null) {
+                                showSnackbar(R.string.unknown_error);
+                            } else {
                                 JsonNode responseObject = mapper.readTree(responseBody.charStream());
                                 JSONObject errorObject = new JSONObject(responseObject.toString());
-                                JSONObject errors = errorObject.getJSONObject("errors");
-                                JSONArray fullMessagesArray = errors.getJSONArray("full_messages");
-                                Snackbar.make(mLayout, fullMessagesArray.join(", "), Snackbar.LENGTH_LONG).show();
+                                JSONArray fullMessagesArray = errorObject.getJSONArray("full_messages");
+                                StringBuilder stringBuilder = new StringBuilder();
+                                for (int i = 0; i < fullMessagesArray.length(); i++) {
+                                    stringBuilder.append(fullMessagesArray.get(i));
+                                    if (i + 1 < fullMessagesArray.length()) {
+                                        stringBuilder.append(", ");
+                                    }
+                                }
+                                Snackbar.make(mLayout, stringBuilder.toString(), Snackbar.LENGTH_LONG).show();
                             }
                         } catch (IOException | JSONException e) {
                             showSnackbar(R.string.unknown_error);
