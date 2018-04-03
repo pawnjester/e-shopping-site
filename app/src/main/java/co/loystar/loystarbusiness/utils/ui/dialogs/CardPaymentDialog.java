@@ -76,7 +76,7 @@ public class CardPaymentDialog extends AppCompatDialogFragment {
             }
         });
 
-        includeCustomerDetailCheckBox.setChecked(true);
+        includeCustomerDetailCheckBox.setChecked(false);
 
         includeCustomerDetailCheckBox.setOnClickListener(view -> {
             CheckBox checkBox = (CheckBox) view;
