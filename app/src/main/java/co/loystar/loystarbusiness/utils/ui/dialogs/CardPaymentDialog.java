@@ -34,7 +34,7 @@ public class CardPaymentDialog extends AppCompatDialogFragment {
     @BindView(R.id.includeCustomerDetail)
     CheckBox includeCustomerDetailCheckBox;
 
-    private boolean showCustomerDialog = true;
+    private boolean showCustomerDialog = false;
     private CardPaymentDialogOnCompleteListener mListener;
 
     public static CardPaymentDialog newInstance(double totalCharge) {
@@ -85,9 +85,7 @@ public class CardPaymentDialog extends AppCompatDialogFragment {
 
         builder.setView(rootView);
         builder.setTitle(getString(R.string.card_payment));
-        builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
+        builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> dialogInterface.dismiss());
         return builder.create();
     }
 

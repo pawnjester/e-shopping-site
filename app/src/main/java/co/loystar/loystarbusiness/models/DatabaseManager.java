@@ -171,13 +171,11 @@ public class DatabaseManager implements IDatabaseManager{
             try {
                 lastSaleId = lastSaleTuple.get(0);
             } catch (ClassCastException e) {
-                FirebaseCrash.report(e);
                 try {
                     Long id = lastSaleTuple.get(0);
                     lastSaleId = id.intValue();
                 } catch (ClassCastException e1) {
                     e1.printStackTrace();
-                    FirebaseCrash.report(e1);
                 }
             }
         }

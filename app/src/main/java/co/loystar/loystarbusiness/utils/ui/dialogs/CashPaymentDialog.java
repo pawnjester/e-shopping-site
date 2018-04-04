@@ -48,7 +48,7 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
     CheckBox includeCustomerDetailCheckBox;
 
     private Double mTotalCharge;
-    private boolean showCustomerDialog = true;
+    private boolean showCustomerDialog = false;
     private CashPaymentDialogOnCompleteListener mListener;
 
     public static CashPaymentDialog newInstance(double totalCharge) {
@@ -126,9 +126,7 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
 
         builder.setView(rootView);
         builder.setTitle(getString(R.string.cash_payment));
-        builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
+        builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> dialogInterface.dismiss());
         return builder.create();
     }
 
