@@ -41,7 +41,6 @@ import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
  */
 
 public class SpinnerButton extends AppCompatButton implements View.OnClickListener {
-    private static final String TAG = SpinnerButton.class.getSimpleName();
     private String mPrompt;
     private CharSequence[] mEntries;
     private int mSelection;
@@ -235,9 +234,7 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
                     createNewItemListener.onCreateNewItemClicked();
                     dialogInterface.cancel();
                 });
-                dialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> {
-                    dialogInterface.cancel();
-                });
+                dialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
             } else {
                 dialogBuilder.setTitle(mPrompt);
                 if (mAllowMultipleSelection) {
@@ -337,7 +334,7 @@ public class SpinnerButton extends AppCompatButton implements View.OnClickListen
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             final LayoutInflater inflater = LayoutInflater.from(mContext);
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.checked_view, parent, false);;
+                convertView = inflater.inflate(R.layout.checked_view, parent, false);
 
                 holder = new ViewHolder();
                 holder.checkedTextView = convertView.findViewById(R.id.checked_list_item);

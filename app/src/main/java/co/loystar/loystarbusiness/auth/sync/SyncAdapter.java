@@ -379,8 +379,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
             String deviceId = sharedPreferences.getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
 
-            Timber.e("UNSYNCED: %s", mDatabaseManager.getUnsyncedSaleEnties(merchantEntity).size());
-
             for (SaleEntity saleEntity: mDatabaseManager.getUnsyncedSaleEnties(merchantEntity)) {
                 try {
                     JSONObject jsonObjectData = new JSONObject();
@@ -436,8 +434,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                                     // lets delete old records
                                     for (int i = 0; i < saleEntity.getTransactions().size(); i ++) {
+                                        // delete transaction
                                         mDataStore.delete(saleEntity.getTransactions().get(i)).subscribe();
                                         if (i + 1 == saleEntity.getTransactions().size()) {
+                                            // delete saleEntity
                                             // calling mDataStore.delete(saleEntity) here
                                             // throws an Exception
                                             String query = "DELETE FROM Sale WHERE ROWID=" + saleEntity.getId();
