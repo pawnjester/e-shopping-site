@@ -41,13 +41,13 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('/home/ordgen/Dropbox/Credentials/loystar/loystar-upload-keystore.jks')
+            storeFile file('C:\\Users\\User\\Loystar Google Drive\\MISC\\loystar-upload-keystore.jks')
             storePassword 'loystar123$'
             keyAlias 'loystar-upload'
             keyPassword 'loystar123$'
         }
         debug {
-            storeFile file('/home/ordgen/Dropbox/Credentials/loystar/loystar-upload-keystore.jks')
+            storeFile file('C:\\Users\\User\\Loystar Google Drive\\MISC\\loystar-upload-keystore.jks')
             storePassword 'loystar123$'
             keyAlias 'loystar-upload'
             keyPassword 'loystar123$'

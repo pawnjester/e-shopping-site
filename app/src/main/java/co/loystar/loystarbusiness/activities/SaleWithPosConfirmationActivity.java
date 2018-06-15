@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -259,43 +261,44 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
 
     void printViaBT() {
 
-        try {
-            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        String td = "%.2f";
+        double totalCharge = 0;
+        String textToPrint =
+                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item              ";
+        textToPrint+=" <RIGHT>Subtotal<BR>\n";
 
-            if(mBluetoothAdapter == null) {
-                showSnackbar(R.string.no_bluetooth_adapter_available);
-                return;
+        for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+            ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+            if (productEntity != null) {
+                double tc = productEntity.getPrice() * orderItem.getValue();
+                totalCharge += tc;
+                Double tcv = Double.valueOf(String.format(Locale.UK, td, tc));
+                //textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getValue()+")          <RIGHT>"+tcv+"<BR><BR>";
+                textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getValue()+")          ";
+                textToPrint+="<RIGHT>"+tcv+"<BR>";
             }
-
-            if(!mBluetoothAdapter.isEnabled()) {
-                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBluetooth, 0);
-                return;
-            }
-
-            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-            if(pairedDevices.size() > 0) {
-                for (BluetoothDevice device : pairedDevices) {
-
-                    // RPP300 is the name of the bluetooth printer device
-                    // we got this name from the list of paired devices
-                    if (device.getName().equals("Wari P1 BT")) {
-                        mmDevice = device;
-                        break;
-                    }
-                }
-            }
-
-            if (mmDevice == null) {
-                showSnackbar(R.string.no_printer_devises_available);
-            } else {
-                openBT();
-            }
-
-        }catch(Exception e){
-            e.printStackTrace();
         }
+
+        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+
+
+
+        try {
+
+            Intent intent = new Intent("pe.diegoveloper.printing");
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+            startActivity(intent);
+
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+            startActivity(intent);
+        }
+
     }
 
     // tries to open a connection to the bluetooth printer device

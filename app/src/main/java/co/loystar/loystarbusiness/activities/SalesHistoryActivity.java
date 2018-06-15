@@ -529,7 +529,7 @@ public class SalesHistoryActivity extends BaseActivity {
 
                     // RPP300 is the name of the bluetooth printer device
                     // we got this name from the list of paired devices
-                    if (device.getName().equals("Wari P1 BT")) {
+                    if (device.getName().equals("XL-1880")) {
                         mmDevice = device;
                         break;
                     }
