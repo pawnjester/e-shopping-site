@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.activities;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.content.IntentFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,6 +44,7 @@ import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.PrintTextFormatter;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
@@ -58,7 +62,7 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
 
     private int totalPoints;
     private int totalStamps;
-    private int cashSpent = 0;
+    private double cashSpent = 0;
     private CustomerEntity mCustomer;
     private LoyaltyProgramEntity mLoyaltyProgram;
 
@@ -233,7 +237,7 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
         }
     }
 
-    void printViaBT() {
+    void printViaBT() {/*
 
         try {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -271,6 +275,58 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
 
         }catch(Exception e){
             e.printStackTrace();
+        }*/
+        String td = "%.2f";
+        double totalCharge = 0;
+        String textToPrint =
+                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        totalCharge = Double.valueOf(String.format(Locale.UK, td, cashSpent));
+        textToPrint +="<CENTER>-------------------------------<BR>\n";
+        textToPrint +="<CENTER><MEDIUM1>TOTAL: "+totalCharge+"<BR>\n";
+
+
+        if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+            String pTxt;
+            if (totalPoints == 1) {
+                pTxt = getString(R.string.point);
+            } else {
+                pTxt = getString(R.string.points);
+            }
+            int pointsDiff = mLoyaltyProgram.getThreshold() - totalPoints;
+            textToPrint += mCustomer.getFirstName()+" you now have "+totalPoints+" "+pTxt+", spend "+pointsDiff+" more to get your" +
+                    mLoyaltyProgram.getReward();//"<CENTER>TOTAL: "+totalCharge+"<BR>\n";
+
+
+        } else if (mLoyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+            String sTxt;
+            if (totalStamps == 1) {
+                sTxt = getString(R.string.stamp);
+            } else {
+                sTxt = getString(R.string.stamps);
+            }
+            int stampsDiff = mLoyaltyProgram.getThreshold() - totalStamps;
+            textToPrint+= mCustomer.getFirstName()+" you now have "+totalStamps+" "+sTxt+", earn"+stampsDiff+" more to get your " +
+                    mLoyaltyProgram.getReward();
+        }
+
+
+
+        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+
+
+
+        try {
+
+            Intent intent = new Intent("pe.diegoveloper.printing");
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+            startActivity(intent);
+
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+            startActivity(intent);
         }
     }
 

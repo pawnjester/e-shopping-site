@@ -275,7 +275,6 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
                 double tc = productEntity.getPrice() * orderItem.getValue();
                 totalCharge += tc;
                 Double tcv = Double.valueOf(String.format(Locale.UK, td, tc));
-                //textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getValue()+")          <RIGHT>"+tcv+"<BR><BR>";
                 textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getValue()+")          ";
                 textToPrint+="<RIGHT>"+tcv+"<BR>";
             }
