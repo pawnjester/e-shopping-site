@@ -6,9 +6,11 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,6 +59,7 @@ import co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.pojos.OrderSummaryItem;
 import co.loystar.loystarbusiness.utils.Constants;
@@ -508,42 +512,44 @@ public class SalesHistoryActivity extends BaseActivity {
 
     void printViaBT() {
 
+
+        String td = "%.2f";
+        double totalCharge = 0;
+        String textToPrint =
+                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item              ";
+        textToPrint+=" <RIGHT>Subtotal<BR>\n";
+
+
+
+
+        for (OrderSummaryItem orderItem: orderSummaryItems) {
+            totalCharge += orderItem.getTotal();
+
+            textToPrint+= "<LEFT>"+orderItem.getName()+" ("+orderItem.getPrice()+"x"+orderItem.getCount()+")          ";
+            textToPrint+="<RIGHT>"+orderItem.getTotal()+"<BR><BR>";
+
+
+        }
+
+        totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+
+        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+
+
         try {
-            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-            if(mBluetoothAdapter == null) {
-                showSnackbar(R.string.no_bluetooth_adapter_available);
-                return;
-            }
+            Intent intent = new Intent("pe.diegoveloper.printing");
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+            startActivity(intent);
 
-            if(!mBluetoothAdapter.isEnabled()) {
-                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBluetooth, 0);
-                return;
-            }
-
-            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-            if(pairedDevices.size() > 0) {
-                for (BluetoothDevice device : pairedDevices) {
-
-                    // RPP300 is the name of the bluetooth printer device
-                    // we got this name from the list of paired devices
-                    if (device.getName().equals("XL-1880")) {
-                        mmDevice = device;
-                        break;
-                    }
-                }
-            }
-
-            if (mmDevice == null) {
-                showSnackbar(R.string.no_printer_devises_available);
-            } else {
-                openBT();
-            }
-
-        }catch(Exception e){
-            e.printStackTrace();
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+            startActivity(intent);
         }
     }
 

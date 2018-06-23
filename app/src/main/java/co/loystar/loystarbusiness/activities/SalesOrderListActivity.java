@@ -3,9 +3,11 @@ package co.loystar.loystarbusiness.activities;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -35,6 +37,7 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -388,7 +391,7 @@ public class SalesOrderListActivity extends BaseActivity
         mAdapter.queryAsync();
     }
 
-    void printViaBT(OrderPrintOption printOption) {
+    void printViaBT(OrderPrintOption printOption) {/*
 
         try {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -426,7 +429,49 @@ public class SalesOrderListActivity extends BaseActivity
 
         }catch(Exception e){
             e.printStackTrace();
+        }*/
+
+        String td = "%.2f";
+        double totalCharge = Double.valueOf(String.format(Locale.UK, td, mSelectedOrderEntity.getTotal()));
+
+        String textToPrint =
+                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item              ";
+        textToPrint+=" <RIGHT>Subtotal<BR>\n";
+        List<OrderItemEntity> orderItemEntities = mSelectedOrderEntity.getOrderItems();
+
+        for (OrderItemEntity orderItem: orderItemEntities) {
+            ProductEntity productEntity = orderItem.getProduct();
+            if (productEntity != null) {
+                double tc = orderItem.getTotalPrice();
+                int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
+
+                 textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getQuantity()+")          ";
+                textToPrint+="<RIGHT>"+tcv+"<BR><BR>";
+
+            }
         }
+
+
+
+        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+
+
+        try {
+
+            Intent intent = new Intent("pe.diegoveloper.printing");
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+            startActivity(intent);
+
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+            startActivity(intent);
+        }
+
     }
 
     // tries to open a connection to the bluetooth printer device

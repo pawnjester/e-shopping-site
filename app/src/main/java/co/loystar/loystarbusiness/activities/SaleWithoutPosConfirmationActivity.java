@@ -283,7 +283,7 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
                         "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
         totalCharge = Double.valueOf(String.format(Locale.UK, td, cashSpent));
         textToPrint +="<CENTER>-------------------------------<BR>\n";
-        textToPrint +="<CENTER><MEDIUM1>TOTAL: "+totalCharge+"<BR>\n";
+        textToPrint +="<CENTER><MEDIUM2>TOTAL: "+totalCharge+"<BR>\n";
 
 
         if (mLoyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
