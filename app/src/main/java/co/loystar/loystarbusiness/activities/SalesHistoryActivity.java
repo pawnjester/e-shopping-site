@@ -537,7 +537,10 @@ public class SalesHistoryActivity extends BaseActivity {
 
         textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
         textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+        textToPrint+="<CENTER><BOLD><BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+        textToPrint+="<DLINE0>";
+        textToPrint+="<BR>";
 
 
         try {
