@@ -38,7 +38,7 @@ import io.requery.sql.EntityDataStore;
  */
 
 public class DatabaseManager implements IDatabaseManager{
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 14;
     private static DatabaseManager mInstance;
     private ReactiveEntityStore<Persistable> mDataStore;
     private StdDateFormat mDateFormat;

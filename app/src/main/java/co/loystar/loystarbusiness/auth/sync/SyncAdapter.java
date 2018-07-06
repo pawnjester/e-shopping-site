@@ -120,7 +120,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             syncMerchant();
             syncCustomers();
-
             syncProductCategories();
             syncLoyaltyPrograms();
             syncProducts();
@@ -145,7 +144,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         merchantEntity.getCurrency(),
                         merchantEntity.isPosTurnedOn(),
                         merchantEntity.getSyncFrequency(),
-                        merchantEntity.isBluetoothPrintEnabled()
+                        merchantEntity.isBluetoothPrintEnabled(),merchantEntity.getAddressLine1(),merchantEntity.getAddressLine2()
                 ).enqueue(new Callback<MerchantWrapper>() {
                     @Override
                     public void onResponse(@NonNull Call<MerchantWrapper> call, @NonNull Response<MerchantWrapper> response) {

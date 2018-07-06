@@ -72,7 +72,9 @@ public interface LoystarApi {
                                                        @Field("currency") String currency,
                                                        @Field("turn_on_point_of_sale") Boolean turnOnPointOfSale,
                                                        @Field("sync_frequency") Integer syncFrequency,
-                                                       @Field("enable_bluetooth_printing") Boolean enableBluetoothPrinting);
+                                                       @Field("enable_bluetooth_printing") Boolean enableBluetoothPrinting,
+                                                       @Field("address_line1") String addressLine1,
+                                                       @Field("address_line2") String addressLine2);
 
     @GET("get_merchant_current_subscription")
     Call<Subscription> getMerchantSubscription();

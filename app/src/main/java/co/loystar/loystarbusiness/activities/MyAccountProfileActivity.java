@@ -53,6 +53,8 @@ public class MyAccountProfileActivity extends BaseActivity
     private EditText lNameView;
     private EditText emailView;
     private EditText businessName;
+    private EditText addressLine1;
+    private EditText addressLine2;
     private InternationalPhoneInput phoneInput;
     private View mLayout;
     private String selectedBusinessType;
@@ -88,6 +90,8 @@ public class MyAccountProfileActivity extends BaseActivity
         lNameView = findViewById(R.id.lastName);
         emailView = findViewById(R.id.email);
         businessName = findViewById(R.id.businessName);
+        addressLine1 = findViewById(R.id.address_line1);
+        addressLine2 = findViewById(R.id.address_line2);
         CurrencyPicker currencyPicker = findViewById(R.id.currency_spinner);
         phoneInput = findViewById(R.id.phone_number);
 
@@ -100,6 +104,8 @@ public class MyAccountProfileActivity extends BaseActivity
             lNameView.setText(merchantEntity.getLastName());
             emailView.setText(merchantEntity.getEmail());
             businessName.setText(merchantEntity.getBusinessName());
+            addressLine1.setText(merchantEntity.getAddressLine1());
+            addressLine2.setText(merchantEntity.getAddressLine2());
             selectedBusinessType = merchantEntity.getBusinessType();
             selectedCurrency = merchantEntity.getCurrency();
             phoneInput.setNumber(merchantEntity.getContactNumber());
@@ -188,7 +194,9 @@ public class MyAccountProfileActivity extends BaseActivity
                 selectedCurrency,
                 null,
             null,
-            null
+            null,
+                addressLine1.getText().toString(),
+                addressLine2.getText().toString()
         ).enqueue(new Callback<MerchantWrapper>() {
 
             @Override
@@ -211,6 +219,8 @@ public class MyAccountProfileActivity extends BaseActivity
                         merchantEntity.setCurrency(merchant.getCurrency());
                         merchantEntity.setSyncFrequency(merchant.getSync_frequency());
                         merchantEntity.setBluetoothPrintEnabled(merchant.getEnable_bluetooth_printing());
+                        merchantEntity.setAddressLine1(merchant.getAddress_line1());
+                        merchantEntity.setAddressLine2(merchant.getAddress_line2());
                         mDatabaseManager.updateMerchant(merchantEntity);
 
                         sessionManager.setMerchantSessionData(
@@ -223,7 +233,9 @@ public class MyAccountProfileActivity extends BaseActivity
                                 merchant.getBusiness_type(),
                                 merchant.getCurrency(),
                                 sessionManager.getAccessToken(),
-                                sessionManager.getClientKey()
+                                sessionManager.getClientKey(),
+                                merchant.getAddress_line1(),
+                                merchant.getAddress_line2()
                         );
                         showSnackbar(R.string.profile_update_success);
                         finish();

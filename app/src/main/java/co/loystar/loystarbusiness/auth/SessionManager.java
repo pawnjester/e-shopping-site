@@ -30,6 +30,8 @@ public class SessionManager {
     private static final String CONTACT_NUMBER = "contactNumber";
     private static final String IS_LOGGED_IN = "isLoggedIn";
     private static  final String BUSINESS_NAME = "businessName";
+    private static  final String ADDRESS_LINE1 = "addressLine1";
+    private static  final String ADDRESS_LINE2 = "addressLine2";
     private static final String MERCHANT_ID = "merchantId";
     private static final String CURRENCY = "currency";
     private static final String BUSINESS_TYPE = "businessType";
@@ -59,14 +61,17 @@ public class SessionManager {
             String businessType,
             String currency,
             String accessToken,
-            String clientKey
-    ) {
+            String clientKey,
+            String address_line1,
+            String address_line2) {
         editor.putInt(MERCHANT_ID, id);
         editor.putString(EMAIL, email);
         editor.putString(FIRST_NAME, firstName);
         editor.putString(LAST_NAME, lastName);
         editor.putString(CONTACT_NUMBER, contactNumber);
         editor.putString(BUSINESS_NAME, businessName);
+        editor.putString(ADDRESS_LINE1, address_line1);
+        editor.putString(ADDRESS_LINE2, address_line2);
         editor.putString(BUSINESS_TYPE, businessType);
         editor.putString(CURRENCY, currency);
         editor.putString(ACCESS_TOKEN, accessToken);
@@ -113,6 +118,14 @@ public class SessionManager {
 
     public String getBusinessName() {
         return sharedPreferences.getString(BUSINESS_NAME, "");
+    }
+
+    public String getAddressLine1() {
+        return sharedPreferences.getString(ADDRESS_LINE1, "");
+    }
+
+    public String getAddressLine2() {
+        return sharedPreferences.getString(ADDRESS_LINE2, "");
     }
 
     public String getCurrency() {
