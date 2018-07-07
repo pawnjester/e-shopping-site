@@ -38,6 +38,8 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     String getContactNumber();
     void setContactNumber(String contactNumber);
 
+    String getAddressLine1();
+    String getAddressLine2();
     String getSubscriptionPlan();
     String getBusinessType();
     String getBusinessName();

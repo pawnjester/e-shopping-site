@@ -516,7 +516,8 @@ public class SalesHistoryActivity extends BaseActivity {
         String td = "%.2f";
         double totalCharge = 0;
         String textToPrint =
-                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                "<MEDIUM1><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
+                        "<CENTER>"+mSessionManager.getContactNumber()+"<BR>\n" + // contact number
                         "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
         textToPrint+="<LEFT>Item              ";
         textToPrint+=" <RIGHT>Subtotal<BR>\n";

@@ -133,8 +133,8 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                             merchant.getBusiness_type(),
                             merchant.getCurrency(),
                             authToken,
-                            client
-                        );
+                            client,
+                                merchant.getAddress_line1(), merchant.getAddress_line2());
 
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                         SharedPreferences.Editor editor = sharedPreferences.edit();

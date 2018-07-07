@@ -162,8 +162,8 @@ public class MerchantSignUpActivity extends BaseActivity implements
                                 merchant.getBusiness_type(),
                                 merchant.getCurrency(),
                                 authToken,
-                                client
-                        );
+                                client,
+                                merchant.getAddress_line1(), merchant.getAddress_line2());
 
                         Bundle params = new Bundle();
                         params.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, "email");

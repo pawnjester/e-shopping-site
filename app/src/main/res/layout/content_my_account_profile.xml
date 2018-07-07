@@ -100,6 +100,34 @@
 
         </android.support.design.widget.TextInputLayout>
 
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="Business Address Line 1"
+                android:nextFocusRight="@+id/address_line2"
+                android:id="@+id/address_line1"
+                android:inputType="textCapWords"
+                android:text="" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:nextFocusRight="@+id/business_type_spinner"
+            android:hint="Business Address Line 2"
+            android:id="@+id/address_line2"
+            android:inputType="textCapWords"
+            android:text="" />
+        </android.support.design.widget.TextInputLayout>
+
         <TextView
             android:layout_marginTop="15dp"
             android:layout_width="match_parent"
