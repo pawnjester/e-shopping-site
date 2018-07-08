@@ -516,10 +516,12 @@ public class SalesHistoryActivity extends BaseActivity {
         String td = "%.2f";
         double totalCharge = 0;
         String textToPrint =
-                "<MEDIUM1><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
-                        "<CENTER>"+mSessionManager.getContactNumber()+"<BR>\n" + // contact number
-                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
-        textToPrint+="<LEFT>Item              ";
+                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
+                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
+                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item               ";
         textToPrint+=" <RIGHT>Subtotal<BR>\n";
 
 
@@ -528,7 +530,7 @@ public class SalesHistoryActivity extends BaseActivity {
         for (OrderSummaryItem orderItem: orderSummaryItems) {
             totalCharge += orderItem.getTotal();
 
-            textToPrint+= "<LEFT>"+orderItem.getName()+" ("+orderItem.getPrice()+"x"+orderItem.getCount()+")          ";
+            textToPrint+= "<LEFT>"+orderItem.getName()+"("+orderItem.getCount()+"x"+orderItem.getPrice()+")   ";
             textToPrint+="<RIGHT>"+orderItem.getTotal()+"<BR><BR>";
 
 
@@ -536,12 +538,13 @@ public class SalesHistoryActivity extends BaseActivity {
 
         totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
 
-        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
         textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
         textToPrint+="<CENTER><BOLD><BR>";
         textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
-        textToPrint+="<DLINE0>";
+        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
         textToPrint+="<BR>";
+        textToPrint+="<SMALL><CENTER>------------------------<BR>";
 
 
         try {

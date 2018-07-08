@@ -279,8 +279,12 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
         String td = "%.2f";
         double totalCharge = 0;
         String textToPrint =
-                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
-                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
+                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
+                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+
         totalCharge = Double.valueOf(String.format(Locale.UK, td, cashSpent));
         textToPrint +="<CENTER>-------------------------------<BR>\n";
         textToPrint +="<CENTER><MEDIUM2>TOTAL: "+totalCharge+"<BR>\n";
@@ -310,10 +314,12 @@ public class SaleWithoutPosConfirmationActivity extends BaseActivity {
                     mLoyaltyProgram.getReward();
         }
 
-
-
         textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+        textToPrint+="<CENTER><BOLD><BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
+        textToPrint+="<BR>";
+        textToPrint+="<SMALL><CENTER>------------------------<BR>";
 
 
 

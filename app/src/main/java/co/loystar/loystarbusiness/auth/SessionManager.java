@@ -70,12 +70,12 @@ public class SessionManager {
         editor.putString(LAST_NAME, lastName);
         editor.putString(CONTACT_NUMBER, contactNumber);
         editor.putString(BUSINESS_NAME, businessName);
-        editor.putString(ADDRESS_LINE1, address_line1);
-        editor.putString(ADDRESS_LINE2, address_line2);
         editor.putString(BUSINESS_TYPE, businessType);
         editor.putString(CURRENCY, currency);
         editor.putString(ACCESS_TOKEN, accessToken);
         editor.putString(CLIENT_KEY, clientKey);
+        editor.putString(ADDRESS_LINE1, address_line1);
+        editor.putString(ADDRESS_LINE2, address_line2);
         editor.putBoolean(IS_LOGGED_IN, true);
         editor.commit();
     }

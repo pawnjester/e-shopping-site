@@ -435,9 +435,12 @@ public class SalesOrderListActivity extends BaseActivity
         double totalCharge = Double.valueOf(String.format(Locale.UK, td, mSelectedOrderEntity.getTotal()));
 
         String textToPrint =
-                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
-                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
-        textToPrint+="<LEFT>Item              ";
+                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
+                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
+                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item               ";
         textToPrint+=" <RIGHT>Subtotal<BR>\n";
         List<OrderItemEntity> orderItemEntities = mSelectedOrderEntity.getOrderItems();
 
@@ -447,7 +450,7 @@ public class SalesOrderListActivity extends BaseActivity
                 double tc = orderItem.getTotalPrice();
                 int tcv = Double.valueOf(String.format(Locale.UK, td, tc)).intValue();
 
-                 textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getQuantity()+")          ";
+                 textToPrint+= "<LEFT>"+productEntity.getName()+" ("+orderItem.getQuantity()+"x"+productEntity.getPrice()+")          ";
                 textToPrint+="<RIGHT>"+tcv+"<BR><BR>";
 
             }
@@ -455,9 +458,13 @@ public class SalesOrderListActivity extends BaseActivity
 
 
 
-        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
         textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+        textToPrint+="<CENTER><BOLD><BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
+        textToPrint+="<BR>";
+        textToPrint+="<SMALL><CENTER>------------------------<BR>";
 
 
         try {

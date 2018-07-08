@@ -264,9 +264,12 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
         String td = "%.2f";
         double totalCharge = 0;
         String textToPrint =
-                "<BIG><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>\n" + // business name
-                        "<CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
-        textToPrint+="<LEFT>Item              ";
+                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
+                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
+                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
+                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+        textToPrint+="<LEFT>Item               ";
         textToPrint+=" <RIGHT>Subtotal<BR>\n";
 
         for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
@@ -275,14 +278,18 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
                 double tc = productEntity.getPrice() * orderItem.getValue();
                 totalCharge += tc;
                 Double tcv = Double.valueOf(String.format(Locale.UK, td, tc));
-                textToPrint+= "<LEFT>"+productEntity.getName()+" ("+productEntity.getPrice()+"x"+orderItem.getValue()+")          ";
+                textToPrint+= "<LEFT>"+productEntity.getName()+" ("+orderItem.getValue()+"x"+productEntity.getPrice()+")          ";
                 textToPrint+="<RIGHT>"+tcv+"<BR>";
             }
         }
 
-        textToPrint+="<RIGHT><MEDIUM2>Total: "+totalCharge+"<BR><BR>";
+        textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
         textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR";
+        textToPrint+="<CENTER><BOLD><BR>";
+        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
+        textToPrint+="<BR>";
+        textToPrint+="<SMALL><CENTER>------------------------<BR>";
 
 
 

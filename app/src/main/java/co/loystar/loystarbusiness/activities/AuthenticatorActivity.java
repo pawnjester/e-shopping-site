@@ -424,6 +424,9 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
                             merchantEntity.setSyncFrequency(merchant.getSync_frequency());
                             merchantEntity.setBluetoothPrintEnabled(merchant.getEnable_bluetooth_printing());
                             merchantEntity.setCurrency(merchant.getCurrency());
+                            merchantEntity.setAddressLine1(merchant.getAddress_line1());
+                            merchantEntity.setAddressLine2(merchant.getAddress_line2());
+
                             if (merchant.getSubscription_expires_on() != null) {
                                 merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
                             }

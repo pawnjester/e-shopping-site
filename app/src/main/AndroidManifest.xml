@@ -267,6 +267,7 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.loystar.loystarbusiness.activities.SettingsActivity" />
+            android:configChanges="orientation|screenSize"
         </activity>
         <activity
             android:name=".activities.ProductListActivity"
