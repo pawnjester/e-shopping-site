@@ -535,4 +535,5 @@
     <string name="no_sale_recorded">No Sale Recorded</string>
     <string name="no_more_item">No more item</string>
     <string name="load_field">Load failed</string>
+    <string name="resubcribe_mzg">Your account is inactive, please re-subscribe, thank you :)</string>
 </resources>

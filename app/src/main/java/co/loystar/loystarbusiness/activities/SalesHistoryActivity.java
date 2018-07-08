@@ -54,6 +54,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.fragments.CardSalesHistoryFragment;
 import co.loystar.loystarbusiness.fragments.CashSalesHistoryFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -512,51 +513,55 @@ public class SalesHistoryActivity extends BaseActivity {
 
     void printViaBT() {
 
-
-        String td = "%.2f";
-        double totalCharge = 0;
-        String textToPrint =
-                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
-                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
-                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
-                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
-                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
-        textToPrint+="<LEFT>Item               ";
-        textToPrint+=" <RIGHT>Subtotal<BR>\n";
-
-
-
-
-        for (OrderSummaryItem orderItem: orderSummaryItems) {
-            totalCharge += orderItem.getTotal();
-
-            textToPrint+= "<LEFT>"+orderItem.getName()+"("+orderItem.getCount()+"x"+orderItem.getPrice()+")   ";
-            textToPrint+="<RIGHT>"+orderItem.getTotal()+"<BR><BR>";
-
-
+        if (!AccountGeneral.isAccountActive(this)) {
+            Toast.makeText(mContext, getString(R.string.resubcribe_mzg), Toast.LENGTH_LONG).show();
         }
-
-        totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
-
-        textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
-        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<CENTER><BOLD><BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
-        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
-        textToPrint+="<BR>";
-        textToPrint+="<SMALL><CENTER>------------------------<BR>";
+        else {
 
 
-        try {
+            String td = "%.2f";
+            double totalCharge = 0;
+            String textToPrint =
+                    "<MEDIUM2><BOLD><CENTER>" + mSessionManager.getBusinessName() + " <BR>" + // business name
+                            "<SMALL><BOLD><CENTER>" + mSessionManager.getAddressLine1() + " <BR>" + // AddressLine1
+                            "<SMALL><BOLD><CENTER>" + mSessionManager.getAddressLine2() + " <BR>" + // AddressLine2
+                            "<SMALL><CENTER>" + mSessionManager.getContactNumber() + "<BR>" + // contact number
+                            "<SMALL><CENTER>" + TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance()) + "<BR>\n"; //time stamp
+            textToPrint += "<LEFT>Item               ";
+            textToPrint += " <RIGHT>Subtotal<BR>\n";
 
-            Intent intent = new Intent("pe.diegoveloper.printing");
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
-            startActivity(intent);
 
-        } catch (ActivityNotFoundException ex) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
-            startActivity(intent);
+            for (OrderSummaryItem orderItem : orderSummaryItems) {
+                totalCharge += orderItem.getTotal();
+
+                textToPrint += "<LEFT>" + orderItem.getName() + "(" + orderItem.getCount() + "x" + orderItem.getPrice() + ")   ";
+                textToPrint += "<RIGHT>" + orderItem.getTotal() + "<BR><BR>";
+
+
+            }
+
+            totalCharge = Double.valueOf(String.format(Locale.UK, td, totalCharge));
+
+            textToPrint += "<RIGHT><MEDIUM1>Total: " + totalCharge + "<BR><BR>";
+            textToPrint += "<CENTER><BOLD>Thank you for your patronage :)<BR>";
+            textToPrint += "<CENTER><BOLD><BR>";
+            textToPrint += "<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+            textToPrint += "<SMALL><CENTER>www.loystar.co<BR>";
+            textToPrint += "<BR>";
+            textToPrint += "<SMALL><CENTER>------------------------<BR>";
+
+
+            try {
+
+                Intent intent = new Intent("pe.diegoveloper.printing");
+                intent.setType("text/plain");
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+                startActivity(intent);
+
+            } catch (ActivityNotFoundException ex) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+                startActivity(intent);
+            }
         }
     }
 

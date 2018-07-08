@@ -170,7 +170,7 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
                 builder = new AlertDialog.Builder(mContext);
             }
             builder.setTitle("Your Account Is Inactive!")
-                .setMessage("Please note that all SMS communications are disabled until you resubscribe.")
+                .setMessage("Kindly note functionalities on Loystar will be limited until you re-subscribe. Thank you for your patronage")
                 .setPositiveButton(getString(R.string.pay_subscription), (dialog, which) -> {
                     dialog.dismiss();
                     Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
@@ -187,7 +187,7 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());
+            RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());
     }
 
     @Override
@@ -261,50 +261,55 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
 
     void printViaBT() {
 
-        String td = "%.2f";
-        double totalCharge = 0;
-        String textToPrint =
-                "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
-                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
-                        "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
-                        "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
-                        "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
-        textToPrint+="<LEFT>Item               ";
-        textToPrint+=" <RIGHT>Subtotal<BR>\n";
+        if (!AccountGeneral.isAccountActive(this)) {
+            Toast.makeText(mContext, getString(R.string.resubcribe_mzg), Toast.LENGTH_LONG).show();
+        }
+        else {
 
-        for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
-            ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
-            if (productEntity != null) {
-                double tc = productEntity.getPrice() * orderItem.getValue();
-                totalCharge += tc;
-                Double tcv = Double.valueOf(String.format(Locale.UK, td, tc));
-                textToPrint+= "<LEFT>"+productEntity.getName()+" ("+orderItem.getValue()+"x"+productEntity.getPrice()+")          ";
-                textToPrint+="<RIGHT>"+tcv+"<BR>";
+            String td = "%.2f";
+            double totalCharge = 0;
+            String textToPrint =
+                    "<MEDIUM2><BOLD><CENTER>"+ mSessionManager.getBusinessName()+" <BR>" + // business name
+                            "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine1()+" <BR>" + // AddressLine1
+                            "<SMALL><BOLD><CENTER>"+ mSessionManager.getAddressLine2()+" <BR>" + // AddressLine2
+                            "<SMALL><CENTER>"+mSessionManager.getContactNumber()+"<BR>" + // contact number
+                            "<SMALL><CENTER>"+TextUtilsHelper.getFormattedDateTimeString(Calendar.getInstance())+"<BR>\n"; //time stamp
+            textToPrint+="<LEFT>Item               ";
+            textToPrint+=" <RIGHT>Subtotal<BR>\n";
+
+            for (Map.Entry<Integer, Integer> orderItem: mOrderSummaryItems.entrySet()) {
+                ProductEntity productEntity = mDatabaseManager.getProductById(orderItem.getKey());
+                if (productEntity != null) {
+                    double tc = productEntity.getPrice() * orderItem.getValue();
+                    totalCharge += tc;
+                    Double tcv = Double.valueOf(String.format(Locale.UK, td, tc));
+                    textToPrint+= "<LEFT>"+productEntity.getName()+" ("+orderItem.getValue()+"x"+productEntity.getPrice()+")          ";
+                    textToPrint+="<RIGHT>"+tcv+"<BR>";
+                }
+            }
+
+            textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
+            textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
+            textToPrint+="<CENTER><BOLD><BR>";
+            textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
+            textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
+            textToPrint+="<BR>";
+            textToPrint+="<SMALL><CENTER>------------------------<BR>";
+
+
+
+            try {
+
+                Intent intent = new Intent("pe.diegoveloper.printing");
+                intent.setType("text/plain");
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+                startActivity(intent);
+
+            } catch (ActivityNotFoundException ex) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+                startActivity(intent);
             }
         }
-
-        textToPrint+="<RIGHT><MEDIUM1>Total: "+totalCharge+"<BR><BR>";
-        textToPrint+="<CENTER><BOLD>Thank you for your patronage :)<BR>";
-        textToPrint+="<CENTER><BOLD><BR>";
-        textToPrint+="<SMALL><CENTER>POWERED BY LOYSTAR<BR>";
-        textToPrint+="<SMALL><CENTER>www.loystar.co<BR>";
-        textToPrint+="<BR>";
-        textToPrint+="<SMALL><CENTER>------------------------<BR>";
-
-
-
-        try {
-
-            Intent intent = new Intent("pe.diegoveloper.printing");
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
-            startActivity(intent);
-
-        } catch (ActivityNotFoundException ex) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
-            startActivity(intent);
-        }
-
     }
 
     // tries to open a connection to the bluetooth printer device
@@ -323,23 +328,25 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
             } catch (IOException e) {
                 try {
                     mmSocket.close();
-                } catch (IOException ignored){}
+                } catch (IOException ignored) {
+                }
 
                 throw Exceptions.propagate(e);
             }
             return true;
         }).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .compose(bindToLifecycle())
-            .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
-            .subscribe(t -> {
-                if (mmOutputStream == null) {
-                    Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
-                } else {
-                    beginListenForData();
-                    sendData();
-                }
-            }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .doOnSubscribe(disposable -> showSnackbar(R.string.opening_printer_connection))
+                .subscribe(t -> {
+                    if (mmOutputStream == null) {
+                        Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show();
+                    } else {
+                        beginListenForData();
+                        sendData();
+                    }
+                }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
+
     }
 
     /*
