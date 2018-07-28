@@ -168,7 +168,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             * Fetch total sales on server
             * */
             mApiClient.getLoystarApi(false)
-                .getCustomers(1, 500)
+                .getCustomers(1, 1500)
                 .flatMapIterable(arrayListResponse -> {
                     String getTotal = arrayListResponse.headers().get("Total");
                     if (!TextUtils.isEmpty(getTotal)) {
@@ -191,7 +191,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                 }).subscribe(customer -> {
                 int totalCustomersOnServer = mSharedPreferences.getInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, 0);
-                double getNumberOfTrips = Math.floor((double) totalCustomersOnServer / 500);
+                double getNumberOfTrips = Math.floor((double) totalCustomersOnServer / 1500);
                 int numberOfTrips = (int) getNumberOfTrips + 1;
 
                 Timber.e("TOTAL_CUSTOMERS_ON_SERVER: %s", totalCustomersOnServer);
@@ -206,9 +206,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             continue;
                         }
                         Timber.e("TOTAL_CUSTOMERS_LOCALLY: %s", totalCustomersLocally);
-                        double page = Math.floor((double) totalCustomersLocally / 500);
+                        double page = Math.floor((double) totalCustomersLocally / 1500);
 
-                        mApiClient.getLoystarApi(false).getCustomers((int) page + 1, 500)
+                        mApiClient.getLoystarApi(false).getCustomers((int) page + 1, 1500)
                             .flatMapIterable(response -> {
                                 ArrayList<Customer> customers = response.body();
                                 if (customers == null || customers.isEmpty()) {
@@ -298,7 +298,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                 }).subscribe(sale -> {
                 int totalSalesOnServer = mSharedPreferences.getInt(Constants.TOTAL_SALES_ON_SERVER, 0);
-                double getNumberOfTrips = Math.floor((double) totalSalesOnServer / 500);
+                double getNumberOfTrips = Math.floor((double) totalSalesOnServer /500);
                 int numberOfTrips = (int) getNumberOfTrips + 1;
 
                 for (int i = 0; i < numberOfTrips; i ++) {
