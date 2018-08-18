@@ -172,11 +172,9 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         AccessToken accountKitAccessToken = AccountKit.getCurrentAccessToken();
 
 
-        if (accountKitAccessToken != null && !mSessionManager.isLoggedIn())  // Number verified, but not loggedin,
+        if (accountKitAccessToken != null && !mSessionManager.isLoggedIn())  // Number verified once, but not loggedin,
         {
-            Toast.makeText(this,"verified user, not loggedin ", Toast.LENGTH_SHORT).show();
 
-            Toast.makeText(this,"existing verified number. Token-"+accountKitAccessToken.toString()+"loggedin? - ", Toast.LENGTH_SHORT).show();
             //load sign up form with number pre-filled, and unedittable.
             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
             if (getIntent().getExtras() != null) {
@@ -184,24 +182,14 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             }
                 if(verifiedPhoneNo != null)
                 {
-                    Toast.makeText(this,"VerifiedPhne is not null", Toast.LENGTH_SHORT).show();
                     signUp.putExtra(Constants.PHONE_NUMBER, verifiedPhoneNo.toString()); //get number to pass to reg page
                     startActivityForResult(signUp, REQ_SIGN_UP);
                 }
                 else
-                {
-                    Toast.makeText(this,"VerifiedPhne IS null", Toast.LENGTH_SHORT).show();
-
-                }
-
+                {             }
 
         }
-        else{
-            Toast.makeText(this,"New user ", Toast.LENGTH_SHORT).show();
-        }
-
-
-
+        else{        }
 
 
     } // End on onCreate
@@ -209,10 +197,9 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
     //First point of call for Facebook account kit
     private void startSignupPage(LoginType loginType)
     {
-        Toast.makeText(this,"First point!", Toast.LENGTH_SHORT).show();
-
         Intent verifyPhone = new Intent(mContext, AccountKitActivity.class);
-        AccountKitConfiguration.AccountKitConfigurationBuilder builder = new AccountKitConfiguration.AccountKitConfigurationBuilder(loginType,AccountKitActivity.ResponseType.TOKEN);
+        AccountKitConfiguration.AccountKitConfigurationBuilder builder = new AccountKitConfiguration.
+                AccountKitConfigurationBuilder(loginType,AccountKitActivity.ResponseType.TOKEN);
         verifyPhone.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,builder.build());
         startActivityForResult(verifyPhone,REQ_VERIFY_PHONE_NUMBER); // launch account kit activity to verify no
     }
@@ -223,18 +210,12 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
 
         if (requestCode == REQ_SIGN_UP && resultCode == RESULT_OK)
         {
-            Toast.makeText(this,"Phone number verified, sign  up users", Toast.LENGTH_SHORT).show(); //signup complete
             finishLogin(data);
-
-
         }
         if (requestCode == REQ_VERIFY_PHONE_NUMBER) // Verify number on Loystar server..
         {
-            Toast.makeText(this,"New user, verify phone", Toast.LENGTH_SHORT).show();
             //Facebook Acccount kit to verify no
             initializeAccountKit(data,resultCode);
-
-
         }
     }
 
@@ -249,19 +230,11 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         }
         else if(result.wasCancelled())
         {
-            Toast.makeText(this,"cancel",Toast.LENGTH_SHORT).show();
         }
         else
         {
             if (result.getAccessToken() != null)
             {
-                // Use the AlertDialog.Builder to configure the AlertDialog.
-               /* AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
-                        .setTitle("Please wait")
-                        .setMessage("");
-                AlertDialog alertDialog = alertDialogBuilder.show();*/
-
-                //showProgress(true);
 
 
 
@@ -301,7 +274,6 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
 
     //Check results a phone verification server call
     private void handlePhoneVerificationResponse(int resultCode, Intent data) {
-        Snackbar.make(mLayout, "handlePhoneVerificationResponse()", Snackbar.LENGTH_LONG).show();
 
         final IdpResponse idpResponse = IdpResponse.fromResultIntent(data);
         // above is Some firebase stuff.. needs to change to fbac. Checking if init. so we can grab phone no to send
@@ -309,7 +281,6 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
 
         if (resultCode == RESULT_OK && AccountKit.getCurrentAccessToken() != null)
         {
-            Snackbar.make(mLayout, "Would you ever get here.", Snackbar.LENGTH_LONG).show();
 
             final ProgressDialog progressDialog = new ProgressDialog(mContext);
             progressDialog.setIndeterminate(true);
@@ -341,9 +312,14 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
                                             signUp.putExtra(Constants.PHONE_NUMBER, verifiedPhoneNo.toString());
                                             startActivityForResult(signUp, REQ_SIGN_UP); //Phone number is available to register
                                         } else {
-                                            showSnackbar(R.string.account_with_phone_exists);
-                                            //mAuth.signOut();
-                                            AccountKit.logOut();
+                                            // Use the AlertDialog.Builder to configure the AlertDialog.
+                                            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
+                                                    .setMessage(R.string.account_with_phone_exists).
+                                                            setPositiveButton(R.string.ok,(dialogInterface, i) -> AccountKit.logOut());
+                                            AlertDialog alertDialog = alertDialogBuilder.show();
+
+                                            //mAuth.signOut(); //firebase signout
+                                            AccountKit.logOut(); //account kit signput
 
                                         }
                                     }
