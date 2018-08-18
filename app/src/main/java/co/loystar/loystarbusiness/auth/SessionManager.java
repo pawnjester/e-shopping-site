@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
+import com.facebook.accountkit.AccountKit;
 import com.google.firebase.auth.FirebaseAuth;
 
 import co.loystar.loystarbusiness.R;
@@ -148,7 +149,8 @@ public class SessionManager {
         dialog.setMessage("Signing out...");
 
         Observable.fromCallable(() -> {
-            FirebaseAuth.getInstance().signOut();
+            //FirebaseAuth.getInstance().signOut();
+            AccountKit.logOut();
             sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), PRIVATE_MODE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();

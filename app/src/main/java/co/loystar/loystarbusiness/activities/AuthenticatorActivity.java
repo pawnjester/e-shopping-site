@@ -10,6 +10,7 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -25,23 +26,34 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
+import com.facebook.accountkit.AccessToken;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
+import com.facebook.accountkit.AccountKitLoginResult;
+import com.facebook.accountkit.PhoneNumber;
+import com.facebook.accountkit.ui.AccountKitActivity;
+import com.facebook.accountkit.ui.AccountKitConfiguration;
+import com.facebook.accountkit.ui.LoginType;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.auth.api.Auth;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
@@ -89,6 +101,8 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
     private View mProgressView;
     private View mLoginFormView;
     private View mLayout;
+    PhoneNumber verifiedPhoneNo;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +117,9 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         mContext = this;
         mSessionManager = new SessionManager(this);
         mApiClient = new ApiClient(this);
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance(); // for firebase
+
+
 
         mEmailView = findViewById(R.id.email);
         mLayout = findViewById(R.id.auth_root_layout);
@@ -119,15 +135,6 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         mLoginFormView = findViewById(R.id.email_login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        findViewById(R.id.sign_up_btn).setOnClickListener(view -> startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(Collections.singletonList(
-                                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()
-                        ))
-                        .build(),
-                REQ_VERIFY_PHONE_NUMBER));
-
         TextView forgot_pass = findViewById(R.id.forgot_password);
         if (forgot_pass != null) {
             forgot_pass.setOnClickListener(v -> {
@@ -136,16 +143,153 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             });
         }
 
-        if (mAuth.getCurrentUser() != null && !mSessionManager.isLoggedIn()) {
+        //binding Sign up button with firebase login
+       /* findViewById(R.id.sign_up_btn).setOnClickListener(view -> startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(Collections.singletonList(
+                                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()
+                        ))
+                        .build(),
+                REQ_VERIFY_PHONE_NUMBER));*/
+
+        //binding Sign up button with Facebook Account kit
+        findViewById(R.id.sign_up_btn).setOnClickListener(view -> startSignupPage(LoginType.PHONE));
+
+
+
+        //Firebase login check if phone is already verified...later change to facebook Ak
+        /*if (mAuth.getCurrentUser() != null && !mSessionManager.isLoggedIn()) {
             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
             if (getIntent().getExtras() != null) {
                 signUp.putExtras(getIntent().getExtras());
             }
             signUp.putExtra(Constants.PHONE_NUMBER, mAuth.getCurrentUser().getPhoneNumber());
             startActivityForResult(signUp, REQ_SIGN_UP);
+        }*/
+
+        //Account kit  login check if phone is already verified.
+        AccessToken accountKitAccessToken = AccountKit.getCurrentAccessToken();
+
+
+        if (accountKitAccessToken != null && !mSessionManager.isLoggedIn())  // Number verified, but not loggedin,
+        {
+            Toast.makeText(this,"verified user, not loggedin ", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this,"existing verified number. Token-"+accountKitAccessToken.toString()+"loggedin? - ", Toast.LENGTH_SHORT).show();
+            //load sign up form with number pre-filled, and unedittable.
+            Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
+            if (getIntent().getExtras() != null) {
+                signUp.putExtras(getIntent().getExtras());
+            }
+                if(verifiedPhoneNo != null)
+                {
+                    Toast.makeText(this,"VerifiedPhne is not null", Toast.LENGTH_SHORT).show();
+                    signUp.putExtra(Constants.PHONE_NUMBER, verifiedPhoneNo.toString()); //get number to pass to reg page
+                    startActivityForResult(signUp, REQ_SIGN_UP);
+                }
+                else
+                {
+                    Toast.makeText(this,"VerifiedPhne IS null", Toast.LENGTH_SHORT).show();
+
+                }
+
+
+        }
+        else{
+            Toast.makeText(this,"New user ", Toast.LENGTH_SHORT).show();
+        }
+
+
+
+
+
+    } // End on onCreate
+
+    //First point of call for Facebook account kit
+    private void startSignupPage(LoginType loginType)
+    {
+        Toast.makeText(this,"First point!", Toast.LENGTH_SHORT).show();
+
+        Intent verifyPhone = new Intent(mContext, AccountKitActivity.class);
+        AccountKitConfiguration.AccountKitConfigurationBuilder builder = new AccountKitConfiguration.AccountKitConfigurationBuilder(loginType,AccountKitActivity.ResponseType.TOKEN);
+        verifyPhone.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,builder.build());
+        startActivityForResult(verifyPhone,REQ_VERIFY_PHONE_NUMBER); // launch account kit activity to verify no
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_SIGN_UP && resultCode == RESULT_OK)
+        {
+            Toast.makeText(this,"Phone number verified, sign  up users", Toast.LENGTH_SHORT).show(); //signup complete
+            finishLogin(data);
+
+
+        }
+        if (requestCode == REQ_VERIFY_PHONE_NUMBER) // Verify number on Loystar server..
+        {
+            Toast.makeText(this,"New user, verify phone", Toast.LENGTH_SHORT).show();
+            //Facebook Acccount kit to verify no
+            initializeAccountKit(data,resultCode);
+
+
         }
     }
 
+    private void initializeAccountKit(Intent data, int resultCode)
+    {
+
+        AccountKitLoginResult result = data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
+        if(result.getError() !=null)
+        {
+            Toast.makeText(this,""+result.getError().getErrorType().getMessage(), Toast.LENGTH_SHORT).show();
+
+        }
+        else if(result.wasCancelled())
+        {
+            Toast.makeText(this,"cancel",Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            if (result.getAccessToken() != null)
+            {
+                // Use the AlertDialog.Builder to configure the AlertDialog.
+               /* AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
+                        .setTitle("Please wait")
+                        .setMessage("");
+                AlertDialog alertDialog = alertDialogBuilder.show();*/
+
+                //showProgress(true);
+
+
+
+                //get user phone and check if on server
+                AccountKit.getCurrentAccount(new AccountKitCallback<com.facebook.accountkit.Account>() {
+                    @Override
+                    public void onSuccess(com.facebook.accountkit.Account account) {
+                        //Phone number verified successfully, now check if merchant exist
+                        verifiedPhoneNo = account.getPhoneNumber(); // for passing phone no to signup form
+
+
+                        //Check if verified phone is  new merchant or not.
+                        handlePhoneVerificationResponse(resultCode, data);
+
+
+
+                        Log.d("staatus", "On success of AccountKit.getCurrentAccount"+verifiedPhoneNo.toString());
+                    }
+
+                    @Override
+                    public void onError(AccountKitError accountKitError) {
+                        Log.d("Error",accountKitError.getErrorType().getMessage());
+                    }
+                });
+
+            }
+        }
+    }
     @Override
     protected void setupToolbar() {
         super.setupToolbar();
@@ -154,26 +298,27 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQ_SIGN_UP && resultCode == RESULT_OK) {
-            finishLogin(data);
-        }
-        if (requestCode == REQ_VERIFY_PHONE_NUMBER) {
-            handlePhoneVerificationResponse(resultCode, data);
-        }
-    }
 
+    //Check results a phone verification server call
     private void handlePhoneVerificationResponse(int resultCode, Intent data) {
+        Snackbar.make(mLayout, "handlePhoneVerificationResponse()", Snackbar.LENGTH_LONG).show();
+
         final IdpResponse idpResponse = IdpResponse.fromResultIntent(data);
-        if (resultCode == RESULT_OK && idpResponse != null) {
+        // above is Some firebase stuff.. needs to change to fbac. Checking if init. so we can grab phone no to send
+
+
+        if (resultCode == RESULT_OK && AccountKit.getCurrentAccessToken() != null)
+        {
+            Snackbar.make(mLayout, "Would you ever get here.", Snackbar.LENGTH_LONG).show();
+
             final ProgressDialog progressDialog = new ProgressDialog(mContext);
             progressDialog.setIndeterminate(true);
             progressDialog.setMessage(getString(R.string.a_moment));
             progressDialog.show();
+
+            //Lets go to the server and check if the phone no is new or not
             mApiClient.getLoystarApi(false)
-                    .checkMerchantPhoneNumberAvailability(idpResponse.getPhoneNumber())
+                    .checkMerchantPhoneNumberAvailability(verifiedPhoneNo.toString())
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .compose(bindToLifecycle())
@@ -187,16 +332,19 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
                                     if (phoneNumberAvailability == null) {
                                         showSnackbar(R.string.unknown_error);
                                     } else {
-                                        if (phoneNumberAvailability.isPhoneAvailable()) {
+                                        if (phoneNumberAvailability.isPhoneAvailable()) //Actual checking of phone number
+                                        {
                                             Intent signUp = new Intent(mContext, MerchantSignUpActivity.class);
                                             if (getIntent().getExtras() != null) {
                                                 signUp.putExtras(getIntent().getExtras());
                                             }
-                                            signUp.putExtra(Constants.PHONE_NUMBER, idpResponse.getPhoneNumber());
-                                            startActivityForResult(signUp, REQ_SIGN_UP);
+                                            signUp.putExtra(Constants.PHONE_NUMBER, verifiedPhoneNo.toString());
+                                            startActivityForResult(signUp, REQ_SIGN_UP); //Phone number is available to register
                                         } else {
                                             showSnackbar(R.string.account_with_phone_exists);
-                                            mAuth.signOut();
+                                            //mAuth.signOut();
+                                            AccountKit.logOut();
+
                                         }
                                     }
                                 }
@@ -397,7 +545,8 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private void loginMerchant(String email, String password) {
+    //Actual Authentication
+    private void loginMerchant(String email, String password) { //Actual authentication
         mApiClient.getLoystarApi(false).signInMerchant(email, password)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -490,9 +639,12 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         if (intent.hasExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE)) {
             setResult(RESULT_CANCELED);
             Snackbar.make(mLayout, intent.getStringExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE), Snackbar.LENGTH_LONG).show();
-        } else {
+        }
+        else //successful authentication login and new signup
+            {
             String accountPassword = intent.getStringExtra(AccountManager.KEY_PASSWORD);
             String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+
             // Creating the account on the device and setting the auth token we got
             final Account account = AccountGeneral.addOrFindAccount(mContext, accountName, accountPassword);
             AccountGeneral.SetSyncAccount(mContext, account);
@@ -510,6 +662,7 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             setAccountAuthenticatorResult(intent.getExtras());
         }
     }
+
 
     public final void setAccountAuthenticatorResult( Bundle result ) {
         mResultBundle = result;

@@ -13,6 +13,16 @@
         </item>
     </style>
 
+    <style name="AppLoginTheme" parent="Theme.AccountKit">
+        <item name="com_accountkit_primary_color">@color/colorPrimary</item>
+        <item name="com_accountkit_primary_text_color">@android:color/white</item>
+        <item name="com_accountkit_secondary_text_color">@color/colorAccent</item>
+        <item name="com_accountkit_status_bar_color">@color/colorPrimaryDark</item>
+
+        <item name="com_accountkit_input_accent_color">?attr/com_accountkit_primary_color</item>
+        <item name="com_accountkit_input_border_color">?attr/com_accountkit_primary_color</item>
+    </style>
+
     <style name="AppThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

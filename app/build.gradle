@@ -27,7 +27,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 104
+        versionCode 106
         versionName '1.6'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -173,6 +173,7 @@ dependencies {
     implementation 'com.onesignal:OneSignal:3.6.5'
     implementation 'id.zelory:compressor:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.facebook.android:account-kit-sdk:4.+'
     implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'

@@ -536,4 +536,7 @@
     <string name="no_more_item">No more item</string>
     <string name="load_field">Load failed</string>
     <string name="resubcribe_mzg">Your account is inactive, please re-subscribe, thank you :)</string>
+    <string name="facebook_application_id">1406635922973425</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">0c5089e69ac8027578ffc16b84fcfa2f</string>
+
 </resources>

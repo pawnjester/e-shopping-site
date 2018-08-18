@@ -58,7 +58,7 @@ public class AppIntro extends VerticalIntro {
 
         setSkipEnabled(true);
         setVibrateEnabled(true);
-        setVibrateIntensity(20);
+        setVibrateIntensity(40);
         setNextText("CONTINUE");
         setDoneText("GET STARTED");
         setSkipText("Skip");
