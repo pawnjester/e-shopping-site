@@ -44,6 +44,14 @@
         <extra android:name="settings" android:value="@string/settings_print" />
     </header>
 
+
+    <header
+        android:fragment="co.loystar.loystarbusiness.activities.SettingsActivity$SettingsFragment"
+        android:icon="@drawable/ic_linear_scale_black_24dp"
+        android:title="@string/pref_connect_apps" >
+        <extra android:name="settings" android:value="@string/settings_apps" />
+    </header>
+
     <!--<header
         android:id="@+id/loystar_support_pref_header"
         android:icon="@drawable/ic_customer_support_green_24px"

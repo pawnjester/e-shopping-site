@@ -233,7 +233,31 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     startActivity(browserIntent);
                     return true;
                 });
-            } else if (getActivity().getString(R.string.settings_notifications).equals(settingsKey)){
+            }
+            else  if (getActivity().getString(R.string.settings_apps).equals(settingsKey)){
+                addPreferencesFromResource(R.xml.connect_apps);
+                setHasOptionsMenu(true);
+                Preference prefPrivacyPolicy = findPreference(getString(R.string.pref_connect_accounteer_key));
+                prefPrivacyPolicy.setOnPreferenceClickListener(preference -> {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://lyst-acct.herokuapp.com/"));
+                    startActivity(browserIntent);
+                    return true;
+                });
+            }
+
+            else if (getActivity().getString(R.string.settings_general).equals(settingsKey))
+            {
+                setHasOptionsMenu(true);
+                addPreferencesFromResource(R.xml.connect_apps);
+                bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_connect_accounteer_key)));
+                Preference prefAccounteer = findPreference(getString(R.string.pref_connect_accounteer_key));
+                prefAccounteer.setOnPreferenceClickListener(preference -> {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://lyst-acct.herokuapp.com/"));
+                    startActivity(browserIntent);
+                    return true;
+                });
+            }
+            else if (getActivity().getString(R.string.settings_notifications).equals(settingsKey)){
                 addPreferencesFromResource(R.xml.pref_notification);
                 setHasOptionsMenu(true);
 

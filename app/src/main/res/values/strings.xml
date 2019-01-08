@@ -264,6 +264,9 @@
     <string name="pref_support_title">Customer Support</string>
     <string name="pref_sign_out_title">Sign out</string>
     <string name="merchant_sign_up_pref">co.loystar.loystarbusiness.merchant_sign_up_pref</string>
+    <string name="pref_connect_accounteer_key">accounteer</string>
+    <string name="pref_connect_apps">Connect Other Apps</string>
+    <string name="pref_connect_accounteer_title">Accounteer (Accounting)</string>
     <string name="pref_app_version_key">app_version</string>
     <string name="pref_app_version_title">App version</string>
     <string name="pref_privacy_policy_key">privacy_policy</string>
@@ -483,6 +486,7 @@
     <string name="settings_data_and_sync">settings_data_and_sync</string>
     <string name="settings_account">settings_account</string>
     <string name="settings_products_and_services">settings_products_and_services</string>
+    <string name="settings_apps">other_apps</string>
     <string name="pref_header_print_options">Print</string>
     <string name="settings_print">settings_print</string>
     <string name="pref_enable_bluetooth_print_tile">Enable Bluetooth Print</string>

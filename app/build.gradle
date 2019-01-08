@@ -27,7 +27,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 107
+        versionCode 109
         versionName '1.6'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -69,12 +69,14 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            debuggable false
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "SMOOCH_TOKEN", "\"${props.getProperty("smoochToken")}\""
             buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
             buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
             signingConfig signingConfigs.release
+            useProguard true
         }
         debug {
             minifyEnabled true
@@ -84,6 +86,8 @@ android {
             buildConfigField "String", "MIXPANEL_TOKEN", "\"${props.getProperty("mixPanelToken")}\""
             buildConfigField "String", "UXCAM_TOKEN", "\"${props.getProperty("uxCamToken")}\""
             signingConfig signingConfigs.release
+            debuggable true
+            useProguard true
         }
     }
     packagingOptions {
