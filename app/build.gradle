@@ -21,12 +21,13 @@ try {
     throw new GradleException("Missing loystar.properties, check the loystar.properties file.")
 }
 
+
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 109
         versionName '1.6'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -41,13 +42,13 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\User\\Loystar Google Drive\\MISC\\loystar-upload-keystore.jks')
+            storeFile file('loystar-upload-keystore.jks')
             storePassword 'loystar123$'
             keyAlias 'loystar-upload'
             keyPassword 'loystar123$'
         }
         debug {
-            storeFile file('C:\\Users\\User\\Loystar Google Drive\\MISC\\loystar-upload-keystore.jks')
+            storeFile file('loystar-upload-keystore.jks')
             storePassword 'loystar123$'
             keyAlias 'loystar-upload'
             keyPassword 'loystar123$'
@@ -109,7 +110,7 @@ android {
 }
 
 ext {
-    supportLibVersion = "27.0.2"
+    supportLibVersion = "28.0.0"
     junitVersion = "4.12"
     firebaseVersion = "11.6.2"
     requeryVersion = "1.4.0"
@@ -123,9 +124,9 @@ dependencies {
     implementation "com.android.support:support-v4:$supportLibVersion"
     implementation "com.android.support:recyclerview-v7:$supportLibVersion"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-v4:27.0.2'
-    implementation 'com.android.support:recyclerview-v7:27.0.2'
-    implementation 'com.android.support:design:27.0.2'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -151,8 +152,12 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:3.9.0'
     implementation 'com.jakewharton.timber:timber:4.6.0'
-    implementation "com.jakewharton:butterknife:${butterKnifeVersion}"
-    annotationProcessor "com.jakewharton:butterknife-compiler:${butterKnifeVersion}"
+    implementation "com.jakewharton:butterknife:${butterKnifeVersion}", {
+        exclude group: 'com.android.support'
+    }
+    annotationProcessor "com.jakewharton:butterknife-compiler:${butterKnifeVersion}",{
+        exclude group: 'com.android.support'
+    }
     implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     implementation 'com.github.armcha:Vertical-Intro:2.0.0'
     implementation 'com.github.bumptech.glide:glide:4.3.1'
