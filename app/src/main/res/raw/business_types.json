@@ -1,37 +1,37 @@
 [
   {
     "id": 1,
-    "tag": "beverages_and_deserts",
-    "title": "Beverages and Desserts"
+    "tag": "food_and_drinks",
+    "title": "Food and Drinks"
   },
   {
     "id": 2,
-    "tag": "hair_and_beauty",
-    "title": "Hair and Beauty"
-  },
-  {
-    "id": 3,
     "tag": "fashion_and_accessories",
     "title": "Fashion and Accessories"
   },
   {
+    "id": 3,
+    "tag": "salon_and_beauty",
+    "title": "Salon and Beauty"
+  },
+  {
     "id": 4,
+    "tag": "hotel_and_travel",
+    "title": "Hotel and Travel"
+  },
+  {
+    "id": 5,
     "tag": "gym_and_fitness",
     "title": "Gym and Fitness"
   },
   {
-    "id": 5,
-    "tag": "travel_and_hotel",
-    "title": "Travel and Hotel"
-  },
-  {
     "id": 6,
-    "tag": "bakery_and_pastry",
-    "title": "Bakery and Pastry"
+    "tag": "home_and_gifts",
+    "title": "Home and Gifts"
   },
   {
     "id": 7,
-    "tag": "other",
-    "title": "Other"
+    "tag": "others",
+    "title": "Others"
   }
 ]
