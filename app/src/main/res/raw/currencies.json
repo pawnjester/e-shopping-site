@@ -359,6 +359,15 @@
     "name_plural": "Ghanaian cedis"
   },
   {
+    "symbol": "D",
+    "name": "Gambian Dalasi",
+    "symbol_native": "D",
+    "decimal_digits": 0,
+    "rounding": 0,
+    "code": "GMD",
+    "name_plural": "Gambian dalasis"
+  },
+  {
     "symbol": "FG",
     "name": "Guinean Franc",
     "symbol_native": "FG",
