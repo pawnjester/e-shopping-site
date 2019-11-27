@@ -500,7 +500,7 @@
     <string name="cash_collected_label">Cash collected</string>
     <string name="change">Change</string>
     <string name="complete_payment">Complete Payment</string>
-    <string name="include_customer_detail">Include customer detail</string>
+    <string name="include_customer_detail">Add customer loyalty</string>
     <string name="total_charge_label">Total charge</string>
     <string name="confirm_payment">Confirm Payment</string>
     <string name="card_payment_extra">* from card payment device</string>
