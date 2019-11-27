@@ -5,6 +5,7 @@
       <module fileurl="file://C:/Users/User/AndroidStudioProjects/p/loystar-android/LoystarBusiness.iml" filepath="C:/Users/User/AndroidStudioProjects/p/loystar-android/LoystarBusiness.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://C:/Users/User/AndroidStudioProjects/loystar-android-mpos/loystar-android.iml" filepath="C:/Users/User/AndroidStudioProjects/loystar-android-mpos/loystar-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/loystar-android-app.iml" filepath="$PROJECT_DIR$/app/loystar-android-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/loystar-android-mpos.iml" filepath="$PROJECT_DIR$/loystar-android-mpos.iml" />
       <module fileurl="file://$PROJECT_DIR$/loystar-loystar-android.iml" filepath="$PROJECT_DIR$/loystar-loystar-android.iml" />
     </modules>
