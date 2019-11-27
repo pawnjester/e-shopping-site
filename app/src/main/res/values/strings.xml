@@ -173,7 +173,7 @@
     <string name="customer_update_success">Customer updated successfully!</string>
     <string name="title_activity_reward_customers">Redeem</string>
     <string name="redemption_code">Six digit code</string>
-    <string name="enter_reset_token">Enter reset code</string>
+    <string name="enter_reset_token"><font size="15">Enter reset code..(the reward code is case sensitive)</font></string>
     <string name="error_redemption_code_required">Please enter six digit code</string>
     <string name="error_redemption_code_incorrect">Code is incorrect</string>
     <string name="error_redemption_code_length">Code must be six digits</string>
