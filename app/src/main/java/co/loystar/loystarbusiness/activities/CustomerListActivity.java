@@ -360,7 +360,7 @@ public class CustomerListActivity extends RxAppCompatActivity implements
                 Selection<ReactiveResult<CustomerEntity>> nameSelection = mDataStore.select(CustomerEntity.class);
                 nameSelection.where(CustomerEntity.OWNER.eq(merchantEntity));
                 nameSelection.where(CustomerEntity.DELETED.notEqual(true));
-                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery));
+                nameSelection.where(CustomerEntity.FIRST_NAME.like(searchQuery)).or(CustomerEntity.LAST_NAME.like(searchQuery));
                 nameSelection.limit(limit);
                 customerEntities =  new ArrayList<>(nameSelection.orderBy(CustomerEntity.FIRST_NAME.upper().asc()).get().toList());
             }
