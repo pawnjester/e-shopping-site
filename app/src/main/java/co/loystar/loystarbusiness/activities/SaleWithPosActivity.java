@@ -136,6 +136,7 @@ public class SaleWithPosActivity extends BaseActivity implements
     private final String KEY_SELECTED_PRODUCTS_STATE = "selected_products_state";
     private final String KEY_ORDER_SUMMARY_RECYCLER_STATE = "order_summary_recycler_state";
     private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
+    private int customerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +154,7 @@ public class SaleWithPosActivity extends BaseActivity implements
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
         merchantCurrencySymbol = CurrenciesFetcher.getCurrencies(this).getCurrency(mSessionManager.getCurrency()).getSymbol();
-        int customerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
+        customerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
         mProductsAdapter = new ProductsAdapter();
@@ -432,8 +433,10 @@ public class SaleWithPosActivity extends BaseActivity implements
     @Override
     public void onCashPaymentDialogComplete(boolean showCustomerDialog) {
         isPaidWithCash = true;
-        if (showCustomerDialog) {
+        if (showCustomerDialog && customerId == 0) {
             customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+        } else if (showCustomerDialog && customerId > 0) {
+            createSale();
         } else {
             createSale();
         }
