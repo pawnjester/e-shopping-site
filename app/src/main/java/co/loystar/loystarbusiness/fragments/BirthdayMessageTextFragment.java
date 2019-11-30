@@ -66,7 +66,6 @@ public class BirthdayMessageTextFragment extends Fragment {
     private ImageView insertOfferView;
     private Button resetFieldView;
     private TextInputEditText msgBox;
-    private String text;
     SharedPreferences sp;
 
     public BirthdayMessageTextFragment() {}
@@ -315,7 +314,7 @@ public class BirthdayMessageTextFragment extends Fragment {
         editor.apply();
 
         boolean msgIsValid = true;
-        text = msgBox.getText().toString();
+        String text = msgBox.getText().toString();
         if (text.trim().isEmpty()) {
             Toast.makeText(getContext(), getString(R.string.error_message_required), Toast.LENGTH_LONG).show();
             msgIsValid = false;
