@@ -164,8 +164,9 @@ public class SalesHistoryActivity extends BaseActivity {
             @Override
             public void dateOnClick(Day day, int position) {
                 Calendar calendar = Calendar.getInstance();
+                int year = calendar.get(Calendar.YEAR);
                 calendar.setTime(day.getDate());
-                calendar.set(Calendar.YEAR, 2018);
+                calendar.set(Calendar.YEAR, year);
 
                 selectedDate = calendar.getTime();
                 setTotalSales();
@@ -223,12 +224,16 @@ public class SalesHistoryActivity extends BaseActivity {
 
         Calendar nextDayCal = Calendar.getInstance();
         nextDayCal.setTime(selectedDate);
+
         nextDayCal.add(Calendar.DAY_OF_MONTH, 1);
 
         Selection<ReactiveResult<Tuple>> cashResultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
         cashResultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
         cashResultSelection.where(SaleEntity.PAYED_WITH_CASH.eq(true));
-        cashResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+        cashResultSelection.where(SaleEntity.CREATED_AT.between(
+                new Timestamp(startDayCal.getTimeInMillis()),
+                new Timestamp(nextDayCal.getTimeInMillis())));
+
 
         Tuple cashTuple = cashResultSelection.get().firstOrNull();
         if (cashTuple == null || cashTuple.get(0) == null) {
@@ -245,9 +250,12 @@ public class SalesHistoryActivity extends BaseActivity {
         Selection<ReactiveResult<Tuple>> cardResultSelection = mDataStore.select(SaleEntity.TOTAL.sum());
         cardResultSelection.where(SaleEntity.MERCHANT.eq(merchantEntity));
         cardResultSelection.where(SaleEntity.PAYED_WITH_CARD.eq(true));
-        cardResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(startDayCal.getTimeInMillis()), new Timestamp(nextDayCal.getTimeInMillis())));
+        cardResultSelection.where(SaleEntity.CREATED_AT.between(new Timestamp(
+                startDayCal.getTimeInMillis()),
+                new Timestamp(nextDayCal.getTimeInMillis())));
 
         Tuple cardTuple = cardResultSelection.get().firstOrNull();
+
         if (cardTuple == null || cardTuple.get(0) == null) {
             totalCardSalesForDateSelected = 0;
         } else {
