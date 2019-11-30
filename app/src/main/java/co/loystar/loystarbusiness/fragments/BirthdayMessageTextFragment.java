@@ -2,8 +2,10 @@ package co.loystar.loystarbusiness.fragments;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -64,6 +66,8 @@ public class BirthdayMessageTextFragment extends Fragment {
     private ImageView insertOfferView;
     private Button resetFieldView;
     private TextInputEditText msgBox;
+    private String text;
+    SharedPreferences sp;
 
     public BirthdayMessageTextFragment() {}
 
@@ -112,6 +116,7 @@ public class BirthdayMessageTextFragment extends Fragment {
             charCounterView = promptsView.findViewById(R.id.charCounter);
 
             insertOfferView.setOnClickListener(v -> msgBox.getText().insert(msgBox.getSelectionStart(), "[BIRTHDAY_OFFER]"));
+            sp = getContext().getSharedPreferences("your_prefs", Activity.MODE_PRIVATE);
 
             if (mBirthdayOffer == null) {
                 insertOfferView.setVisibility(View.GONE);
@@ -158,13 +163,15 @@ public class BirthdayMessageTextFragment extends Fragment {
 
             if (offerPresetSmsEntity == null) {
                 String pText;
-                if (mBirthdayOffer == null) {
+                if (sp.getString("text", null) != null){
+                    msgBox.setText(sp.getString("text", null));
+                } else if (mBirthdayOffer == null) {
                     pText = getResources().getString(R.string.default_birthday_preset_sms_with_no_offer, sessionManager.getBusinessName());
-                }
-                else {
+                    msgBox.setText(pText);
+                } else {
                     pText = getResources().getString(R.string.default_birthday_preset_sms_with_offer, sessionManager.getBusinessName());
+                    msgBox.setText(pText);
                 }
-                msgBox.setText(pText);
                 alertDialogBuilder
                         .setPositiveButton(getString(R.string.create),
                                 (dialog, id) -> {
@@ -205,8 +212,7 @@ public class BirthdayMessageTextFragment extends Fragment {
                                                         offerPresetSmsEntity = merchantEntity.getBirthdayOfferPresetSms();
                                                         mPresetTextView.setText(birthdayOfferPresetSms.getPreset_sms_text());
                                                     }
-                                                }
-                                                else {
+                                                } else {
                                                     Toast.makeText(getContext(), getString(R.string.error_birthday_offer_preset_sms_create), Toast.LENGTH_LONG).show();
                                                 }
                                             }
@@ -223,7 +229,6 @@ public class BirthdayMessageTextFragment extends Fragment {
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-
                                 })
                         .setNegativeButton(android.R.string.no,
                                 (dialog, id) -> dialog.cancel());
@@ -231,66 +236,66 @@ public class BirthdayMessageTextFragment extends Fragment {
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
             } else {
-                msgBox.setText(offerPresetSmsEntity.getPresetSmsText());
+                if (sp.getString("text", null) != null){
+                    msgBox.setText(sp.getString("text", null));
+                }else {
+                    msgBox.setText(offerPresetSmsEntity.getPresetSmsText());
+                }
                 alertDialogBuilder
                         .setPositiveButton(getString(R.string.update),
                                 (dialog, id) -> {
                                     if (!validatePresetMessage()) {
                                         return;
                                     }
+                                        closeKeyboard();
+                                        mProgressDialog.show();
 
-                                    closeKeyboard();
-                                    mProgressDialog.show();
+                                        try {
+                                            JSONObject req = new JSONObject();
+                                            req.put("preset_sms_text", msgBox.getText().toString());
+                                            JSONObject requestData = new JSONObject();
+                                            requestData.put("data", req);
 
-                                    try {
-                                        JSONObject req = new JSONObject();
-                                        req.put("preset_sms_text", msgBox.getText().toString());
-                                        JSONObject requestData = new JSONObject();
-                                        requestData.put("data", req);
+                                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
 
-                                        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-
-                                        mApiClient.getLoystarApi(false).updateBirthdayOfferPresetSMS(offerPresetSmsEntity.getId(), requestBody).enqueue(new Callback<BirthdayOfferPresetSms>() {
-                                            @Override
-                                            public void onResponse(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Response<BirthdayOfferPresetSms> response) {
-                                                if (mProgressDialog.isShowing()) {
-                                                    mProgressDialog.dismiss();
-                                                }
-
-                                                if (response.isSuccessful()) {
-                                                    BirthdayOfferPresetSms birthdayOfferPresetSms = response.body();
-                                                    if (birthdayOfferPresetSms == null) {
-                                                        Toast.makeText(getContext(), getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
-                                                    } else {
-                                                        offerPresetSmsEntity.setPresetSmsText(birthdayOfferPresetSms.getPreset_sms_text());
-                                                        offerPresetSmsEntity.setUpdatedAt(new Timestamp(birthdayOfferPresetSms.getUpdated_at().getMillis()));
-
-                                                        mDatabaseManager.updateBirthdayPresetSms(offerPresetSmsEntity);
-                                                        mPresetTextView.setText(birthdayOfferPresetSms.getPreset_sms_text());
-                                                        offerPresetSmsEntity = merchantEntity.getBirthdayOfferPresetSms();
-                                                        Toast.makeText(getContext(), getString(R.string.birthday_offer_preset_sms_update_success), Toast.LENGTH_LONG).show();
+                                            mApiClient.getLoystarApi(false).updateBirthdayOfferPresetSMS(offerPresetSmsEntity.getId(), requestBody).enqueue(new Callback<BirthdayOfferPresetSms>() {
+                                                @Override
+                                                public void onResponse(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Response<BirthdayOfferPresetSms> response) {
+                                                    if (mProgressDialog.isShowing()) {
+                                                        mProgressDialog.dismiss();
                                                     }
 
+                                                    if (response.isSuccessful()) {
+                                                        BirthdayOfferPresetSms birthdayOfferPresetSms = response.body();
+                                                        if (birthdayOfferPresetSms == null) {
+                                                            Toast.makeText(getContext(), getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                                        } else {
+                                                            offerPresetSmsEntity.setPresetSmsText(birthdayOfferPresetSms.getPreset_sms_text());
+                                                            offerPresetSmsEntity.setUpdatedAt(new Timestamp(birthdayOfferPresetSms.getUpdated_at().getMillis()));
+
+                                                            mDatabaseManager.updateBirthdayPresetSms(offerPresetSmsEntity);
+                                                            mPresetTextView.setText(birthdayOfferPresetSms.getPreset_sms_text());
+                                                            offerPresetSmsEntity = merchantEntity.getBirthdayOfferPresetSms();
+                                                            Toast.makeText(getContext(), getString(R.string.birthday_offer_preset_sms_update_success), Toast.LENGTH_LONG).show();
+                                                        }
+
+                                                    } else {
+                                                        Toast.makeText(getContext(), getString(R.string.error_birthday_offer_preset_sms_update), Toast.LENGTH_LONG).show();
+                                                    }
                                                 }
 
-                                                else {
-                                                    Toast.makeText(getContext(), getString(R.string.error_birthday_offer_preset_sms_update), Toast.LENGTH_LONG).show();
+                                                @Override
+                                                public void onFailure(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Throwable t) {
+                                                    if (mProgressDialog.isShowing()) {
+                                                        mProgressDialog.dismiss();
+                                                    }
+                                                    Toast.makeText(getContext(), getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
                                                 }
-                                            }
+                                            });
 
-                                            @Override
-                                            public void onFailure(@NonNull Call<BirthdayOfferPresetSms> call, @NonNull Throwable t) {
-                                                if (mProgressDialog.isShowing()) {
-                                                    mProgressDialog.dismiss();
-                                                }
-                                                Toast.makeText(getContext(), getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
-                                            }
-                                        });
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
                                 })
                         .setNegativeButton(android.R.string.no,
                                 (dialog, id) -> dialog.cancel());
@@ -304,8 +309,13 @@ public class BirthdayMessageTextFragment extends Fragment {
     }
 
     private boolean validatePresetMessage() {
+        sp = getContext().getSharedPreferences("your_prefs", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("text", msgBox.getText().toString());
+        editor.apply();
+
         boolean msgIsValid = true;
-        String text = msgBox.getText().toString();
+        text = msgBox.getText().toString();
         if (text.trim().isEmpty()) {
             Toast.makeText(getContext(), getString(R.string.error_message_required), Toast.LENGTH_LONG).show();
             msgIsValid = false;
@@ -323,6 +333,8 @@ public class BirthdayMessageTextFragment extends Fragment {
         }
 
         if (cNames.isEmpty()) {
+            mPresetTextView.setText(text);
+
             Toast.makeText(getContext(), getString(R.string.error_special_strings_customer_name_not_found), Toast.LENGTH_LONG).show();
             msgIsValid = false;
         }
