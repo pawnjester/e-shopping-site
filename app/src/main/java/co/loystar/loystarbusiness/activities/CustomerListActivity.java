@@ -23,7 +23,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -120,10 +119,8 @@ public class CustomerListActivity extends RxAppCompatActivity implements
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
-        Log.e("rRR", merchantEntity.toString());
 
         mAdapter = new CustomerListAdapter(this, this, this);
-        Log.e("getInitial", getInitialCustomerData().toString());
         mAdapter.set(getInitialCustomerData());
 
         if (findViewById(R.id.customer_detail_container) != null) {

@@ -54,7 +54,6 @@ import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
-import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
@@ -170,17 +169,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mApiClient.getLoystarApi(false)
                 .getCustomers(1, 1500)
                 .flatMapIterable(arrayListResponse -> {
-                    String getTotal = arrayListResponse.headers().get("Total");
-                    if (!TextUtils.isEmpty(getTotal)) {
-                         /*
-                        * Save total customers figure so we can track if we have full customers data locally
-                        * */
-                        SharedPreferences.Editor editor = mSharedPreferences.edit();
-                        editor.putInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, Integer.parseInt(getTotal));
-                        editor.apply();
-                    }
-
                     ArrayList<Customer> customers = arrayListResponse.body();
+
+                    int getTotal = customers.size();
+                        /*
+                         * Save total customers figure so we can track if we have full customers data locally
+                         * */
+                        SharedPreferences.Editor editor = mSharedPreferences.edit();
+                        editor.putInt(Constants.TOTAL_CUSTOMERS_ON_SERVER, getTotal);
+                        editor.apply();
                     if (customers == null || customers.isEmpty()) {
                         // since sales can be created without customer record
                         // without customers we should still sync sales
