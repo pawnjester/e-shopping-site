@@ -27,7 +27,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +79,8 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
     private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
     private ArrayList<LoyaltyDeal> loyaltyDeals = new ArrayList<>();
     private DatabaseManager mDatabaseManager;
+    private CustomerEntity mCustomerEntity;
+
 
     private View mLayout;
 
@@ -201,11 +206,48 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            navigateUpTo(new Intent(mContext, MerchantBackOfficeActivity.class));
-            return true;
+        switch (id) {
+            case android.R.id.home:
+                navigateUpTo(new Intent(mContext, MerchantBackOfficeActivity.class));
+                return true;
+            case R.id.share_general:
+                sharegeneral();
+                return true;
+            case R.id.share_whatsapp:
+                shareViaWhatsapp();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    private void sharegeneral() {
+        Log.e("gen", "eral");
+    }
+
+    private void shareViaWhatsapp() {
+        StringBuilder text = new StringBuilder();
+        Log.e("nope", loyaltyDeals.toString());
+//        for (LoyaltyDeal deals: loyaltyDeals) {
+//            if (deals.getProgram_type().equals(getString(R.string.simple_points))) {
+////                text.append("Hello" + mCustomerEntity.getLastName() + " "
+////                        + mCustomerEntity.getFirstName() + ", you now have "
+////                        + deals. + " points from "
+////                        + mSessionManager.getBusinessName() + ". Earn ");
+//                Log.e("string", deals.getProgram_type());
+//            }
+//        }
+//        String text;
+//        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+//        whatsappIntent.setType("text/plain");
+//        whatsappIntent.setPackage("com.whatsapp");
+//        if (whatsappIntent !=  null) {
+//            whatsappIntent.putExtra(Intent.EXTRA_TEXT, text.toString());
+//            startActivity(Intent.createChooser(whatsappIntent, text));
+//        } else {
+//            Toast.makeText(this, "WhatsApp not found", Toast.LENGTH_SHORT)
+//                    .show();
+//        }
     }
 
     @Override
@@ -231,6 +273,13 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
 
         registerReceiver(syncFinishedReceiver, new IntentFilter(Constants.SYNC_FINISHED));
         registerReceiver(syncStartedReceiver, new IntentFilter(Constants.SYNC_STARTED));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.share_pos_confirmation, menu);
+        return true;
     }
 
     private BroadcastReceiver syncFinishedReceiver = new BroadcastReceiver() {
@@ -497,7 +546,6 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
     private class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.ViewHolder> {
 
         private ArrayList<LoyaltyDeal> mDeals;
-        private CustomerEntity mCustomerEntity;
 
         DealsAdapter(ArrayList<LoyaltyDeal> deals, CustomerEntity customerEntity) {
             mDeals = deals;
