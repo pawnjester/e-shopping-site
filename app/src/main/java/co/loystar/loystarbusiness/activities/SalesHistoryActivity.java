@@ -148,6 +148,7 @@ public class SalesHistoryActivity extends BaseActivity {
     private BottomSheetBehavior bottomSheetBehavior;
     private double totalCardSalesForDateSelected;
     private double totalCashSalesForDateSelected;
+    Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +160,7 @@ public class SalesHistoryActivity extends BaseActivity {
         mDataStore = DatabaseManager.getDataStore(this);
         mSessionManager = new SessionManager(this);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class, mSessionManager.getMerchantId()).blockingGet();
+        toast = Toast.makeText(mContext, null, Toast.LENGTH_LONG);
 
         calendarView.setOneCalendarClickListener(new OneCalendarView.OneCalendarClickListener() {
             @Override
@@ -268,7 +270,8 @@ public class SalesHistoryActivity extends BaseActivity {
         }
 
         if (totalCardSalesForDateSelected == 0 && totalCashSalesForDateSelected == 0) {
-            Toast.makeText(mContext, getString(R.string.no_sales_records), Toast.LENGTH_LONG).show();
+            toast.setText(getString(R.string.no_sales_records));
+            toast.show();
         } else {
             showBottomSheet(true);
         }
