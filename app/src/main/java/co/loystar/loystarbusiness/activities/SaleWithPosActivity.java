@@ -281,7 +281,7 @@ public class SaleWithPosActivity extends BaseActivity implements
         mProductsRecyclerView = recyclerView;
 
         mProductsRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 3);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, 2);
         mProductsRecyclerView.setLayoutManager(mLayoutManager);
         mProductsRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mProductsRecyclerView.setAdapter(mProductsAdapter);
