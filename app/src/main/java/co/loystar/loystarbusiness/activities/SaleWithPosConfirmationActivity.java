@@ -27,11 +27,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.view.RxView;
@@ -45,11 +42,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import butterknife.BindView;
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.adapters.DealAdapter;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -76,6 +73,8 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
     private HashMap<Integer, Integer> mOrderSummaryItems = new HashMap<>();
     private ArrayList<LoyaltyDeal> loyaltyDeals = new ArrayList<>();
     private DatabaseManager mDatabaseManager;
+    private CustomerEntity mCustomer;
+
 
     private View mLayout;
 
@@ -118,7 +117,7 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
 
         int mCustomerId = getIntent().getIntExtra(Constants.CUSTOMER_ID, 0);
         mOrderSummaryItems = (HashMap<Integer, Integer>) getIntent().getSerializableExtra(Constants.ORDER_SUMMARY_ITEMS);
-        CustomerEntity mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
+        mCustomer = mDatabaseManager.getCustomerById(mCustomerId);
 
         if (mCustomer == null) {
             noCustomerWrapper.setVisibility(View.VISIBLE);
@@ -140,7 +139,9 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
                 );
             }
 
-            DealsAdapter mAdapter = new DealsAdapter(loyaltyDeals, mCustomer);
+            DealAdapter mAdapter = new DealAdapter(getApplicationContext(), loyaltyDeals, mCustomer, deal -> {
+                shareLoyaltyMessage(deal);
+            });
             mRecyclerView.setHasFixedSize(true);
             RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mContext);
             mRecyclerView.setLayoutManager(mLayoutManager);
@@ -201,11 +202,59 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            navigateUpTo(new Intent(mContext, MerchantBackOfficeActivity.class));
-            return true;
+        switch (id) {
+            case android.R.id.home:
+                navigateUpTo(new Intent(mContext, MerchantBackOfficeActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    private void shareLoyaltyMessage(LoyaltyDeal deal) {
+        String txt = "";
+        if (deal.getProgram_type().equals(getString(R.string.simple_points))) {
+            if (deal.getTotal_user_points() >= deal.getThreshold()) {
+                txt = "Dear " + mCustomer.getLastName()
+                        +  " " + mCustomer.getFirstName()
+                        + ", Congratulations! You have earned "
+                        + deal.getReward() +
+                        " from " + mSessionManager.getBusinessName() +
+                        ". Redeem your reward with the code sent via SMS on your next purchase. Thank you";
+            } else {
+                int difference = 0;
+                String type = "";
+                int typeOfReward = 0;
+                if (deal.getProgram_type().equals(getString(R.string.simple_points))) {
+                    difference = deal.getThreshold() - deal.getTotal_user_points();
+                    typeOfReward = deal.getTotal_user_points();
+                    if (deal.getTotal_user_points() == 1) {
+                        type = "point";
+                    } else {
+                        type = "points";
+                    }
+                } else if (deal.getProgram_type().equals(getString(R.string.stamps_program))) {
+                    difference = deal.getThreshold() - deal.getTotal_user_stamps();
+                    typeOfReward = deal.getTotal_user_stamps();
+                    if (deal.getTotal_user_stamps() == 1) {
+                        type = "stamp";
+                    } else {
+                        type = "stamps";
+                    }
+                }
+                txt = "Hello " +  mCustomer.getLastName()
+                        +  " " + mCustomer.getFirstName()
+                        + ", you now have " + typeOfReward + " " + type + " from "
+                        + mSessionManager.getBusinessName() + ". Earn " + difference + " more to redeem "
+                        + deal.getReward() + ". Thank you.";
+            }
+        }
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT,
+                txt);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 
     @Override
@@ -494,70 +543,6 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
             }, throwable -> Toast.makeText(mContext, getString(R.string.error_printer_connection), Toast.LENGTH_LONG).show());
     }
 
-    private class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.ViewHolder> {
-
-        private ArrayList<LoyaltyDeal> mDeals;
-        private CustomerEntity mCustomerEntity;
-
-        DealsAdapter(ArrayList<LoyaltyDeal> deals, CustomerEntity customerEntity) {
-            mDeals = deals;
-            mCustomerEntity = customerEntity;
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            private TextView mTitle;
-            private TextView mDescription;
-            ViewHolder(View itemView) {
-                super(itemView);
-                mTitle = itemView.findViewById(R.id.title);
-                mDescription = itemView.findViewById(R.id.description);
-            }
-        }
-
-        @Override
-        public DealsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.program_item, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(DealsAdapter.ViewHolder holder, int position) {
-            LoyaltyDeal deal = mDeals.get(position);
-            holder.mTitle.setText(deal.getReward());
-            String txt = "";
-            if (deal.getProgram_type().equals(getString(R.string.simple_points))) {
-                if (deal.getTotal_user_points() >= deal.getThreshold()) {
-                    txt = mCustomerEntity.getFirstName() + " is due for this reward.";
-                } else {
-                    String pointsTxt;
-                    if (deal.getTotal_user_points() == 1) {
-                        pointsTxt = "point";
-                    } else {
-                        pointsTxt = "points";
-                    }
-                    txt = mCustomerEntity.getFirstName() + " has earned " + deal.getTotal_user_points() + " " + pointsTxt;
-                }
-            } else if (deal.getProgram_type().equals(getString(R.string.stamps_program))) {
-                if (deal.getTotal_user_stamps() >= deal.getThreshold()) {
-                    txt = mCustomerEntity.getFirstName() + " is due for this reward.";
-                } else {
-                    String stampsTxt;
-                    if (deal.getTotal_user_stamps() == 1) {
-                        stampsTxt = "stamp";
-                    } else {
-                        stampsTxt = "stamps";
-                    }
-                    txt = mCustomerEntity.getFirstName() + " has earned " + deal.getTotal_user_stamps() + " " + stampsTxt;
-                }
-            }
-            holder.mDescription.setText(txt);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mDeals.size();
-        }
-    }
 
     // close the connection to bluetooth printer.
     void closeBT() throws IOException {

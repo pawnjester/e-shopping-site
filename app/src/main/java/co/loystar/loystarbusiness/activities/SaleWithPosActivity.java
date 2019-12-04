@@ -60,6 +60,8 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
+import co.loystar.loystarbusiness.models.entities.ProductCategory;
+import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
@@ -578,9 +580,14 @@ public class SaleWithPosActivity extends BaseActivity implements
                 return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
             } else {
                 String query = "%" + searchFilterText.toLowerCase() + "%";
+                ProductCategoryEntity categoryEntity = mDataStore.select(ProductCategoryEntity.class)
+                        .where(ProductCategoryEntity.NAME.like(query))
+                        .get()
+                        .firstOrNull();
+
                 Selection<ReactiveResult<ProductEntity>> productsSelection = mDataStore.select(ProductEntity.class);
                 productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
-                productsSelection.where(ProductEntity.NAME.like(query));
+                productsSelection.where(ProductEntity.NAME.like(query)).or(ProductEntity.CATEGORY.equal(categoryEntity));
                 productsSelection.where(ProductEntity.DELETED.notEqual(true));
 
                 return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
