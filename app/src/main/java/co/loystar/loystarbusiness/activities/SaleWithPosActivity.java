@@ -19,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,7 +61,6 @@ import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
-import co.loystar.loystarbusiness.models.entities.ProductCategory;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
@@ -93,10 +93,10 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
 public class SaleWithPosActivity extends BaseActivity implements
-    CustomerAutoCompleteDialog.SelectedCustomerListener,
-    PayOptionsDialog.PayOptionsDialogClickListener,
-    CashPaymentDialog.CashPaymentDialogOnCompleteListener,
-    CardPaymentDialog.CardPaymentDialogOnCompleteListener,
+        CustomerAutoCompleteDialog.SelectedCustomerListener,
+        PayOptionsDialog.PayOptionsDialogClickListener,
+        CashPaymentDialog.CashPaymentDialogOnCompleteListener,
+        CardPaymentDialog.CardPaymentDialogOnCompleteListener,
     SearchView.OnQueryTextListener {
 
     public static final String TAG = SaleWithPosActivity.class.getSimpleName();
@@ -118,6 +118,7 @@ public class SaleWithPosActivity extends BaseActivity implements
     private boolean isPaidWithCash = false;
     private boolean isPaidWithCard = false;
     private boolean isPaidWithMobile = false;
+    private boolean isPaidWithInvoice = false;
 
     /*Views*/
     private View collapsedToolbar;
@@ -430,6 +431,17 @@ public class SaleWithPosActivity extends BaseActivity implements
         CardPaymentDialog cardPaymentDialog = CardPaymentDialog.newInstance(totalCharge);
         cardPaymentDialog.setListener(this);
         cardPaymentDialog.show(getSupportFragmentManager(), CardPaymentDialog.TAG);
+    }
+
+    @Override
+    public void onPayWithInvoice() {
+        Intent startInvoiceIntent = new Intent(this, InvoicePayActivity.class);
+//        Bundle bundle = new Bundle();
+//        if (mSelectedCustomer != null){
+//            startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+//        }
+        startActivity(startInvoiceIntent);
+
     }
 
     @Override

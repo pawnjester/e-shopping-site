@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -99,6 +100,7 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
         });
 
         completePaymentBtn.setOnClickListener(view -> {
+            Log.e(">>>", "ggg");
             String cashCollected = cashCollectedInput.getText().toString();
             if (TextUtils.isEmpty(cashCollected)) {
                 Toast.makeText(getActivity(), getString(R.string.error_cash_collected_required), Toast.LENGTH_LONG).show();

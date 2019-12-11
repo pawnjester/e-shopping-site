@@ -8,6 +8,7 @@ import java.util.List;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
@@ -51,6 +52,9 @@ public interface IDatabaseManager {
 
     @Nullable
     Integer getLastSaleRecordId();
+
+    @Nullable
+    Integer getLastInvoiceRecordId();
 
     @Nullable
     String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity);
@@ -98,6 +102,9 @@ public interface IDatabaseManager {
 
     @NonNull
     List<SaleEntity> getUnsyncedSaleEnties(@NonNull MerchantEntity  merchantEntity);
+
+    @NonNull
+    List<InvoiceEntity> getUnsyncedInvoiceEntities(@NonNull MerchantEntity merchantEntity);
 
     int getTotalCustomerStamps(int merchantId, int customerId);
 

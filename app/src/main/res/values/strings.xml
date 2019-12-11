@@ -338,6 +338,7 @@
     <string name="saving_msg_6">450 bonus sms when you pay for 6 months</string>
     <string name="saving_msg_3">200 bonus sms when you pay for 3 months</string>
     <string name="tigo">Tigo</string>
+    <string name="pay_with_invoice">Pay With Invoice</string>
     <string name="mtn">MTN</string>
     <string name="airtel">Airtel</string>
     <string name="pay_with_momoney">Pay with Mobile Money</string>
@@ -496,6 +497,7 @@
     <string name="cash">Cash</string>
     <string name="card">Card</string>
     <string name="pay_with">Pay with:</string>
+    <string name="saveInvoice">Save Invoice</string>
     <string name="total_label_extra">Total:</string>
     <string name="cash_collected_label">Cash collected</string>
     <string name="change">Change</string>
@@ -542,5 +544,16 @@
     <string name="resubcribe_mzg">Your account is inactive, please re-subscribe, thank you :)</string>
     <string name="facebook_application_id">1406635922973425</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">0c5089e69ac8027578ffc16b84fcfa2f</string>
+    <string name="invoice">Invoice</string>
+    <string name="invoices">Invoices</string>
+    <string name="payment_message">Payment Message</string>
+    <string name="due_date_text">Due Date:</string>
+    <string name="payment_type_text">Payment Type</string>
+    <string name="record_payment_text">Record Payment</string>
+    <string name="amount_payment_text">Amount</string>
+    <string name="description_hint">Description..</string>
+    <string name="payment_cash">Cash</string>
+    <string name="payment_card">Card</string>
+    <string name="create_invoice_text">Create Invoice</string>
 
 </resources>

@@ -29,6 +29,9 @@ public class PayOptionsDialog extends AppCompatDialogFragment {
     @BindView(R.id.payWithCard)
     ImageButton payWithCardView;
 
+    @BindView(R.id.payWithInvoice)
+    ImageButton payWithInvoice;
+
     private PayOptionsDialogClickListener mListener;
 
     public static PayOptionsDialog newInstance() {
@@ -56,6 +59,7 @@ public class PayOptionsDialog extends AppCompatDialogFragment {
         ButterKnife.bind(this, rootView);
         payWithCashView.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_cash));
         payWithCardView.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_credit_card));
+        payWithInvoice.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_invoice));
 
         payWithCashView.setOnClickListener(view -> {
             if (mListener != null) {
@@ -71,6 +75,13 @@ public class PayOptionsDialog extends AppCompatDialogFragment {
             }
         });
 
+        payWithInvoice.setOnClickListener(view -> {
+            if (mListener != null) {
+                mListener.onPayWithInvoice();;
+                dismiss();;
+            }
+        });
+
         builder.setView(rootView);
         builder.setPositiveButton(android.R.string.no, (dialogInterface, i) -> {
             dialogInterface.dismiss();
@@ -81,6 +92,7 @@ public class PayOptionsDialog extends AppCompatDialogFragment {
     public interface PayOptionsDialogClickListener {
         void onPayWithCashClick();
         void onPayWithCardClick();
+        void onPayWithInvoice();
     }
 
     public void setListener(PayOptionsDialogClickListener mListener) {

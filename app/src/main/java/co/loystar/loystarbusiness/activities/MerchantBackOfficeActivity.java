@@ -631,6 +631,11 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     ordersIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(ordersIntent);
                     break;
+                case R.id.invoices:
+                    Log.e("check", "nope");
+                    Intent invoiceListIntent = new Intent(this, InvoiceListActivity.class);
+                    startActivity(invoiceListIntent);
+                    break;
             }
         });
         bottomNavigationBar.setOnTabReselectListener(tabId -> {

@@ -17,4 +17,6 @@ public interface ISync {
     void syncSales();
     void uploadNewSales();
     void updateSalesOrders();
+    void syncInvoices();
+    void uploadNewInvoices();
 }

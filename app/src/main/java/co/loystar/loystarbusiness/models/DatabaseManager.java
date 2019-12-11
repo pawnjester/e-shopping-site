@@ -13,6 +13,7 @@ import java.util.List;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
@@ -184,6 +185,27 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
+    public Integer getLastInvoiceRecordId() {
+        String invoiceQuery = "SELECT ROWID from Invoice order by ROWID DESC limit 1";
+        Tuple lastInvoiceTuple = mDataStore.raw(invoiceQuery).firstOrNull();
+        Integer lastInvoiceId = null;
+        if(lastInvoiceTuple != null) {
+            try {
+                lastInvoiceId = lastInvoiceTuple.get(0);
+            } catch (ClassCastException e) {
+                try {
+                    Long id = lastInvoiceTuple.get(0);
+                    lastInvoiceId = id.intValue();
+                } catch (ClassCastException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        return lastInvoiceId;
+    }
+
+    @Nullable
+    @Override
     public String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity) {
         Result<ProductEntity> productEntities = mDataStore.select(ProductEntity.class)
                 .where(ProductEntity.OWNER.eq(merchantEntity)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
@@ -335,6 +357,15 @@ public class DatabaseManager implements IDatabaseManager{
         Selection<ReactiveResult<SaleEntity>> query = mDataStore.select(SaleEntity.class);
         query.where(SaleEntity.SYNCED.eq(false));
         query.where(SaleEntity.MERCHANT.eq(merchantEntity));
+        return query.get().toList();
+    }
+
+    @NonNull
+    @Override
+    public List<InvoiceEntity> getUnsyncedInvoiceEntities(@NonNull MerchantEntity merchantEntity) {
+        Selection<ReactiveResult<InvoiceEntity>> query = mDataStore.select(InvoiceEntity.class);
+        query.where(InvoiceEntity.SYNCED.eq(false));
+        query.where(InvoiceEntity.OWNER.eq(merchantEntity));
         return query.get().toList();
     }
 

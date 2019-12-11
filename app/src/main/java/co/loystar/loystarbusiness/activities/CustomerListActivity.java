@@ -23,6 +23,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -122,6 +123,8 @@ public class CustomerListActivity extends RxAppCompatActivity implements
 
         mAdapter = new CustomerListAdapter(this, this, this);
         mAdapter.set(getInitialCustomerData());
+        ArrayList<CustomerEntity> entities = getInitialCustomerData();
+        Log.e("LLL", entities + "");
 
         if (findViewById(R.id.customer_detail_container) != null) {
             // The detail container view will be present only in the

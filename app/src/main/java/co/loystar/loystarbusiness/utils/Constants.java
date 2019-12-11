@@ -28,6 +28,7 @@ public class Constants {
     public static final String CASH_SPENT = "CASH_SPENT";
     public static final String TOTAL_CUSTOMER_POINTS = "TOTAL_CUSTOMER_POINTS";
     public static final String TOTAL_SALES_ON_SERVER = "TOTAL_SALES_ON_SERVER";
+    public static final String TOTAL_INVOICES_ON_SERVER = "TOTAL_INVOICES_ON_SERVER";
     public static final String TOTAL_CUSTOMERS_ON_SERVER = "TOTAL_CUSTOMERS_ON_SERVER";
     public static final String PRINT_RECEIPT = "PRINT_RECEIPT";
     public static final String TOTAL_CUSTOMER_STAMPS = "TOTAL_CUSTOMER_STAMPS";

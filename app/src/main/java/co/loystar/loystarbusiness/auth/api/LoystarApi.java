@@ -6,6 +6,7 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.EmailAvailability;
+import co.loystar.loystarbusiness.models.databinders.Invoice;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PasswordReset;
@@ -223,6 +224,13 @@ public interface LoystarApi {
     @Headers("Cache-Control: no-cache")
     @POST("sales")
     Call<Sale> createSale(@Body RequestBody requestBody);
+
+    @GET("invoices")
+    Observable<Response<ArrayList<Invoice>>> getInvoices(@Query("page[number]") int page, @Query("page[size]") int size);
+
+    @Headers("Cache-Control: no-cache")
+    @POST("invoices")
+    Call<Invoice> createInvoice(@Body RequestBody requestBody);
 
     @POST("latest_merchant_sales")
     Call<ArrayList<Sale>> getLatestMerchantSales(@Body RequestBody requestBody);
