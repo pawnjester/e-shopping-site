@@ -79,7 +79,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<InvoiceAdapter.ViewHold
                 lastName = entity.getCustomer().getLastName();
             }
             String name = entity.getCustomer().getFirstName() + " " + lastName;
-            mAmount.setText(entity.getPaidAmount());
+            mAmount.setText(entity.getAmount());
             mInvoiceId.setText(entity.getNumber());
             mStatus.setText(entity.getStatus());
             mCustomer.setText(name);

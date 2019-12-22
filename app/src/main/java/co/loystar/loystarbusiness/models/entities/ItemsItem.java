@@ -20,6 +20,7 @@ public interface ItemsItem extends Observable, Parcelable, Persistable {
     int getId();
 
     String getAmount();
+    boolean isSynced();
 
     @ManyToOne
     InvoiceEntity getInvoice();

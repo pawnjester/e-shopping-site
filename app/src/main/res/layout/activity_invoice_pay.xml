@@ -25,7 +25,53 @@
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/total_amount_paid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginLeft="48dp"
+            android:layout_marginTop="72dp"
+            android:text="@string/total_amount_to_be_paid_text"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/amount_due_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/amount_due_text"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/total_amount_paid"
+            app:layout_constraintTop_toBottomOf="@+id/total_amount_paid" />
+
+        <TextView
+            android:id="@+id/amount_due_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="@+id/total_amount"
+            app:layout_constraintTop_toBottomOf="@+id/total_amount"
+            tools:text="0.00" />
+
+        <TextView
+            android:id="@+id/total_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="72dp"
+            android:layout_marginEnd="60dp"
+            android:layout_marginRight="60dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="20.0" />
 
         <TextView
             android:id="@+id/due_date_text"
@@ -58,13 +104,10 @@
             android:id="@+id/recored_payment_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginLeft="48dp"
-            android:layout_marginTop="92dp"
+            android:layout_marginTop="24dp"
             android:text="@string/record_payment_text"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintStart_toStartOf="@+id/amount_due_text"
+            app:layout_constraintTop_toBottomOf="@+id/amount_due_text" />
 
         <EditText
             android:id="@+id/payment_message"
@@ -138,24 +181,40 @@
 
         </RadioGroup>
 
-        <co.loystar.loystarbusiness.utils.ui.buttons.GreenButton
-            android:id="@+id/completePayment"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:text="@string/create_invoice_text"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.432"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/includeCustomerDetail" />
 
-        <CheckBox
-            android:id="@+id/includeCustomerDetail"
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/completePayment"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/include_customer_detail"
+            android:layout_marginTop="36dp"
+            android:background="@color/colorAccent"
+            android:text="@string/save_invoice_text"
+            android:textColor="@color/white"
             app:layout_constraintStart_toStartOf="@+id/payment_message"
             app:layout_constraintTop_toBottomOf="@+id/payment_message" />
+
+        <ProgressBar
+            android:id="@+id/create_invoice_loader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginLeft="12dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/completePayment" />
+
+        <Button
+            android:id="@+id/download_pdf"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:text="@string/download_pdf_text"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.063"
+            app:layout_constraintStart_toEndOf="@+id/completePayment" />
     </android.support.constraint.ConstraintLayout>
     </ScrollView>
 </android.support.design.widget.CoordinatorLayout>

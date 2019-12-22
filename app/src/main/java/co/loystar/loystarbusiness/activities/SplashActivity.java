@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.facebook.stetho.Stetho;
+
 import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.auth.SessionManager;
@@ -20,6 +22,7 @@ public class SplashActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Stetho.initializeWithDefaults(this);
 
         SessionManager sessionManager = new SessionManager(this);
         if (sessionManager.isLoggedIn()) {

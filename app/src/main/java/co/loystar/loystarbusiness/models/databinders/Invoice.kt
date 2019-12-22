@@ -29,7 +29,7 @@ data class Invoice(
         val updatedAt: DateTime? = null,
 
         @JsonProperty("due_date")
-        val dueDate: Any? = null,
+        val dueDate: String? = null,
 
         @JsonProperty("subtotal")
         val subtotal: String? = null,

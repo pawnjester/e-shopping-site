@@ -100,7 +100,6 @@ public class CashPaymentDialog extends AppCompatDialogFragment {
         });
 
         completePaymentBtn.setOnClickListener(view -> {
-            Log.e(">>>", "ggg");
             String cashCollected = cashCollectedInput.getText().toString();
             if (TextUtils.isEmpty(cashCollected)) {
                 Toast.makeText(getActivity(), getString(R.string.error_cash_collected_required), Toast.LENGTH_LONG).show();

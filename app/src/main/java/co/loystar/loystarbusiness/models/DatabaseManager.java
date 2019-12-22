@@ -164,6 +164,29 @@ public class DatabaseManager implements IDatabaseManager{
 
     @Nullable
     @Override
+    public Integer getLastInvoiceTransactionRecordId() {
+        String transactionQuery = "SELECT ROWID from InvoiceTransaction order by ROWID DESC limit 1";
+        Tuple lastTransactionTuple = mDataStore.raw(transactionQuery).firstOrNull();
+        Integer lastTransactionId = null;
+        if (lastTransactionTuple != null) {
+            try {
+                lastTransactionId = lastTransactionTuple.get(0);
+            } catch (ClassCastException e) {
+                FirebaseCrash.report(e);
+                try {
+                    Long id = lastTransactionTuple.get(0);
+                    lastTransactionId = id.intValue();
+                } catch (ClassCastException e1) {
+                    e1.printStackTrace();
+                    FirebaseCrash.report(e1);
+                }
+            }
+        }
+        return lastTransactionId;
+    }
+
+    @Nullable
+    @Override
     public Integer getLastSaleRecordId() {
         String saleQuery = "SELECT ROWID from Sale order by ROWID DESC limit 1";
         Tuple lastSaleTuple = mDataStore.raw(saleQuery).firstOrNull();
@@ -181,6 +204,15 @@ public class DatabaseManager implements IDatabaseManager{
             }
         }
         return lastSaleId;
+    }
+
+    @Nullable
+    @Override
+    public InvoiceEntity getInvoiceById(int id) {
+        return mDataStore.select(InvoiceEntity.class)
+                .where(CustomerEntity.ID.eq(id))
+                .get()
+                .firstOrNull();
     }
 
     @Nullable
@@ -589,4 +621,5 @@ public class DatabaseManager implements IDatabaseManager{
         selection.where(SalesOrderEntity.UPDATE_REQUIRED.eq(true));
         return selection.get().toList();
     }
+
 }

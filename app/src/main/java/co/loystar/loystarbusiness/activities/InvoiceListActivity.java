@@ -23,6 +23,8 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.Invoice;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EndlessRecyclerViewScrollListener;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -30,6 +32,7 @@ import io.requery.Persistable;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+import kotlin.collections.IndexedValue;
 
 public class InvoiceListActivity extends AppCompatActivity {
 
@@ -40,7 +43,7 @@ public class InvoiceListActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
     private InvoiceAdapter mAdapter;
-    private int limit = 20;
+    private int limit = 40;
 
 
     @Override
@@ -60,9 +63,7 @@ public class InvoiceListActivity extends AppCompatActivity {
 
         mRecyclerView = findViewById(R.id.invoice_recyclerview);
         ArrayList<InvoiceEntity> list = getInvoices();
-        mAdapter = new InvoiceAdapter(this, getInvoices(), invoice -> {
-            showInvoiceActivity();
-        });
+        mAdapter = new InvoiceAdapter(this, getInvoices(), this::showInvoiceActivity);
         setupRecyclerView(mRecyclerView);
         getInvoices();
 
@@ -77,10 +78,14 @@ public class InvoiceListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void showInvoiceActivity() {
+    private void showInvoiceActivity(Invoice invoice) {
         Intent invoiceIntent = new Intent(this, InvoicePayActivity.class);
-        Bundle bundle = new Bundle();
-//        bundle.put
+        invoiceIntent.putExtra(Constants.CUSTOMER_ID, invoice.getCustomer().getId());
+        invoiceIntent.putExtra(Constants.CHARGE, Double.parseDouble(invoice.getAmount()));
+        invoiceIntent.putExtra(Constants.INVOICE_ID, invoice.getId());
+        invoiceIntent.putExtra(Constants.PAID_AMOUNT, invoice.getPaidAmount());
+        invoiceIntent.putExtra(Constants.PAYMENT_METHOD, invoice.getPaymentMethod());
+        invoiceIntent.putExtra(Constants.STATUS, invoice.getStatus());
         startActivity(invoiceIntent);
     }
 

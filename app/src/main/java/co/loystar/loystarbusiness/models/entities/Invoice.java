@@ -26,10 +26,12 @@ public  interface Invoice extends Observable, Parcelable, Persistable {
     String getStatus();
     String getPaidAmount();
     String getPaymentMethod();
+    String getDueDate();
     String getPaymentMessage();
     String getSubTotal();
     String getNumber();
     boolean isSynced();
+    String getAmount();
 
     @Bindable
     @ManyToOne
@@ -43,8 +45,8 @@ public  interface Invoice extends Observable, Parcelable, Persistable {
     @Bindable
     @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
     List<ItemsItemEntity> getItems();
-//
-//    @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
-//    List<SalesTransactionEntity> getTransactions();
+
+    @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
+    List<InvoiceTransactionEntity> getTransactions();
 
 }

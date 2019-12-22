@@ -41,6 +41,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ public class SaleWithPosActivity extends BaseActivity implements
         PayOptionsDialog.PayOptionsDialogClickListener,
         CashPaymentDialog.CashPaymentDialogOnCompleteListener,
         CardPaymentDialog.CardPaymentDialogOnCompleteListener,
-    SearchView.OnQueryTextListener {
+    SearchView.OnQueryTextListener{
 
     public static final String TAG = SaleWithPosActivity.class.getSimpleName();
 
@@ -242,6 +243,7 @@ public class SaleWithPosActivity extends BaseActivity implements
         setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
 
         setUpBottomSheetView();
+
     }
 
     @Override
@@ -436,10 +438,24 @@ public class SaleWithPosActivity extends BaseActivity implements
     @Override
     public void onPayWithInvoice() {
         Intent startInvoiceIntent = new Intent(this, InvoicePayActivity.class);
-//        Bundle bundle = new Bundle();
-//        if (mSelectedCustomer != null){
-//            startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
-//        }
+        Bundle bundle = new Bundle();
+        HashMap<Integer, Integer> hashMap = new HashMap<>();
+        ArrayList<Integer> productIds = new ArrayList<>();
+        for (int i = 0; i < mSelectedProducts.size(); i++) {
+                hashMap.put(mSelectedProducts.keyAt(i), mSelectedProducts.valueAt(i));
+                productIds.add(mSelectedProducts.keyAt(i));
+        }
+
+        bundle.putIntegerArrayList(Constants.SELECTED_PRODUCTS, productIds);
+        if (mSelectedCustomer != null){
+            startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+        } else {
+            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+        }
+        startInvoiceIntent.putExtras(bundle);
         startActivity(startInvoiceIntent);
 
     }

@@ -135,6 +135,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     implementation "io.requery:requery:$requeryVersion"
+    implementation 'com.facebook.stetho:stetho:1.5.1'
     implementation "io.requery:requery-android:$requeryVersion"
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
     implementation "com.android.support:appcompat-v7:$supportLibVersion"
@@ -184,6 +185,7 @@ dependencies {
     implementation 'com.roughike:bottom-bar:2.3.1'
     implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
     implementation 'com.onesignal:OneSignal:3.6.5'
+    implementation("com.squareup.okio:okio:2.4.2")
     implementation 'id.zelory:compressor:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.facebook.android:account-kit-sdk:4.+'

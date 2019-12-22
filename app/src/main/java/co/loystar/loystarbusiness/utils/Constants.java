@@ -6,9 +6,18 @@ package co.loystar.loystarbusiness.utils;
 
 public class Constants {
     public static final String SYNC_STARTED = "SyncStarted";
+    public static final String PAID_AMOUNT ="PAID_AMOUNT";
     public static final String SYNC_FINISHED = "SyncFinished";
     public static final String SALES_TRANSACTIONS_SYNC_FINISHED = "SALES_TRANSACTIONS_SYNC_FINISHED";
     public static final String CUSTOMER_ID = "CUSTOMER_ID";
+    public static final String HASH_MAP = "HASH_MAP";
+    public static final String CHARGE = "CHARGE";
+    public static final String INVOICE_ID = "INVOICE_ID";
+    public static final String PAYMENT_METHOD = "PAYMENT_METHOD";
+    public static final String STATUS = "STATUS";
+    public static final String CREATE_INVOICE_STARTED = "CREATE_INVOICE_STARTED";
+    public static final String CREATE_INVOICE_ENDED = "CREATE_INVOICE_ENDED";
+    public static final String SELECTED_PRODUCTS = "SELECTED_PRODUCTS";
     public static final int ADD_NEW_CUSTOMER_REQUEST = 100;
     public static final String CUSTOMER_UPDATE_SUCCESS = "CUSTOMER_UPDATE_SUCCESS";
     public static final String SHOW_CONTINUE_BUTTON = "SHOW_CONTINUE_BUTTON";

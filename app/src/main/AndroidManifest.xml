@@ -95,6 +95,8 @@
             </intent-filter>
         </service>
 
+        <service android:name=".utils.BackgroundNotificationService" />
+
         <meta-data
             android:name="com.facebook.accountkit.ApplicationName"
             android:value="@string/app_name" />

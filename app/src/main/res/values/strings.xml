@@ -423,6 +423,7 @@
     <string name="clear">Clear</string>
     <string name="product_count">%1$s added</string>
     <string name="order_owner">This order belongs to</string>
+    <string name="reciept_owner">This receipt belongs to</string>
     <string name="change_customer">Change Customer</string>
     <string name="product_price">%1$s %2$s</string>
     <string name="total_sale_value">%1$s %2$s</string>
@@ -555,5 +556,14 @@
     <string name="payment_cash">Cash</string>
     <string name="payment_card">Card</string>
     <string name="create_invoice_text">Create Invoice</string>
+    <string name="add_customer_text">Add customer</string>
+    <string name="total_amount_to_be_paid_text">Total Amount To be Paid:</string>
+    <string name="amount_due_text">Amount Due:</string>
+    <string name="download_pdf_text">Download Pdf</string>
+    <string name="save_invoice_text">Save</string>
+    <string name="share_invoice_via_email">Share Invoice Via Email</string>
+    <string name="paid_text">PAID</string>
+    <string name="delete_text">Delete</string>
+    <string name="share_to_whatsapp_menu">Share To Whatsapp</string>
 
 </resources>

@@ -632,7 +632,6 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     startActivity(ordersIntent);
                     break;
                 case R.id.invoices:
-                    Log.e("check", "nope");
                     Intent invoiceListIntent = new Intent(this, InvoiceListActivity.class);
                     startActivity(invoiceListIntent);
                     break;

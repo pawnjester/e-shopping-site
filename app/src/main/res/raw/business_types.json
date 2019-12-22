@@ -31,6 +31,16 @@
   },
   {
     "id": 7,
+    "tag": "washing_and_cleaning",
+    "title": "Washing and Cleaning"
+  },
+  {
+    "id": 8,
+    "tag": "Groceries",
+    "title": "Groceries"
+  },
+  {
+    "id": 9,
     "tag": "others",
     "title": "Others"
   }
