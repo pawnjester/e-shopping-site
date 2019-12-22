@@ -59,4 +59,29 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/view3"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/payWithInvoice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/btn_touch_action"
+            android:contentDescription="@string/image" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/invoice"
+            android:textColor="@color/primaryTextColor"
+            android:gravity="center" />
+
+    </LinearLayout>
+
 </LinearLayout>

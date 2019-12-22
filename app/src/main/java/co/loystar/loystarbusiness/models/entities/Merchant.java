@@ -69,6 +69,9 @@ public interface Merchant extends Observable, Parcelable, Persistable {
     List<ProductEntity> getProducts();
 
     @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
+    List<InvoiceEntity> getInvoices();
+
+    @OneToMany(mappedBy = "owner", cascade = {CascadeAction.SAVE})
     List<ProductCategoryEntity> getProductCategories();
 
     @OneToMany(mappedBy = "merchant", cascade = {CascadeAction.SAVE})

@@ -38,6 +38,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activities.InvoiceListActivity"></activity>
+        <activity android:name=".activities.InvoicePayActivity" />
+
         <meta-data
             android:name="asset_statements"
             android:resource="@string/asset_statements" />
@@ -92,13 +95,17 @@
             </intent-filter>
         </service>
 
-        <meta-data android:name="com.facebook.accountkit.ApplicationName"
-            android:value="@string/app_name" />
-        <meta-data android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_application_id" />
-        <meta-data android:name="com.facebook.accountkit.ClientToken"
-            android:value="@string/ACCOUNT_KIT_CLIENT_TOKEN" />
+        <service android:name=".utils.BackgroundNotificationService" />
 
+        <meta-data
+            android:name="com.facebook.accountkit.ApplicationName"
+            android:value="@string/app_name" />
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_application_id" />
+        <meta-data
+            android:name="com.facebook.accountkit.ClientToken"
+            android:value="@string/ACCOUNT_KIT_CLIENT_TOKEN" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" />
@@ -142,14 +149,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
-
         <activity
             android:name="com.facebook.accountkit.ui.AccountKitActivity"
             android:theme="@style/AppLoginTheme"
             tools:replace="android:theme" />
-
         <activity
             android:name=".activities.MerchantBackOfficeActivity"
             android:label="@string/title_activity_merchant_back_office"
@@ -178,7 +181,7 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:theme="@style/AppThemeWithActionBar"/>
+            android:theme="@style/AppThemeWithActionBar" />
         <activity
             android:name=".activities.CustomerListActivity"
             android:label="@string/title_customer_list"

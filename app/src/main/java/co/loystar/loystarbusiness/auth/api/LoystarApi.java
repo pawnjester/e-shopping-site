@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
+import co.loystar.loystarbusiness.models.databinders.DownloadInvoice;
 import co.loystar.loystarbusiness.models.databinders.EmailAvailability;
+import co.loystar.loystarbusiness.models.databinders.Invoice;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PasswordReset;
 import co.loystar.loystarbusiness.models.databinders.PaySubscription;
+import co.loystar.loystarbusiness.models.databinders.PaymentMessage;
 import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
 import co.loystar.loystarbusiness.models.databinders.PricingPlan;
 import co.loystar.loystarbusiness.models.databinders.Product;
@@ -38,6 +41,8 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -220,12 +225,42 @@ public interface LoystarApi {
     @PATCH("merchants/orders/{id}")
     Call<ResponseBody> updateMerchantOrder(@Path("id") int id, @Body RequestBody requestBody);
 
+    @GET("invoices/{id}/get_invoice_download_link")
+    Observable<DownloadInvoice> getInvoiceDownloadLink(@Path("id") int id);
+
+    @GET
+    @Streaming
+    Observable<Response<ResponseBody>> downloadInvoice(@Url String fileUrl);
+
+    @POST("invoices/{id}/send_invoice")
+    Call<ResponseBody> sendInvoiceToCustomer(@Path("id") int id);
+
     @Headers("Cache-Control: no-cache")
     @POST("sales")
     Call<Sale> createSale(@Body RequestBody requestBody);
 
+    @Headers("Cache-Control: no-cache")
+    @POST("set_invoice_payment_message")
+    Observable<PaymentMessage> setPaymentMessage(@Body RequestBody requestBody);
+
+    @GET("invoices")
+    Observable<Response<ArrayList<Invoice>>> getInvoices(@Query("page[number]") int page, @Query("page[size]") int size);
+
+    @Headers("Cache-Control: no-cache")
+    @POST("invoices")
+    Call<Invoice> createInvoice(@Body RequestBody requestBody);
+
+    @DELETE("invoices/{id}")
+    Call<ResponseBody> deleteInvoice(@Path("id") int id);
+
+
+    @Headers("Cache-Control: no-cache")
+    @PUT("invoices/{id}")
+    Call<Invoice> updateInvoice(@Path("id") int id, @Body RequestBody requestBody);
+
     @POST("latest_merchant_sales")
     Call<ArrayList<Sale>> getLatestMerchantSales(@Body RequestBody requestBody);
+
 
     @POST("latest_merchant_sales")
     Observable<Response<ArrayList<Sale>>> getMerchantSales(@Body RequestBody requestBody);

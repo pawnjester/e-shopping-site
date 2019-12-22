@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="resubcribe_mzg">Your account is inactive, please re-subscribe, thank you :)</string>
+    <string name="invoice">Invoice</string>
+    <string name="payment_message">Payment Message</string>
+    <string name="create_invoice_text">Create Invoice</string>
 </resources>

@@ -14,6 +14,8 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +34,8 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
+import co.loystar.loystarbusiness.models.databinders.Invoice;
+import co.loystar.loystarbusiness.models.databinders.ItemsItem;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.OrderItem;
@@ -44,6 +48,9 @@ import co.loystar.loystarbusiness.models.databinders.Transaction;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
+import co.loystar.loystarbusiness.models.entities.ItemsItemEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.OrderItemEntity;
@@ -51,9 +58,12 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransaction;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
@@ -125,6 +135,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
+            syncInvoices();
 
             Intent i = new Intent(Constants.SYNC_FINISHED);
             getContext().sendBroadcast(i);
@@ -299,7 +310,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 int numberOfTrips = (int) getNumberOfTrips + 1;
 
                 for (int i = 0; i < numberOfTrips; i ++) {
-                    Integer totalSalesLocally = mDataStore.count(SaleEntity.class).where(SaleEntity.SYNCED.eq(true)).get().value();
+                    Integer totalSalesLocally = mDataStore.count(SaleEntity.class)
+                            .where(SaleEntity.SYNCED.eq(true)).get().value();
                     if (totalSalesLocally != null) {
                         if (totalSalesLocally == totalSalesOnServer) {
                             if (i + 1 == numberOfTrips) {
@@ -337,6 +349,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 CustomerEntity customerEntity = mDatabaseManager.getCustomerByUserId(newSale.getUser_id());
                                 newSaleEntity.setCustomer(customerEntity);
 
+
                                 mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
                                     for (Transaction transaction: newSale.getTransactions()) {
                                         SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
@@ -372,8 +385,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         @Override
         public void uploadNewSales() {
-            SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
-            String deviceId = sharedPreferences.getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
+            SharedPreferences sharedPreferences =
+                    mContext.getSharedPreferences(mContext.getString(R.string.preference_file_key), 0);
+            String deviceId = sharedPreferences
+                    .getString(Constants.FIREBASE_REGISTRATION_TOKEN, "");
 
             for (SaleEntity saleEntity: mDatabaseManager.getUnsyncedSaleEnties(merchantEntity)) {
                 try {
@@ -389,7 +404,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     JSONArray jsonArray = new JSONArray();
 
                     for (SalesTransactionEntity transactionEntity: saleEntity.getTransactions()) {
-                        LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(transactionEntity.getMerchantLoyaltyProgramId());
+                        LoyaltyProgramEntity programEntity = mDatabaseManager
+                                .getLoyaltyProgramById(
+                                        transactionEntity.getMerchantLoyaltyProgramId());
                         if (programEntity != null) {
                             JSONObject jsonObject = new JSONObject();
 
@@ -403,7 +420,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 jsonObject.put("product_id", transactionEntity.getProductId());
                             }
 
-                            jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                            jsonObject.put("merchant_loyalty_program_id",
+                                    transactionEntity.getMerchantLoyaltyProgramId());
                             jsonObject.put("program_type", transactionEntity.getProgramType());
                             if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
                                 jsonObject.put("points", transactionEntity.getPoints());
@@ -628,6 +646,222 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             } catch (JSONException e) {
                 Timber.e(e);
+            }
+        }
+
+        @Override
+        public void syncInvoices() {
+            mApiClient.getLoystarApi(false)
+                    .getInvoices(1, 500)
+                    .flatMapIterable(arrayListResponse -> {
+                        ArrayList<Invoice> invoices = arrayListResponse.body();
+                        int getTotal = invoices.size();
+
+                        SharedPreferences.Editor editor = mSharedPreferences.edit();
+                        editor.putInt(Constants.TOTAL_INVOICES_ON_SERVER, getTotal);
+                        editor.apply();
+
+                        if(invoices == null || invoices.isEmpty()) {
+                            uploadNewInvoices();
+                            return Collections.emptyList();
+                        } else {
+                            return new ArrayList<>(invoices.subList(0, 1));
+                        }
+                    }).subscribe(invoice -> {
+
+                int totalInvoicesOnServer = mSharedPreferences.getInt(Constants.TOTAL_INVOICES_ON_SERVER, 0);
+                        double getNumberOfTrips = Math.floor((double) totalInvoicesOnServer/500);
+                        int numberOfTrips = (int) getNumberOfTrips + 1;
+
+                        Timber.e("TOTAL_INVOICES_ON_SERVER: %S", totalInvoicesOnServer);
+
+                        for (int i = 0; i < numberOfTrips; i++) {
+                            Integer totalInvoicesLocally =
+                                    mDataStore.count(InvoiceEntity.class)
+                                    .where(InvoiceEntity.SYNCED.eq(true)).get().value();
+                            if (totalInvoicesLocally != null) {
+                                if (totalInvoicesLocally == totalInvoicesOnServer) {
+                                    if (i + 1 == numberOfTrips) {
+                                        uploadNewInvoices();
+                                    }
+                                    continue;
+                                }
+                                Timber.e("TOTAL_INVOICES_ON_LOCALLY: %S", totalInvoicesLocally);
+                                double page = Math.floor((double) totalInvoicesLocally / 500);
+
+                                mApiClient.getLoystarApi(false)
+                                        .getInvoices((int) page + 1, 1500)
+                                        .flatMapIterable(response -> {
+                                            ArrayList<Invoice> invoices = response.body();
+                                            if (invoices == null || invoices.isEmpty()) {
+                                                return Collections.emptyList();
+                                            } else {
+                                                return invoices;
+                                            }
+                                        }).subscribe(newInvoice -> {
+                                    InvoiceEntity invoiceEntity = new InvoiceEntity();
+                                    invoiceEntity.setId(newInvoice.getId());
+                                    invoiceEntity.setStatus(newInvoice.getStatus());
+                                    invoiceEntity.setNumber(newInvoice.getNumber());
+                                    invoiceEntity.setSubTotal(newInvoice.getSubtotal());
+                                    invoiceEntity.setDueDate(newInvoice.getDueDate());
+                                    invoiceEntity.setCreatedAt(new Timestamp(newInvoice.getCreatedAt().getMillis()));
+                                    invoiceEntity.setUpdatedAt(new Timestamp(newInvoice.getUpdatedAt().getMillis()));
+                                    invoiceEntity.setOwner(merchantEntity);
+                                    invoiceEntity.setSynced(true);
+                                    invoiceEntity.setAmount(newInvoice.getSubtotal());
+                                    invoiceEntity.setPaidAmount(newInvoice.getPaidAmount());
+                                    CustomerEntity customerEntity = mDataStore.findByKey(CustomerEntity.class,
+                                            newInvoice.getCustomer().getId()).blockingGet();
+                                    invoiceEntity.setCustomer(customerEntity);
+
+                                    mDataStore.upsert(invoiceEntity).subscribe(newInvoiceEntity -> {
+                                        for (ItemsItem itemsItem : newInvoice.getItems()) {
+                                            ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
+                                            itemsItemEntity.setAmount(itemsItem.getAmount());
+                                            itemsItemEntity.setSynced(true);
+                                            itemsItemEntity.setInvoice(newInvoiceEntity);
+                                            mDataStore.upsert(itemsItemEntity).subscribe(/*no-op*/);
+
+                                        }
+                                    });
+                                }, Timber::e);
+                            }
+                            if (i + 1 == numberOfTrips) {
+                                uploadNewInvoices();
+                            }
+                        }
+            },Timber::e);
+        }
+
+        @Override
+        public void uploadNewInvoices() {
+            for(InvoiceEntity invoiceEntity: mDatabaseManager.getUnsyncedInvoiceEntities(merchantEntity)) {
+                try {
+                        JSONObject jsonObjectData = new JSONObject();
+                        if (invoiceEntity.getCustomer() != null) {
+                            jsonObjectData.put("user_id", invoiceEntity.getCustomer().getUserId());
+
+                        }
+                        jsonObjectData.put("status", invoiceEntity.getStatus());
+                        jsonObjectData.put("payment_method", invoiceEntity.getPaymentMethod());
+                        jsonObjectData.put("due_date", invoiceEntity.getDueDate());
+                        if (Double.valueOf(invoiceEntity.getPaidAmount()) >= Double.valueOf(invoiceEntity.getAmount())) {
+                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                            jsonObjectData.put("status", "paid");
+                        } else if ( Double.valueOf(invoiceEntity.getPaidAmount()) < Double.valueOf(invoiceEntity.getAmount())) {
+                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                            jsonObjectData.put("status", "partial");
+                        }else {
+                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                            jsonObjectData.put("status", "unpaid");
+                        }
+
+                        JSONArray jsonArray = new JSONArray();
+                        for (InvoiceTransactionEntity transactionEntity: invoiceEntity.getTransactions()) {
+                            LoyaltyProgramEntity programEntity =
+                                    mDatabaseManager.getLoyaltyProgramById(
+                                            transactionEntity.getMerchantLoyaltyProgramId());
+                            if (programEntity != null) {
+                                JSONObject jsonObject = new JSONObject();
+
+                                if (transactionEntity.getUserId() > 0) {
+                                    jsonObject.put("user_id", transactionEntity.getUserId());
+                                }
+                                jsonObject.put("merchant_id", merchantEntity.getId());
+                                jsonObject.put("amount", transactionEntity.getAmount());
+
+                                if (transactionEntity.getProductId() > 0) {
+                                    jsonObject.put("product_id", transactionEntity.getProductId());
+                                }
+                                jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                                jsonObject.put("program_type", transactionEntity.getProgramType());
+
+                                if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
+                                    jsonObject.put("points", transactionEntity.getPoints());
+                                }
+                                else if (programEntity.getProgramType().equals(getContext().getString(R.string.stamps_program))) {
+                                    jsonObject.put("stamps", transactionEntity.getStamps());
+                                }
+
+                                jsonArray.put(jsonObject);
+                            }
+                        }
+                        jsonObjectData.put("transactions", jsonArray);
+                        JSONObject requestData = new JSONObject();
+                        requestData.put("data", jsonObjectData);
+
+                        RequestBody requestBody = RequestBody
+                                .create(MediaType.parse(
+                                        "application/json; charset=utf-8"), requestData.toString());
+
+                        mApiClient.getLoystarApi(false)
+                                .createInvoice(requestBody).enqueue(new Callback<Invoice>() {
+                            @Override
+                            public void onResponse(Call<Invoice> call, Response<Invoice> response) {
+                                if (response.isSuccessful()) {
+                                    Invoice invoice = response.body();
+
+                                    if (invoice != null) {
+                                        for (int i=0; i < invoiceEntity.getTransactions().size(); i++) {
+                                            mDataStore.delete(invoiceEntity.getTransactions().get(i)).subscribe();
+                                            if (i +1 == invoiceEntity.getTransactions().size()) {
+                                                String query = "DELETE FROM Invoice WHERE ROWID=" + invoiceEntity.getId();
+                                                ReactiveResult<Tuple> result = mDataStore.raw(query);
+                                                if (result != null && result.first() != null) {
+                                                    try {
+                                                        Integer deletedEntity = result.first().get(0);
+                                                        Timber.e("DELETED INVOICE: %s", deletedEntity);
+                                                    } catch (ClassCastException e) {
+                                                        try {
+                                                            Long deletedEntity = result.first().get(0);
+                                                            Timber.e("DELETED INVOICE: %s", deletedEntity);
+                                                        } catch (ClassCastException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        CustomerEntity customerEntity = mDatabaseManager
+                                                .getCustomerByUserId(invoice.getCustomer().getUser_id());
+                                        InvoiceEntity newInvoiceEntity =  new InvoiceEntity();
+                                        newInvoiceEntity.setId(invoice.getId());
+                                        newInvoiceEntity.setAmount(invoice.getSubtotal());
+                                        newInvoiceEntity.setCreatedAt(new Timestamp(invoice.getCreatedAt().getMillis()));
+                                        newInvoiceEntity.setUpdatedAt(new Timestamp(invoice.getUpdatedAt().getMillis()));
+                                        newInvoiceEntity.setPaidAmount(invoice.getPaidAmount());
+                                        newInvoiceEntity.setCustomer(customerEntity);
+                                        newInvoiceEntity.setSynced(true);
+                                        newInvoiceEntity.setNumber(invoice.getNumber());
+                                        newInvoiceEntity.setStatus(invoice.getStatus());
+                                        newInvoiceEntity.setOwner(merchantEntity);
+                                        newInvoiceEntity.setDueDate(invoice.getDueDate());
+                                        newInvoiceEntity.setPaymentMethod(invoice.getPaymentMessage());
+
+                                        mDataStore.upsert(newInvoiceEntity).subscribe(invoiceEntity -> {
+                                            for (ItemsItem transaction: invoice.getItems()) {
+                                                ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
+                                                itemsItemEntity.setAmount(transaction.getAmount());
+                                                itemsItemEntity.setInvoice(invoiceEntity);
+                                                itemsItemEntity.setSynced(true);
+                                                mDataStore.upsert(itemsItemEntity);
+                                            }
+                                        });
+                                        Intent intentEnd = new Intent(Constants.CREATE_INVOICE_ENDED);
+                                        getContext().sendBroadcast(intentEnd);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Invoice> call, Throwable t) {
+                                Timber.e(t);
+                            }
+                        });
+                } catch (JSONException e) {
+                    Timber.e(e);
+                }
             }
         }
 

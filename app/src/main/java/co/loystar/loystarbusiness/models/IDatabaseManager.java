@@ -8,6 +8,8 @@ import java.util.List;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.Invoice;
+import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
@@ -50,7 +52,16 @@ public interface IDatabaseManager {
     Integer getLastTransactionRecordId();
 
     @Nullable
+    Integer getLastInvoiceTransactionRecordId();
+
+    @Nullable
     Integer getLastSaleRecordId();
+
+    @Nullable
+    InvoiceEntity getInvoiceById(int id);
+
+    @Nullable
+    Integer getLastInvoiceRecordId();
 
     @Nullable
     String getMerchantProductsLastRecordDate(@NonNull MerchantEntity merchantEntity);
@@ -99,6 +110,9 @@ public interface IDatabaseManager {
     @NonNull
     List<SaleEntity> getUnsyncedSaleEnties(@NonNull MerchantEntity  merchantEntity);
 
+    @NonNull
+    List<InvoiceEntity> getUnsyncedInvoiceEntities(@NonNull MerchantEntity merchantEntity);
+
     int getTotalCustomerStamps(int merchantId, int customerId);
 
     int getTotalCustomerPoints(int merchantId, int customerId);
@@ -139,4 +153,5 @@ public interface IDatabaseManager {
     SalesOrderEntity getSalesOrderById(int salesOrderId);
 
     List<SalesOrderEntity> getUpdateRequiredSalesOrders(@NonNull MerchantEntity merchantEntity);
+
 }

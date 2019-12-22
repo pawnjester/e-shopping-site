@@ -55,6 +55,11 @@
         <item name="android:padding">5dp</item>
     </style>
 
+    <style name="FullBorderEditWhiteTextStyle">
+        <item name="android:background">@drawable/full_border_white_edit</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
     <style name="MenuButtonsStyle">
         <item name="fab_size">mini</item>
         <item name="fab_showAnimation">@anim/jump_from_down</item>

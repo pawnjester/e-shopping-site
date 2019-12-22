@@ -6,14 +6,18 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -31,6 +35,7 @@ public class ApiClient {
     private AccountManager mAccountManager;
     private Account mAccount;
 
+
     public ApiClient(Context context) {
         mSessionManager = new SessionManager(context);
         mAccountManager = AccountManager.get(context);
@@ -39,11 +44,13 @@ public class ApiClient {
 
     private Retrofit getRetrofit(boolean hasRootValue) {
         if (retrofit == null) {
-
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(300, TimeUnit.SECONDS)
                     .writeTimeout(300, TimeUnit.SECONDS)
+                    .addInterceptor(logging)
                     .addInterceptor(chain -> {
                         Request originalRequest = chain.request();
                         if (mAccount == null) {

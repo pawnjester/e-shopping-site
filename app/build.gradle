@@ -2,6 +2,8 @@ plugins {
     id 'com.onesignal.androidsdk.onesignal-gradle-plugin' version '0.7.0'
 }
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 apply plugin: 'com.google.firebase.firebase-crash'
 
@@ -12,6 +14,7 @@ repositories {
     maven {
         url 'http://sdk.uxcam.com/android/'
     }
+    mavenCentral()
 }
 
 Properties props = new Properties()
@@ -126,11 +129,13 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     implementation "io.requery:requery:$requeryVersion"
+    implementation 'com.facebook.stetho:stetho:1.5.1'
     implementation "io.requery:requery-android:$requeryVersion"
     annotationProcessor "io.requery:requery-processor:$requeryVersion"
     implementation "com.android.support:appcompat-v7:$supportLibVersion"
@@ -155,7 +160,7 @@ dependencies {
     implementation "com.jakewharton:butterknife:${butterKnifeVersion}", {
         exclude group: 'com.android.support'
     }
-    annotationProcessor "com.jakewharton:butterknife-compiler:${butterKnifeVersion}",{
+    annotationProcessor "com.jakewharton:butterknife-compiler:${butterKnifeVersion}", {
         exclude group: 'com.android.support'
     }
     implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
@@ -180,6 +185,7 @@ dependencies {
     implementation 'com.roughike:bottom-bar:2.3.1'
     implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
     implementation 'com.onesignal:OneSignal:3.6.5'
+    implementation("com.squareup.okio:okio:2.4.2")
     implementation 'id.zelory:compressor:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.facebook.android:account-kit-sdk:4.+'
@@ -191,6 +197,7 @@ dependencies {
     }
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
     testImplementation "junit:junit:$junitVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 apply plugin: 'com.google.gms.google-services'
