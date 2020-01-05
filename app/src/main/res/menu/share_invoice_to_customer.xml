@@ -16,4 +16,9 @@
         android:title="@string/share_to_whatsapp_menu"
         android:icon="@drawable/ic_file_upload"
         app:showAsAction="collapseActionView"/>
+    <item
+        android:id="@+id/action_download_pdf"
+        android:title="@string/download_pdf_menu_text"
+        android:icon="@drawable/ic_file_download_black_24dp"
+        app:showAsAction="collapseActionView"/>
 </menu>

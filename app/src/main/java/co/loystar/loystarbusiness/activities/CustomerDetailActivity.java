@@ -6,12 +6,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.MenuItem;
+import android.view.View;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
@@ -29,6 +32,7 @@ public class CustomerDetailActivity extends BaseActivity {
     private CustomerEntity mItem;
     private Context mContext;
     private MerchantEntity merchantEntity;
+    private View mLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +43,7 @@ public class CustomerDetailActivity extends BaseActivity {
         mDataStore = DatabaseManager.getDataStore(this);
         SessionManager sessionManager = new SessionManager(this);
         DatabaseManager mDatabaseManager = DatabaseManager.getInstance(this);
+        mLayout = findViewById(R.id.detail_wrapper);
         merchantEntity = mDatabaseManager.getMerchant(sessionManager.getMerchantId());
         customerId = getIntent().getIntExtra(CustomerDetailFragment.ARG_ITEM_ID, 0);
         mItem = mDatabaseManager.getCustomerById(customerId);
@@ -48,9 +53,18 @@ public class CustomerDetailActivity extends BaseActivity {
             fab.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_create_white_48px));
             fab.setOnClickListener(view -> {
                 if (mItem != null) {
-                    Intent intent = new Intent(CustomerDetailActivity.this, EditCustomerDetailsActivity.class);
-                    intent.putExtra(Constants.CUSTOMER_ID, customerId);
-                    startActivity(intent);
+                    if (!AccountGeneral.isAccountActive(this)) {
+                        Snackbar.make(mLayout,
+                                "Your subscription has expired, update subscription to edit a customer",
+                                Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                            Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                            startActivity(intent);
+                        }).show();
+                    } else {
+                        Intent intent = new Intent(CustomerDetailActivity.this, EditCustomerDetailsActivity.class);
+                        intent.putExtra(Constants.CUSTOMER_ID, customerId);
+                        startActivity(intent);
+                    }
                 }
             });
         }

@@ -424,6 +424,7 @@
     <string name="product_count">%1$s added</string>
     <string name="order_owner">This order belongs to</string>
     <string name="reciept_owner">This receipt belongs to</string>
+    <string name="invoice_owner">This invoice belongs to</string>
     <string name="change_customer">Change Customer</string>
     <string name="product_price">%1$s %2$s</string>
     <string name="total_sale_value">%1$s %2$s</string>
@@ -498,6 +499,7 @@
     <string name="cash">Cash</string>
     <string name="card">Card</string>
     <string name="pay_with">Pay with:</string>
+    <string name="send_with">Send via:</string>
     <string name="saveInvoice">Save Invoice</string>
     <string name="total_label_extra">Total:</string>
     <string name="cash_collected_label">Cash collected</string>
@@ -565,5 +567,6 @@
     <string name="paid_text">PAID</string>
     <string name="delete_text">Delete</string>
     <string name="share_to_whatsapp_menu">Share To Whatsapp</string>
+    <string name="download_pdf_menu_text">Download Pdf</string>
 
 </resources>

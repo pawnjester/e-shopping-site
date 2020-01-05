@@ -46,7 +46,11 @@ public  interface Invoice extends Observable, Parcelable, Persistable {
     @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
     List<ItemsItemEntity> getItems();
 
+    @Bindable
     @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
     List<InvoiceTransactionEntity> getTransactions();
+
+    @OneToMany(mappedBy = "invoice", cascade = {CascadeAction.SAVE})
+    List<InvoiceHistoryEntity> getHistory();
 
 }

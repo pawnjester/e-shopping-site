@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/no_product_image_wrapper"
+    android:layout_width="40dp"
+    android:layout_height="40dp">
+
+    <TextView
+        android:id="@+id/placeholder"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@drawable/circle"/>
+
+    <co.loystar.loystarbusiness.utils.ui.CircularImageView
+        android:id="@+id/avatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+</FrameLayout>

@@ -40,6 +40,7 @@ import butterknife.ButterKnife;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.adapters.CustomerListAdapter;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.fragments.CustomerDetailFragment;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -319,8 +320,17 @@ public class CustomerListActivity extends RxAppCompatActivity implements
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.activity_customer_list_fab_add_customer:
-                    Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
-                    startActivityForResult(addCustomerIntent, Constants.ADD_NEW_CUSTOMER_REQUEST);
+                    if (!AccountGeneral.isAccountActive(mContext)) {
+                        Snackbar.make(mLayout,
+                                "Your subscription has expired, update subscription to add a customer",
+                                Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                            Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                            startActivity(intent);
+                        }).show();
+                    } else {
+                        Intent addCustomerIntent = new Intent(mContext, AddNewCustomerActivity.class);
+                        startActivityForResult(addCustomerIntent, Constants.ADD_NEW_CUSTOMER_REQUEST);
+                    }
                     break;
                 case R.id.activity_customer_list_fab_rewards:
                     Intent rewardCustomerIntent = new Intent(mContext, RewardCustomersActivity.class);

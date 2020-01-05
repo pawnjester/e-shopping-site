@@ -2,11 +2,13 @@ package co.loystar.loystarbusiness.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -14,6 +16,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +37,7 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.ProductItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
@@ -76,9 +80,18 @@ public class ProductListActivity
 
         FloatingActionButton fab = findViewById(R.id.activity_product_list_toolbar_fab);
         fab.setOnClickListener(view -> {
-            Intent intent = new Intent(mContext, AddProductActivity.class);
-            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
-            startActivity(intent);
+            if (!AccountGeneral.isAccountActive(mContext)) {
+                Snackbar.make(mLayout,
+                        "Your subscription has expired, update subscription to add a product",
+                        Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                    Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                    startActivity(intent);
+                }).show();
+            } else {
+                Intent intent = new Intent(mContext, AddProductActivity.class);
+                intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+                startActivity(intent);
+            }
         });
 
         mLayout = findViewById(R.id.activity_product_list_container);
@@ -154,42 +167,63 @@ public class ProductListActivity
         );
         mRecyclerView.setEmptyView(emptyView);
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(mContext, recyclerView, new RecyclerTouchListener.ClickListener() {
+        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(mContext,
+                recyclerView, new RecyclerTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                ProductItemBinding productItemBinding = (ProductItemBinding) view.getTag();
-                if (productItemBinding != null) {
-                    Product product = productItemBinding.getProduct();
-                    Intent intent = new Intent(mContext, ProductDetailActivity.class);
-                    intent.putExtra(ProductDetailActivity.ARG_ITEM_ID, product.getId());
-                    startActivity(intent);
+                if (!AccountGeneral.isAccountActive(mContext)) {
+                    Snackbar.make(mLayout,
+                            "Your subscription has expired, update subscription to edit/delete a product",
+                            Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                        Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                        startActivity(intent);
+                    }).show();
+                } else {
+                    ProductItemBinding productItemBinding = (ProductItemBinding) view.getTag();
+                    if (productItemBinding != null) {
+                        Product product = productItemBinding.getProduct();
+                        Intent intent = new Intent(mContext, ProductDetailActivity.class);
+                        intent.putExtra(ProductDetailActivity.ARG_ITEM_ID, product.getId());
+                        startActivity(intent);
+                    }
                 }
             }
 
             @Override
             public void onLongClick(View view, int position) {
-                ProductItemBinding productItemBinding = (ProductItemBinding) view.getTag();
-                if (productItemBinding != null) {
-                    Product product = productItemBinding.getProduct();
-                    new AlertDialog.Builder(ProductListActivity.this)
-                            .setTitle("Are you sure?")
-                            .setMessage("You won't be able to recover this product.")
-                            .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
-                                dialog.dismiss();
-                                ProductEntity productEntity = mDataStore.findByKey(ProductEntity.class, product.getId()).blockingGet();
-                                if (productEntity != null) {
-                                    productEntity.setDeleted(true);
-                                    mDataStore.update(productEntity).subscribe(/*no-op*/);
-                                    mAdapter.queryAsync();
-                                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                if (!AccountGeneral.isAccountActive(mContext)) {
+                    Snackbar.make(mLayout,
+                            "Your subscription has expired, update subscription to delete product",
+                            Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                        Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                        startActivity(intent);
+                    }).show();
+                } else {
+                    ProductItemBinding productItemBinding = (ProductItemBinding) view.getTag();
+                    if (productItemBinding != null) {
+                        Product product = productItemBinding.getProduct();
+                        new AlertDialog.Builder(ProductListActivity.this)
+                                .setTitle("Are you sure?")
+                                .setMessage("You won't be able to recover this product.")
+                                .setPositiveButton(getString(R.string.confirm_delete_positive), (dialog, which) -> {
+                                    dialog.dismiss();
+                                    ProductEntity productEntity =
+                                            mDataStore.findByKey(ProductEntity.class,
+                                                    product.getId()).blockingGet();
+                                    if (productEntity != null) {
+                                        productEntity.setDeleted(true);
+                                        mDataStore.update(productEntity).subscribe(/*no-op*/);
+                                        mAdapter.queryAsync();
+                                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
-                                    String deleteText =  product.getName() + " has been deleted!";
-                                    Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                                        String deleteText =  product.getName() + " has been deleted!";
+                                        Snackbar.make(mLayout, deleteText, Snackbar.LENGTH_LONG).show();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                    }
                 }
             }
         }));

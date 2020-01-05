@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -150,40 +151,39 @@ public class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
             File sdCard = Environment.getExternalStorageDirectory();
             File filePath = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
             final File file = new File(filePath, fileName);
+            Log.e("QQQQ", file + "");
             final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".XLS");
 
             final AppCompatActivity mContext = appReference.get();
             new AlertDialog.Builder(mContext)
                     .setTitle("Export successful!")
                     .setMessage("Click the button below to open your file or open 'MyLoystarCustomerList.xls' later from inside the Loystar folder on your phone. Thanks.")
-                    .setPositiveButton(mContext.getString(R.string.open_file), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            PackageManager packageManager = mContext.getPackageManager();
-                            Uri uriForFile = FileProvider.getUriForFile(
-                                    mContext,
-                                    mContext.getApplicationContext().getPackageName() + ".co.loystar.loystarbusiness.provider",
-                                    file);
-                            Intent intent = new Intent();
-                            intent.setAction(android.content.Intent.ACTION_VIEW);
-                            intent.setDataAndType(uriForFile, mime);
-                            List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-                            if (list.size() > 0) {
-                                mContext.startActivity(intent);
-                            } else {
-                                new AlertDialog.Builder(mContext)
-                                        .setTitle("Sorry! No Excel reader found.")
-                                        .setMessage("We couldn't open the file because you don't have an Excel reader installed.")
-                                        .setPositiveButton("Download Excel Reader", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(Intent.ACTION_VIEW)
-                                                        .setData(Uri.parse("https://play.google.com/store/apps/details?id=cn.wps.moffice_eng&hl=en"));
-                                                mContext.startActivity(intent);
-                                            }
-                                        })
-                                        .setIcon(android.R.drawable.ic_dialog_alert)
-                                        .show();
-                            }
+                    .setPositiveButton(mContext.getString(R.string.open_file), (dialog, which) -> {
+                        dialog.dismiss();
+                        PackageManager packageManager = mContext.getPackageManager();
+                        Uri uriForFile = FileProvider.getUriForFile(
+                                mContext,
+                                mContext.getApplicationContext().getPackageName() + ".co.loystar.loystarbusiness.provider",
+                                file);
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(uriForFile, mime);
+                        List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+                        if (list.size() > 0) {
+                            mContext.startActivity(intent);
+                        } else {
+                            new AlertDialog.Builder(mContext)
+                                    .setTitle("Sorry! No Excel reader found.")
+                                    .setMessage("We couldn't open the file because you don't have an Excel reader installed.")
+                                    .setPositiveButton("Download Excel Reader", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(Intent.ACTION_VIEW)
+                                                    .setData(Uri.parse("https://play.google.com/store/apps/details?id=cn.wps.moffice_eng&hl=en"));
+                                            mContext.startActivity(intent);
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .show();
                         }
                     })
                     .show();

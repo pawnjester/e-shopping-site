@@ -36,7 +36,9 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.Chart;
@@ -88,6 +90,7 @@ import co.loystar.loystarbusiness.App;
 import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
@@ -268,9 +271,18 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
         }
 
         startSaleBtn.setOnClickListener(view -> startSale());
-        viewHistoryBtn.setOnClickListener(view -> {
-            Intent intent = new Intent(mContext, SalesHistoryActivity.class);
-            startActivity(intent);
+         viewHistoryBtn.setOnClickListener(view -> {
+             if (!AccountGeneral.isAccountActive(this)) {
+                 Snackbar.make(mLayout,
+                         "Your subscription has expired, update subscription to view transactions",
+                         Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                     Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                     startActivity(intent);
+                 }).show();
+             } else {
+                Intent intent = new Intent(mContext, SalesHistoryActivity.class);
+                startActivity(intent);
+             }
         });
 
         setupView();
@@ -632,8 +644,16 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     startActivity(ordersIntent);
                     break;
                 case R.id.invoices:
-                    Intent invoiceListIntent = new Intent(this, InvoiceListActivity.class);
-                    startActivity(invoiceListIntent);
+                    if (AccountGeneral.isAccountActive(this)) {
+                        Intent invoiceListIntent = new Intent(this, InvoiceListActivity.class);
+                        invoiceListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(invoiceListIntent);
+                    } else {
+                        Toast.makeText(this,
+                                "Your subscription has expired, Subscribe to view Invoices",
+                                Toast.LENGTH_LONG).show();
+                    }
                     break;
             }
         });

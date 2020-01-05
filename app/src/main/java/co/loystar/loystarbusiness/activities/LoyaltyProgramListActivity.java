@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.LoyaltyProgramItemBinding;
 import co.loystar.loystarbusiness.fragments.LoyaltyProgramDetailFragment;
@@ -74,8 +75,17 @@ public class LoyaltyProgramListActivity extends BaseActivity {
 
         FloatingActionButton fab = findViewById(R.id.activity_loyalty_program_list_fab);
         fab.setOnClickListener(view -> {
-            Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
-            startActivityForResult(intent, REQ_CREATE_PROGRAM);
+            if (!AccountGeneral.isAccountActive(this)) {
+                Snackbar.make(mLayout,
+                        "Your subscription has expired, update subscription to add a Loyalty Program",
+                        Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                    Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                    startActivity(intent);
+                }).show();
+            } else {
+                Intent intent = new Intent(LoyaltyProgramListActivity.this, NewLoyaltyProgramListActivity.class);
+                startActivityForResult(intent, REQ_CREATE_PROGRAM);
+            }
         });
 
         mContext = this;
@@ -209,46 +219,64 @@ public class LoyaltyProgramListActivity extends BaseActivity {
             binding.editProgramBtn.setTag(binding);
 
             binding.deleteProgramBtn.setOnClickListener(view -> {
-                LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
-                if (loyaltyProgramItemBinding != null) {
-                    final LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
-                    new AlertDialog.Builder(mContext)
-                            .setTitle("Are you sure?")
-                            .setMessage("You won't be able to recover this program.")
-                            .setPositiveButton(mContext.getString(R.string.confirm_delete_positive), (dialog, which) -> {
-                                dialog.dismiss();
-                                LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, loyaltyProgram.getId()).blockingGet();
-                                if (loyaltyProgramEntity != null) {
-                                    loyaltyProgramEntity.setDeleted(true);
-                                    mDataStore.update(loyaltyProgramEntity).subscribe();
-                                    mAdapter.queryAsync();
-                                    SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+                if (!AccountGeneral.isAccountActive(mContext)) {
+                    Snackbar.make(mLayout,
+                            "Your subscription has expired, update subscription to delete a program",
+                            Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                        Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+                        startActivity(intent);
+                    }).show();
+                } else  {
+                    LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
+                    if (loyaltyProgramItemBinding != null) {
+                        final LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
+                        new AlertDialog.Builder(mContext)
+                                .setTitle("Are you sure?")
+                                .setMessage("You won't be able to recover this program.")
+                                .setPositiveButton(mContext.getString(R.string.confirm_delete_positive), (dialog, which) -> {
+                                    dialog.dismiss();
+                                    LoyaltyProgramEntity loyaltyProgramEntity = mDataStore.findByKey(LoyaltyProgramEntity.class, loyaltyProgram.getId()).blockingGet();
+                                    if (loyaltyProgramEntity != null) {
+                                        loyaltyProgramEntity.setDeleted(true);
+                                        mDataStore.update(loyaltyProgramEntity).subscribe();
+                                        mAdapter.queryAsync();
+                                        SyncAdapter.performSync(mContext, mSessionManager.getEmail());
 
-                                    showSnackbar(R.string.loyalty_program_deleted);
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                                        showSnackbar(R.string.loyalty_program_deleted);
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                    }
                 }
             });
 
             binding.editProgramBtn.setOnClickListener(view -> {
-                LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
-                if (loyaltyProgramItemBinding != null) {
-                    LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
-                        LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.loyalty_program_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Intent intent = new Intent(mContext, LoyaltyProgramDetailActivity.class);
-                        intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                if (!AccountGeneral.isAccountActive(mContext)) {
+                    Snackbar.make(mLayout,
+                            "Your subscription has expired, update subscription to edit a program",
+                            Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+                        Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
                         startActivity(intent);
+                    }).show();
+                } else {
+                    LoyaltyProgramItemBinding loyaltyProgramItemBinding = (LoyaltyProgramItemBinding) view.getTag();
+                    if (loyaltyProgramItemBinding != null) {
+                        LoyaltyProgram loyaltyProgram = loyaltyProgramItemBinding.getLoyaltyProgram();
+                        if (mTwoPane) {
+                            Bundle arguments = new Bundle();
+                            arguments.putInt(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                            LoyaltyProgramDetailFragment fragment = new LoyaltyProgramDetailFragment();
+                            fragment.setArguments(arguments);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.loyalty_program_detail_container, fragment)
+                                    .commit();
+                        } else {
+                            Intent intent = new Intent(mContext, LoyaltyProgramDetailActivity.class);
+                            intent.putExtra(LoyaltyProgramDetailFragment.ARG_ITEM_ID, loyaltyProgram.getId());
+                            startActivity(intent);
+                        }
                     }
                 }
             });

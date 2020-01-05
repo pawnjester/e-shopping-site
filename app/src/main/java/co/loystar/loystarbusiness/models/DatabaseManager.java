@@ -14,6 +14,7 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
@@ -621,5 +622,6 @@ public class DatabaseManager implements IDatabaseManager{
         selection.where(SalesOrderEntity.UPDATE_REQUIRED.eq(true));
         return selection.get().toList();
     }
+
 
 }

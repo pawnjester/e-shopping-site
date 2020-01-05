@@ -13,6 +13,7 @@ public class Constants {
     public static final String HASH_MAP = "HASH_MAP";
     public static final String CHARGE = "CHARGE";
     public static final String INVOICE_ID = "INVOICE_ID";
+    public static final String INVOICE_NUMBER = "INVOICE_NUMBER";
     public static final String PAYMENT_METHOD = "PAYMENT_METHOD";
     public static final String STATUS = "STATUS";
     public static final String CREATE_INVOICE_STARTED = "CREATE_INVOICE_STARTED";

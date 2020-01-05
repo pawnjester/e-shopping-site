@@ -27,6 +27,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -36,6 +37,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -249,12 +251,17 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
                         + deal.getReward() + ". Thank you.";
             }
         }
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT,
-                txt);
-        sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        try {
+            String toNumber = mCustomer.getPhoneNumber().substring(1);
+            String encodedString = URLEncoder.encode(txt, "UTF-8");
+            String message = "http://api.whatsapp.com/send?phone="
+                    + toNumber + "&text=" + encodedString;
+            intent.setData(Uri.parse(message));
+            startActivity(intent);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
