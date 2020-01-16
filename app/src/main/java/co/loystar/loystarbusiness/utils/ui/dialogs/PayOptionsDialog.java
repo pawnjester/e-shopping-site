@@ -59,7 +59,7 @@ public class PayOptionsDialog extends AppCompatDialogFragment {
         ButterKnife.bind(this, rootView);
         payWithCashView.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_cash));
         payWithCardView.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_credit_card));
-        payWithInvoice.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_invoice));
+        payWithInvoice.setImageDrawable(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_receipt_black_48));
 
         payWithCashView.setOnClickListener(view -> {
             if (mListener != null) {

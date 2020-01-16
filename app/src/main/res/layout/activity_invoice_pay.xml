@@ -20,201 +20,231 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <FrameLayout
+        app:layout_behavior="@string/bottom_sheet_behavior"
+        android:id="@+id/order_summary_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:clickable="true"
+        android:focusable="true"
+        style="@style/Theme.ActionBar.HigherElevation"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp">
+        <include layout="@layout/invoice_bottom_sheet"/>
+
+    </FrameLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/total_amount_paid"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginLeft="48dp"
-            android:layout_marginTop="72dp"
-            android:text="@string/total_amount_to_be_paid_text"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="@+id/recored_payment_text"
+            app:layout_constraintEnd_toEndOf="@+id/total_amount_paid"
+            app:layout_constraintStart_toEndOf="@+id/total_amount_paid"
+            app:layout_constraintTop_toBottomOf="@+id/recored_payment_text">
 
-        <TextView
-            android:id="@+id/amount_due_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/amount_due_text"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/total_amount_paid"
-            app:layout_constraintTop_toBottomOf="@+id/total_amount_paid" />
-
-        <TextView
-            android:id="@+id/amount_due_value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="@+id/total_amount"
-            app:layout_constraintTop_toBottomOf="@+id/total_amount"
-            tools:text="0.00" />
-
-        <TextView
-            android:id="@+id/total_amount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="72dp"
-            android:layout_marginEnd="60dp"
-            android:layout_marginRight="60dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="20.0" />
-
-        <TextView
-            android:id="@+id/due_date_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/due_date_text"
-            app:layout_constraintStart_toStartOf="@+id/select_customer"
-            app:layout_constraintTop_toBottomOf="@+id/select_customer" />
-
-        <TextView
-            android:id="@+id/payment_message_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/payment_message"
-            app:layout_constraintStart_toStartOf="@+id/payment_radio_group"
-            app:layout_constraintTop_toBottomOf="@+id/payment_radio_group" />
-
-
-        <TextView
-            android:id="@+id/payment_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/payment_type_text"
-            app:layout_constraintStart_toStartOf="@+id/record_payment"
-            app:layout_constraintTop_toBottomOf="@+id/record_payment" />
-
-        <TextView
-            android:id="@+id/recored_payment_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/record_payment_text"
-            app:layout_constraintStart_toStartOf="@+id/due_date_picker"
-            app:layout_constraintTop_toBottomOf="@+id/due_date_picker" />
-
-        <TextView
-            android:id="@+id/select_customer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Select Customer: "
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/amount_due_text"
-            app:layout_constraintTop_toBottomOf="@+id/amount_due_text" />
-
-        <TextView
-            android:id="@+id/selected_customer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="customer"
-            app:layout_constraintEnd_toEndOf="@+id/amount_due_value"
-            app:layout_constraintTop_toBottomOf="@+id/amount_due_value"
-            tools:text="Usman Danfodio" />
-
-        <EditText
-            android:id="@+id/payment_message"
-            android:layout_width="300dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="28dp"
-            android:layout_marginEnd="60dp"
-            android:layout_marginRight="60dp"
-            android:gravity="top|start"
-            android:hint="@string/description_hint"
-            android:inputType="textMultiLine"
-            style = "@style/FullBorderEditWhiteTextStyle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/payment_message_text"
-            app:layout_constraintTop_toBottomOf="@+id/payment_message_text" />
-
-        <EditText
-            android:id="@+id/record_payment"
-            style="@style/FullBorderEditWhiteTextStyle"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:hint="@string/amount_payment_text"
-            android:inputType="number"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/recored_payment_text"
-            app:layout_constraintTop_toBottomOf="@+id/recored_payment_text" />
-
-        <EditText
-            android:id="@+id/due_date_picker"
-            style="@style/FullBorderEditWhiteTextStyle"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:focusable="true"
-            android:focusableInTouchMode="false"
-            android:hint="@string/select_date"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.432"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/due_date_text" />
-
-        <RadioGroup
-            android:id="@+id/payment_radio_group"
-            android:layout_width="163dp"
-            android:layout_height="31dp"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="@+id/payment_text"
-            app:layout_constraintTop_toBottomOf="@+id/payment_text">
-
-            <RadioButton
-                android:id="@+id/cash_payment"
+            <TextView
+                android:id="@+id/total_amount_paid"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="#00ffffff"
-                android:text="@string/payment_cash"
-                android:textAlignment="center" />
+                android:layout_marginTop="76dp"
+                android:text="@string/total_amount_to_be_paid_text"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/amount_due_text"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <RadioButton
-                android:id="@+id/card_payment"
+            <TextView
+                android:id="@+id/show_products"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="#00ffffff"
-                android:text="@string/payment_card"
-                android:textAlignment="center" />
+                android:layout_marginTop="12dp"
+                android:text="@string/edit_product_text"
+                android:textColor="@color/colorAccent"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/due_date_text"
+                app:layout_constraintTop_toBottomOf="@+id/select_customer" />
 
-        </RadioGroup>
+            <TextView
+                android:id="@+id/amount_due_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/amount_due_text"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/select_customer"
+                app:layout_constraintTop_toBottomOf="@+id/total_amount_paid" />
 
-        <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
-            android:id="@+id/completePayment"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/save"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/payment_message"
-            app:layout_constraintStart_toStartOf="@+id/payment_message"
-            app:layout_constraintTop_toBottomOf="@+id/payment_message" />
-    </android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/amount_due_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@+id/total_amount"
+                app:layout_constraintTop_toBottomOf="@+id/total_amount"
+                tools:text="0.00" />
+
+            <TextView
+                android:id="@+id/total_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="76dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginRight="40dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.943"
+                app:layout_constraintStart_toEndOf="@+id/total_amount_paid"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="20.0" />
+
+            <TextView
+                android:id="@+id/due_date_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/due_date_text"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/due_date_picker"
+                app:layout_constraintTop_toBottomOf="@+id/show_products" />
+
+
+            <TextView
+                android:id="@+id/payment_message_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/payment_message"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/payment_message"
+                app:layout_constraintTop_toBottomOf="@+id/payment_radio_group" />
+
+            <TextView
+                android:id="@+id/payment_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="@string/payment_type_text"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/record_payment"
+                app:layout_constraintTop_toBottomOf="@+id/record_payment" />
+
+            <TextView
+                android:id="@+id/recored_payment_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/record_payment_text"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/due_date_picker"
+                app:layout_constraintTop_toBottomOf="@+id/due_date_picker" />
+
+            <TextView
+                android:id="@+id/select_customer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Select Customer: "
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/show_products"
+                app:layout_constraintTop_toBottomOf="@+id/amount_due_text" />
+
+            <TextView
+                android:id="@+id/selected_customer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="customer"
+                app:layout_constraintEnd_toEndOf="@+id/amount_due_value"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/select_customer"
+                app:layout_constraintTop_toBottomOf="@+id/amount_due_value"
+                tools:text="Usman Danfodio" />
+
+            <EditText
+                android:id="@+id/payment_message"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:gravity="top|start"
+                android:hint="@string/description_hint"
+                android:inputType="textMultiLine"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/payment_message_text" />
+
+            <EditText
+                android:id="@+id/record_payment"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/amount_payment_text"
+                android:inputType="number"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/recored_payment_text" />
+
+            <EditText
+                android:id="@+id/due_date_picker"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:hint="@string/select_date"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/due_date_text" />
+
+            <RadioGroup
+                android:id="@+id/payment_radio_group"
+                android:layout_width="163dp"
+                android:layout_height="31dp"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="@+id/payment_text"
+                app:layout_constraintTop_toBottomOf="@+id/payment_text">
+
+                <RadioButton
+                    android:id="@+id/cash_payment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="#00ffffff"
+                    android:text="@string/payment_cash"
+                    android:textAlignment="center" />
+
+                <RadioButton
+                    android:id="@+id/card_payment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="#00ffffff"
+                    android:text="@string/payment_card"
+                    android:textAlignment="center" />
+
+            </RadioGroup>
+
+            <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
+                android:id="@+id/completePayment"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/save"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/payment_message"
+                app:layout_constraintStart_toStartOf="@+id/payment_message"
+                app:layout_constraintTop_toBottomOf="@+id/payment_message" />
+
+        </android.support.constraint.ConstraintLayout>
     </ScrollView>
+
+
 </android.support.design.widget.CoordinatorLayout>

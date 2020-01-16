@@ -53,7 +53,6 @@ public class BackgroundNotificationService extends IntentService {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Log.e("ddd", "here");
         invoiceId = intent.getIntExtra(Constants.INVOICE_ID, 0);
         invoiceNumber = intent.getStringExtra(Constants.INVOICE_NUMBER);
         return super.onStartCommand(intent, flags, startId);
@@ -147,7 +146,6 @@ public class BackgroundNotificationService extends IntentService {
     }
 
     private void downloadPdf(int invoiceId) {
-        Log.e("never", "here");
         mApiClient.getLoystarApi(false)
                 .getInvoiceDownloadLink(invoiceId)
                 .flatMap((Function<DownloadInvoice,
@@ -161,12 +159,10 @@ public class BackgroundNotificationService extends IntentService {
                 .doOnError(error -> Toast.makeText(getApplicationContext(),
                         "Invoice could not be downloaded", Toast.LENGTH_SHORT).show())
                 .subscribe(response -> {
-                    Log.e(">>>RES", response.code() + "");
                     if (response.code() == 404) {
                         Toast.makeText(getApplicationContext(),
                                 "Invoice could not be downloaded", Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.e("FFFF", "praise");
                         saveToDiskRx(response);
                     }
                 });
@@ -226,6 +222,7 @@ public class BackgroundNotificationService extends IntentService {
                 }
             }
         } catch (Exception e) {
+            onDownloadFailure();
             return false;
         }
     }

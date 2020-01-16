@@ -439,14 +439,14 @@ public class SaleWithPosActivity extends BaseActivity implements
 
     @Override
     public void onPayWithInvoice() {
-        if (!AccountGeneral.isAccountActive(mContext)) {
-            Snackbar.make(mLayout,
-                    "Your subscription has expired, update subscription to checkout by invoice",
-                    Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
-                Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
-                startActivity(intent);
-            }).show();
-        } else {
+//        if (!AccountGeneral.isAccountActive(mContext)) {
+//            Snackbar.make(mLayout,
+//                    "Your subscription has expired, update subscription to checkout by invoice",
+//                    Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+//                Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+//                startActivity(intent);
+//            }).show();
+//        } else {
             Intent startInvoiceIntent = new Intent(this, InvoicePayActivity.class);
             Bundle bundle = new Bundle();
             HashMap<Integer, Integer> hashMap = new HashMap<>();
@@ -469,7 +469,7 @@ public class SaleWithPosActivity extends BaseActivity implements
             startInvoiceIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(startInvoiceIntent);
 
-        }
+//        }
 
     }
 
@@ -560,9 +560,7 @@ public class SaleWithPosActivity extends BaseActivity implements
                     mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
 
                     if (i + 1 == productEntities.size()) {
-                        Log.e("jjjj", "hhh");
                         SyncAdapter.performSync(mContext, mSessionManager.getEmail());
-                        Log.e("jjjj", "after");
 
                         Completable.complete()
                             .delay(1, TimeUnit.SECONDS)
@@ -602,7 +600,8 @@ public class SaleWithPosActivity extends BaseActivity implements
     }
 
     private class ProductsAdapter
-        extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> implements Filterable {
+        extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<PosProductItemBinding>> implements Filterable {
 
         private Filter filter;
 
@@ -757,7 +756,8 @@ public class SaleWithPosActivity extends BaseActivity implements
         }
     }
 
-    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity, BindingHolder<OrderSummaryItemBinding>> {
+    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<OrderSummaryItemBinding>> {
 
         OrderSummaryAdapter() {
             super(ProductEntity.$TYPE);
@@ -769,7 +769,9 @@ public class SaleWithPosActivity extends BaseActivity implements
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 ids.add(mSelectedProducts.keyAt(i));
             }
-            return mDataStore.select(ProductEntity.class).where(ProductEntity.ID.in(ids)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            return mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(ids))
+                    .orderBy(ProductEntity.UPDATED_AT.desc()).get();
         }
 
         @SuppressLint("CheckResult")

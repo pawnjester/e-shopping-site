@@ -17,6 +17,7 @@ import java.util.List;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.utils.TimeUtils;
 
 
 public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -27,39 +28,52 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private final int VIEW_TYPE_ITEM = 0;
     private final int VIEW_TYPE_LOADING = 1;
-    boolean isLoading;
+    boolean isLoading = false;
     int visibleThreshold = 5;
-    int lastVisibleThreshold, totalItemCount;
+    private int lastVisibleThreshold, totalItemCount;
 
     private Context mContext;
 
     public InvoiceAdapter(Context context,
                           ArrayList<InvoiceEntity> invoiceEntities,
                           OnItemClickListener listener,
-                          OnLoadMoreListener loadMoreListener,
+//                          OnLoadMoreListener loadMoreListener,
                           RecyclerView recyclerView) {
         mContext = context;
         mInvoices = invoiceEntities;
         mlistener = listener;
-        mloadlistener = loadMoreListener;
+//        mloadlistener = loadMoreListener;
 
-        final LinearLayoutManager linearLayoutManager =
-                (LinearLayoutManager) recyclerView.getLayoutManager();
+//        final LinearLayoutManager linearLayoutManager =
+//                (LinearLayoutManager) recyclerView.getLayoutManager();
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                totalItemCount = linearLayoutManager.getItemCount();
-                lastVisibleThreshold = linearLayoutManager.findLastVisibleItemPosition();
-                if (!isLoading && totalItemCount <= (lastVisibleThreshold + visibleThreshold)) {
-                    if (mloadlistener != null) {
-                        mloadlistener.loadMore();
-                    }
-                        isLoading = true;
-                }
-            }
-        });
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//                LinearLayoutManager linearLayoutManager =
+//                        (LinearLayoutManager) recyclerView.getLayoutManager();
+//                totalItemCount = linearLayoutManager.getItemCount();
+////                Log.e("GGG", totalItemCount + "");
+//                lastVisibleThreshold = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+//                if (!isLoading && totalItemCount <= (lastVisibleThreshold + visibleThreshold)) {
+//                    if (mloadlistener != null) {
+//                        mloadlistener.loadMore();
+//                        isLoading = true;
+//                    }
+//                }
+////                if (!isLoading) {
+////                    if (linearLayoutManager != null &&
+////                            linearLayoutManager.findLastCompletelyVisibleItemPosition()
+////                                    == invoiceEntities.size()-1) {
+////                        if (mloadlistener != null) {
+////                            mloadlistener.loadMore();
+////                            isLoading = true;
+////                        }
+////                    }
+////                }
+//            }
+//        });
 
 
     }
@@ -71,25 +85,40 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return mInvoices.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
-    }
+//    @Override
+//    public int getItemViewType(int position) {
+//        return mInvoices.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+//    }
 
+////    @NonNull
+//    @Override
+//    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+////        if (viewType == VIEW_TYPE_ITEM) {
+////            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
+////            return new ViewHolder(view);
+////        } else if(viewType == VIEW_TYPE_LOADING)  {
+////            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+////            return new LoadingViewHolder(view);
+////        }
+//        if (viewType == VIEW_TYPE_ITEM) {
+//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
+//            return new ViewHolder(view);
+//        } else {
+//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+//            return new LoadingViewHolder(view);
+//        }
+//
+//    }
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-        if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(mContext).inflate(
-                    R.layout.invoice_list_item, viewGroup, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+//        if (viewType == VIEW_TYPE_ITEM) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
             return new ViewHolder(view);
-        } else if(viewType == VIEW_TYPE_LOADING)  {
-            View view = LayoutInflater.from(mContext).inflate(
-                    R.layout.item_loading, viewGroup, false
-            );
-            return new LoadingViewHolder(view);
-        }
-        return null;
+//        } else {
+//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+//            return new LoadingViewHolder(view);
+//        }
     }
 
     @Override
@@ -98,10 +127,12 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (holder instanceof ViewHolder) {
             InvoiceEntity invoice = mInvoices.get(i);
             ((ViewHolder) holder).bind(invoice, mlistener);
-        } else if (holder instanceof  LoadingViewHolder) {
-            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) holder;
-            loadingViewHolder.mProgressBar.setIndeterminate(true);
         }
+//        else if (holder instanceof  LoadingViewHolder) {
+////            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) holder;
+////            loadingViewHolder.mProgressBar.setVisibility(View.VISIBLE);
+//            showLoadingView((LoadingViewHolder) holder, i);
+//        }
     }
 
     @Override
@@ -111,6 +142,11 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     public void setLoading() {
         isLoading = false;
+    }
+
+    private void showLoadingView(LoadingViewHolder viewHolder, int position) {
+        //ProgressBar would be displayed
+
     }
 
     public interface OnItemClickListener {
@@ -139,6 +175,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private TextView mAmount;
         private TextView mStatus;
         private CardView mCard;
+        private TextView mCreatedAt;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -147,6 +184,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mAmount = itemView.findViewById(R.id.amount);
             mStatus = itemView.findViewById(R.id.status);
             mCard = itemView.findViewById(R.id.invoice_card);
+            mCreatedAt = itemView.findViewById(R.id.created_date_value);
         }
 
         public void bind(final InvoiceEntity entity, final OnItemClickListener listener) {
@@ -155,6 +193,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             String amount;
             String number;
             String status;
+            String createdAt;
             if (entity.getCustomer() == null) {
                 lastName = "";
             } else {
@@ -181,10 +220,17 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else {
                 status = entity.getStatus();
             }
+
+            if (entity.getCreatedAt() == null) {
+                createdAt = "";
+            } else {
+                createdAt = TimeUtils.convertToDate(entity.getCreatedAt());
+            }
             mInvoiceId.setText(number);
             mStatus.setText(status);
             mCustomer.setText(name);
             mAmount.setText(amount);
+            mCreatedAt.setText(createdAt);
             if (entity.getCustomer() != null) {
                 mCard.setOnClickListener(view -> {
                     listener.onItemClick(entity);

@@ -151,7 +151,6 @@ public class DownloadCustomerList extends AsyncTask<String, Integer, Boolean> {
             File sdCard = Environment.getExternalStorageDirectory();
             File filePath = new File(sdCard.getAbsolutePath() + File.separator + "Loystar");
             final File file = new File(filePath, fileName);
-            Log.e("QQQQ", file + "");
             final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".XLS");
 
             final AppCompatActivity mContext = appReference.get();

@@ -55,15 +55,15 @@ public class SendOptionsDialog extends AppCompatDialogFragment {
                 R.layout.send_options_dialog, null);
 
         sendWithEmail = rootView.findViewById(R.id.sendWithEmail);
-//        sendWithWhatsapp = rootView.findViewById(R.id.sendWithWhatsapp);
+        sendWithWhatsapp = rootView.findViewById(R.id.sendWithWhatsapp);
         downloadPdf = rootView.findViewById(R.id.download_pdf);
 
         downloadPdf.setImageDrawable(AppCompatResources.getDrawable(getActivity(),
                 R.drawable.ic_file_download_48));
         sendWithEmail.setImageDrawable(AppCompatResources.getDrawable(getActivity(),
+                R.drawable.ic_message_black_48));
+        sendWithWhatsapp.setImageDrawable(AppCompatResources.getDrawable(getActivity(),
                 R.drawable.ic_send_black));
-//        sendWithWhatsapp.setImageDrawable(AppCompatResources.getDrawable(getActivity(),
-//                R.drawable.ic_file_upload_black_48));
 
         downloadPdf.setOnClickListener(view -> {
             if (mListener != null) {
@@ -72,12 +72,12 @@ public class SendOptionsDialog extends AppCompatDialogFragment {
             }
         });
 
-//        sendWithWhatsapp.setOnClickListener(view -> {
-//            if (mListener != null) {
-//                mListener.onSendWithWhatsapp();
-//                dismiss();
-//            }
-//        });
+        sendWithWhatsapp.setOnClickListener(view -> {
+            if (mListener != null) {
+                mListener.onSendWithWhatsapp();
+                dismiss();
+            }
+        });
 
         sendWithEmail.setOnClickListener(view -> {
             if (mListener != null) {
@@ -95,7 +95,7 @@ public class SendOptionsDialog extends AppCompatDialogFragment {
 
     public interface SendOptionsDialogClickListener {
         void onSendWithEmail();
-//        void onSendWithWhatsapp();
+        void onSendWithWhatsapp();
         void onDownloadPdf();
     }
 

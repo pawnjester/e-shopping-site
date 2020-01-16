@@ -18,8 +18,10 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
@@ -28,41 +30,37 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseIntArray;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.reactivestreams.Subscriber;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -71,57 +69,58 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import co.loystar.loystarbusiness.BuildConfig;
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
 import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
+import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 
-import co.loystar.loystarbusiness.models.databinders.DownloadInvoice;
 import co.loystar.loystarbusiness.models.databinders.Invoice;
 import co.loystar.loystarbusiness.models.databinders.InvoicePaymentHistoriesItem;
 import co.loystar.loystarbusiness.models.databinders.ItemsItem;
-import co.loystar.loystarbusiness.models.databinders.Product;
+import co.loystar.loystarbusiness.models.databinders.PaymentMessage;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceTransaction;
 import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
-import co.loystar.loystarbusiness.models.entities.ItemsItemEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
-import co.loystar.loystarbusiness.models.entities.Merchant;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.utils.BackgroundNotificationService;
+import co.loystar.loystarbusiness.utils.BindingHolder;
 import co.loystar.loystarbusiness.utils.Constants;
-import co.loystar.loystarbusiness.utils.ui.buttons.GreenButton;
+import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
+import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
+import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.SendOptionsDialog;
 import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
+import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
+import io.requery.query.Selection;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import okio.BufferedSink;
-import okio.Okio;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
+
+import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 
 public class InvoicePayActivity extends BaseActivity implements
         CustomerAutoCompleteDialog.SelectedCustomerListener,
@@ -131,9 +130,20 @@ public class InvoicePayActivity extends BaseActivity implements
     private String due_date;
     private DatabaseManager databaseManager;
     private Toolbar toolbar;
+    private double totalCharge = 0;
     private SendOptionsDialog sendOptionsDialog;
+    private SparseIntArray mSelectedProductsArray = new SparseIntArray();
+    private OrderSummaryAdapter orderSummaryAdapter;
+    private BottomSheetBehavior orderSummaryBottomSheetBehavior;
+    private BottomSheetBehavior.BottomSheetCallback mOrderSummaryBottomSheetCallback;
+    View mWrapper;
 
     private RadioGroup paymentRadioGroup;
+    private TextView viewProductsButton;
+    private Toolbar orderSummaryExpandedToolbar;
+    private FullRectangleButton orderUpdateButton;
+    private ExecutorService executor;
+    private String merchantCurrencySymbol;
     private EditText amountText;
     private EditText due_date_picker;
     Button completePaymentButton;
@@ -164,9 +174,8 @@ public class InvoicePayActivity extends BaseActivity implements
     private TextView amount_due_header;
     AlertDialog.Builder builder;
     AlertDialog dialog;
-    File invoiceFile;
-    String strippedFile;
-
+    Boolean hasSharedToWhatsapp = false;
+    EmptyRecyclerView mOrderSummaryRecyclerView;
 
     HashMap<Integer, Integer> mSelectedProductHash = new HashMap<>();
 
@@ -175,13 +184,38 @@ public class InvoicePayActivity extends BaseActivity implements
     protected void  onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invoice_pay);
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(getString(R.string.pay_with_invoice));
-        setSupportActionBar(toolbar);
-        ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setDisplayShowHomeEnabled(true);
         mLayout = findViewById(R.id.invoice_wrapper);
+        viewProductsButton = findViewById(R.id.show_products);
+
+
+        mWrapper = findViewById(R.id.bottom_sheet);
+        mWrapper.bringToFront();
+
+
+        mOrderSummaryBottomSheetCallback = new
+                BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View view, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED:
+//                        orderSummaryDraggingStateUp = true;
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+//                        orderSummaryDraggingStateUp = false;
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet,
+                                float slideOffset) {
+
+            }
+        };
+
+
         amount_due_header = findViewById(R.id.amount_due_text);
         mDataStore = DatabaseManager.getDataStore(this);
         recordPaymentText = findViewById(R.id.recored_payment_text);
@@ -193,8 +227,10 @@ public class InvoicePayActivity extends BaseActivity implements
         selectedCustomer = findViewById(R.id.selected_customer);
         totalCost = getIntent().getDoubleExtra(Constants.CHARGE, 0);
         invoice_payment_method = getIntent().getStringExtra(Constants.PAYMENT_METHOD);
-        mSelectedProducts = getIntent().getExtras().getIntegerArrayList(Constants.SELECTED_PRODUCTS);
-        mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
+        mSelectedProducts = getIntent().getExtras()
+                .getIntegerArrayList(Constants.SELECTED_PRODUCTS);
+        mSelectedCustomer = mDataStore
+                .findByKey(CustomerEntity.class, customerId).blockingGet();
         invoiceId = getIntent().getIntExtra(Constants.INVOICE_ID, 0);
         invoiceNumber = getIntent().getStringExtra(Constants.INVOICE_NUMBER);
         paymentRadioGroup = findViewById(R.id.payment_radio_group);
@@ -213,9 +249,9 @@ public class InvoicePayActivity extends BaseActivity implements
         invoiceStatus = getIntent().getStringExtra(Constants.STATUS);
         sendOptionsDialog = SendOptionsDialog.newInstance();
         sendOptionsDialog.setListener(this);
-
-
-
+        merchantCurrencySymbol = CurrenciesFetcher
+                .getCurrencies(this)
+                .getCurrency(mSessionManager.getCurrency()).getSymbol();
         customerAutoCompleteDialog = CustomerAutoCompleteDialog.newInstance(getString(R.string.invoice_owner));
         customerAutoCompleteDialog.setSelectedCustomerListener(this);
         paidAmount = getIntent().getStringExtra(Constants.PAID_AMOUNT);
@@ -241,40 +277,55 @@ public class InvoicePayActivity extends BaseActivity implements
         customerLive.observeForever(customerEntity -> {
             selectedCustomer.setText(customerEntity.getFirstName());
         });
+        viewProductsButton.setOnClickListener(view -> {
+//            mWrapper.setVisibility(View.VISIBLE);
+//            toggleBottomSheet();
+            goToViewProductsActivity();
+
+        });
 
 
         if (mSelectedCustomer == null) {
-            customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+            customerAutoCompleteDialog.show(getSupportFragmentManager(),
+                    CustomerAutoCompleteDialog.TAG);
             selectedCustomer.setText("Click to select a customer");
         } else {
             selectedCustomer.setText(mSelectedCustomer.getFirstName());
         }
 
-        if (paidAmount != null ) {
-            Log.e(">>>>", paidAmount );
-            amountText.setText(paidAmount);
-        }
-//        else {
-//            paidAmount = "0.0";
-//        }
-
         if (invoiceId > 0) {
             completePaymentButton.setText("Update");
             selectedCustomer.setEnabled(false);
-            if (invoiceStatus != null && invoiceStatus.equals("paid")) {
+            List<InvoiceTransactionEntity> entities =
+                    mDatabaseManager.getInvoiceTransaction(invoiceId);
+            for (InvoiceTransactionEntity entity: entities) {
+                mSelectedProductsArray.put(
+                        entity.getProductId(),
+                        entity.getQuantity());
+            }
+            if (invoiceStatus != null
+                    && invoiceStatus.equals("paid")) {
                 amount_due_value.setText(getResources().getString(R.string.paid_text));
                 amountText.setEnabled(false);
                 due_date_picker.setEnabled(false);
                 paymentMessage.setEnabled(false);
                 selectedCustomer.setEnabled(false);
                 completePaymentButton.setEnabled(false);
+                viewProductsButton.setVisibility(View.GONE);
                 completePaymentButton.setBackgroundColor(getResources().getColor(R.color.light_grey));
-            } else if (invoiceStatus != null && invoiceStatus.equals("unpaid") || invoiceStatus.equals("partial")) {
+            } else if (invoiceStatus.equals("partial")) {
+                viewProductsButton.setVisibility(View.GONE);
                 Double difference;
                 difference = totalCost - Double.valueOf(paidAmount == null ? "0.0" : paidAmount);
-//                        Double.valueOf(
-//                                amountText.getText().toString().length() == 0 ? "0.0" : amountText.getText().toString());
                 amount_due_value.setText(difference.toString());
+                amountText.setText(amount_due_value.getText());
+            }
+            else if (invoiceStatus != null
+                    && invoiceStatus.equals("unpaid")) {
+                Double difference;
+                difference = totalCost - Double.valueOf(paidAmount == null ? "0.0" : paidAmount);
+                amount_due_value.setText(difference.toString());
+                amountText.setText(amount_due_value.getText());
             }
         } else {
             amountText.setVisibility(View.GONE);
@@ -283,14 +334,30 @@ public class InvoicePayActivity extends BaseActivity implements
             paymentRadioGroup.setVisibility(View.GONE);
             amount_due_header.setVisibility(View.GONE);
             amount_due_value.setVisibility(View.GONE);
+            viewProductsButton.setVisibility(View.GONE);
         }
+
+        orderSummaryAdapter = new OrderSummaryAdapter();
+        executor = Executors.newSingleThreadExecutor();
+        orderSummaryAdapter.setExecutor(executor);
+
+        findViewById(R.id.order_summary_wrapper).bringToFront();
 
         registerReceiver();
         selectedCustomer.setOnClickListener(view -> {
-            customerAutoCompleteDialog.show(getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+            customerAutoCompleteDialog.show(getSupportFragmentManager(),
+                    CustomerAutoCompleteDialog.TAG);
         });
         if(isOnline(this)) {
-            getInvoiceMessage();
+            if (invoiceId <= 0 ) {
+                getInvoiceMessage();
+            }
+            else {
+                String message = getIntent().getStringExtra(Constants.INVOICE_MESSAGE);
+                if (message.length() > 0) {
+                    paymentMessage.setText(message);
+                }
+            }
         }
         getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
@@ -299,6 +366,45 @@ public class InvoicePayActivity extends BaseActivity implements
         builder = new AlertDialog.Builder(this);
         builder.setView(R.layout.layout_loading_dialog);
         dialog = builder.create();
+
+        EmptyRecyclerView orderSummaryRecyclerView =
+                findViewById(R.id.order_list);
+        assert orderSummaryRecyclerView != null;
+        setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
+        setUpBottomSheetView();
+
+    }
+
+    @Override
+    protected void setupToolbar() {
+        super.setupToolbar();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private void goToViewProductsActivity() {
+        HashMap<Integer, Integer> orderproducts = new HashMap<>(mSelectedProductsArray.size());
+        for (int i = 0; i < mSelectedProductsArray.size(); i++) {
+            orderproducts.put(
+                    mSelectedProductsArray.keyAt(i),
+                    mSelectedProductsArray.valueAt(i)
+            );
+        }
+
+        Intent intent = new Intent (this, InvoiceProductActivity.class);
+        intent.putExtra("PRODUCTS_ARRAY", orderproducts);
+        intent.putExtra(Constants.CUSTOMER_ID, customerId);
+        intent.putExtra(Constants.INVOICE_ID, invoiceId);
+        startActivity(intent);
+    }
+
+    private void toggleBottomSheet() {
+        if (orderSummaryBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED){
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
     }
 
     private void registerReceiver() {
@@ -312,6 +418,7 @@ public class InvoicePayActivity extends BaseActivity implements
         Intent intent = new Intent(this, BackgroundNotificationService.class);
         intent.putExtra(Constants.INVOICE_ID, invoiceId);
         intent.putExtra(Constants.INVOICE_NUMBER, invoiceNumber);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startService(intent);
     }
 
@@ -322,9 +429,13 @@ public class InvoicePayActivity extends BaseActivity implements
             if (intent.getAction().equals(PROGRESS_UPDATE)) {
                 boolean downloadComplete = intent.getBooleanExtra("downloadComplete", false);
                 if (downloadComplete ) {
-                    Toast.makeText(getApplicationContext(), "File download completed", Toast.LENGTH_SHORT).show();
-                    Intent merchantIntent = new Intent(getApplicationContext(), InvoiceListActivity.class);
-                    startActivity(merchantIntent);
+                    Toast.makeText(context, "File download completed",
+                            Toast.LENGTH_SHORT).show();
+                    intent = new Intent(getApplicationContext(),
+                            InvoiceListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP );
+                    startActivity(intent);
                 }
             }
         }
@@ -332,10 +443,28 @@ public class InvoicePayActivity extends BaseActivity implements
 
     @Override
     protected void onResume() {
-        super.onResume();
-
+        List<InvoiceTransactionEntity> entities =
+                mDatabaseManager.getInvoiceTransaction(invoiceId);
+        for (InvoiceTransactionEntity entity: entities) {
+            mSelectedProductsArray.put(
+                    entity.getProductId(),
+                    entity.getQuantity());
+        }
+        orderSummaryAdapter.queryAsync();
+        if (hasSharedToWhatsapp) {
+            Toast.makeText(this, "Invoice has been shared to Whatsapp", Toast.LENGTH_SHORT).show();
+            completePaymentButton.setEnabled(false);
+            hasSharedToWhatsapp = false;
+            final Handler handler  = new Handler();
+            handler.postDelayed(() -> {
+                Intent merchantIntent = new Intent(this, MerchantBackOfficeActivity.class);
+                merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(merchantIntent);
+            }, 2000);
+        }
         registerReceiver(createInvoiceStarted, new IntentFilter(Constants.CREATE_INVOICE_STARTED));
         registerReceiver(createInvoiceEnded, new IntentFilter(Constants.CREATE_INVOICE_ENDED));
+        super.onResume();
     }
 
     @Override
@@ -397,7 +526,12 @@ public class InvoicePayActivity extends BaseActivity implements
                 }
                 return true;
             case R.id.action_delete:
-                deleteInvoice(invoiceId);
+                if (isOnline(this)) {
+                    deleteInvoice(invoiceId);
+                } else {
+                    Snackbar.make(mLayout,
+                            "Please connect to the internet", Snackbar.LENGTH_SHORT).show();
+                }
                 return true;
             case R.id.action_share_to_whatsapp:
                 if (isOnline(this)) {
@@ -425,16 +559,6 @@ public class InvoicePayActivity extends BaseActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem deleteItem = menu.findItem(R.id.action_delete);
-        MenuItem shareItem = menu.findItem(R.id.action_share_invoice);
-        MenuItem shareItemWhatsapp = menu.findItem(R.id.action_share_to_whatsapp);
-        MenuItem downloadPdfmenu = menu.findItem(R.id.action_download_pdf);
-        if (invoiceId <= 0) {
-            deleteItem.setEnabled(false);
-            shareItem.setEnabled(false);
-            shareItemWhatsapp.setEnabled(false);
-            downloadPdfmenu.setEnabled(false);
-        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -446,12 +570,13 @@ public class InvoicePayActivity extends BaseActivity implements
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.code() == 200) {
+                        if (response.isSuccessful()) {
                             dialog.dismiss();
                             Toast.makeText(getApplicationContext(),
                                     "Invoice sent to the email",
                                     Toast.LENGTH_SHORT).show();
                             Intent merchantIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                            merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(merchantIntent);
                         }else {
                             dialog.dismiss();
@@ -493,6 +618,7 @@ public class InvoicePayActivity extends BaseActivity implements
 
     private void deleteInvoice(int id) {
         dialog.setTitle("Deleting invoice");
+        dialog.setCancelable(false);
         dialog.show();
         InvoiceEntity invoiceEntity = databaseManager.getInvoiceById(id);
         mApiClient
@@ -507,6 +633,7 @@ public class InvoicePayActivity extends BaseActivity implements
                     Toast.makeText(getApplicationContext(),
                             "Invoice Deleted", Toast.LENGTH_SHORT).show();
                     Intent merchantIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                    merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(merchantIntent);
                     SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
                 }else {
@@ -533,134 +660,142 @@ public class InvoicePayActivity extends BaseActivity implements
         if (amountText.getText().length() < 1) {
             amountText.setText("0.0");
         } else if (paymentMessage.getText().length() < 1) {
-            paymentMessage.setText("");
-        } else if (payment_option == null) {
-            payment_option = "";
-        }
-        InvoiceEntity invoiceEntity = databaseManager.getInvoiceById(id);
-        invoiceEntity.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
-        invoiceEntity.setPaymentMethod(payment_option);
-        invoiceEntity.setPaidAmount(amountText.getText().toString());
-        invoiceEntity.setSynced(true);
-        invoiceEntity.setOwner(merchantEntity);
-        invoiceEntity.setCustomer(mSelectedCustomer);
-        invoiceEntity.setDueDate(due_date);
-        invoiceEntity.setPaymentMessage(paymentMessage.getText().toString());
-
-        mDataStore.update(invoiceEntity).subscribe(updatedInvoiceEntity -> {
-            try{
-
-                JSONObject jsonObjectData = new JSONObject();
-                if (paidAmount == null) {
-                    paidAmount ="0.0";
-                }
-                double total  = Double.valueOf(
-                        updatedInvoiceEntity.getPaidAmount()) + Double.valueOf(paidAmount);
-                if (total
-                        >= Double.valueOf(updatedInvoiceEntity.getAmount())) {
-                    jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
-                    jsonObjectData.put("status", "paid");
-                }
-                else if ( total
-                        < Double.valueOf(updatedInvoiceEntity.getAmount())) {
-                    jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
-                    jsonObjectData.put("status", "partial");
-                }else {
-                    jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
-                    jsonObjectData.put("status", "unpaid");
-                }
-
-                jsonObjectData.put("payment_method", updatedInvoiceEntity.getPaymentMethod());
-                jsonObjectData.put("payment_message", updatedInvoiceEntity.getPaymentMessage());
-
-                JSONArray jsonArray = new JSONArray();
-                for (InvoiceTransactionEntity transactionEntity: updatedInvoiceEntity.getTransactions()) {
-                    LoyaltyProgramEntity programEntity =
-                            mDatabaseManager.getLoyaltyProgramById(
-                                    transactionEntity.getMerchantLoyaltyProgramId());
-                    if (programEntity != null) {
-                        JSONObject jsonObject = new JSONObject();
-
-                        if (transactionEntity.getUserId() > 0) {
-                            jsonObject.put("user_id", transactionEntity.getUserId());
-                        }
-                        jsonObject.put("merchant_id", merchantEntity.getId());
-                        jsonObject.put("amount", transactionEntity.getAmount());
-
-                        if (transactionEntity.getProductId() > 0) {
-                            jsonObject.put("id", transactionEntity.getProductId());
-                        }
-                        jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
-                        jsonObject.put("program_type", transactionEntity.getProgramType());
-
-                        if (programEntity.getProgramType().equals(getString(R.string.simple_points))) {
-                            jsonObject.put("points", transactionEntity.getPoints());
-                        }
-                        else if (programEntity.getProgramType().equals(getString(R.string.stamps_program))) {
-                            jsonObject.put("stamps", transactionEntity.getStamps());
-                        }
-                        jsonArray.put(jsonObject);
-                    }
-                }
-
-                jsonObjectData.put("items", jsonArray);
-                JSONObject requestData = new JSONObject();
-                requestData.put("data", jsonObjectData);
-                Log.e("reques", requestData + "");
-
-                RequestBody requestBody = RequestBody
-                        .create(MediaType.parse(
-                                "application/json; charset=utf-8"), requestData.toString());
-                mApiClient.getLoystarApi(false)
-                        .updateInvoice(
-                        updatedInvoiceEntity.getId(), requestBody).enqueue(new Callback<Invoice>() {
-                    @Override
-                    public void onResponse(Call<Invoice> call, Response<Invoice> response) {
-                        if (response.isSuccessful()) {
-                            dialog.dismiss();
-                            Toast.makeText(getApplicationContext(),
-                                    "Invoice has been updated successfully", Toast.LENGTH_SHORT).show();
-                            Invoice invoice = response.body();
-                            updatedInvoiceEntity.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
-                            updatedInvoiceEntity.setPaymentMethod(payment_option);
-                            updatedInvoiceEntity.setPaidAmount(invoice.getPaidAmount());
-                            updatedInvoiceEntity.setSynced(true);
-                            updatedInvoiceEntity.setStatus(invoice.getStatus());
-                            updatedInvoiceEntity.setOwner(merchantEntity);
-                            updatedInvoiceEntity.setCustomer(mSelectedCustomer);
-                            updatedInvoiceEntity.setPaymentMessage(invoice.getPaymentMessage());
-                            mDataStore.upsert(updatedInvoiceEntity).subscribe( up -> {
-                                List<InvoicePaymentHistoriesItem> item = invoice.getInvoicePaymentHistories();
-                                    for (InvoicePaymentHistoriesItem entity: item) {
-                                        InvoiceHistoryEntity historyEntity = new InvoiceHistoryEntity();
-                                        historyEntity.setId(entity.getId());
-                                        historyEntity.setInvoice(updatedInvoiceEntity);
-                                        historyEntity.setPaidAmount(entity.getPaidAmount());
-                                        historyEntity.setPaidAt(entity.getPaidAt());
-                                        mDataStore.upsert(historyEntity).subscribe();
-                                    }
-                                    }
-                            );
-                            SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
-                            Intent nextIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
-                            startActivity(nextIntent);
-
-                        }else {
-                            dialog.dismiss();
-                            Toast.makeText(getApplicationContext(),
-                                    "Invoice could not be updated", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Invoice> call, Throwable t) {
-
-                    }
-                });
-            } catch (JSONException e) {
-                Timber.e(e);
+            if (dialog.isShowing()) {
+                dialog.dismiss();
             }
-        });
+            Snackbar.make(mLayout, "Payment message can't be blank", Snackbar.LENGTH_SHORT).show();
+        } else if (payment_option == null) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            Snackbar.make(mLayout, "Please choose a payment type", Snackbar.LENGTH_SHORT).show();
+        } else {
+            InvoiceEntity invoiceEntity = databaseManager.getInvoiceById(id);
+            invoiceEntity.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
+            invoiceEntity.setPaymentMethod(payment_option);
+            invoiceEntity.setPaidAmount(amountText.getText().toString());
+            invoiceEntity.setSynced(true);
+            invoiceEntity.setOwner(merchantEntity);
+            invoiceEntity.setCustomer(mSelectedCustomer);
+            invoiceEntity.setDueDate(due_date);
+            invoiceEntity.setPaymentMessage(paymentMessage.getText().toString());
+
+            mDataStore.update(invoiceEntity).subscribe(updatedInvoiceEntity -> {
+                try{
+
+                    JSONObject jsonObjectData = new JSONObject();
+                    if (paidAmount == null) {
+                        paidAmount ="0.0";
+                    }
+                    double total  = Double.valueOf(
+                            updatedInvoiceEntity.getPaidAmount()) + Double.valueOf(paidAmount);
+                    if (total
+                            >= Double.valueOf(updatedInvoiceEntity.getAmount())) {
+                        jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
+                        jsonObjectData.put("status", "paid");
+                    }
+                    else if ( total
+                            < Double.valueOf(updatedInvoiceEntity.getAmount())) {
+                        jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
+                        jsonObjectData.put("status", "partial");
+                    }else {
+                        jsonObjectData.put("paid_amount", updatedInvoiceEntity.getPaidAmount());
+                        jsonObjectData.put("status", "unpaid");
+                    }
+
+                    jsonObjectData.put("payment_method", updatedInvoiceEntity.getPaymentMethod());
+                    jsonObjectData.put("payment_message", updatedInvoiceEntity.getPaymentMessage());
+
+                    JSONArray jsonArray = new JSONArray();
+                    for (InvoiceTransactionEntity transactionEntity: updatedInvoiceEntity.getTransactions()) {
+                        LoyaltyProgramEntity programEntity =
+                                mDatabaseManager.getLoyaltyProgramById(
+                                        transactionEntity.getMerchantLoyaltyProgramId());
+                        if (programEntity != null) {
+                            JSONObject jsonObject = new JSONObject();
+
+                            if (transactionEntity.getUserId() > 0) {
+                                jsonObject.put("user_id", transactionEntity.getUserId());
+                            }
+                            jsonObject.put("merchant_id", merchantEntity.getId());
+                            jsonObject.put("amount", transactionEntity.getAmount());
+
+                            if (transactionEntity.getProductId() > 0) {
+                                jsonObject.put("id", transactionEntity.getProductId());
+                            }
+                            jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                            jsonObject.put("program_type", transactionEntity.getProgramType());
+
+                            if (programEntity.getProgramType().equals(getString(R.string.simple_points))) {
+                                jsonObject.put("points", transactionEntity.getPoints());
+                            }
+                            else if (programEntity.getProgramType().equals(getString(R.string.stamps_program))) {
+                                jsonObject.put("stamps", transactionEntity.getStamps());
+                            }
+                            jsonArray.put(jsonObject);
+                        }
+                    }
+
+                    jsonObjectData.put("items", jsonArray);
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("data", jsonObjectData);
+
+                    RequestBody requestBody = RequestBody
+                            .create(MediaType.parse(
+                                    "application/json; charset=utf-8"), requestData.toString());
+                    mApiClient.getLoystarApi(false)
+                            .updateInvoice(
+                            updatedInvoiceEntity.getId(), requestBody).enqueue(new Callback<Invoice>() {
+                        @Override
+                        public void onResponse(Call<Invoice> call, Response<Invoice> response) {
+                            if (response.isSuccessful()) {
+                                dialog.dismiss();
+                                Toast.makeText(getApplicationContext(),
+                                        "Invoice has been updated successfully", Toast.LENGTH_SHORT).show();
+                                Invoice invoice = response.body();
+                                updatedInvoiceEntity.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
+                                updatedInvoiceEntity.setPaymentMethod(payment_option);
+                                updatedInvoiceEntity.setPaidAmount(invoice.getPaidAmount());
+                                updatedInvoiceEntity.setSynced(true);
+                                updatedInvoiceEntity.setStatus(invoice.getStatus());
+                                updatedInvoiceEntity.setOwner(merchantEntity);
+                                updatedInvoiceEntity.setCustomer(mSelectedCustomer);
+                                updatedInvoiceEntity.setDueDate(invoice.getDueDate());
+                                updatedInvoiceEntity.setPaymentMessage(invoice.getPaymentMessage());
+                                mDataStore.upsert(updatedInvoiceEntity).subscribe( up -> {
+                                    List<InvoicePaymentHistoriesItem> item = invoice.getInvoicePaymentHistories();
+                                        for (InvoicePaymentHistoriesItem entity: item) {
+                                            InvoiceHistoryEntity historyEntity = new InvoiceHistoryEntity();
+                                            historyEntity.setId(entity.getId());
+                                            historyEntity.setInvoice(updatedInvoiceEntity);
+                                            historyEntity.setPaidAmount(entity.getPaidAmount());
+                                            historyEntity.setPaidAt(entity.getPaidAt());
+                                            mDataStore.upsert(historyEntity).subscribe();
+                                        }
+                                        }
+                                );
+                                SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
+                                Intent nextIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                                nextIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(nextIntent);
+
+                            }else {
+                                dialog.dismiss();
+                                Toast.makeText(getApplicationContext(),
+                                        "Invoice could not be updated", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<Invoice> call, Throwable t) {
+
+                        }
+                    });
+                } catch (JSONException e) {
+                    Timber.e(e);
+                }
+            });
+        }
     }
 
     private void getInvoiceMessage() {
@@ -669,7 +804,12 @@ public class InvoicePayActivity extends BaseActivity implements
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(response -> {
-                    paymentMessage.setText(response.getMessage());
+                    if (response.isSuccessful()) {
+                        PaymentMessage newPaymentMessage = response.body();
+                        paymentMessage.setText(newPaymentMessage.getMessage());
+                    } else {
+                        paymentMessage.setText(null);
+                    }
                 });
     }
 
@@ -677,7 +817,17 @@ public class InvoicePayActivity extends BaseActivity implements
     private void createInvoice() {
         dialog.show();
         if (invoiceId > 0) {
-            updateInvoice(invoiceId);
+            if (isOnline(this)) {
+                updateInvoice(invoiceId);
+            } else {
+                Snackbar.make(mLayout,
+                        "Please connect to the internet", Snackbar.LENGTH_SHORT).show();
+            }
+        } else if (paymentMessage.getText().length() == 0) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            Snackbar.make(mLayout, "Payment message can't be blank", Snackbar.LENGTH_SHORT).show();
         }
         else {
         Integer lastInvoiceId = databaseManager.getLastInvoiceRecordId();
@@ -702,25 +852,12 @@ public class InvoicePayActivity extends BaseActivity implements
                         .orderBy(ProductEntity.UPDATED_AT.desc())
                         .get();
                 List<ProductEntity> productEntities = result.toList();
-                Integer lastTransactionId = databaseManager.getLastInvoiceTransactionRecordId();
-                ArrayList<Integer> newTransactionIds = new ArrayList<>();
-                for (int x = 0; x < productEntities.size(); x++) {
-                    if (lastTransactionId == null) {
-                        newTransactionIds.add(x, x + 1);
-                    } else {
-                        newTransactionIds.add(x, (lastTransactionId + x + 1));
-                    }
-                }
-
-
                 for (int i = 0; i < productEntities.size(); i++) {
                     ProductEntity product = productEntities.get(i);
                     LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
 
-
                     if (loyaltyProgram != null) {
                         InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
-                        transactionEntity.setId(newTransactionIds.get(i));
                         transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
 
                         String template = "%.2f";
@@ -730,10 +867,10 @@ public class InvoicePayActivity extends BaseActivity implements
 
                         if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
                             transactionEntity
-                                    .setPoints(Double.valueOf(totalCost).intValue());
+                                    .setPoints(Double.valueOf(totalCosts).intValue());
                             transactionEntity.setProgramType(getString(R.string.simple_points));
                         } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
-                            int stampsEarned = mSelectedProducts.get(product.getId());
+                            int stampsEarned = mSelectedProductHash.get(product.getId());
                             transactionEntity.setStamps(stampsEarned);
                             transactionEntity.setProgramType(getString(R.string.stamps_program));
                         }
@@ -747,6 +884,7 @@ public class InvoicePayActivity extends BaseActivity implements
                         transactionEntity.setSynced(false);
                         transactionEntity.setMerchant(merchantEntity);
                         transactionEntity.setInvoice(invoiceEntity);
+                        transactionEntity.setQuantity(mSelectedProductHash.get(product.getId()));
                         mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
 
                         if (i + 1 == productEntities.size()) {
@@ -756,11 +894,18 @@ public class InvoicePayActivity extends BaseActivity implements
                                     .doOnComplete(() -> {
                                         if (isOnline(this)) {
                                             uploadNewinvoices();
-                                            SyncAdapter.performSync(this, mSessionManager.getEmail());
                                         } else {
-                                            dialog.dismiss();
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(getApplicationContext(),
+                                                            "Invoice saved successfully", Toast.LENGTH_LONG).show();
+                                                    dialog.dismiss();
+                                                }
+                                            });
                                             SyncAdapter.performSync(this, mSessionManager.getEmail());
                                             Intent merchantIntent = new Intent(this, MerchantBackOfficeActivity.class);
+                                            merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                             startActivity(merchantIntent);
                                         }
                                     }).subscribe();
@@ -843,96 +988,141 @@ public class InvoicePayActivity extends BaseActivity implements
                         jsonArray.put(jsonObject);
                     }
                 }
-                jsonObjectData.put("transactions", jsonArray);
-                JSONObject requestData = new JSONObject();
-                requestData.put("data", jsonObjectData);
+                    jsonObjectData.put("transactions", jsonArray);
+                    JSONObject requestData = new JSONObject();
+                    requestData.put("data", jsonObjectData);
 
-                RequestBody requestBody = RequestBody
-                        .create(MediaType.parse(
-                                "application/json; charset=utf-8"), requestData.toString());
+                    RequestBody requestBody = RequestBody
+                            .create(MediaType.parse(
+                                    "application/json; charset=utf-8"), requestData.toString());
 
-                mApiClient
-                        .getLoystarApi(false)
-                        .createInvoice(requestBody).enqueue(new Callback<Invoice>() {
-                    @Override
-                    public void onResponse(Call<Invoice> call, Response<Invoice> response) {
-                        if (response.isSuccessful()) {
-                            Invoice invoice = response.body();
-                            invoiceNumber = invoice.getNumber();
-                            dialog.dismiss();
-                            showChoiceDialog();
-                            if (invoice != null) {
-                                for (int i=0; i < invoiceEntity.getTransactions().size(); i++) {
-                                    mDataStore.delete(invoiceEntity.getTransactions().get(i)).subscribe();
-                                    if (i +1 == invoiceEntity.getTransactions().size()) {
-                                        String query = "DELETE FROM Invoice WHERE ROWID=" + invoiceEntity.getId();
-                                        ReactiveResult<Tuple> result = mDataStore.raw(query);
-                                        if (result != null && result.first() != null) {
-                                            try {
-                                                Integer deletedEntity = result.first().get(0);
-                                                Timber.e("DELETED INVOICE: %s", deletedEntity);
-                                            } catch (ClassCastException e) {
+                    mApiClient
+                            .getLoystarApi(false)
+                            .createInvoice(requestBody).enqueue(new Callback<Invoice>() {
+                        @Override
+                        public void onResponse(Call<Invoice> call, Response<Invoice> response) {
+                            if (response.isSuccessful()) {
+                                Invoice invoice = response.body();
+                                invoiceNumber = invoice.getNumber();
+                                Toast.makeText(getApplicationContext(),
+                                        "Invoice created successfully", Toast.LENGTH_LONG).show();
+                                dialog.dismiss();
+                                SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
+                                showChoiceDialog();
+                                if (invoice != null) {
+
+                                    for (int i=0; i < invoiceEntity.getTransactions().size(); i++) {
+                                        mDataStore.delete(invoiceEntity.getTransactions().get(i)).subscribe();
+                                        if (i +1 == invoiceEntity.getTransactions().size()) {
+                                            String query = "DELETE FROM Invoice WHERE ROWID=" + invoiceEntity.getId();
+                                            ReactiveResult<Tuple> result = mDataStore.raw(query);
+                                            if (result != null && result.first() != null) {
                                                 try {
-                                                    Long deletedEntity = result.first().get(0);
+                                                    Integer deletedEntity = result.first().get(0);
                                                     Timber.e("DELETED INVOICE: %s", deletedEntity);
-                                                } catch (ClassCastException e1) {
-                                                    e1.printStackTrace();
+                                                } catch (ClassCastException e) {
+                                                    try {
+                                                        Long deletedEntity = result.first().get(0);
+                                                        Timber.e("DELETED INVOICE: %s", deletedEntity);
+                                                    } catch (ClassCastException e1) {
+                                                        e1.printStackTrace();
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                CustomerEntity customerEntity = mDatabaseManager
-                                        .getCustomerByUserId(invoice.getCustomer().getUser_id());
-                                InvoiceEntity newInvoiceEntity =  new InvoiceEntity();
-                                newInvoiceEntity.setId(invoice.getId());
-                                newInvoiceEntity.setAmount(invoice.getSubtotal());
-                                newInvoiceEntity.setSubTotal(invoice.getSubtotal());
-                                newInvoiceEntity.setCreatedAt(new Timestamp(invoice.getCreatedAt().getMillis()));
-                                newInvoiceEntity.setUpdatedAt(new Timestamp(invoice.getUpdatedAt().getMillis()));
-                                newInvoiceEntity.setCustomer(customerEntity);
-                                newInvoiceEntity.setSynced(true);
-                                newInvoiceEntity.setNumber(invoice.getNumber());
-                                newInvoiceEntity.setStatus(invoice.getStatus());
-                                newInvoiceEntity.setOwner(merchantEntity);
-                                newInvoiceEntity.setDueDate(invoice.getDueDate());
-                                newInvoiceEntity.setPaymentMessage(invoice.getPaymentMessage());
+                                    CustomerEntity customerEntity = mDatabaseManager
+                                            .getCustomerByUserId(invoice.getCustomer().getUser_id());
+                                    InvoiceEntity newInvoiceEntity =  new InvoiceEntity();
+                                    newInvoiceEntity.setId(invoice.getId());
+                                    newInvoiceEntity.setAmount(invoice.getSubtotal());
+                                    newInvoiceEntity.setSubTotal(invoice.getSubtotal());
+                                    newInvoiceEntity.setCreatedAt(new Timestamp(invoice.getCreatedAt().getMillis()));
+                                    newInvoiceEntity.setUpdatedAt(new Timestamp(invoice.getUpdatedAt().getMillis()));
+                                    newInvoiceEntity.setCustomer(customerEntity);
+                                    newInvoiceEntity.setSynced(true);
+                                    newInvoiceEntity.setNumber(invoice.getNumber());
+                                    newInvoiceEntity.setStatus(invoice.getStatus());
+                                    newInvoiceEntity.setOwner(merchantEntity);
+                                    newInvoiceEntity.setDueDate(invoice.getDueDate());
+                                    newInvoiceEntity.setPaymentMessage(invoice.getPaymentMessage());
 
-                                mDataStore.upsert(newInvoiceEntity).subscribe(invoiceEntity -> {
-                                    for (ItemsItem transaction: invoice.getItems()) {
-                                        InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
-                                        transactionEntity.setId(invoice.getId());
-                                        transactionEntity.setUserId(invoice.getCustomer().getUser_id());
-                                        transactionEntity.setMerchantLoyaltyProgramId(
-                                                transaction.getProduct().getMerchant_loyalty_program_id());
-                                        transactionEntity.setAmount(Double.valueOf(invoice.getSubtotal()).intValue());
-                                        transactionEntity.setMerchant(merchantEntity);
-                                        transactionEntity.setProductId(transaction.getProduct().getId());
-                                        transactionEntity.setCustomer(customerEntity);
-                                        transactionEntity.setInvoice(invoiceEntity);
-                                        mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
-                                    }
-                                });
+                                    mDataStore.upsert(newInvoiceEntity).subscribe(invoiceEntity -> {
+                                        for (ItemsItem transaction: invoice.getItems()) {
+                                            InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
+                                            transactionEntity.setAmount(Double.valueOf(transaction.getAmount()));
+                                            transactionEntity.setProductId(transaction.getProduct().getId());
+                                            transactionEntity.setMerchant(merchantEntity);
+                                            transactionEntity.setInvoice(invoiceEntity);
+                                            transactionEntity.setCustomer(customerEntity);
+                                            transactionEntity.setQuantity(transaction.getQuantity());
+                                            transactionEntity.setUserId(invoice.getCustomer().getUser_id());
+                                            transactionEntity.setMerchantLoyaltyProgramId(
+                                                    transaction.getProduct().getMerchant_loyalty_program_id());
+
+                                            mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+                                        }
+
+                                    });
+                                }
                             }
-                        } else {
-                            try {
+                            else if (response.code() == 500) {
                                 if (dialog.isShowing()) {
                                     dialog.dismiss();
                                 }
-                            } catch (Exception exception) {
-                                Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                                Snackbar.make(mLayout,
+                                        "Invoice could not be created", Snackbar.LENGTH_LONG).show();
+                            }
+                            else {
+                                try {
+                                    if (dialog.isShowing()) {
+                                        dialog.dismiss();
+                                    }
+                                    JSONObject jObjError = new JSONObject(response.errorBody().string());
+                                    String error = jObjError.getString("error");
+                                    Snackbar.make(mLayout, error , Snackbar.LENGTH_INDEFINITE)
+                                            .setAction("Upgrade", view -> {
+                                                Intent merchantIntent = new Intent(getApplicationContext(),
+                                                        PaySubscriptionActivity.class);
+                                                startActivity(merchantIntent);
+                                            }).show();
+                                    completePaymentButton.setEnabled(false);
+                                    for (int i=0; i < invoiceEntity.getTransactions().size(); i++) {
+                                        mDataStore.delete(invoiceEntity.getTransactions().get(i)).subscribe();
+                                        if (i +1 == invoiceEntity.getTransactions().size()) {
+                                            String query = "DELETE FROM Invoice WHERE ROWID=" + invoiceEntity.getId();
+                                            ReactiveResult<Tuple> result = mDataStore.raw(query);
+                                            if (result != null && result.first() != null) {
+                                                try {
+                                                    Integer deletedEntity = result.first().get(0);
+                                                    Timber.e("DELETED INVOICE: %s", deletedEntity);
+                                                } catch (ClassCastException e) {
+                                                    try {
+                                                        Long deletedEntity = result.first().get(0);
+                                                        Timber.e("DELETED INVOICE: %s", deletedEntity);
+                                                    } catch (ClassCastException e1) {
+                                                        e1.printStackTrace();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception exception) {
+                                    Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<Invoice> call, Throwable t) {
-                        if (dialog.isShowing()) {
-                            dialog.dismiss();
+                        @Override
+                        public void onFailure(Call<Invoice> call, Throwable t) {
+                            if (dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+                            Timber.e(t);
                         }
-                        Timber.e(t);
-                    }
-                });
+                    });
+
+//                }
             } catch (JSONException e) {
                 Timber.e(e);
             }
@@ -947,29 +1137,26 @@ public class InvoicePayActivity extends BaseActivity implements
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(response -> {
-                    Log.e("ddd", response.getMessage());
                     shareToWhatsApp(response.getMessage());
-//                    Intent invoiceIntent = new Intent(this, InvoiceListActivity.class);
-//                    startActivity(invoiceIntent);
                 });
     }
 
     private void shareToWhatsApp(String url) {
         if (url != null) {
             try{
-//                dialog.setTitle("Sending Invoice Payment to whatsapp");
-//                dialog.show();
                 String toNumber = mSelectedCustomer.getPhoneNumber().substring(1);
                 String encodedString = URLEncoder.encode( "Hello " +
-                        mSelectedCustomer.getLastName()
-                        + " " + mSelectedCustomer.getFirstName() + ", please download the invoice "
-                        + invoiceNumber + " from the SHACK: ", "UTF-8");
+                        mSelectedCustomer.getLastName().toUpperCase()
+                        + " " + mSelectedCustomer.getFirstName().toUpperCase() + ", here is an invoice - "
+                        + invoiceNumber + " from " + mSessionManager.getBusinessName()
+                        + " Please download to view: ", "UTF-8");
                 String message = "http://api.whatsapp.com/send?phone=" + toNumber + "&text=" +
                         encodedString + url;
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(message));
-                Log.e("MESSAGE", message );
-                startActivity(intent);
+                hasSharedToWhatsapp = true;
+
+                startActivityForResult(intent, 1000);
                 if (dialog.isShowing()) {
                     dialog.dismiss();
                 }
@@ -981,9 +1168,12 @@ public class InvoicePayActivity extends BaseActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.share_invoice_to_customer, menu);
-        return true;
+        if (invoiceId > 0) {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.share_invoice_to_customer, menu);
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
     }
 
 
@@ -996,11 +1186,14 @@ public class InvoicePayActivity extends BaseActivity implements
     public void showChoiceDialog() {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this);
-        builder.setTitle("Do you want to send the invoice? ");
+        builder.setTitle("Invoice created successfully");
+        builder.setMessage("Do you want to send?");
         builder.setPositiveButton("Yes", null);
+        builder.setCancelable(false);
         builder.setNegativeButton("No", ((dialog, i) -> {
             dialog.dismiss();
             Intent intent = new Intent(this, MerchantBackOfficeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }));
 
@@ -1021,12 +1214,11 @@ public class InvoicePayActivity extends BaseActivity implements
         sendInvoiceToCustomer(lastInvoiceId);
     }
 
-//    @Override
-//    public void onSendWithWhatsapp() {
-//        Integer lastInvoiceId = databaseManager.getLastInvoiceRecordId();
-//        Log.e("last", lastInvoiceId + "");
-//        downloadPdf(lastInvoiceId);
-//    }
+    @Override
+    public void onSendWithWhatsapp() {
+        Integer lastInvoiceId = databaseManager.getLastInvoiceRecordId();
+        downloadPdf(lastInvoiceId);
+    }
 
     @Override
     public void onDownloadPdf() {
@@ -1036,6 +1228,17 @@ public class InvoicePayActivity extends BaseActivity implements
             startInvoiceDownload(lastInvoiceId);
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode,
+                                    int resultCode,
+                                    @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1000) {
+            }
+        }
     }
 
     public  boolean isStoragePermissionGranted() {
@@ -1064,7 +1267,385 @@ public class InvoicePayActivity extends BaseActivity implements
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-            startInvoiceDownload(invoiceId);
+            Integer lastInvoiceId = databaseManager.getLastInvoiceRecordId();
+            startInvoiceDownload(invoiceId == 0 ? lastInvoiceId : invoiceId);
+        }
+    }
+
+    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<OrderSummaryItemBinding>> {
+
+
+        OrderSummaryAdapter() {
+            super(ProductEntity.$TYPE);
+        }
+
+
+        @Override
+        public Result<ProductEntity> performQuery() {
+            ArrayList<Integer> ids = new ArrayList<>();
+            for (int i = 0; i < mSelectedProductsArray.size(); i++) {
+                ids.add(mSelectedProductsArray.keyAt(i));
+            }
+            return mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(ids))
+                    .orderBy(ProductEntity.UPDATED_AT.desc())
+                    .get();
+        }
+
+        @SuppressLint("CheckResult")
+        @Override
+        public void onBindViewHolder(ProductEntity item,
+                                     BindingHolder<OrderSummaryItemBinding> holder,
+                                     int position) {
+            holder.binding.setProduct(item);
+            RequestOptions options = new RequestOptions();
+            options.fitCenter().centerCrop().apply(RequestOptions.placeholderOf(
+                    AppCompatResources.getDrawable(
+                            getApplicationContext(),
+                            R.drawable.ic_photo_black_24px)
+            ));
+            Glide.with(getApplicationContext())
+                    .load(item.getPicture())
+                    .apply(options)
+                    .into(holder.binding.productImage);
+            holder.binding.productName.setText(item.getName());
+            holder.binding.deleteCartItem.setImageDrawable(AppCompatResources
+                    .getDrawable(getApplicationContext(), R.drawable.ic_close_white_24px));
+            holder.binding.orderItemIncDecBtn.setNumber(String.valueOf(mSelectedProductsArray.get(item.getId())));
+
+            String template = "%.2f";
+            double totalCostOfItem = item.getPrice() * mSelectedProductsArray.get(item.getId());
+            String cText = String.format(Locale.UK, template, totalCostOfItem);
+            holder.binding.productCost.setText(getString(R.string.product_price, merchantCurrencySymbol, cText));
+
+        }
+
+        @NonNull
+        @Override
+        public BindingHolder<OrderSummaryItemBinding> onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            final OrderSummaryItemBinding binding = OrderSummaryItemBinding.inflate(inflater);
+            binding.getRoot().setTag(binding);
+            binding.deleteCartItem.setTag(binding);
+
+            binding.deleteCartItem.setOnClickListener(view ->
+                new AlertDialog.Builder(InvoicePayActivity.this)
+                                .setTitle("Are you sure?")
+                                .setMessage("This item will be permanently removed from your cart!")
+                                .setCancelable(false)
+                                .setPositiveButton("Yes", (dialog, which) -> {
+                                    OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
+                                    if (orderSummaryItemBinding != null && orderSummaryItemBinding.getProduct() != null) {
+                                        mSelectedProductsArray.delete(orderSummaryItemBinding.getProduct().getId());
+                                        orderSummaryAdapter.queryAsync();
+                                        setCheckoutValue();
+                                    }
+                                })
+                .setNegativeButton("Cancel", (dialogInterface, i1) -> dialogInterface.cancel())
+                .setIcon(AppCompatResources.getDrawable(getApplicationContext(), android.R.drawable.ic_dialog_alert))
+                .show());
+
+
+            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue)
+                    -> setProductCountValue(newValue, binding.getProduct().getId()));
+            return new BindingHolder<>(binding);
+        }
+    }
+
+    private void setProductCountValue(int newValue, int productId) {
+        if (newValue > 0){
+            mSelectedProductsArray.put(productId, newValue);
+            orderSummaryAdapter.queryAsync();
+            setCheckoutValue();
+        } else {
+            mSelectedProductsArray.delete(productId);
+            orderSummaryAdapter.queryAsync();
+            setCheckoutValue();
+        }
+    }
+
+    private void setCheckoutValue() {
+        ArrayList<Integer> ids = new ArrayList<>();
+        for (int i = 0; i < mSelectedProductsArray.size(); i++) {
+            ids.add(mSelectedProductsArray.keyAt(i));
+        }
+
+        Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                .where(ProductEntity.ID.in(ids))
+                .orderBy(ProductEntity.UPDATED_AT.desc())
+                .get();
+
+        double tc = 0;
+        for (ProductEntity product: result.toList()) {
+            double totalCostOfItem = product.getPrice()
+                    * mSelectedProductsArray.get(product.getId());
+            tc += totalCostOfItem;
+        }
+
+        if (ids.isEmpty()) {
+            orderUpdateButton.setEnabled(false);
+            String template = "%.2f";
+            totalCharge = Double.valueOf(String.format(Locale.UK, template, tc));
+            String cText = String.format(Locale.UK, template, totalCharge);
+            orderUpdateButton.setText(getString(R.string.update_charge,
+                    merchantCurrencySymbol, cText));
+        } else {
+            String template = "%.2f";
+            totalCharge = Double.valueOf(String.format(Locale.UK, template, tc));
+            String cText = String.format(Locale.UK, template, totalCharge);
+            orderUpdateButton.setText(getString(R.string.update_charge,
+                    merchantCurrencySymbol, cText));
+            orderUpdateButton.setOnClickListener(view -> {
+                if (isOnline(this)){
+                    updateInvoiceProduct(invoiceId, ids);
+                } else {
+                    Toast.makeText(this,
+                            "Please connect to the internet", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void setUpBottomSheetView() {
+        orderSummaryExpandedToolbar = findViewById(R.id.order_summary_expanded_toolbar);
+        orderUpdateButton = findViewById(R.id.order_summary_checkout_btn);
+        orderSummaryBottomSheetBehavior = BottomSheetBehavior
+                .from(findViewById(R.id.order_summary_wrapper));
+        orderSummaryBottomSheetBehavior.setBottomSheetCallback(mOrderSummaryBottomSheetCallback);
+
+        setCheckoutValue();
+        orderSummaryExpandedToolbar.setNavigationOnClickListener(view -> showBottomSheet(false));
+    }
+
+    private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerview) {
+        View emptyview = findViewById(R.id.empty_cart);
+        mOrderSummaryRecyclerView = recyclerview;
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        mOrderSummaryRecyclerView.setHasFixedSize(true);
+        mOrderSummaryRecyclerView.setLayoutManager(mLayoutManager);
+        mOrderSummaryRecyclerView.addItemDecoration(
+                new SpacingItemDecoration(
+                        getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
+                        getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
+        );
+        mOrderSummaryRecyclerView.addItemDecoration(
+                new OrderItemDividerItemDecoration(this));
+        mOrderSummaryRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mOrderSummaryRecyclerView.setAdapter(orderSummaryAdapter);
+        mOrderSummaryRecyclerView.setEmptyView(emptyview);
+    }
+
+    @Override
+    protected void onDestroy() {
+        executor.shutdown();
+        orderSummaryAdapter.close();
+        super.onDestroy();
+    }
+
+    private void updateInvoiceProduct(int id, List<Integer> productId) {
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setTitle("Updating products");
+        InvoiceEntity invoiceEntity = databaseManager.getInvoiceById(id);
+        invoiceEntity.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
+        invoiceEntity.setPaymentMethod(invoiceEntity.getPaymentMethod());
+        invoiceEntity.setPaidAmount(invoiceEntity.getPaidAmount());
+        invoiceEntity.setSynced(true);
+        invoiceEntity.setOwner(merchantEntity);
+        invoiceEntity.setCustomer(mSelectedCustomer);
+        invoiceEntity.setDueDate(invoiceEntity.getDueDate());
+        invoiceEntity.setPaymentMessage(invoiceEntity.getPaymentMessage());
+        mDataStore.upsert(invoiceEntity).subscribe(update -> {
+            List<InvoiceTransactionEntity> transactionEntityList = update.getTransactions();
+            mDataStore.delete(transactionEntityList).subscribe();
+            List<InvoiceTransactionEntity> check = databaseManager.getInvoiceTransaction(id);
+
+            Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(productId))
+                    .orderBy(ProductEntity.UPDATED_AT.desc())
+                    .get();
+            List<ProductEntity> productEntities = result.toList();
+
+            for (int i = 0; i < productEntities.size(); i++) {
+
+                ProductEntity product = productEntities.get(i);
+                LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
+
+                if (loyaltyProgram != null) {
+                    InvoiceTransactionEntity newTransaction = new InvoiceTransactionEntity();
+                    newTransaction.setInvoice(update);
+                    newTransaction.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
+                    String template = "%.2f";
+                    double tc = product.getPrice() * mSelectedProductsArray.get(product.getId());
+                    double totalCosts = Double.valueOf(String.format(Locale.UK, template, tc));
+                    newTransaction.setAmount(totalCosts);
+
+                    if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))){
+                        newTransaction.setPoints(Double.valueOf(totalCost).intValue());
+                        newTransaction.setProgramType(getString(R.string.simple_points));
+                    } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                        int stampsEarned = mSelectedProductsArray.get(product.getId());
+                        newTransaction.setStamps(stampsEarned);
+                        newTransaction.setProgramType(getString(R.string.stamps_program));
+                    }
+                    newTransaction.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+                    newTransaction.setProductId(product.getId());
+                    if (mSelectedCustomer != null) {
+                        newTransaction.setUserId(mSelectedCustomer.getUserId());
+                        newTransaction.setCustomer(mSelectedCustomer);
+                    }
+                    newTransaction.setMerchant(merchantEntity);
+                    newTransaction.setQuantity(mSelectedProductsArray.get(product.getId()));
+                    newTransaction.setSynced(false);
+                    mDataStore.upsert(newTransaction).subscribe();
+                    if (i + 1 == productEntities.size()) {
+                        Completable.complete()
+                                .delay(1, TimeUnit.SECONDS)
+                                .compose(bindToLifecycle())
+                                .doOnComplete(() -> {
+                                    if (isOnline(this)) {
+                                        List<InvoiceTransactionEntity> checkAgain = databaseManager
+                                                .getInvoiceTransaction(id);
+                                        try {
+                                            JSONObject jsonObjectData = new JSONObject();
+                                            if (update.getCustomer() != null) {
+                                                jsonObjectData.put("user_id", update.getCustomer().getUserId());
+                                            }
+                                            if (update.getStatus() != null) {
+                                                jsonObjectData.put("status", update.getStatus());
+                                            }
+                                            if (update.getPaymentMethod() != null) {
+                                                jsonObjectData.put("payment_method", update.getPaymentMethod());
+                                            }
+                                            jsonObjectData.put("due_date", update.getDueDate());
+                                            if (update.getPaidAmount() != null) {
+                                                if (Double.valueOf(update.getPaidAmount()) >= Double.valueOf(update.getAmount())) {
+                                                    jsonObjectData.put("paid_amount", update.getPaidAmount());
+                                                    jsonObjectData.put("status", "paid");
+                                                } else if ( Double.valueOf(update.getPaidAmount()) < Double.valueOf(update.getAmount())) {
+                                                    jsonObjectData.put("paid_amount", update.getPaidAmount());
+                                                    jsonObjectData.put("status", "partial");
+                                                }else {
+                                                    jsonObjectData.put("paid_amount", update.getPaidAmount());
+                                                    jsonObjectData.put("status", "unpaid");
+                                                }
+                                            }
+                                            JSONArray jsonArray = new JSONArray();
+                                            for (InvoiceTransactionEntity transactionEntity: checkAgain) {
+                                                LoyaltyProgramEntity programEntity =
+                                                        mDatabaseManager.getLoyaltyProgramById(
+                                                                transactionEntity.getMerchantLoyaltyProgramId());
+                                                if (programEntity != null) {
+                                                    JSONObject jsonObject = new JSONObject();
+
+                                                    if (transactionEntity.getUserId() > 0) {
+                                                        jsonObject.put("user_id", transactionEntity.getUserId());
+                                                    }
+                                                    jsonObject.put("merchant_id", merchantEntity.getId());
+                                                    jsonObject.put("amount", transactionEntity.getAmount());
+
+                                                    if (transactionEntity.getProductId() > 0) {
+                                                        jsonObject.put("id", transactionEntity.getProductId());
+                                                    }
+                                                    jsonObject.put("merchant_loyalty_program_id",
+                                                            transactionEntity.getMerchantLoyaltyProgramId());
+                                                    jsonObject.put("program_type", transactionEntity.getProgramType());
+
+                                                    if (programEntity.getProgramType().equals(getString(R.string.simple_points))) {
+                                                        jsonObject.put("points", transactionEntity.getPoints());
+                                                    }
+                                                    else if (programEntity.getProgramType().equals(getString(R.string.stamps_program))) {
+                                                        jsonObject.put("stamps", transactionEntity.getStamps());
+                                                    }
+
+                                                    jsonArray.put(jsonObject);
+                                                }
+                                            }
+                                            jsonObjectData.put("items", jsonArray);
+                                            JSONObject requestData = new JSONObject();
+                                            requestData.put("data", jsonObjectData);
+                                            RequestBody requestBody = RequestBody
+                                                    .create(MediaType.parse(
+                                                            "application/json; charset=utf-8"), requestData.toString());
+
+                                            mApiClient.getLoystarApi(false)
+                                                    .updateInvoice(update.getId(), requestBody).enqueue(new Callback<Invoice>() {
+                                                @Override
+                                                public void onResponse(Call<Invoice> call, Response<Invoice> response) {
+                                                    if (response.isSuccessful()) {
+                                                        if (dialog.isShowing()) {
+                                                            dialog.dismiss();
+                                                        }
+                                                        Invoice invoice =  response.body();
+                                                        update.setAmount(invoice.getSubtotal());
+                                                        update.setUpdatedAt(new Timestamp(new DateTime().getMillis()));
+                                                        update.setPaymentMethod(payment_option);
+                                                        update.setPaidAmount(invoice.getPaidAmount());
+                                                        update.setSynced(true);
+                                                        update.setStatus(invoice.getStatus());
+                                                        update.setOwner(merchantEntity);
+                                                        update.setCustomer(mSelectedCustomer);
+                                                        update.setDueDate(invoice.getDueDate());
+                                                        update.setPaymentMessage(invoice.getPaymentMessage());
+                                                        mDataStore.upsert(update).subscribe();
+                                                        Toast.makeText(getApplicationContext(),
+                                                                "Invoice has been updated successfully",
+                                                                Toast.LENGTH_LONG).show();
+                                                        SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
+                                                        Intent nextIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                                                        nextIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        startActivity(nextIntent);
+                                                    } else {
+                                                        if (dialog.isShowing()) {
+                                                            dialog.dismiss();
+                                                        }
+                                                        Toast.makeText(getApplicationContext(),
+                                                                "Invoice could not be updated", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(Call<Invoice> call, Throwable t) {
+
+                                                }
+                                            });
+                                        } catch (JSONException e) {
+                                            Timber.e(e);
+                                        }
+                                    } else {
+                                        runOnUiThread(() -> {
+                                            Toast.makeText(getApplicationContext(),
+                                                    "Invoice could not be updated successfully", Toast.LENGTH_LONG).show();
+                                            dialog.dismiss();
+                                        });
+//                                        SyncAdapter.performSync(this, mSessionManager.getEmail());
+//                                        Intent merchantIntent = new Intent(this, MerchantBackOfficeActivity.class);
+//                                        merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                        startActivity(merchantIntent);
+                                    }
+                                }).subscribe();
+                    }
+
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            showBottomSheet(false);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void showBottomSheet(boolean show) {
+        if (show) {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 }

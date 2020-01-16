@@ -241,10 +241,10 @@ public interface LoystarApi {
 
     @Headers("Cache-Control: no-cache")
     @POST("set_invoice_payment_message")
-    Observable<PaymentMessage> setPaymentMessage(@Body RequestBody requestBody);
+    Observable<Response<PaymentMessage>> setPaymentMessage(@Body RequestBody requestBody);
 
     @GET("get_invoice_payment_message")
-    Observable<PaymentMessage> getPaymentMessage();
+    Observable<Response<PaymentMessage>> getPaymentMessage();
 
     @GET("invoices")
     Observable<Response<ArrayList<Invoice>>> getInvoices(@Query("page[number]") int page, @Query("page[size]") int size);

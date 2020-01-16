@@ -8,7 +8,10 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -35,8 +38,10 @@ public class InvoiceListActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
     private InvoiceAdapter mAdapter;
-    private int limit = 30;
+    private int limit = 5;
     private int currentTotalItemsCount = 0;
+    int nextLimit;
+    View emptyView;
 
     ArrayList<InvoiceEntity> invoices;
 
@@ -49,6 +54,7 @@ public class InvoiceListActivity extends AppCompatActivity {
 
         toolbar.setTitle(getString(R.string.invoice));
         setSupportActionBar(toolbar);
+        emptyView = findViewById(R.id.no_invoice_empty_view);
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setDisplayShowHomeEnabled(true);
@@ -59,30 +65,49 @@ public class InvoiceListActivity extends AppCompatActivity {
 
         invoices.addAll(getInvoices());
 
-        mRecyclerView = findViewById(R.id.invoice_recyclerview);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this,
-                LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new InvoiceAdapter(this, invoices, this::showInvoiceActivity, () -> {
-            if (invoices.size() <= limit) {
-                invoices.add(null);
-                mAdapter.notifyItemInserted(invoices.size() - 1);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                            invoices.remove(invoices.size() -1);
-                            mAdapter.notifyItemInserted(invoices.size());
-                            currentTotalItemsCount = invoices.size();
-                            loadMoreInvoices();
-                            mAdapter.setLoading();
+        if (invoices.size() == 0){
+            emptyView.setVisibility(View.VISIBLE);
+            TextView introText =  emptyView.findViewById(R.id.stateIntroText);
+            introText.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        } else {
+            emptyView.setVisibility(View.GONE);
+            mRecyclerView = findViewById(R.id.invoice_recyclerview);
+            LinearLayoutManager mLayoutManager = new LinearLayoutManager(this,
+                    LinearLayoutManager.VERTICAL, false);
+            mRecyclerView.setLayoutManager(mLayoutManager);
+            mAdapter = new InvoiceAdapter(this, invoices, this::showInvoiceActivity,
+                    mRecyclerView);
+            mRecyclerView.setHasFixedSize(true);
+            mRecyclerView.setAdapter(mAdapter);
+        }
+
+
+        mDataStore.count(InvoiceEntity.class)
+                .where(InvoiceEntity.OWNER.eq(merchantEntity))
+                .and(InvoiceEntity.NUMBER.notNull())
+                .get()
+                .consume(totalItems -> {
+                    ActionBar actionBar = getSupportActionBar();
+                    if (actionBar != null) {
+                        if (totalItems == 1) {
+                            actionBar.setTitle(getString(R.string.invoice_count, "1"));
+                        } else if (totalItems < 1){
+                            actionBar.setTitle("Invoice");
+                        }
+                        else {
+                            actionBar.setTitle(getString(R.string.invoices_count, String.valueOf(totalItems)));
+                        }
+                        actionBar.setDisplayShowHomeEnabled(true);
                     }
-                }, 1000);
-            } else {
-                Toast.makeText(InvoiceListActivity.this, "Load completed", Toast.LENGTH_LONG).show();
-            }
-        }, mRecyclerView);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setAdapter(mAdapter);
+                });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent newIntent = new Intent(this, MerchantBackOfficeActivity.class);
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TOP );
+        startActivity(newIntent);
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -102,6 +127,7 @@ public class InvoiceListActivity extends AppCompatActivity {
         invoiceIntent.putExtra(Constants.PAYMENT_METHOD, invoice.getPaymentMethod());
         invoiceIntent.putExtra(Constants.STATUS, invoice.getStatus());
         invoiceIntent.putExtra(Constants.INVOICE_NUMBER, invoice.getNumber());
+        invoiceIntent.putExtra(Constants.INVOICE_MESSAGE, invoice.getPaymentMessage());
         invoiceIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(invoiceIntent);
@@ -116,7 +142,7 @@ public class InvoiceListActivity extends AppCompatActivity {
         invoiceSelection.where(InvoiceEntity.OWNER.eq(merchantEntity));
         invoiceSelection.where(InvoiceEntity.NUMBER.notNull());
         invoiceSelection.orderBy(InvoiceEntity.CREATED_AT.upper().desc());
-        invoiceSelection.limit(limit);
+//        invoiceSelection.limit(limit);
 
         return new ArrayList<>(invoiceSelection.get().toList());
     }
@@ -127,7 +153,7 @@ public class InvoiceListActivity extends AppCompatActivity {
         invoiceSelection.where(InvoiceEntity.OWNER.eq(merchantEntity));
         invoiceSelection.where(InvoiceEntity.NUMBER.notNull());
         invoiceSelection.orderBy(InvoiceEntity.CREATED_AT.upper().desc());
-        invoiceSelection.limit(currentTotalItemsCount + limit);
+        invoiceSelection.limit(nextLimit + limit);
         nextEntities = new ArrayList<>(invoiceSelection.get().toList());
         mAdapter.set(nextEntities);
     }

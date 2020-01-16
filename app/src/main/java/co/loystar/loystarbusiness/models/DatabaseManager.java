@@ -15,6 +15,7 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
@@ -399,6 +400,13 @@ public class DatabaseManager implements IDatabaseManager{
         Selection<ReactiveResult<InvoiceEntity>> query = mDataStore.select(InvoiceEntity.class);
         query.where(InvoiceEntity.SYNCED.eq(false));
         query.where(InvoiceEntity.OWNER.eq(merchantEntity));
+        return query.get().toList();
+    }
+
+    @Override
+    public  List<InvoiceTransactionEntity> getInvoiceTransaction(@NonNull int invoiceid) {
+        Selection<ReactiveResult<InvoiceTransactionEntity>>  query = mDataStore.select(InvoiceTransactionEntity.class);
+        query.where(InvoiceTransactionEntity.INVOICE_ID.eq(invoiceid));
         return query.get().toList();
     }
 

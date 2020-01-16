@@ -34,30 +34,30 @@
 
     </LinearLayout>
 
-<!--    <LinearLayout-->
-<!--        android:id="@+id/view2"-->
-<!--        android:layout_weight="1"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical">-->
+    <LinearLayout
+        android:id="@+id/view2"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/sendWithWhatsapp"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:background="@drawable/btn_touch_action"-->
-<!--            android:contentDescription="@string/image" />-->
+        <ImageButton
+            android:id="@+id/sendWithWhatsapp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/btn_touch_action"
+            android:contentDescription="@string/image" />
 
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:text="WhatsApp"-->
-<!--            android:textColor="@color/primaryTextColor"-->
-<!--            android:gravity="center" />-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="WhatsApp"
+            android:textColor="@color/primaryTextColor"
+            android:gravity="center" />
 
-<!--    </LinearLayout>-->
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/view3"

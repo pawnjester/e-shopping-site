@@ -727,16 +727,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         }
                                         for (ItemsItem itemsItem : newInvoice.getItems()) {
                                             InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
-                                            transactionEntity.setId(newInvoice.getId());
+//                                            transactionEntity.setId(newInvoice.getId());
                                             transactionEntity.setUserId(newInvoice.getCustomer().getUser_id());
                                             transactionEntity.setCustomer(customerEntity);
                                             transactionEntity.setMerchantLoyaltyProgramId(
                                                     itemsItem.getProduct().getMerchant_loyalty_program_id());
-                                            transactionEntity.setAmount(Double.valueOf(newInvoice.getSubtotal()).intValue());
+                                            transactionEntity.setAmount(Double.valueOf(itemsItem.getAmount()));
                                             transactionEntity.setMerchant(merchantEntity);
 //                                            transactionEntity.setCreatedAt(newInvoice.getCreatedAt());
                                             transactionEntity.setProductId(itemsItem.getProduct().getId());
                                             transactionEntity.setInvoice(newInvoiceEntity);
+                                            transactionEntity.setQuantity(itemsItem.getQuantity());
 
 //                                            ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
 //                                            itemsItemEntity.setAmount(itemsItem.getAmount());
@@ -862,6 +863,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         }
                                         CustomerEntity customerEntity = mDatabaseManager
                                                 .getCustomerByUserId(invoice.getCustomer().getUser_id());
+                                        //creating new invoice entity
                                         InvoiceEntity newInvoiceEntity =  new InvoiceEntity();
                                         newInvoiceEntity.setId(invoice.getId());
                                         newInvoiceEntity.setAmount(invoice.getSubtotal());
@@ -887,11 +889,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                             }
                                             for (ItemsItem transaction: invoice.getItems()) {
                                                 InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
-                                                transactionEntity.setId(invoice.getId());
+//                                                transactionEntity.setId(invoice.getId());
                                                 transactionEntity.setUserId(invoice.getCustomer().getUser_id());
+                                                transactionEntity.setQuantity(transaction.getQuantity());
                                                 transactionEntity.setMerchantLoyaltyProgramId(
                                                         transaction.getProduct().getMerchant_loyalty_program_id());
-                                                transactionEntity.setAmount(Double.valueOf(invoice.getSubtotal()).intValue());
+                                                transactionEntity.setAmount(Double.valueOf(transaction.getAmount()));
                                                 transactionEntity.setMerchant(merchantEntity);
                                                 transactionEntity.setProductId(transaction.getProduct().getId());
                                                 transactionEntity.setCustomer(customerEntity);
