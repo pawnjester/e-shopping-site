@@ -35,6 +35,7 @@ import co.loystar.loystarbusiness.models.databinders.BirthdayOffer;
 import co.loystar.loystarbusiness.models.databinders.BirthdayOfferPresetSms;
 import co.loystar.loystarbusiness.models.databinders.Customer;
 import co.loystar.loystarbusiness.models.databinders.Invoice;
+import co.loystar.loystarbusiness.models.databinders.InvoicePaymentHistoriesItem;
 import co.loystar.loystarbusiness.models.databinders.ItemsItem;
 import co.loystar.loystarbusiness.models.databinders.LoyaltyProgram;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
@@ -49,6 +50,7 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.ItemsItemEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
@@ -58,12 +60,9 @@ import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
-import co.loystar.loystarbusiness.models.entities.SalesTransaction;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.SubscriptionEntity;
 import co.loystar.loystarbusiness.utils.Constants;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.query.Tuple;
 import io.requery.reactivex.ReactiveEntityStore;
@@ -438,14 +437,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     JSONObject requestData = new JSONObject();
                     requestData.put("sale", jsonObjectData);
 
-                    RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                    mApiClient.getLoystarApi(false).createSale(requestBody).enqueue(new Callback<Sale>() {
+                    RequestBody requestBody = RequestBody
+                            .create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                    mApiClient.getLoystarApi(false)
+                            .createSale(requestBody).enqueue(new Callback<Sale>() {
                         @Override
                         public void onResponse(@NonNull Call<Sale> call, @NonNull Response<Sale> response) {
                             if (response.isSuccessful()) {
                                 Sale sale = response.body();
                                 if (sale != null) {
-
                                     // lets delete old records
                                     for (int i = 0; i < saleEntity.getTransactions().size(); i ++) {
                                         // delete transaction
@@ -705,23 +705,48 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     invoiceEntity.setNumber(newInvoice.getNumber());
                                     invoiceEntity.setSubTotal(newInvoice.getSubtotal());
                                     invoiceEntity.setDueDate(newInvoice.getDueDate());
+                                    invoiceEntity.setPaidAmount(newInvoice.getPaidAmount());
                                     invoiceEntity.setCreatedAt(new Timestamp(newInvoice.getCreatedAt().getMillis()));
                                     invoiceEntity.setUpdatedAt(new Timestamp(newInvoice.getUpdatedAt().getMillis()));
                                     invoiceEntity.setOwner(merchantEntity);
                                     invoiceEntity.setSynced(true);
                                     invoiceEntity.setAmount(newInvoice.getSubtotal());
-                                    invoiceEntity.setPaidAmount(newInvoice.getPaidAmount());
+                                    invoiceEntity.setPaymentMessage(newInvoice.getPaymentMessage());
                                     CustomerEntity customerEntity = mDataStore.findByKey(CustomerEntity.class,
                                             newInvoice.getCustomer().getId()).blockingGet();
                                     invoiceEntity.setCustomer(customerEntity);
 
                                     mDataStore.upsert(invoiceEntity).subscribe(newInvoiceEntity -> {
+                                        for (InvoicePaymentHistoriesItem item : newInvoice.getInvoicePaymentHistories()) {
+                                            InvoiceHistoryEntity historyEntity = new InvoiceHistoryEntity();
+                                            historyEntity.setId(item.getId());
+                                            historyEntity.setInvoice(newInvoiceEntity);
+                                            historyEntity.setPaidAmount(item.getPaidAmount());
+                                            historyEntity.setPaidAt(item.getPaidAt());
+                                            mDataStore.upsert(historyEntity).subscribe();
+                                        }
                                         for (ItemsItem itemsItem : newInvoice.getItems()) {
-                                            ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
-                                            itemsItemEntity.setAmount(itemsItem.getAmount());
-                                            itemsItemEntity.setSynced(true);
-                                            itemsItemEntity.setInvoice(newInvoiceEntity);
-                                            mDataStore.upsert(itemsItemEntity).subscribe(/*no-op*/);
+                                            InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
+//                                            transactionEntity.setId(newInvoice.getId());
+                                            transactionEntity.setUserId(newInvoice.getCustomer().getUser_id());
+                                            transactionEntity.setCustomer(customerEntity);
+                                            transactionEntity.setMerchantLoyaltyProgramId(
+                                                    itemsItem.getProduct().getMerchant_loyalty_program_id());
+                                            transactionEntity.setAmount(Double.valueOf(itemsItem.getAmount()));
+                                            transactionEntity.setMerchant(merchantEntity);
+//                                            transactionEntity.setCreatedAt(newInvoice.getCreatedAt());
+                                            transactionEntity.setProductId(itemsItem.getProduct().getId());
+                                            transactionEntity.setInvoice(newInvoiceEntity);
+                                            transactionEntity.setQuantity(itemsItem.getQuantity());
+
+//                                            ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
+//                                            itemsItemEntity.setAmount(itemsItem.getAmount());
+//                                            itemsItemEntity.setSynced(true);
+//                                            itemsItemEntity.setInvoice(newInvoiceEntity);
+                                            mDataStore.upsert(transactionEntity).subscribe(
+
+
+                                            );
 
                                         }
                                     });
@@ -743,18 +768,27 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             jsonObjectData.put("user_id", invoiceEntity.getCustomer().getUserId());
 
                         }
-                        jsonObjectData.put("status", invoiceEntity.getStatus());
-                        jsonObjectData.put("payment_method", invoiceEntity.getPaymentMethod());
+                        if (invoiceEntity.getStatus() != null) {
+                            jsonObjectData.put("status", invoiceEntity.getStatus());
+                        }
+                        if (invoiceEntity.getPaymentMethod() != null) {
+                            jsonObjectData.put("payment_method", invoiceEntity.getPaymentMethod());
+                        }
+                        if (invoiceEntity.getPaymentMessage() != null) {
+                            jsonObjectData.put("payment_message", invoiceEntity.getPaymentMessage());
+                        }
                         jsonObjectData.put("due_date", invoiceEntity.getDueDate());
-                        if (Double.valueOf(invoiceEntity.getPaidAmount()) >= Double.valueOf(invoiceEntity.getAmount())) {
-                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
-                            jsonObjectData.put("status", "paid");
-                        } else if ( Double.valueOf(invoiceEntity.getPaidAmount()) < Double.valueOf(invoiceEntity.getAmount())) {
-                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
-                            jsonObjectData.put("status", "partial");
-                        }else {
-                            jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
-                            jsonObjectData.put("status", "unpaid");
+                        if (invoiceEntity.getPaidAmount() != null) {
+                            if (Double.valueOf(invoiceEntity.getPaidAmount()) >= Double.valueOf(invoiceEntity.getAmount())) {
+                                jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                                jsonObjectData.put("status", "paid");
+                            } else if ( Double.valueOf(invoiceEntity.getPaidAmount()) < Double.valueOf(invoiceEntity.getAmount())) {
+                                jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                                jsonObjectData.put("status", "partial");
+                            }else {
+                                jsonObjectData.put("paid_amount", invoiceEntity.getPaidAmount());
+                                jsonObjectData.put("status", "unpaid");
+                            }
                         }
 
                         JSONArray jsonArray = new JSONArray();
@@ -774,7 +808,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 if (transactionEntity.getProductId() > 0) {
                                     jsonObject.put("product_id", transactionEntity.getProductId());
                                 }
-                                jsonObject.put("merchant_loyalty_program_id", transactionEntity.getMerchantLoyaltyProgramId());
+                                jsonObject.put("merchant_loyalty_program_id",
+                                        transactionEntity.getMerchantLoyaltyProgramId());
                                 jsonObject.put("program_type", transactionEntity.getProgramType());
 
                                 if (programEntity.getProgramType().equals(getContext().getString(R.string.simple_points))) {
@@ -795,13 +830,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 .create(MediaType.parse(
                                         "application/json; charset=utf-8"), requestData.toString());
 
-                        mApiClient.getLoystarApi(false)
+                        mApiClient
+                                .getLoystarApi(false)
                                 .createInvoice(requestBody).enqueue(new Callback<Invoice>() {
                             @Override
                             public void onResponse(Call<Invoice> call, Response<Invoice> response) {
                                 if (response.isSuccessful()) {
+                                    Intent intentEnd = new Intent(Constants.CREATE_INVOICE_ENDED);
                                     Invoice invoice = response.body();
-
+                                    intentEnd.putExtra("responseNumber", invoice.getInvoicePaymentHistories() + "");
+                                    getContext().sendBroadcast(intentEnd);
                                     if (invoice != null) {
                                         for (int i=0; i < invoiceEntity.getTransactions().size(); i++) {
                                             mDataStore.delete(invoiceEntity.getTransactions().get(i)).subscribe();
@@ -825,37 +863,65 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         }
                                         CustomerEntity customerEntity = mDatabaseManager
                                                 .getCustomerByUserId(invoice.getCustomer().getUser_id());
+                                        //creating new invoice entity
                                         InvoiceEntity newInvoiceEntity =  new InvoiceEntity();
                                         newInvoiceEntity.setId(invoice.getId());
                                         newInvoiceEntity.setAmount(invoice.getSubtotal());
+                                        newInvoiceEntity.setSubTotal(invoice.getSubtotal());
                                         newInvoiceEntity.setCreatedAt(new Timestamp(invoice.getCreatedAt().getMillis()));
                                         newInvoiceEntity.setUpdatedAt(new Timestamp(invoice.getUpdatedAt().getMillis()));
-                                        newInvoiceEntity.setPaidAmount(invoice.getPaidAmount());
                                         newInvoiceEntity.setCustomer(customerEntity);
                                         newInvoiceEntity.setSynced(true);
                                         newInvoiceEntity.setNumber(invoice.getNumber());
                                         newInvoiceEntity.setStatus(invoice.getStatus());
                                         newInvoiceEntity.setOwner(merchantEntity);
                                         newInvoiceEntity.setDueDate(invoice.getDueDate());
-                                        newInvoiceEntity.setPaymentMethod(invoice.getPaymentMessage());
+                                        newInvoiceEntity.setPaymentMessage(invoice.getPaymentMessage());
 
                                         mDataStore.upsert(newInvoiceEntity).subscribe(invoiceEntity -> {
+                                            for (InvoicePaymentHistoriesItem item : invoice.getInvoicePaymentHistories()) {
+                                                InvoiceHistoryEntity historyEntity = new InvoiceHistoryEntity();
+                                                historyEntity.setId(item.getId());
+                                                historyEntity.setInvoice(invoiceEntity);
+                                                historyEntity.setPaidAmount(item.getPaidAmount());
+                                                historyEntity.setPaidAt(item.getPaidAt());
+                                                mDataStore.upsert(historyEntity).subscribe();
+                                            }
                                             for (ItemsItem transaction: invoice.getItems()) {
-                                                ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
-                                                itemsItemEntity.setAmount(transaction.getAmount());
-                                                itemsItemEntity.setInvoice(invoiceEntity);
-                                                itemsItemEntity.setSynced(true);
-                                                mDataStore.upsert(itemsItemEntity);
+                                                InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
+//                                                transactionEntity.setId(invoice.getId());
+                                                transactionEntity.setUserId(invoice.getCustomer().getUser_id());
+                                                transactionEntity.setQuantity(transaction.getQuantity());
+                                                transactionEntity.setMerchantLoyaltyProgramId(
+                                                        transaction.getProduct().getMerchant_loyalty_program_id());
+                                                transactionEntity.setAmount(Double.valueOf(transaction.getAmount()));
+                                                transactionEntity.setMerchant(merchantEntity);
+                                                transactionEntity.setProductId(transaction.getProduct().getId());
+                                                transactionEntity.setCustomer(customerEntity);
+                                                transactionEntity.setInvoice(invoiceEntity);
+                                                mDataStore.upsert(transactionEntity).subscribe(
+                                                );
                                             }
                                         });
+                                    }
+                                } else {
+                                    try {
                                         Intent intentEnd = new Intent(Constants.CREATE_INVOICE_ENDED);
+                                        JSONObject jObjError = new JSONObject(response.errorBody().string());
+                                        String error = jObjError.getString("error");
+                                        intentEnd.putExtra("errorbody", error);
+                                        intentEnd.putExtra("responseCode", response.code());
                                         getContext().sendBroadcast(intentEnd);
+                                    } catch (Exception exception) {
+                                        Toast.makeText(getContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
                                     }
                                 }
                             }
 
                             @Override
                             public void onFailure(Call<Invoice> call, Throwable t) {
+                                Intent intentEnd = new Intent(Constants.CREATE_INVOICE_ENDED);
+                                getContext().sendBroadcast(intentEnd);
                                 Timber.e(t);
                             }
                         });

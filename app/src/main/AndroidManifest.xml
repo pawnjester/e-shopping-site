@@ -38,8 +38,15 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.InvoiceListActivity"></activity>
-        <activity android:name=".activities.InvoicePayActivity" />
+        <activity android:name=".activities.InvoiceProductActivity"
+            android:label="Products"
+            android:theme="@style/AppTheme"/>
+        <activity android:name=".activities.PaymentMessageActivity" />
+        <activity android:name=".activities.InvoiceListActivity" />
+        <activity
+            android:name=".activities.InvoicePayActivity"
+            android:label="@string/title_activity_invoice"
+            android:theme="@style/AppTheme" />
 
         <meta-data
             android:name="asset_statements"
@@ -94,7 +101,6 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
         <service android:name=".utils.BackgroundNotificationService" />
 
         <meta-data

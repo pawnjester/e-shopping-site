@@ -5,6 +5,8 @@ import android.content.Context;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -57,5 +59,10 @@ public class TimeUtils {
                 + cal.get(Calendar.DAY_OF_MONTH) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":"
                 + cal.get(Calendar.MINUTE));
 
+    }
+
+    public static String convertToDate(Timestamp timestamp) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        return format.format(timestamp);
     }
 }

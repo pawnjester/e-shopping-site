@@ -460,6 +460,9 @@ public class AddProductActivity extends BaseActivity {
     private void submitForm() {
         if (imageUri == null) {
             expandFabMenu();
+            // generate dummy bitmap
+
+
             Snackbar.make(mLayout, getString(R.string.error_picture_required), Snackbar.LENGTH_LONG).show();
             return;
         }

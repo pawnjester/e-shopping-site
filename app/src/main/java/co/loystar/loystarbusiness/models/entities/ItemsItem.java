@@ -20,6 +20,12 @@ public interface ItemsItem extends Observable, Parcelable, Persistable {
     int getId();
 
     String getAmount();
+
+    int getQuantity();
+
+    @ManyToOne
+    Product getProduct();
+
     boolean isSynced();
 
     @ManyToOne

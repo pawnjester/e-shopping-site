@@ -14,6 +14,8 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferEntity;
 import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Models;
@@ -402,6 +404,13 @@ public class DatabaseManager implements IDatabaseManager{
     }
 
     @Override
+    public  List<InvoiceTransactionEntity> getInvoiceTransaction(@NonNull int invoiceid) {
+        Selection<ReactiveResult<InvoiceTransactionEntity>>  query = mDataStore.select(InvoiceTransactionEntity.class);
+        query.where(InvoiceTransactionEntity.INVOICE_ID.eq(invoiceid));
+        return query.get().toList();
+    }
+
+    @Override
     public int getTotalCustomerStamps(int merchantId, int customerId) {
         int stamps = 0;
         MerchantEntity merchantEntity = mDataStore.select(MerchantEntity.class)
@@ -621,5 +630,6 @@ public class DatabaseManager implements IDatabaseManager{
         selection.where(SalesOrderEntity.UPDATE_REQUIRED.eq(true));
         return selection.get().toList();
     }
+
 
 }

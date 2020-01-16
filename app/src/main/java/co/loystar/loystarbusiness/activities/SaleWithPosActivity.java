@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.R;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.AccountGeneral;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
@@ -141,13 +142,14 @@ public class SaleWithPosActivity extends BaseActivity implements
     private final String KEY_ORDER_SUMMARY_RECYCLER_STATE = "order_summary_recycler_state";
     private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
     private int customerId;
+    private View mLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sale_with_pos);
 
-        View mLayout = findViewById(R.id.activity_sale_with_pos_container);
+        mLayout = findViewById(R.id.activity_sale_with_pos_container);
         boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
         if (productCreatedIntent) {
             Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();
@@ -437,26 +439,37 @@ public class SaleWithPosActivity extends BaseActivity implements
 
     @Override
     public void onPayWithInvoice() {
-        Intent startInvoiceIntent = new Intent(this, InvoicePayActivity.class);
-        Bundle bundle = new Bundle();
-        HashMap<Integer, Integer> hashMap = new HashMap<>();
-        ArrayList<Integer> productIds = new ArrayList<>();
-        for (int i = 0; i < mSelectedProducts.size(); i++) {
-                hashMap.put(mSelectedProducts.keyAt(i), mSelectedProducts.valueAt(i));
-                productIds.add(mSelectedProducts.keyAt(i));
-        }
+//        if (!AccountGeneral.isAccountActive(mContext)) {
+//            Snackbar.make(mLayout,
+//                    "Your subscription has expired, update subscription to checkout by invoice",
+//                    Snackbar.LENGTH_LONG).setAction("Subscribe", view1 -> {
+//                Intent intent = new Intent(mContext, PaySubscriptionActivity.class);
+//                startActivity(intent);
+//            }).show();
+//        } else {
+            Intent startInvoiceIntent = new Intent(this, InvoicePayActivity.class);
+            Bundle bundle = new Bundle();
+            HashMap<Integer, Integer> hashMap = new HashMap<>();
+            ArrayList<Integer> productIds = new ArrayList<>();
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                    hashMap.put(mSelectedProducts.keyAt(i), mSelectedProducts.valueAt(i));
+                    productIds.add(mSelectedProducts.keyAt(i));
+            }
 
-        bundle.putIntegerArrayList(Constants.SELECTED_PRODUCTS, productIds);
-        if (mSelectedCustomer != null){
-            startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
-            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
-            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
-        } else {
-            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
-            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
-        }
-        startInvoiceIntent.putExtras(bundle);
-        startActivity(startInvoiceIntent);
+            bundle.putIntegerArrayList(Constants.SELECTED_PRODUCTS, productIds);
+            if (mSelectedCustomer != null){
+                startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+                startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+                startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+            } else {
+                startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+                startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+            }
+            startInvoiceIntent.putExtras(bundle);
+            startInvoiceIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startInvoiceIntent);
+
+//        }
 
     }
 
@@ -548,6 +561,7 @@ public class SaleWithPosActivity extends BaseActivity implements
 
                     if (i + 1 == productEntities.size()) {
                         SyncAdapter.performSync(mContext, mSessionManager.getEmail());
+
                         Completable.complete()
                             .delay(1, TimeUnit.SECONDS)
                             .compose(bindToLifecycle())
@@ -586,7 +600,8 @@ public class SaleWithPosActivity extends BaseActivity implements
     }
 
     private class ProductsAdapter
-        extends QueryRecyclerAdapter<ProductEntity, BindingHolder<PosProductItemBinding>> implements Filterable {
+        extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<PosProductItemBinding>> implements Filterable {
 
         private Filter filter;
 
@@ -741,7 +756,8 @@ public class SaleWithPosActivity extends BaseActivity implements
         }
     }
 
-    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity, BindingHolder<OrderSummaryItemBinding>> {
+    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<OrderSummaryItemBinding>> {
 
         OrderSummaryAdapter() {
             super(ProductEntity.$TYPE);
@@ -753,7 +769,9 @@ public class SaleWithPosActivity extends BaseActivity implements
             for (int i = 0; i < mSelectedProducts.size(); i++) {
                 ids.add(mSelectedProducts.keyAt(i));
             }
-            return mDataStore.select(ProductEntity.class).where(ProductEntity.ID.in(ids)).orderBy(ProductEntity.UPDATED_AT.desc()).get();
+            return mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(ids))
+                    .orderBy(ProductEntity.UPDATED_AT.desc()).get();
         }
 
         @SuppressLint("CheckResult")

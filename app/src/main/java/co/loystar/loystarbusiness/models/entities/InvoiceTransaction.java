@@ -8,6 +8,7 @@ import android.os.Parcelable;
 import java.sql.Timestamp;
 
 import io.requery.Entity;
+import io.requery.Generated;
 import io.requery.Key;
 import io.requery.ManyToOne;
 import io.requery.Persistable;
@@ -15,7 +16,7 @@ import io.requery.Persistable;
 @Entity
 public interface InvoiceTransaction extends Observable, Parcelable, Persistable {
 
-    @Key
+    @Key @Generated
     int getId();
 
     boolean isSynced();
@@ -25,6 +26,7 @@ public interface InvoiceTransaction extends Observable, Parcelable, Persistable 
     double getAmount();
     int getStamps();
     int getPoints();
+    int getQuantity();
     String getProgramType();
     Timestamp getCreatedAt();
 

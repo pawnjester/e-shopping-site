@@ -14,6 +14,9 @@
         android:title="@string/pref_check_sms_bal_title" >
     </Preference>
     <Preference
+        android:key="@string/pref_set_payment_message_key"
+        android:title="Set Payment Message"/>
+    <Preference
         android:key="@string/pref_sign_out_key"
         android:title="@string/pref_sign_out_title" >
     </Preference>

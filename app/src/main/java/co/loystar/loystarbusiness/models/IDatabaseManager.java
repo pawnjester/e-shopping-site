@@ -10,6 +10,8 @@ import co.loystar.loystarbusiness.models.entities.BirthdayOfferPresetSmsEntity;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.Invoice;
 import co.loystar.loystarbusiness.models.entities.InvoiceEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceHistoryEntity;
+import co.loystar.loystarbusiness.models.entities.InvoiceTransactionEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
@@ -146,6 +148,8 @@ public interface IDatabaseManager {
 
     List<ProductCategoryEntity> getMerchantProductCategories(int merchantId);
 
+    List<InvoiceTransactionEntity> getInvoiceTransaction(int invoiceId);
+
     @Nullable
     CustomerEntity getCustomerByUserId(int userId);
 
@@ -153,5 +157,6 @@ public interface IDatabaseManager {
     SalesOrderEntity getSalesOrderById(int salesOrderId);
 
     List<SalesOrderEntity> getUpdateRequiredSalesOrders(@NonNull MerchantEntity merchantEntity);
+
 
 }

@@ -24,6 +24,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -322,6 +323,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Preference prefCheckSmsBal = findPreference(getString(R.string.pref_check_sms_bal_key));
                 prefCheckSmsBal.setOnPreferenceClickListener(preference -> {
                     checkSmsBalance(getActivity());
+                    return true;
+                });
+
+                Preference prefSetPaymentMessage = findPreference(getString(R.string.pref_set_payment_message_key));
+                prefSetPaymentMessage.setOnPreferenceClickListener(preference -> {
+                    Intent paymentMessageIntent = new Intent(getActivity(), PaymentMessageActivity.class);
+                    startActivity(paymentMessageIntent);
                     return true;
                 });
 

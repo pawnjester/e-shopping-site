@@ -103,7 +103,9 @@
     <string name="no_customers_found">We could not find any customers for you.</string>
     <string name="add_customer">Add customer</string>
     <string name="customers_count">%1$s Customers </string>
+    <string name="invoices_count">%1$s Invoices </string>
     <string name="customer_count">%1$s Customer </string>
+    <string name="invoice_count">%1$s Invoice </string>
     <string name="confirm_delete_positive">Delete</string>
     <string name="confirm_delete_negative">No don\'t delete!</string>
     <string name="action_search">Search</string>
@@ -259,7 +261,9 @@
     <string name="pref_pay_subscription_key">pay_subscription</string>
     <string name="pref_edit_account_key">edit_account</string>
     <string name="pref_check_sms_bal_title">Check SMS Balance</string>
+    <string name="pref_set_payment_message_title">Set Payment Message</string>
     <string name="pref_check_sms_bal_key">check_sms_balance</string>
+    <string name="pref_set_payment_message_key">set_payment_message</string>
     <string name="pref_sign_out_key">sign_out</string>
     <string name="pref_support_title">Customer Support</string>
     <string name="pref_sign_out_title">Sign out</string>
@@ -411,6 +415,7 @@
     <string name="product_category_update_success">Product Category successfully updated!</string>
     <string name="error_delete_failed">Sorry! delete failed. Please try again.</string>
     <string name="title_activity_points_sale_with_pos">Sell</string>
+    <string name="title_activity_invoice">Pay with Invoice</string>
     <string name="title_activity_sale_without_pos">Sell</string>
     <string name="title_activity_choose_program">Choose Program</string>
     <string name="dash">-</string>
@@ -419,11 +424,13 @@
     <string name="cart_is_empty">Your cart is empty!</string>
     <string name="add_to_cart">Add to cart</string>
     <string name="charge">CHARGE %1$s %2$s</string>
+    <string name="update_charge">UPDATE CHARGE %1$s %2$s</string>
     <string name="checkout">CHECKOUT %1$s %2$s</string>
     <string name="clear">Clear</string>
     <string name="product_count">%1$s added</string>
     <string name="order_owner">This order belongs to</string>
     <string name="reciept_owner">This receipt belongs to</string>
+    <string name="invoice_owner">This invoice belongs to</string>
     <string name="change_customer">Change Customer</string>
     <string name="product_price">%1$s %2$s</string>
     <string name="total_sale_value">%1$s %2$s</string>
@@ -464,6 +471,7 @@
     <string name="pending">pending</string>
     <string name="completed">completed</string>
     <string name="no_orders_received">You have not received any orders yet.</string>
+    <string name="no_invoice_created">You have not created any invoice yet.</string>
     <string name="view_orders"><u>View Orders</u></string>
     <string name="rejected">rejected</string>
     <string name="view">View</string>
@@ -498,6 +506,7 @@
     <string name="cash">Cash</string>
     <string name="card">Card</string>
     <string name="pay_with">Pay with:</string>
+    <string name="send_with">Send via:</string>
     <string name="saveInvoice">Save Invoice</string>
     <string name="total_label_extra">Total:</string>
     <string name="cash_collected_label">Cash collected</string>
@@ -565,5 +574,8 @@
     <string name="paid_text">PAID</string>
     <string name="delete_text">Delete</string>
     <string name="share_to_whatsapp_menu">Share To Whatsapp</string>
+    <string name="download_pdf_menu_text">Download Pdf</string>
+    <string name="set_payment_message_text">Set Payment Message</string>
+    <string name="edit_product_text">View Products</string>
 
 </resources>
