@@ -20,6 +20,7 @@ import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.databinders.Sale;
 import co.loystar.loystarbusiness.models.databinders.SalesOrder;
 import co.loystar.loystarbusiness.models.databinders.SmsBalance;
+import co.loystar.loystarbusiness.models.databinders.StaffWrapper;
 import co.loystar.loystarbusiness.models.databinders.Subscription;
 import co.loystar.loystarbusiness.models.databinders.Transaction;
 import io.reactivex.Observable;
@@ -65,6 +66,12 @@ public interface LoystarApi {
     Observable<Response<MerchantWrapper>> signInMerchant(
             @Field("email") String email,
             @Field("password") String password);
+
+    @FormUrlEncoded
+    @POST("staff_auth/sign_in")
+    Observable<Response<StaffWrapper>> signInStaff(
+            @Field("username") String username,
+            @Field("password") String email);
 
     @FormUrlEncoded
     @PUT("auth")
@@ -245,6 +252,10 @@ public interface LoystarApi {
 
     @GET("get_invoice_payment_message")
     Observable<Response<PaymentMessage>> getPaymentMessage();
+
+    @GET("merchants/products_list/{merchant_id}")
+    Observable<Response<Product>> getStaffProducts(@Query("business_branch_id") int id,
+                                                   @Path("merchant_id") int merchant_id);
 
     @GET("invoices")
     Observable<Response<ArrayList<Invoice>>> getInvoices(@Query("page[number]") int page, @Query("page[size]") int size);

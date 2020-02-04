@@ -24,6 +24,7 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.models.entities.StaffEntity;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
@@ -80,6 +81,12 @@ public class DatabaseManager implements IDatabaseManager{
     public void insertNewMerchant(@NonNull MerchantEntity merchantEntity) {
         mDataStore.upsert(merchantEntity)
                 .subscribe(/*no-op*/);
+    }
+
+    @Override
+    public void insertNewStaff(@NonNull StaffEntity staffEntity) {
+        mDataStore.upsert(staffEntity)
+                .subscribe();
     }
 
     @Override

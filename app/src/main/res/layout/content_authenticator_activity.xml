@@ -60,8 +60,8 @@
                     android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_email"
-                    android:inputType="textEmailAddress"
+                    android:hint="Email or Username"
+                    android:inputType="text"
                     android:maxLines="1"
                     android:nextFocusUp="@id/email"
                     android:nextFocusLeft="@id/email"/>
@@ -85,6 +85,19 @@
 
             </android.support.design.widget.TextInputLayout>
 
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal">-->
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/isStaffCheck"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:text="@string/login_as_staff_text"/>-->
+
             <Button
                 android:id="@+id/forgot_password"
                 android:layout_marginTop="5dp"
@@ -94,6 +107,8 @@
                 android:text="@string/forgot_password"
                 android:textColor="@color/primaryTextColor"
                 android:layout_gravity="end"/>
+<!--            </LinearLayout>-->
+
 
             <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
                 android:id="@+id/email_sign_in_button"

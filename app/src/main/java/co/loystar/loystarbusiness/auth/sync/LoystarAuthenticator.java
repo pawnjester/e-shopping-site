@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.sql.Timestamp;
 
@@ -21,6 +22,8 @@ import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
+import co.loystar.loystarbusiness.models.databinders.Staff;
+import co.loystar.loystarbusiness.models.databinders.StaffWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import retrofit2.Response;
 
@@ -100,7 +103,8 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
             String password = am.getPassword(account);
             if (password != null && !TextUtils.isEmpty(password)) {
                 // authenticate merchant by email and password
-                Response<MerchantWrapper> response = mApiClient.getLoystarApi(false).signInMerchant(account.name, password).blockingSingle();
+                Response<MerchantWrapper> response = mApiClient.getLoystarApi(false)
+                        .signInMerchant(account.name, password).blockingSingle();
                 if (response.isSuccessful()) {
                     authToken = response.headers().get("Access-Token");
                     String client = response.headers().get("Client");
@@ -118,11 +122,14 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                         merchantEntity.setSyncFrequency(merchant.getSync_frequency());
                         merchantEntity.setAddressLine1(merchant.getAddress_line1());
                         merchantEntity.setAddressLine2(merchant.getAddress_line2());
-                        merchantEntity.setBluetoothPrintEnabled(merchant.getEnable_bluetooth_printing());
+                        merchantEntity.setBluetoothPrintEnabled(
+                                merchant.getEnable_bluetooth_printing());
                         merchantEntity.setCurrency(merchant.getCurrency());
 
                         if (merchant.getSubscription_expires_on() != null) {
-                            merchantEntity.setSubscriptionExpiresOn(new Timestamp(merchant.getSubscription_expires_on().getMillis()));
+                            merchantEntity.setSubscriptionExpiresOn(
+                                    new Timestamp(
+                                            merchant.getSubscription_expires_on().getMillis()));
                         }
 
                         mDatabaseManager.insertNewMerchant(merchantEntity);
@@ -140,15 +147,83 @@ public class LoystarAuthenticator extends AbstractAccountAuthenticator {
                                 merchant.getAddress_line1(),
                                 merchant.getAddress_line2());
 
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        SharedPreferences sharedPreferences =
+                                PreferenceManager.getDefaultSharedPreferences(mContext);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
-                        editor.putBoolean(mContext.getString(R.string.pref_enable_bluetooth_print_key), merchant.getEnable_bluetooth_printing() != null && merchant.getEnable_bluetooth_printing());
-                        editor.putString("sync_frequency", String.valueOf(merchant.getSync_frequency()));
+                        editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key),
+                                merchant.isTurn_on_point_of_sale() != null
+                                        && merchant.isTurn_on_point_of_sale());
+                        editor.putBoolean(mContext.getString(R.string.pref_enable_bluetooth_print_key),
+                                merchant.getEnable_bluetooth_printing() != null
+                                        && merchant.getEnable_bluetooth_printing());
+                        editor.putString("sync_frequency",
+                                String.valueOf(merchant.getSync_frequency()));
                         editor.apply();
                     }
                 }
-
+//                else {
+//                    Response<StaffWrapper> responseStaff = mApiClient
+//                            .getLoystarApi(false)
+//                            .signInStaff("slime", password).blockingSingle();
+//                    if (responseStaff.isSuccessful()) {
+//                        authToken = responseStaff.headers().get("Access-Token");
+//                        String client = responseStaff.headers().get("Client");
+//                        Log.e("first22", authToken + "  " + client);
+//                        StaffWrapper staffWrapper = responseStaff.body();
+//                        if (staffWrapper != null) {
+//                            Staff staff = staffWrapper.getData();
+//                            final MerchantEntity merchantEntity = new MerchantEntity();
+//                            merchantEntity.setId(staff.getEmployer().getId());
+//                            merchantEntity.setFirstName(staff.getEmployer().getFirstName());
+//                            merchantEntity.setLastName(staff.getEmployer().getLastName());
+//                            merchantEntity.setBusinessName(staff.getEmployer().getBusinessName());
+//                            merchantEntity.setEmail(staff.getEmail());
+//                            merchantEntity.setBusinessType(staff.getEmployer().getBusinessType());
+//                            merchantEntity.setContactNumber(staff.getEmployer().getContactNumber());
+//                            merchantEntity.setSyncFrequency(staff.getEmployer().getSyncFrequency());
+//                            merchantEntity.setBluetoothPrintEnabled(staff
+//                                    .getEmployer().isEnableBluetoothPrinting());
+//                            merchantEntity.setCurrency(staff.getEmployer().getCurrency());
+//                            merchantEntity.setAddressLine1(staff.getEmployer().getAddressLine1());
+//                            merchantEntity.setAddressLine2(staff.getEmployer().getAddressLine2());
+//
+//                            if (staff.getEmployer() != null) {
+//                                merchantEntity.setSubscriptionExpiresOn(new Timestamp(staff
+//                                        .getEmployer().getSubscriptionExpiresOn().getMillis()));
+//                            }
+//
+//                            DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+//                            databaseManager.insertNewMerchant(merchantEntity);
+//                            mSessionManager.setMerchantSessionData(
+//                                    staff.getEmployer().getId(),
+//                                    staff.getEmail(),
+//                                    staff.getEmployer().getFirstName(),
+//                                    staff.getEmployer().getLastName(),
+//                                    staff.getEmployer().getContactNumber(),
+//                                    staff.getEmployer().getBusinessName(),
+//                                    staff.getEmployer().getBusinessType(),
+//                                    staff.getEmployer().getCurrency(),
+//                                    authToken,
+//                                    client,
+//                                    staff.getEmployer().getAddressLine1(),
+//                                    staff.getEmployer().getAddressLine2());
+//
+//                            SharedPreferences sharedPreferences =
+//                                    PreferenceManager.getDefaultSharedPreferences(mContext);
+//                            SharedPreferences.Editor editor = sharedPreferences.edit();
+//                            editor.putBoolean(mContext.getString(R.string.pref_turn_on_pos_key),
+//                                    staff.getEmployer().isTurnOnPointOfSale() != null
+//                                            && staff.getEmployer().isTurnOnPointOfSale());
+//                            editor.putBoolean(mContext.getString(
+//                                    R.string.pref_enable_bluetooth_print_key),
+//                                    staff.getEmployer().isEnableBluetoothPrinting() != null
+//                                            && staff.getEmployer().isEnableBluetoothPrinting());
+//                            editor.putString("sync_frequency",
+//                                    String.valueOf(staff.getEmployer().getSyncFrequency()));
+//                            editor.apply();
+////                        }
+//                    }
+//                }
             }
         }
 

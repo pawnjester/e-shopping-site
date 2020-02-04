@@ -3,6 +3,8 @@ package co.loystar.loystarbusiness.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -28,6 +30,7 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
@@ -287,11 +290,20 @@ public class ProductListActivity
         public void onBindViewHolder(ProductEntity item, BindingHolder<ProductItemBinding> holder, int position) {
             holder.binding.setProduct(item);
             holder.binding.productPrice.setText(String.valueOf(item.getPrice()));
-            Glide.with(mContext)
-                    .load(item.getPicture())
-                    .apply(RequestOptions.centerCropTransform())
-                    .apply(RequestOptions.placeholderOf(AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)))
-                    .into(holder.binding.productImg);
+            if (item.getPicture() != null) {
+                Glide.with(mContext)
+                        .load(item.getPicture())
+                        .apply(RequestOptions.centerCropTransform())
+                        .apply(RequestOptions.placeholderOf(AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)))
+                        .into(holder.binding.productImg);
+            } else {
+                TextDrawable drawable = TextDrawable.builder()
+                        .beginConfig().textColor(Color.GRAY)
+                        .useFont(Typeface.DEFAULT)
+                        .toUpperCase().endConfig()
+                        .buildRect(item.getName().substring(0,2), Color.WHITE);
+                holder.binding.productImg.setImageDrawable(drawable);
+            }
         }
 
         @Override

@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -176,6 +178,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private TextView mStatus;
         private CardView mCard;
         private TextView mCreatedAt;
+        private TextView mCreatedTime;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -185,6 +188,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mStatus = itemView.findViewById(R.id.status);
             mCard = itemView.findViewById(R.id.invoice_card);
             mCreatedAt = itemView.findViewById(R.id.created_date_value);
+            mCreatedTime = itemView.findViewById(R.id.created_time_value);
         }
 
         public void bind(final InvoiceEntity entity, final OnItemClickListener listener) {
@@ -194,6 +198,7 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             String number;
             String status;
             String createdAt;
+            String createdTime;
             if (entity.getCustomer() == null) {
                 lastName = "";
             } else {
@@ -223,14 +228,17 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             if (entity.getCreatedAt() == null) {
                 createdAt = "";
+                createdTime = "";
             } else {
                 createdAt = TimeUtils.convertToDate(entity.getCreatedAt());
+                createdTime = TimeUtils.convertToTime(entity.getCreatedAt());
             }
             mInvoiceId.setText(number);
             mStatus.setText(status);
             mCustomer.setText(name);
             mAmount.setText(amount);
             mCreatedAt.setText(createdAt);
+            mCreatedTime.setText(createdTime);
             if (entity.getCustomer() != null) {
                 mCard.setOnClickListener(view -> {
                     listener.onItemClick(entity);

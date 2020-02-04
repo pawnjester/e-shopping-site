@@ -13,8 +13,8 @@ public class PaymentMessage{
 //	@SerializedName("merchant_id")
 //	private int merchantId;
 //
-//	@SerializedName("id")
-//	private int id;
+	@SerializedName("id")
+	private int id;
 
 	@SerializedName("message")
 	private String message;
@@ -43,13 +43,13 @@ public class PaymentMessage{
 //		return merchantId;
 //	}
 //
-//	public void setId(int id){
-//		this.id = id;
-//	}
-//
-//	public int getId(){
-//		return id;
-//	}
+	public void setId(int id){
+		this.id = id;
+	}
+
+	public int getId(){
+		return id;
+	}
 
 	public void setMessage(String message){
 		this.message = message;

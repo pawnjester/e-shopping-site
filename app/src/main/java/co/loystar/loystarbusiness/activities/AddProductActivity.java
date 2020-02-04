@@ -25,6 +25,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -457,15 +458,18 @@ public class AddProductActivity extends BaseActivity {
         super.onDestroy();
     }
 
+
+
     private void submitForm() {
-        if (imageUri == null) {
-            expandFabMenu();
-            // generate dummy bitmap
-
-
-            Snackbar.make(mLayout, getString(R.string.error_picture_required), Snackbar.LENGTH_LONG).show();
-            return;
-        }
+//        if (imageUri == null) {
+//            expandFabMenu();
+////            String twoLetters = getFirstTwoLetter(productNameView.getText().toString());
+//            // generate dummy bitmap
+//
+//
+//            Snackbar.make(mLayout, getString(R.string.error_picture_required), Snackbar.LENGTH_LONG).show();
+//            return;
+//        }
         if (productNameView.getText().toString().trim().isEmpty()) {
             productNameView.setError(getString(R.string.error_name_required));
             productNameView.requestFocus();
@@ -488,95 +492,175 @@ public class AddProductActivity extends BaseActivity {
         }
 
         try {
-            showProgress(true);
-            File file = FileUtils.from(mContext, imageUri);
-            File compressedFile = new Compressor(mContext).compressToFile(file);
+            if (imageUri != null) {
+                showProgress(true);
+                File file = FileUtils.from(mContext, imageUri);
+                File compressedFile = new Compressor(mContext).compressToFile(file);
+                String mimeType = contentResolver.getType(imageUri);
+                if (mimeType == null) {
+                    mimeType = "image/jpeg";
+                }
+                RequestBodyWithProgress.ProgressListener progressListener = num -> mProgressBar.setProgress((int) num);
+                RequestBodyWithProgress requestFile = new RequestBodyWithProgress(compressedFile, mimeType, progressListener);
 
-            RequestBody name =
-                    RequestBody.create(
-                            okhttp3.MultipartBody.FORM, productNameView.getText().toString());
-            RequestBody price =
-                    RequestBody.create(
-                            okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
-            RequestBody merchant_product_category_id =
-                    RequestBody.create(
-                            okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProductCategory.getId()));
-            RequestBody merchant_loyalty_program_id =
-                RequestBody.create(
-                    okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
+                MultipartBody.Part body =
+                        MultipartBody.Part.createFormData("data[picture]", compressedFile.getName(), requestFile);
+                RequestBody name =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productNameView.getText().toString());
+                RequestBody price =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
+                RequestBody merchant_product_category_id =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProductCategory.getId()));
+                RequestBody merchant_loyalty_program_id =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
 
-            String mimeType = contentResolver.getType(imageUri);
-            if (mimeType == null) {
-                mimeType = "image/jpeg";
-            }
-            RequestBodyWithProgress.ProgressListener progressListener = num -> mProgressBar.setProgress((int) num);
-            RequestBodyWithProgress requestFile = new RequestBodyWithProgress(compressedFile, mimeType, progressListener);
 
-            MultipartBody.Part body =
-                    MultipartBody.Part.createFormData("data[picture]", compressedFile.getName(), requestFile);
+                mApiClient.getLoystarApi(false)
+                        .addProduct(
+                                name,
+                                price,
+                                merchant_product_category_id,
+                                merchant_loyalty_program_id,
+                                body
+                        ).enqueue(new Callback<Product>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Product> call, @NonNull Response<Product> response) {
+                        showProgress(false);
+                        if (response.isSuccessful()) {
+                            Product product = response.body();
+                            if (product == null) {
+                                showSnackbar(R.string.unknown_error);
+                            } else {
+                                ProductEntity productEntity = new ProductEntity();
+                                productEntity.setId(product.getId());
+                                productEntity.setName(product.getName());
+                                productEntity.setPicture(product.getPicture());
+                                productEntity.setPrice(product.getPrice());
+                                productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
+                                productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
+                                productEntity.setDeleted(false);
 
-            mApiClient.getLoystarApi(false)
-                    .addProduct(
-                            name,
-                            price,
-                            merchant_product_category_id,
-                            merchant_loyalty_program_id,
-                            body
-                    ).enqueue(new Callback<Product>() {
-                @Override
-                public void onResponse(@NonNull Call<Product> call, @NonNull Response<Product> response) {
-                    showProgress(false);
-                    if (response.isSuccessful()) {
-                        Product product = response.body();
-                        if (product == null) {
-                            showSnackbar(R.string.unknown_error);
+                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                                if (productCategoryEntity != null) {
+                                    productEntity.setCategory(productCategoryEntity);
+                                }
+                                LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                                if (programEntity != null) {
+                                    productEntity.setLoyaltyProgram(programEntity);
+                                }
+                                productEntity.setOwner(merchantEntity);
+
+                                mDatabaseManager.insertNewProduct(productEntity);
+
+                                if (getActivityInitiator.equals(ProductListActivity.TAG)) {
+                                    Intent intent = new Intent(AddProductActivity.this, ProductListActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra(getString(R.string.product_create_success), true);
+                                    startActivity(intent);
+                                } else if (getActivityInitiator.equals(SaleWithPosActivity.TAG)){
+                                    Intent intent = new Intent(AddProductActivity.this, SaleWithPosActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra(getString(R.string.product_create_success), true);
+                                    startActivity(intent);
+                                }
+                            }
                         } else {
-                            ProductEntity productEntity = new ProductEntity();
-                            productEntity.setId(product.getId());
-                            productEntity.setName(product.getName());
-                            productEntity.setPicture(product.getPicture());
-                            productEntity.setPrice(product.getPrice());
-                            productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
-                            productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
-                            productEntity.setDeleted(false);
-
-                            ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
-                            if (productCategoryEntity != null) {
-                                productEntity.setCategory(productCategoryEntity);
-                            }
-                            LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
-                            if (programEntity != null) {
-                                productEntity.setLoyaltyProgram(programEntity);
-                            }
-                            productEntity.setOwner(merchantEntity);
-
-                            mDatabaseManager.insertNewProduct(productEntity);
-
-                            if (getActivityInitiator.equals(ProductListActivity.TAG)) {
-                                Intent intent = new Intent(AddProductActivity.this, ProductListActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra(getString(R.string.product_create_success), true);
-                                startActivity(intent);
-                            } else if (getActivityInitiator.equals(SaleWithPosActivity.TAG)){
-                                Intent intent = new Intent(AddProductActivity.this, SaleWithPosActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra(getString(R.string.product_create_success), true);
-                                startActivity(intent);
-                            }
+                            showSnackbar(R.string.unknown_error);
                         }
-                    } else {
-                        showSnackbar(R.string.unknown_error);
                     }
-                }
 
-                @Override
-                public void onFailure(@NonNull Call<Product> call, @NonNull Throwable t) {
-                    showProgress(false);
-                    showSnackbar(R.string.error_internet_connection_timed_out);
-                }
-            });
+                    @Override
+                    public void onFailure(@NonNull Call<Product> call, @NonNull Throwable t) {
+                        showProgress(false);
+                        showSnackbar(R.string.error_internet_connection_timed_out);
+                    }
+                });
+            } else {
+                showProgress(true);
+                RequestBody name =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productNameView.getText().toString());
+                RequestBody price =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
+                RequestBody merchant_product_category_id =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProductCategory.getId()));
+                RequestBody merchant_loyalty_program_id =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
+
+
+                mApiClient.getLoystarApi(false)
+                        .addProduct(
+                                name,
+                                price,
+                                merchant_product_category_id,
+                                merchant_loyalty_program_id,
+                                null
+                        ).enqueue(new Callback<Product>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Product> call, @NonNull Response<Product> response) {
+                        showProgress(false);
+                        if (response.isSuccessful()) {
+                            Product product = response.body();
+                            if (product == null) {
+                                showSnackbar(R.string.unknown_error);
+                            } else {
+                                ProductEntity productEntity = new ProductEntity();
+                                productEntity.setId(product.getId());
+                                productEntity.setName(product.getName());
+                                productEntity.setPicture(product.getPicture());
+                                productEntity.setPrice(product.getPrice());
+                                productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
+                                productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
+                                productEntity.setDeleted(false);
+
+                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                                if (productCategoryEntity != null) {
+                                    productEntity.setCategory(productCategoryEntity);
+                                }
+                                LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                                if (programEntity != null) {
+                                    productEntity.setLoyaltyProgram(programEntity);
+                                }
+                                productEntity.setOwner(merchantEntity);
+
+                                mDatabaseManager.insertNewProduct(productEntity);
+
+                                if (getActivityInitiator.equals(ProductListActivity.TAG)) {
+                                    Intent intent = new Intent(AddProductActivity.this, ProductListActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra(getString(R.string.product_create_success), true);
+                                    startActivity(intent);
+                                } else if (getActivityInitiator.equals(SaleWithPosActivity.TAG)){
+                                    Intent intent = new Intent(AddProductActivity.this, SaleWithPosActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra(getString(R.string.product_create_success), true);
+                                    startActivity(intent);
+                                }
+                            }
+                        } else {
+                            showSnackbar(R.string.unknown_error);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<Product> call, @NonNull Throwable t) {
+                        showProgress(false);
+                        showSnackbar(R.string.error_internet_connection_timed_out);
+                    }
+                });
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("sayyy", "never");
             showSnackbar(R.string.unknown_error);
             showProgress(false);
         }

@@ -9,11 +9,11 @@
         icon="@drawable/ic_people_black_24dp"
         title="@string/customers_title" />
     <tab
-        id="@+id/orders"
-        icon="@drawable/ic_view_orders"
-        title="@string/orders" />
-    <tab
         id="@+id/invoices"
         icon="@drawable/ic_receipt_black"
         title="@string/invoices"/>
+    <tab
+        id="@+id/orders"
+        icon="@drawable/ic_view_orders"
+        title="@string/orders" />
 </tabs>

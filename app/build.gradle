@@ -31,7 +31,7 @@ android {
         applicationId "co.loystar.loystarbusiness"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 114
+        versionCode 115
         versionName '1.6'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [onesignal_app_id               : "00205c9f-9af0-47b8-9b4d-d63e9a432b83",
@@ -199,6 +199,7 @@ dependencies {
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
     testImplementation "junit:junit:$junitVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -104,18 +104,27 @@ public class InvoiceListActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent newIntent = new Intent(this, MerchantBackOfficeActivity.class);
-        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TOP );
-        startActivity(newIntent);
+//        Intent newIntent = new Intent(this, MerchantBackOfficeActivity.class);
+//        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+//                Intent.FLAG_ACTIVITY_CLEAR_TOP );
+//        startActivity(newIntent);
+        navigateUpTo(new Intent(this, MerchantBackOfficeActivity.class));
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
+//        int id = item.getItemId();
+//        if (id == android.R.id.home) {
+//            navigateUpTo()
+//        }
+//        return super.onOptionsItemSelected(item);
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            this.finish();
+        switch (id) {
+            case android.R.id.home:
+                navigateUpTo(new Intent(this, MerchantBackOfficeActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private void showInvoiceActivity(Invoice invoice) {

@@ -20,6 +20,7 @@
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="error_login_credentials">Email or Password is incorrect. Please try again!</string>
+    <string name="error_login_staff_credentials">Username or Password is incorrect. Please try again!</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
@@ -577,5 +578,8 @@
     <string name="download_pdf_menu_text">Download Pdf</string>
     <string name="set_payment_message_text">Set Payment Message</string>
     <string name="edit_product_text">View Products</string>
+    <string name="expired_now_text">Your account has expired</string>
+    <string name="expire_today_text">Your account would expire today</string>
+    <string name="login_as_staff_text">Login as Staff</string>
 
 </resources>

@@ -34,7 +34,6 @@
         android:id="@+id/order_summary_bs_wrapper">
         <include layout="@layout/order_summary_bottom_sheet" />
     </FrameLayout>
-
     <include layout="@layout/content_sale_with_pos" />
 
 </android.support.design.widget.CoordinatorLayout>

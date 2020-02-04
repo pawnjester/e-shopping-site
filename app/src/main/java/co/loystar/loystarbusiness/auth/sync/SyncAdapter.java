@@ -109,7 +109,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             SyncResult syncResult
     ) {
         try {
-            String mAuthToken = mAccountManager.blockingGetAuthToken(account, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
+            String mAuthToken = mAccountManager.blockingGetAuthToken(account,
+                    AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
             merchantEntity = mDatabaseManager.getMerchant(mSessionManager.getMerchantId());
             if (merchantEntity == null) {
                 mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, mAuthToken);
@@ -180,6 +181,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .getCustomers(1, 1500)
                 .flatMapIterable(arrayListResponse -> {
                     ArrayList<Customer> customers = arrayListResponse.body();
+                    Log.e("total", arrayListResponse + "");
 
                     int getTotal = customers.size();
                         /*
@@ -727,22 +729,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         }
                                         for (ItemsItem itemsItem : newInvoice.getItems()) {
                                             InvoiceTransactionEntity transactionEntity = new InvoiceTransactionEntity();
-//                                            transactionEntity.setId(newInvoice.getId());
                                             transactionEntity.setUserId(newInvoice.getCustomer().getUser_id());
                                             transactionEntity.setCustomer(customerEntity);
                                             transactionEntity.setMerchantLoyaltyProgramId(
                                                     itemsItem.getProduct().getMerchant_loyalty_program_id());
                                             transactionEntity.setAmount(Double.valueOf(itemsItem.getAmount()));
                                             transactionEntity.setMerchant(merchantEntity);
-//                                            transactionEntity.setCreatedAt(newInvoice.getCreatedAt());
                                             transactionEntity.setProductId(itemsItem.getProduct().getId());
                                             transactionEntity.setInvoice(newInvoiceEntity);
                                             transactionEntity.setQuantity(itemsItem.getQuantity());
-
-//                                            ItemsItemEntity itemsItemEntity = new ItemsItemEntity();
-//                                            itemsItemEntity.setAmount(itemsItem.getAmount());
-//                                            itemsItemEntity.setSynced(true);
-//                                            itemsItemEntity.setInvoice(newInvoiceEntity);
+                                            transactionEntity.setPoints(Double.valueOf(itemsItem.getAmount()).intValue());
                                             mDataStore.upsert(transactionEntity).subscribe(
 
 

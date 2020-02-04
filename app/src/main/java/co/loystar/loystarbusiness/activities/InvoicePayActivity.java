@@ -278,8 +278,6 @@ public class InvoicePayActivity extends BaseActivity implements
             selectedCustomer.setText(customerEntity.getFirstName());
         });
         viewProductsButton.setOnClickListener(view -> {
-//            mWrapper.setVisibility(View.VISIBLE);
-//            toggleBottomSheet();
             goToViewProductsActivity();
 
         });
@@ -295,7 +293,6 @@ public class InvoicePayActivity extends BaseActivity implements
 
         if (invoiceId > 0) {
             completePaymentButton.setText("Update");
-            selectedCustomer.setEnabled(false);
             List<InvoiceTransactionEntity> entities =
                     mDatabaseManager.getInvoiceTransaction(invoiceId);
             for (InvoiceTransactionEntity entity: entities) {
@@ -316,6 +313,7 @@ public class InvoicePayActivity extends BaseActivity implements
             } else if (invoiceStatus.equals("partial")) {
                 viewProductsButton.setVisibility(View.GONE);
                 Double difference;
+                selectedCustomer.setEnabled(false);
                 difference = totalCost - Double.valueOf(paidAmount == null ? "0.0" : paidAmount);
                 amount_due_value.setText(difference.toString());
                 amountText.setText(amount_due_value.getText());
@@ -703,8 +701,11 @@ public class InvoicePayActivity extends BaseActivity implements
                         jsonObjectData.put("status", "unpaid");
                     }
 
-                    jsonObjectData.put("payment_method", updatedInvoiceEntity.getPaymentMethod());
+                    jsonObjectData.put("payment_method", updatedInvoiceEntity.getPaymentMethod().toLowerCase());
                     jsonObjectData.put("payment_message", updatedInvoiceEntity.getPaymentMessage());
+                    jsonObjectData.put("invoiceId", updatedInvoiceEntity.getId());
+                    jsonObjectData.put("user_id", updatedInvoiceEntity.getCustomer().getUserId());
+                    jsonObjectData.put("due_date", updatedInvoiceEntity.getDueDate());
 
                     JSONArray jsonArray = new JSONArray();
                     for (InvoiceTransactionEntity transactionEntity: updatedInvoiceEntity.getTransactions()) {
@@ -775,7 +776,7 @@ public class InvoicePayActivity extends BaseActivity implements
                                         }
                                 );
                                 SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
-                                Intent nextIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                                Intent nextIntent = new Intent(getApplicationContext(), InvoiceListActivity.class);
                                 nextIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(nextIntent);
 
@@ -866,6 +867,7 @@ public class InvoicePayActivity extends BaseActivity implements
                         transactionEntity.setAmount(totalCosts);
 
                         if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                            Log.e("loyalty", loyaltyProgram.getProgramType());
                             transactionEntity
                                     .setPoints(Double.valueOf(totalCosts).intValue());
                             transactionEntity.setProgramType(getString(R.string.simple_points));
@@ -1059,6 +1061,7 @@ public class InvoicePayActivity extends BaseActivity implements
                                             transactionEntity.setUserId(invoice.getCustomer().getUser_id());
                                             transactionEntity.setMerchantLoyaltyProgramId(
                                                     transaction.getProduct().getMerchant_loyalty_program_id());
+                                            transactionEntity.setPoints(Double.valueOf(transaction.getAmount()).intValue());
 
                                             mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
                                         }
@@ -1192,7 +1195,7 @@ public class InvoicePayActivity extends BaseActivity implements
         builder.setCancelable(false);
         builder.setNegativeButton("No", ((dialog, i) -> {
             dialog.dismiss();
-            Intent intent = new Intent(this, MerchantBackOfficeActivity.class);
+            Intent intent = new Intent(this, InvoiceListActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }));
@@ -1593,7 +1596,7 @@ public class InvoicePayActivity extends BaseActivity implements
                                                                 "Invoice has been updated successfully",
                                                                 Toast.LENGTH_LONG).show();
                                                         SyncAdapter.performSync(getApplicationContext(), mSessionManager.getEmail());
-                                                        Intent nextIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                                                        Intent nextIntent = new Intent(getApplicationContext(), InvoiceListActivity.class);
                                                         nextIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                         startActivity(nextIntent);
                                                     } else {
@@ -1619,10 +1622,6 @@ public class InvoicePayActivity extends BaseActivity implements
                                                     "Invoice could not be updated successfully", Toast.LENGTH_LONG).show();
                                             dialog.dismiss();
                                         });
-//                                        SyncAdapter.performSync(this, mSessionManager.getEmail());
-//                                        Intent merchantIntent = new Intent(this, MerchantBackOfficeActivity.class);
-//                                        merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                                        startActivity(merchantIntent);
                                     }
                                 }).subscribe();
                     }

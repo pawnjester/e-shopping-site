@@ -4,6 +4,9 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -35,6 +38,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.jakewharton.rxbinding2.view.RxView;
@@ -143,6 +147,7 @@ public class SaleWithPosActivity extends BaseActivity implements
     private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
     private int customerId;
     private View mLayout;
+    private boolean isDualPane = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +155,11 @@ public class SaleWithPosActivity extends BaseActivity implements
         setContentView(R.layout.activity_sale_with_pos);
 
         mLayout = findViewById(R.id.activity_sale_with_pos_container);
+//        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+
+
+//        isDualPane =
         boolean productCreatedIntent = getIntent().getBooleanExtra(getString(R.string.product_create_success), false);
         if (productCreatedIntent) {
             Snackbar.make(mLayout, getString(R.string.product_create_success), Snackbar.LENGTH_LONG).show();
@@ -645,14 +655,25 @@ public class SaleWithPosActivity extends BaseActivity implements
             options.centerCrop().apply(RequestOptions.placeholderOf(
                     AppCompatResources.getDrawable(mContext, R.drawable.ic_photo_black_24px)
             ));
-            Glide.with(mContext)
-                    .load(item.getPicture())
-                    .apply(options)
-                    .into(holder.binding.productImage);
-            Glide.with(mContext)
-                    .load(item.getPicture())
-                    .apply(options)
-                    .into(holder.binding.productImageCopy);
+
+            if (item.getPicture() != null) {
+                Glide.with(mContext)
+                        .load(item.getPicture())
+                        .apply(options)
+                        .into(holder.binding.productImage);
+                Glide.with(mContext)
+                        .load(item.getPicture())
+                        .apply(options)
+                        .into(holder.binding.productImageCopy);
+            } else {
+                TextDrawable drawable = TextDrawable.builder()
+                        .beginConfig().textColor(Color.GRAY)
+                        .useFont(Typeface.DEFAULT)
+                        .toUpperCase().endConfig()
+                        .buildRect(item.getName().substring(0,2), Color.WHITE);
+                holder.binding.productImage.setImageDrawable(drawable);
+                holder.binding.productImageCopy.setImageDrawable(drawable);
+            }
             holder.binding.productName.setText(item.getName());
             if (mSelectedProducts.get(item.getId()) == 0) {
                 holder.binding.productDecrementWrapper.setVisibility(View.GONE);

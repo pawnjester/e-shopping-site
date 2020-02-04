@@ -24,6 +24,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
 import android.util.Base64;
 import android.util.Log;
@@ -64,6 +65,8 @@ import com.roughike.bottombar.BottomBar;
 import com.uxcam.UXCam;
 
 import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,16 +76,22 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -132,12 +141,17 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
     private BrandButtonNormal stateActionBtn;
     private MerchantEntity merchantEntity;
     private MixpanelAPI mixpanelAPI;
+    private CardView expiryBanner;
+    private TextView expiredMessage;
+    private Button renewButton;
+    private View expiryContainer;
 
     @BindView(R.id.merchant_back_office_layout)
     View mainLayout;
 
     @BindView(R.id.merchant_back_office_order_received_layout)
     View orderReceivedLayout;
+
 
     @BindView(R.id.orderReceivedImg)
     ImageView orderReceivedImgView;
@@ -214,10 +228,29 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
             NotificationManager notificationManager =
                 getSystemService(NotificationManager.class);
             if (notificationManager != null) {
-                notificationManager.createNotificationChannel(new NotificationChannel(channelId,
+                notificationManager.createNotificationChannel(
+                        new NotificationChannel(channelId,
                     channelName, NotificationManager.IMPORTANCE_LOW));
             }
         }
+
+        renewButton = findViewById(R.id.renew_button);
+        expiryContainer = findViewById(R.id.expiry_container);
+        expiryBanner = findViewById(R.id.expiry_banner);
+        expiredMessage = findViewById(R.id.expired_message);
+
+
+        renewButton.setOnClickListener(view -> {
+            Intent paysubscriptionIntent = new Intent(this, PaySubscriptionActivity.class);
+            startActivity(paysubscriptionIntent);
+        });
+        Date expiryDate = AccountGeneral.accountExpiry(getApplicationContext());
+
+        if (expiryDate != null) {
+            onAccountFinished();
+        }
+
+
 
         stateWelcomeImageView = emptyStateLayout.findViewById(R.id.stateImage);
         stateWelcomeTextView = emptyStateLayout.findViewById(R.id.stateIntroText);
@@ -391,6 +424,7 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
                     }
                 });
     }
+
 
     private void setupGraph() {
         barChart = findViewById(R.id.chart);
@@ -825,9 +859,70 @@ public class MerchantBackOfficeActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
+
             showSnackbar(R.string.records_updated_notice);
+            onAccountFinished();
         }
     };
+
+    private void onAccountFinished() {
+        Date expiryDate = AccountGeneral.accountExpiry(getApplicationContext());
+        if (expiryDate == null) {
+            expiryBanner.setVisibility(View.VISIBLE);
+            expiryContainer.setBackgroundColor(getResources().getColor(R.color.bg_expiry));
+            expiredMessage.setText(getResources().getString(R.string.expired_now_text));
+        } else {
+            if (AccountGeneral.isAccountActive(getApplicationContext())) {
+                Calendar expire = Calendar.getInstance();
+                expire.setTime(expiryDate);
+                expire.set(Calendar.MILLISECOND, 0);
+                expire.set(Calendar.SECOND, 0);
+                expire.set(Calendar.MINUTE, 0);
+                expire.set(Calendar.HOUR_OF_DAY, 0);
+                expire.setTimeZone(TimeZone.getDefault());
+
+                Calendar today = Calendar.getInstance();
+                today.set(Calendar.MILLISECOND, 0);
+                today.set(Calendar.SECOND, 0);
+                today.set(Calendar.MINUTE, 0);
+                today.set(Calendar.HOUR_OF_DAY, 0);
+
+                Calendar getToday = Calendar.getInstance();
+                getToday.setTimeZone(TimeZone.getDefault());
+
+                long difference = expire.getTime().getTime() - today.getTime().getTime();
+                long days = TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS);
+
+
+                if (today.after(expire) ||  getToday.getTime().getTime() > expiryDate.getTime()) {
+                    expiryBanner.setVisibility(View.VISIBLE);
+                    expiryContainer.setBackgroundColor(getResources().getColor(R.color.bg_expiry));
+                    expiredMessage.setText(getResources().getString(R.string.expired_now_text));
+                } else if (today.equals(expire)) {
+                    expiryBanner.setVisibility(View.VISIBLE);
+                    expiryContainer.setBackgroundColor(getResources().getColor(R.color.bg_expiry_before));
+                    expiredMessage.setText(getResources().getString(R.string.expire_today_text));
+                } else if ((difference <= 604800000L) && today.before(expire)) {
+                    String expireText;
+                    expiryBanner.setVisibility(View.VISIBLE);
+                    expiryContainer.setBackgroundColor(getResources().getColor(R.color.bg_expiry_before));
+                    if (days == 1) {
+                        expireText = "Your account would expire tomorrow";
+                    } else {
+                        expireText = "Your account would expire in %s days";
+                    }
+                    String formatText = String.format(expireText, days);
+                    expiredMessage.setText(formatText);
+                }
+            }
+            else {
+                expiryBanner.setVisibility(View.VISIBLE);
+                expiryContainer.setBackgroundColor(getResources().getColor(R.color.bg_expiry));
+                expiredMessage.setText(getResources().getString(R.string.expired_now_text));
+            }
+        }
+    }
+
 
     private BroadcastReceiver syncStartedReceiver = new BroadcastReceiver() {
 

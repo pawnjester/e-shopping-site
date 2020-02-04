@@ -5,6 +5,7 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -43,9 +44,13 @@ public class ApiClient {
     }
 
     private Retrofit getRetrofit(boolean hasRootValue) {
+        Log.e("account333", mSessionManager.getEmail()
+                +" " + mSessionManager.getClientKey() + " "
+                + mSessionManager.getAccessToken());
         if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+//            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(300, TimeUnit.SECONDS)
@@ -56,6 +61,9 @@ public class ApiClient {
                         if (mAccount == null) {
                             return chain.proceed(originalRequest);
                         }
+                        Log.e("accountwww", mSessionManager.getEmail()
+                                +" " + mSessionManager.getClientKey() + " "
+                                + mSessionManager.getAccessToken());
 
                         Request authorisedRequest = originalRequest.newBuilder()
                             .header("ACCESS-TOKEN", mSessionManager.getAccessToken())
@@ -69,11 +77,14 @@ public class ApiClient {
                             return null;
                         }
                         if (mAccount != null) {
-                            String oldToken = mAccountManager.peekAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
+                            Log.e("here", "dundee");
+                            String oldToken = mAccountManager.peekAuthToken(mAccount,
+                                    AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
                             if (oldToken != null) {
                                 mAccountManager.invalidateAuthToken(AccountGeneral.ACCOUNT_TYPE, oldToken);
                                 try {
-                                    String newToken = mAccountManager.blockingGetAuthToken(mAccount, AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
+                                    String newToken = mAccountManager.blockingGetAuthToken(mAccount,
+                                            AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS, true);
                                     if (newToken != null) {
                                         return response.request().newBuilder()
                                             .header("ACCESS-TOKEN", newToken)

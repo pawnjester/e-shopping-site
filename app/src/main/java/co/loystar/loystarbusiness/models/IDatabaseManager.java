@@ -19,6 +19,7 @@ import co.loystar.loystarbusiness.models.entities.ProductEntity;
 import co.loystar.loystarbusiness.models.entities.SaleEntity;
 import co.loystar.loystarbusiness.models.entities.SalesOrderEntity;
 import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.models.entities.StaffEntity;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -29,6 +30,8 @@ public interface IDatabaseManager {
     MerchantEntity getMerchant(int merchantId);
 
     void insertNewMerchant(@NonNull MerchantEntity merchantEntity);
+
+    void insertNewStaff(@NonNull StaffEntity staffEntity);
 
     void updateMerchant(@NonNull MerchantEntity merchantEntity);
 

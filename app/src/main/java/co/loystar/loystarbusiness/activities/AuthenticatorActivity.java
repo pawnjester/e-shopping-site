@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,7 +65,10 @@ import co.loystar.loystarbusiness.models.DatabaseManager;
 import co.loystar.loystarbusiness.models.databinders.Merchant;
 import co.loystar.loystarbusiness.models.databinders.MerchantWrapper;
 import co.loystar.loystarbusiness.models.databinders.PhoneNumberAvailability;
+import co.loystar.loystarbusiness.models.databinders.Staff;
+import co.loystar.loystarbusiness.models.databinders.StaffWrapper;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
+import co.loystar.loystarbusiness.models.entities.StaffEntity;
 import co.loystar.loystarbusiness.utils.Constants;
 import co.loystar.loystarbusiness.utils.ui.TextUtilsHelper;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
@@ -102,7 +106,7 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
     private View mLoginFormView;
     private View mLayout;
     PhoneNumber verifiedPhoneNo;
-
+    private boolean isStaffChecked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,8 +122,11 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
         mSessionManager = new SessionManager(this);
         mApiClient = new ApiClient(this);
         mAuth = FirebaseAuth.getInstance(); // for firebase
-
-
+//        CheckBox isStaff = findViewById(R.id.isStaffCheck);
+//
+//        isStaff.setOnClickListener(view -> {
+//            isStaffChecked = ((CheckBox) view).isChecked();
+//        });
 
         mEmailView = findViewById(R.id.email);
         mLayout = findViewById(R.id.auth_root_layout);
@@ -416,7 +423,8 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!TextUtilsHelper.isValidEmailAddress(email)) {
+        }
+        else if (!isStaffChecked && !TextUtilsHelper.isValidEmailAddress(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -431,13 +439,119 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             // perform the user login attempt.
             closeKeyBoard();
             showProgress(true);
-            loginMerchant(email, password);
+//            if(isStaffChecked) {
+//                loginStaff(email, password);
+//            } else {
+                loginMerchant(email, password);
+//            }
         }
     }
 
     private boolean isPasswordValid(String password) {
         return password.length() > 5;
     }
+
+//    private void loginStaff(String username, String password) {
+//        mApiClient.getLoystarApi(false)
+//                .signInStaff(username, password)
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeOn(Schedulers.io())
+//                .compose(bindToLifecycle())
+//                .subscribe(response -> {
+//                    showProgress(false);
+//                    if (response.isSuccessful()) {
+//                        String authToken = response.headers().get("Access-Token");
+//                        String client = response.headers().get("Client");
+//                        StaffWrapper staffWrapper = response.body();
+//                        if (staffWrapper == null) {
+//                            showSnackbar(R.string.unknown_error);
+//                        } else {
+//                            Staff staff = staffWrapper.getData();
+//                            final MerchantEntity merchantEntity = new MerchantEntity();
+//                            merchantEntity.setId(staff.getEmployer().getId());
+//                            merchantEntity.setFirstName(staff.getEmployer().getFirstName());
+//                            merchantEntity.setLastName(staff.getEmployer().getLastName());
+//                            merchantEntity.setBusinessName(staff.getEmployer().getBusinessName());
+//                            merchantEntity.setEmail(staff.getEmail());
+//                            merchantEntity.setBusinessType(staff.getEmployer().getBusinessType());
+//                            merchantEntity.setContactNumber(staff.getEmployer().getContactNumber());
+//                            merchantEntity.setSyncFrequency(staff.getEmployer().getSyncFrequency());
+//                            merchantEntity.setBluetoothPrintEnabled(staff
+//                                    .getEmployer().isEnableBluetoothPrinting());
+//                            merchantEntity.setCurrency(staff.getEmployer().getCurrency());
+//                            merchantEntity.setAddressLine1(staff.getEmployer().getAddressLine1());
+//                            merchantEntity.setAddressLine2(staff.getEmployer().getAddressLine2());
+//
+//                            if (staff.getEmployer() != null) {
+//                                merchantEntity.setSubscriptionExpiresOn(new Timestamp(staff
+//                                        .getEmployer().getSubscriptionExpiresOn().getMillis()));
+//                            }
+//
+//                            DatabaseManager databaseManager = DatabaseManager.getInstance(mContext);
+//                            databaseManager.insertNewMerchant(merchantEntity);
+//                            mSessionManager.setMerchantSessionData(
+//                                    staff.getEmployer().getId(),
+//                                    staff.getEmail(),
+//                                    staff.getEmployer().getFirstName(),
+//                                    staff.getEmployer().getLastName(),
+//                                    staff.getEmployer().getContactNumber(),
+//                                    staff.getEmployer().getBusinessName(),
+//                                    staff.getEmployer().getBusinessType(),
+//                                    staff.getEmployer().getCurrency(),
+//                                    authToken,
+//                                    client,
+//                                    staff.getEmployer().getAddressLine1(),
+//                                    staff.getEmployer().getAddressLine2());
+//
+//                            SharedPreferences sharedPreferences =
+//                                    PreferenceManager.getDefaultSharedPreferences(mContext);
+//                            SharedPreferences.Editor editor = sharedPreferences.edit();
+//                            editor.putBoolean(getString(R.string.pref_turn_on_pos_key),
+//                                    staff.getEmployer().isTurnOnPointOfSale() != null
+//                                    && staff.getEmployer().isTurnOnPointOfSale());
+//                            editor.putBoolean(mContext.getString(
+//                                    R.string.pref_enable_bluetooth_print_key),
+//                                    staff.getEmployer().isEnableBluetoothPrinting() != null
+//                                            && staff.getEmployer().isEnableBluetoothPrinting());
+//                            editor.putString("sync_frequency",
+//                                    String.valueOf(staff.getEmployer().getSyncFrequency()));
+//                            editor.apply();
+//
+//                            Bundle bundle = new Bundle();
+//                            Intent intent = new Intent();
+//
+//                            bundle.putString(AccountManager.KEY_ACCOUNT_NAME,
+//                                    staff.getEmail());
+//                            bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+//                            bundle.putString(AccountManager.KEY_PASSWORD, password);
+//
+//                            intent.putExtras(bundle);
+//                            finishLogin(intent);
+//                        }
+//                    } else if (response.code() == 401) {
+//                        Intent intent = new Intent();
+//                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE,
+//                                getString(R.string.error_login_staff_credentials));
+//                        finishLogin(intent);
+//                    }
+//                    else {
+//                        Intent intent = new Intent();
+//                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE,
+//                                getString(R.string.unknown_error));
+//                        finishLogin(intent);
+//                    }
+//                }, e -> {
+//                    showProgress(false);
+//                    Intent intent = new Intent();
+//                    if (e instanceof SocketTimeoutException) {
+//                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.error_internet_connection_timed_out));
+//                    } else {
+//                        intent.putExtra(AccountManager.KEY_AUTH_FAILED_MESSAGE, getString(R.string.unknown_error));
+//                    }
+//                    finishLogin(intent);
+//                });
+//
+//    }
 
     /**
      * Shows the progress UI and hides the login form.
@@ -573,9 +687,14 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
 
                             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                             SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putBoolean(getString(R.string.pref_turn_on_pos_key), merchant.isTurn_on_point_of_sale() != null && merchant.isTurn_on_point_of_sale());
-                            editor.putBoolean(mContext.getString(R.string.pref_enable_bluetooth_print_key), merchant.getEnable_bluetooth_printing() != null && merchant.getEnable_bluetooth_printing());
-                            editor.putString("sync_frequency", String.valueOf(merchant.getSync_frequency()));
+                            editor.putBoolean(getString(R.string.pref_turn_on_pos_key),
+                                    merchant.isTurn_on_point_of_sale() != null
+                                            && merchant.isTurn_on_point_of_sale());
+                            editor.putBoolean(mContext.getString(R.string.pref_enable_bluetooth_print_key),
+                                    merchant.getEnable_bluetooth_printing() != null
+                                            && merchant.getEnable_bluetooth_printing());
+                            editor.putString("sync_frequency",
+                                    String.valueOf(merchant.getSync_frequency()));
                             editor.apply();
 
                             Bundle bundle = new Bundle();
@@ -620,7 +739,6 @@ public class AuthenticatorActivity extends BaseActivity implements LoaderCallbac
             {
             String accountPassword = intent.getStringExtra(AccountManager.KEY_PASSWORD);
             String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-
             // Creating the account on the device and setting the auth token we got
             final Account account = AccountGeneral.addOrFindAccount(mContext, accountName, accountPassword);
             AccountGeneral.SetSyncAccount(mContext, account);

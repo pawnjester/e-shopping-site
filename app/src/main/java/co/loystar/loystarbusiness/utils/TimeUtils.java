@@ -65,4 +65,9 @@ public class TimeUtils {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         return format.format(timestamp);
     }
+
+    public static String convertToTime(Timestamp timestamp) {
+        SimpleDateFormat format = new SimpleDateFormat("hh.mm aa");
+        return format.format(timestamp);
+    }
 }
