@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<!--    <data>-->
+<!--        <variable-->
+<!--            name="product"-->
+<!--            type="co.loystar.loystarbusiness.models.entities.Product" />-->
+<!--    </data>-->
+    <LinearLayout
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:id="@+id/product_image_wrapper" >
+
+            <ImageView
+                android:contentDescription="@string/image"
+                android:id="@+id/product_image"
+                android:layout_width="70dp"
+                android:layout_height="50dp"
+                />
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_weight="1.5"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:textColor="@color/colorAccentDark"
+                android:id="@+id/product_name"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:contentDescription="@string/image"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:id="@+id/delete_cart_item"
+                android:tint="@color/colorAccent"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                app:srcCompat="@drawable/ic_close_white_24px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:id="@+id/product_cost"
+                android:layout_marginTop="5dp"
+                android:textColor="@color/colorAccentDark"
+                android:layout_below="@+id/product_name"
+                android:layout_height="wrap_content" />
+
+            <co.loystar.loystarbusiness.utils.ui.buttons.IncrementDecrementButton
+                android:layout_marginTop="5dp"
+                android:layout_below="@+id/product_cost"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:layout_width="100dp"
+                android:id="@+id/order_item_inc_dec_btn"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </LinearLayout>
+</layout>

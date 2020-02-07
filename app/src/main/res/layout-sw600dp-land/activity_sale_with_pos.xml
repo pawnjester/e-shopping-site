@@ -21,28 +21,23 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+
     <FrameLayout
         android:id="@+id/fragment_product_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2"/>
 
-        style="@style/Theme.ActionBar.HigherElevation"
-        app:behavior_hideable="false"
-        app:behavior_peekHeight="0dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-<!--    <FrameLayout-->
-<!--        app:layout_behavior="@string/bottom_sheet_behavior"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:fitsSystemWindows="true"-->
-<!--        android:clickable="true"-->
-<!--        android:focusable="true"-->
-<!--        style="@style/Theme.ActionBar.HigherElevation"-->
-<!--        app:behavior_hideable="false"-->
-<!--        app:behavior_peekHeight="0dp"-->
-<!--        android:id="@+id/order_summary_bs_wrapper">-->
-<!--        <include layout="@layout/order_summary_bottom_sheet" />-->
-<!--    </FrameLayout>-->
-<!--    <include layout="@layout/all_sale_with_pos" />-->
+    <FrameLayout
+        android:id="@+id/fragment_checkout_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

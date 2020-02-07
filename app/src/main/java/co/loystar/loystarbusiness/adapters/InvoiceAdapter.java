@@ -6,6 +6,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,58 +27,17 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private List<InvoiceEntity> mInvoices;
     private OnItemClickListener mlistener;
-    private OnLoadMoreListener mloadlistener;
 
-    private final int VIEW_TYPE_ITEM = 0;
-    private final int VIEW_TYPE_LOADING = 1;
-    boolean isLoading = false;
-    int visibleThreshold = 5;
-    private int lastVisibleThreshold, totalItemCount;
 
     private Context mContext;
 
     public InvoiceAdapter(Context context,
                           ArrayList<InvoiceEntity> invoiceEntities,
                           OnItemClickListener listener,
-//                          OnLoadMoreListener loadMoreListener,
                           RecyclerView recyclerView) {
         mContext = context;
         mInvoices = invoiceEntities;
         mlistener = listener;
-//        mloadlistener = loadMoreListener;
-
-//        final LinearLayoutManager linearLayoutManager =
-//                (LinearLayoutManager) recyclerView.getLayoutManager();
-
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                LinearLayoutManager linearLayoutManager =
-//                        (LinearLayoutManager) recyclerView.getLayoutManager();
-//                totalItemCount = linearLayoutManager.getItemCount();
-////                Log.e("GGG", totalItemCount + "");
-//                lastVisibleThreshold = linearLayoutManager.findLastCompletelyVisibleItemPosition();
-//                if (!isLoading && totalItemCount <= (lastVisibleThreshold + visibleThreshold)) {
-//                    if (mloadlistener != null) {
-//                        mloadlistener.loadMore();
-//                        isLoading = true;
-//                    }
-//                }
-////                if (!isLoading) {
-////                    if (linearLayoutManager != null &&
-////                            linearLayoutManager.findLastCompletelyVisibleItemPosition()
-////                                    == invoiceEntities.size()-1) {
-////                        if (mloadlistener != null) {
-////                            mloadlistener.loadMore();
-////                            isLoading = true;
-////                        }
-////                    }
-////                }
-//            }
-//        });
-
-
     }
 
     public void set(List<InvoiceEntity> dataList) {
@@ -87,40 +47,13 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
-//    @Override
-//    public int getItemViewType(int position) {
-//        return mInvoices.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
-//    }
-
-////    @NonNull
-//    @Override
-//    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-////        if (viewType == VIEW_TYPE_ITEM) {
-////            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
-////            return new ViewHolder(view);
-////        } else if(viewType == VIEW_TYPE_LOADING)  {
-////            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
-////            return new LoadingViewHolder(view);
-////        }
-//        if (viewType == VIEW_TYPE_ITEM) {
-//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
-//            return new ViewHolder(view);
-//        } else {
-//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
-//            return new LoadingViewHolder(view);
-//        }
-//
-//    }
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//        if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item, parent, false);
-            return new ViewHolder(view);
-//        } else {
-//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
-//            return new LoadingViewHolder(view);
-//        }
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.invoice_list_item,
+                parent, false);
+        return new ViewHolder(view);
+
     }
 
     @Override
@@ -130,11 +63,6 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             InvoiceEntity invoice = mInvoices.get(i);
             ((ViewHolder) holder).bind(invoice, mlistener);
         }
-//        else if (holder instanceof  LoadingViewHolder) {
-////            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) holder;
-////            loadingViewHolder.mProgressBar.setVisibility(View.VISIBLE);
-//            showLoadingView((LoadingViewHolder) holder, i);
-//        }
     }
 
     @Override
@@ -142,32 +70,9 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return mInvoices == null ? 0 : mInvoices.size();
     }
 
-    public void setLoading() {
-        isLoading = false;
-    }
-
-    private void showLoadingView(LoadingViewHolder viewHolder, int position) {
-        //ProgressBar would be displayed
-
-    }
 
     public interface OnItemClickListener {
         void onItemClick(InvoiceEntity invoice);
-    }
-
-    public interface OnLoadMoreListener {
-        void loadMore();
-    }
-
-    public class LoadingViewHolder extends RecyclerView.ViewHolder {
-
-        private ProgressBar mProgressBar;
-
-        public LoadingViewHolder(@NonNull View itemView) {
-            super(itemView);
-            mProgressBar = itemView.findViewById(R.id.invoiceprogressbar);
-        }
-
     }
 
     public class ViewHolder extends  RecyclerView.ViewHolder {

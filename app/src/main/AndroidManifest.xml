@@ -366,6 +366,7 @@
             android:name=".activities.SaleWithPosActivity"
             android:label="@string/title_activity_points_sale_with_pos"
             android:parentActivityName=".activities.MerchantBackOfficeActivity"
+            android:screenOrientation="landscape"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

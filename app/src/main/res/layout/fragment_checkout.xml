@@ -48,10 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clipToPadding="false"
-            android:paddingBottom="?attr/actionBarSize"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingTop="?attr/actionBarSize"
             android:scrollbars="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
@@ -63,13 +60,15 @@
             android:gravity="center_vertical"
             android:orientation="vertical"
             android:paddingTop="@dimen/activity_vertical_margin"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/cart_is_empty"
+                android:textSize="25sp"
+                android:textStyle="bold"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
@@ -78,7 +77,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:text="@string/add_to_cart" />
+                android:text="@string/add_to_cart"
+                android:visibility="gone"/>
 
         </LinearLayout>
 
@@ -90,7 +90,7 @@
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <co.loystar.loystarbusiness.utils.ui.buttons.ClearCartButton
             android:id="@+id/clear_cart"

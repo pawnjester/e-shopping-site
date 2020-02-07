@@ -1,40 +1,101 @@
 package co.loystar.loystarbusiness.fragments;
 
 
+import android.animation.Animator;
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.jakewharton.rxbinding2.view.RxView;
 
+import org.joda.time.DateTime;
+
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.activities.InvoicePayActivity;
+import co.loystar.loystarbusiness.activities.ProductDetailActivity;
+import co.loystar.loystarbusiness.activities.ProductListActivity;
+import co.loystar.loystarbusiness.activities.SaleWithPosConfirmationActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
+import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.entities.CustomerEntity;
+import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
 import co.loystar.loystarbusiness.models.entities.Product;
 import co.loystar.loystarbusiness.models.entities.ProductCategoryEntity;
 import co.loystar.loystarbusiness.models.entities.ProductEntity;
+import co.loystar.loystarbusiness.models.entities.SaleEntity;
+import co.loystar.loystarbusiness.models.entities.SalesTransactionEntity;
+import co.loystar.loystarbusiness.models.viewmodel.SharedViewModel;
 import co.loystar.loystarbusiness.utils.BindingHolder;
+import co.loystar.loystarbusiness.utils.Constants;
+import co.loystar.loystarbusiness.utils.Foreground;
+import co.loystar.loystarbusiness.utils.ui.CircleAnimationUtil;
 import co.loystar.loystarbusiness.utils.ui.Currency.CurrenciesFetcher;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.OrderItemDividerItemDecoration;
 import co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.SpacingItemDecoration;
+import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
+import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
+import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
+import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CardPaymentDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.MyAlertDialog;
+import co.loystar.loystarbusiness.utils.ui.dialogs.PayOptionsDialog;
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
@@ -42,23 +103,59 @@ import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ProductListFragment extends Fragment {
+public class ProductListFragment extends Fragment
+        implements CustomerAutoCompleteDialog.SelectedCustomerListener,
+        PayOptionsDialog.PayOptionsDialogClickListener,
+        CashPaymentDialog.CashPaymentDialogOnCompleteListener,
+        CardPaymentDialog.CardPaymentDialogOnCompleteListener {
 
-//    RecyclerView productRec
     private MerchantEntity merchantEntity;
     private SessionManager mSessionManager;
+    private OrderSummaryAdapter orderSummaryAdapter;
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context context;
     private EmptyRecyclerView mProductsRecyclerView;
     private ProductsAdapter mProductAdapter;
     private String merchantCurrencySymbol;
+    private ExecutorService executor;
+    private CustomerEntity mSelectedCustomer;
+    private BottomSheetBehavior.BottomSheetCallback mOrderSummaryBottomSheetCallback;
+    private boolean orderSummaryDraggingStateUp = false;
+    private BottomSheetBehavior orderSummaryBottomSheetBehavior;
+    private View collapsedToolbar;
+    private Toolbar orderSummaryExpandedToolbar;
+    private FullRectangleButton orderSummaryCheckoutBtn;
+    private CartCountButton proceedToCheckoutBtn;
+    private View orderSummaryCheckoutWrapper;
+    private ImageView cartCountImageView;
+    private CustomerAutoCompleteDialog customerAutoCompleteDialog;
+    private int proceedToCheckoutBtnHeight = 0;
+    private PayOptionsDialog payOptionsDialog;
+    private double totalCharge = 0;
+    private EmptyRecyclerView mOrderSummaryRecyclerView;
+    private SparseIntArray mSelectedProducts = new SparseIntArray();
+    private MyAlertDialog myAlertDialog;
+    private final String KEY_PRODUCTS_RECYCLER_STATE = "products_recycler_state";
+    private final String KEY_SELECTED_PRODUCTS_STATE = "selected_products_state";
+    private final String KEY_ORDER_SUMMARY_RECYCLER_STATE = "order_summary_recycler_state";
+    private final String KEY_SAVED_CUSTOMER_ID = "saved_customer_id";
+    private boolean isPaidWithCash = false;
+    private boolean isPaidWithCard = false;
+    private boolean isPaidWithMobile = false;
+    private int customerId;
+    private boolean isDual;
+    private String searchFilterText;
+    private SharedViewModel viewModel;
 
     public ProductListFragment() {
         // Required empty public constructor
     }
+
 
 
     @Override
@@ -69,8 +166,25 @@ public class ProductListFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
+        viewModel.getCustomer().observeForever(integer -> {
+
+        });
+        customerId = viewModel.getCustomer().getValue();
+        Log.e("customer", customerId+ "");
+        viewModel.setSelectedProducts(mSelectedProducts);
+    }
+
+
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        Bundle bundle = getArguments();
+        isDual = bundle.getBoolean("isDual");
         context = getActivity();
         mDataStore = DatabaseManager.getDataStore(context);
         mSessionManager = new SessionManager(context);
@@ -80,26 +194,132 @@ public class ProductListFragment extends Fragment {
                 .getCurrencies(context)
                 .getCurrency(mSessionManager.getCurrency())
                 .getSymbol();
-        mProductAdapter = new ProductsAdapter();
+        mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
-        EmptyRecyclerView productsRecyclerview = getActivity().findViewById(R.id.product_list_land);
+        mProductAdapter = new ProductsAdapter();
+        orderSummaryAdapter = new OrderSummaryAdapter();
+        executor = Executors.newSingleThreadExecutor();
+        orderSummaryAdapter.setExecutor(executor);
+        mProductAdapter.setExecutor(executor);
+        setHasOptionsMenu(true);
+
+
+        view.findViewById(R.id.order_summary_bs_wrapper).bringToFront();
+
+        mOrderSummaryBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        orderSummaryDraggingStateUp = true;
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        orderSummaryDraggingStateUp = false;
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull final View bottomSheet, float slideOffset) {
+
+                Runnable draggingStateUpAction = () -> {
+                    //after fully expanded the ony way is down
+                    if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                        collapsedToolbar.setVisibility(View.GONE);
+                        collapsedToolbar.setAlpha(0f);
+                        orderSummaryExpandedToolbar.setAlpha(1f);
+                    }
+                };
+
+                Runnable draggingStateDownAction = () -> {
+                    //after collapsed the only way is up
+                    if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                        orderSummaryExpandedToolbar.setVisibility(View.GONE);
+                        collapsedToolbar.setAlpha(1f);
+                        orderSummaryExpandedToolbar.setAlpha(0f);
+                    }
+                };
+
+                if (orderSummaryDraggingStateUp) {
+                    //when fully expanded and dragging down
+                    orderSummaryExpandedToolbar.setVisibility(View.VISIBLE);
+                    orderSummaryExpandedToolbar.animate().alpha(slideOffset).setDuration((long) slideOffset); //expanded toolbar will fade out
+
+                    float offset = 1f - slideOffset;
+                    collapsedToolbar.setVisibility(View.VISIBLE);
+                    collapsedToolbar.animate().alpha(offset).setDuration((long) offset).withEndAction(draggingStateDownAction); //collapsed toolbar will to fade in
+
+                }
+                else {
+                    //when collapsed and you are dragging up
+                    float offset = 1f - slideOffset; //collapsed toolbar will fade out
+                    collapsedToolbar.setVisibility(View.VISIBLE);
+                    collapsedToolbar.animate().alpha(offset).setDuration((long) offset);
+
+                    orderSummaryExpandedToolbar.setVisibility(View.VISIBLE);
+                    orderSummaryExpandedToolbar.animate().alpha(slideOffset).setDuration((long) slideOffset).withEndAction(draggingStateUpAction); //expanded toolbar will fade in
+
+                }
+            }
+        };
+
+        customerAutoCompleteDialog = CustomerAutoCompleteDialog.newInstance(getString(R.string.order_owner));
+        customerAutoCompleteDialog.setSelectedCustomerListener(this);
+
+        payOptionsDialog = PayOptionsDialog.newInstance();
+        payOptionsDialog.setListener(this);
+
+        EmptyRecyclerView productsRecyclerview = view.findViewById(R.id.points_sale_order_items_rv);
         assert productsRecyclerview != null;
         setupProductsRecyclerView(productsRecyclerview);
 
+        if (!isDual) {
+            EmptyRecyclerView orderSummaryRecyclerView = view.findViewById(R.id.order_summary_recycler_view);
+            assert orderSummaryRecyclerView != null;
+            setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
+            setUpBottomSheetView();
+        }
     }
+
 
     private void setupProductsRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
         mProductsRecyclerView = recyclerView;
         mProductsRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(context, 4);
+        RecyclerView.LayoutManager mLayoutManager;
+        if (isDual) {
+            mLayoutManager = new GridLayoutManager(context, 4);
+        } else {
+            mLayoutManager = new GridLayoutManager(context, 2);
+        }
         mProductsRecyclerView.setLayoutManager(mLayoutManager);
         mProductsRecyclerView.addItemDecoration(new SpacingItemDecoration(
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
                 getResources().getDimensionPixelOffset(R.dimen.item_space_medium)
         ));
-        mProductsRecyclerView.addItemDecoration(new OrderItemDividerItemDecoration(context));
         mProductsRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mProductsRecyclerView.setAdapter(mProductAdapter);
+    }
+
+    private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
+        View emptyView = getActivity().findViewById(R.id.empty_cart);
+        BrandButtonNormal addToCartBtn = emptyView.findViewById(R.id.add_to_cart);
+        addToCartBtn.setOnClickListener(view -> showBottomSheet(false));
+
+        mOrderSummaryRecyclerView = recyclerView;
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(context);
+        mOrderSummaryRecyclerView.setHasFixedSize(true);
+        mOrderSummaryRecyclerView.setLayoutManager(mLayoutManager);
+        mOrderSummaryRecyclerView.addItemDecoration(
+                new SpacingItemDecoration(
+                        getResources().getDimensionPixelOffset(R.dimen.item_space_medium),
+                        getResources().getDimensionPixelOffset(R.dimen.item_space_medium))
+        );
+        mOrderSummaryRecyclerView.addItemDecoration(new OrderItemDividerItemDecoration(context));
+        mOrderSummaryRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mOrderSummaryRecyclerView.setAdapter(orderSummaryAdapter);
+        mOrderSummaryRecyclerView.setEmptyView(emptyView);
     }
 
     private ArrayList<ProductCategoryEntity> getCategory(){
@@ -110,6 +330,174 @@ public class ProductListFragment extends Fragment {
         return new ArrayList<>(productsSelection.orderBy(ProductCategoryEntity.NAME.asc()).get().toList());
     }
 
+    @Override
+    public void onCustomerSelected(@NonNull CustomerEntity customerEntity) {
+        mSelectedCustomer = customerEntity;
+        createSale();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.search, menu);
+
+        final MenuItem item = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) item.getActionView();
+//        searchView.setOnQueryTextListener(this);
+
+    }
+
+    @Override
+    public void onPayWithCashClick() {
+        CashPaymentDialog cashPaymentDialog = CashPaymentDialog.newInstance(totalCharge);
+        cashPaymentDialog.setListener(this);
+        cashPaymentDialog.show(getActivity().getSupportFragmentManager(), CashPaymentDialog.TAG);
+    }
+
+    @Override
+    public void onPayWithCardClick() {
+        CardPaymentDialog cardPaymentDialog = CardPaymentDialog.newInstance(totalCharge);
+        cardPaymentDialog.setListener(this);
+        cardPaymentDialog.show(getActivity().getSupportFragmentManager(), CardPaymentDialog.TAG);
+    }
+
+    @Override
+    public void onPayWithInvoice() {
+        Intent startInvoiceIntent = new Intent(getActivity(), InvoicePayActivity.class);
+        Bundle bundle = new Bundle();
+        HashMap<Integer, Integer> hashMap = new HashMap<>();
+        ArrayList<Integer> productIds = new ArrayList<>();
+        for (int i = 0; i < mSelectedProducts.size(); i++) {
+            hashMap.put(mSelectedProducts.keyAt(i), mSelectedProducts.valueAt(i));
+            productIds.add(mSelectedProducts.keyAt(i));
+        }
+
+        bundle.putIntegerArrayList(Constants.SELECTED_PRODUCTS, productIds);
+        if (mSelectedCustomer != null){
+            startInvoiceIntent.putExtra(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+        } else {
+            startInvoiceIntent.putExtra(Constants.CHARGE, totalCharge);
+            startInvoiceIntent.putExtra(Constants.HASH_MAP, hashMap);
+        }
+        startInvoiceIntent.putExtras(bundle);
+        startInvoiceIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startInvoiceIntent);
+    }
+
+    private void showBottomSheet(boolean show) {
+        if (show) {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            orderSummaryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    }
+
+    private void showCheckoutBtn(boolean show) {
+        if (show) {
+            orderSummaryCheckoutWrapper.setVisibility(View.VISIBLE);
+        } else {
+            orderSummaryCheckoutWrapper.setVisibility(View.GONE);
+        }
+    }
+
+    private void showProceedToCheckoutBtn(boolean show) {
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT
+        );
+
+        if (show) {
+            orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+            params.setMargins(0, 0, 0, proceedToCheckoutBtnHeight);
+            mProductsRecyclerView.setLayoutParams(params);
+        } else {
+            orderSummaryBottomSheetBehavior.setPeekHeight(0);
+            params.setMargins(0, 0, 0, 0);
+            mProductsRecyclerView.setLayoutParams(params);
+        }
+    }
+
+    private void setUpBottomSheetView() {
+        collapsedToolbar = getActivity().findViewById(R.id.order_summary_collapsed_toolbar);
+        proceedToCheckoutBtn = collapsedToolbar.findViewById(R.id.proceed_to_check_out);
+        cartCountImageView = proceedToCheckoutBtn.getCartImageView();
+        orderSummaryExpandedToolbar = getActivity().findViewById(R.id.order_summary_expanded_toolbar);
+        orderSummaryCheckoutWrapper = getActivity().findViewById(R.id.order_summary_checkout_wrapper);
+        orderSummaryCheckoutBtn = getActivity().findViewById(R.id.order_summary_checkout_btn);
+        orderSummaryBottomSheetBehavior = BottomSheetBehavior.from(getActivity().findViewById(R.id.order_summary_bs_wrapper));
+        orderSummaryBottomSheetBehavior.setBottomSheetCallback(mOrderSummaryBottomSheetCallback);
+
+        ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
+        treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                ViewTreeObserver obs = proceedToCheckoutBtn.getViewTreeObserver();
+                obs.removeOnGlobalLayoutListener(this);
+                proceedToCheckoutBtnHeight = proceedToCheckoutBtn.getMeasuredHeight();
+            }
+        });
+
+        RxView.clicks(proceedToCheckoutBtn).subscribe(o -> showBottomSheet(true));
+
+        RxView.clicks(orderSummaryCheckoutBtn).subscribe(o -> payOptionsDialog.show(getActivity().getSupportFragmentManager(), PayOptionsDialog.TAG));
+
+        if (orderSummaryBottomSheetBehavior instanceof UserLockBottomSheetBehavior) {
+            ((UserLockBottomSheetBehavior) orderSummaryBottomSheetBehavior).setAllowUserDragging(false);
+        }
+
+        getActivity().findViewById(R.id.clear_cart).setOnClickListener(view -> new AlertDialog.Builder(context)
+                .setTitle("Are you sure?")
+                .setMessage("All items will be permanently removed from your cart!")
+                .setCancelable(false)
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    mSelectedProducts.clear();
+                    totalCharge = 0;
+                    orderSummaryAdapter.queryAsync();
+                    mProductAdapter.queryAsync();
+                    refreshCartCount();
+                    setCheckoutValue();
+                })
+                .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel())
+                .setIcon(AppCompatResources.getDrawable(context, android.R.drawable.ic_dialog_alert))
+                .show());
+
+        orderSummaryExpandedToolbar.setNavigationOnClickListener(view -> showBottomSheet(false));
+    }
+
+    @Override
+    public void onCardPaymentDialogComplete(boolean showCustomerDialog) {
+        isPaidWithCard = true;
+        if (showCustomerDialog) {
+            customerAutoCompleteDialog.show(getActivity().getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+        } else {
+            createSale();
+        }
+    }
+
+    @Override
+    public void onCashPaymentDialogComplete(boolean showCustomerDialog) {
+        isPaidWithCash = true;
+        if (showCustomerDialog && customerId == 0) {
+            customerAutoCompleteDialog.show(getActivity().getSupportFragmentManager(), CustomerAutoCompleteDialog.TAG);
+        } else if (showCustomerDialog && customerId > 0) {
+            createSale();
+        } else {
+            createSale();
+        }
+    }
+
+//    @Override
+//    public boolean onQueryTextSubmit(String s) {
+//        return false;
+//    }
+//
+//    @Override
+//    public boolean onQueryTextChange(String s) {
+//        return false;
+//    }
+
     private class ProductsAdapter extends
             QueryRecyclerAdapter<ProductEntity,
                     BindingHolder<PosProductItemBinding>> implements Filterable {
@@ -118,6 +506,7 @@ public class ProductListFragment extends Fragment {
 
         ProductsAdapter() {
             super(ProductEntity.$TYPE);
+            Log.e("here", "next");
         }
 
         @Override
@@ -133,6 +522,7 @@ public class ProductListFragment extends Fragment {
             }
         }
 
+        @SuppressLint("CheckResult")
         @Override
         public void onBindViewHolder(ProductEntity item,
                                      BindingHolder<PosProductItemBinding> holder,
@@ -142,23 +532,33 @@ public class ProductListFragment extends Fragment {
             options.centerCrop().apply(RequestOptions.placeholderOf(
                     AppCompatResources.getDrawable(context, R.drawable.ic_photo_black_24px)
             ));
-            Glide.with(context)
-                    .load(item.getPicture())
-                    .apply(options)
-                    .into(holder.binding.productImage);
-            Glide.with(context)
-                    .load(item.getPicture())
-                    .apply(options)
-                    .into(holder.binding.productImageCopy);
+            if (item.getPicture() != null) {
+                Glide.with(context)
+                        .load(item.getPicture())
+                        .apply(options)
+                        .into(holder.binding.productImage);
+                Glide.with(context)
+                        .load(item.getPicture())
+                        .apply(options)
+                        .into(holder.binding.productImageCopy);
+            } else {
+                TextDrawable drawable = TextDrawable.builder()
+                        .beginConfig().textColor(Color.GRAY)
+                        .useFont(Typeface.DEFAULT)
+                        .toUpperCase().endConfig()
+                        .buildRect(item.getName().substring(0,2), Color.WHITE);
+                holder.binding.productImage.setImageDrawable(drawable);
+                holder.binding.productImageCopy.setImageDrawable(drawable);
+            }
             holder.binding.productName.setText(item.getName());
-//            if (mSelectedProducts.get(item.getId()) == 0) {
-//                holder.binding.productDecrementWrapper.setVisibility(View.GONE);
-//            } else {
-//                holder.binding.productDecrementWrapper.setVisibility(View.VISIBLE);
-//                holder.binding.productCount.setText(
-//                        getString(R.string.product_count,
-//                                String.valueOf(mSelectedProducts.get(item.getId()))));
-//            }
+            if (mSelectedProducts.get(item.getId()) == 0) {
+                holder.binding.productDecrementWrapper.setVisibility(View.GONE);
+            } else {
+                holder.binding.productDecrementWrapper.setVisibility(View.VISIBLE);
+                holder.binding.productCount.setText(
+                        getString(R.string.product_count,
+                                String.valueOf(mSelectedProducts.get(item.getId()))));
+            }
             holder.binding.productPrice.setText(
                     getString(R.string.product_price, merchantCurrencySymbol,
                             String.valueOf(item.getPrice())));
@@ -181,21 +581,29 @@ public class ProductListFragment extends Fragment {
                         PosProductItemBinding posProductItemBinding = (PosProductItemBinding) view.getTag();
                         if (posProductItemBinding != null) {
                             Product product = posProductItemBinding.getProduct();
-//                            if (mSelectedProducts.get(product.getId()) == 0) {
-//                                mSelectedProducts.put(product.getId(), 1);
-//                                mProductAdapter.queryAsync();
-//                                orderSummaryAdapter.queryAsync();
-//                                setCheckoutValue();
-//                            } else {
-//                                mSelectedProducts.put(product.getId(),
-//                                        (mSelectedProducts.get(product.getId()) + 1));
-//                                mProductAdapter.queryAsync();
-//                                orderSummaryAdapter.queryAsync();
-//                                setCheckoutValue();
-//                            }
-//
-//                            binding.productDecrementWrapper.setVisibility(View.VISIBLE);
-//                            makeFlyAnimation(posProductItemBinding.productImageCopy, cartCountImageView);
+                            if (mSelectedProducts.get(product.getId()) == 0) {
+                                mSelectedProducts.put(product.getId(), 1);
+                                mProductAdapter.queryAsync();
+                                orderSummaryAdapter.queryAsync();
+                                if (!isDual) {
+                                    setCheckoutValue();
+                                }
+                                viewModel.setSelectedProducts(mSelectedProducts);
+                            } else {
+                                mSelectedProducts.put(product.getId(),
+                                        (mSelectedProducts.get(product.getId()) + 1));
+                                mProductAdapter.queryAsync();
+                                orderSummaryAdapter.queryAsync();
+                                if (!isDual) {
+                                    setCheckoutValue();
+                                }
+                                viewModel.setSelectedProducts(mSelectedProducts);
+                            }
+
+                            binding.productDecrementWrapper.setVisibility(View.VISIBLE);
+                            if (!isDual) {
+                                makeFlyAnimation(posProductItemBinding.productImageCopy, cartCountImageView);
+                            }
                         }
                     }
             );
@@ -204,17 +612,20 @@ public class ProductListFragment extends Fragment {
                 PosProductItemBinding posProductItemBinding = (PosProductItemBinding) view.getTag();
                 if (posProductItemBinding != null) {
                     Product product = posProductItemBinding.getProduct();
-//                    if (mSelectedProducts.get(product.getId()) != 0) {
-//                        int newValue = mSelectedProducts.get(product.getId()) - 1;
-//                        setProductCountValue(newValue, product.getId());
-//                        if (newValue == 0) {
-//                            posProductItemBinding.productCount.setText("0");
-//                            posProductItemBinding.productDecrementWrapper.setVisibility(View.GONE);
-//                        } else {
-//                            posProductItemBinding.productCount.setText(
-//                                    getString(R.string.product_count, String.valueOf(newValue)));
-//                        }
-//                    }
+                    if (mSelectedProducts.get(product.getId()) != 0) {
+                        int newValue = mSelectedProducts.get(product.getId()) - 1;
+                        if (!isDual) {
+//                            setCheckoutValue();
+                            setProductCountValue(newValue, product.getId());
+                        }
+                        if (newValue == 0) {
+                            posProductItemBinding.productCount.setText("0");
+                            posProductItemBinding.productDecrementWrapper.setVisibility(View.GONE);
+                        } else {
+                            posProductItemBinding.productCount.setText(
+                                    getString(R.string.product_count, String.valueOf(newValue)));
+                        }
+                    }
                 }
             });
             return new BindingHolder<>(binding);
@@ -263,5 +674,386 @@ public class ProductListFragment extends Fragment {
             }
         }
     }
+
+    private class OrderSummaryAdapter extends QueryRecyclerAdapter<ProductEntity,
+            BindingHolder<OrderSummaryItemBinding>> {
+
+        OrderSummaryAdapter() {
+            super(ProductEntity.$TYPE);
+        }
+
+        @Override
+        public Result<ProductEntity> performQuery() {
+            ArrayList<Integer> ids = new ArrayList<>();
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                ids.add(mSelectedProducts.keyAt(i));
+            }
+            return mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(ids))
+                    .orderBy(ProductEntity.UPDATED_AT.desc()).get();
+        }
+
+        @SuppressLint("CheckResult")
+        @Override
+        public void onBindViewHolder(ProductEntity item, BindingHolder<OrderSummaryItemBinding> holder, int position) {
+            holder.binding.setProduct(item);
+            RequestOptions options = new RequestOptions();
+            options.fitCenter().centerCrop().apply(RequestOptions.placeholderOf(
+                    AppCompatResources.getDrawable(context, R.drawable.ic_photo_black_24px)
+            ));
+            Glide.with(context)
+                    .load(item.getPicture())
+                    .apply(options)
+                    .into(holder.binding.productImage);
+
+            holder.binding.productName.setText(item.getName());
+            holder.binding.deleteCartItem.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_close_white_24px));
+            holder.binding.orderItemIncDecBtn.setNumber(String.valueOf(mSelectedProducts.get(item.getId())));
+
+            String template = "%.2f";
+            double totalCostOfItem = item.getPrice() * mSelectedProducts.get(item.getId());
+            String cText = String.format(Locale.UK, template, totalCostOfItem);
+            holder.binding.productCost.setText(getString(R.string.product_price, merchantCurrencySymbol, cText));
+        }
+
+        @Override
+        public BindingHolder<OrderSummaryItemBinding> onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            final OrderSummaryItemBinding binding = OrderSummaryItemBinding.inflate(inflater);
+            binding.getRoot().setTag(binding);
+            binding.deleteCartItem.setTag(binding);
+
+            binding.deleteCartItem.setOnClickListener(view -> new AlertDialog.Builder(context)
+                    .setTitle("Are you sure?")
+                    .setMessage("This item will be permanently removed from your cart!")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
+                        if (orderSummaryItemBinding != null && orderSummaryItemBinding.getProduct() != null) {
+                            mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
+                            orderSummaryAdapter.queryAsync();
+                            mProductAdapter.queryAsync();
+                            refreshCartCount();
+                            setCheckoutValue();
+                        }
+                    })
+                    .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel())
+                    .setIcon(AppCompatResources.getDrawable(context, android.R.drawable.ic_dialog_alert))
+                    .show());
+
+            binding.orderItemIncDecBtn.setOnValueChangeListener((view, oldValue, newValue) -> setProductCountValue(newValue, binding.getProduct().getId()));
+            return new BindingHolder<>(binding);
+        }
+    }
+
+    private void createSale() {
+        DatabaseManager databaseManager = DatabaseManager.getInstance(context);
+        Integer lastSaleId = databaseManager.getLastSaleRecordId();
+
+        SaleEntity newSaleEntity = new SaleEntity();
+        if (lastSaleId == null) {
+            newSaleEntity.setId(1);
+        } else {
+            newSaleEntity.setId(lastSaleId + 1);
+        }
+        newSaleEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+        newSaleEntity.setMerchant(merchantEntity);
+        newSaleEntity.setPayedWithCard(isPaidWithCard);
+        newSaleEntity.setPayedWithCash(isPaidWithCash);
+        newSaleEntity.setPayedWithMobile(isPaidWithMobile);
+        newSaleEntity.setTotal(totalCharge);
+        newSaleEntity.setSynced(false);
+        newSaleEntity.setCustomer(mSelectedCustomer);
+
+        mDataStore.upsert(newSaleEntity).subscribe(saleEntity -> {
+            ArrayList<Integer> productIds = new ArrayList<>();
+            for (int i = 0; i < mSelectedProducts.size(); i++) {
+                productIds.add(mSelectedProducts.keyAt(i));
+            }
+            Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                    .where(ProductEntity.ID.in(productIds))
+                    .orderBy(ProductEntity.UPDATED_AT.desc())
+                    .get();
+            List<ProductEntity> productEntities = result.toList();
+
+            Integer lastTransactionId = databaseManager.getLastTransactionRecordId();
+            ArrayList<Integer> newTransactionIds = new ArrayList<>();
+            for (int x = 0; x < productEntities.size(); x++) {
+                if (lastTransactionId == null) {
+                    newTransactionIds.add(x, x + 1);
+                } else {
+                    newTransactionIds.add(x, (lastTransactionId + x + 1));
+                }
+            }
+
+            for (int i = 0; i < productEntities.size(); i++) {
+                ProductEntity product = productEntities.get(i);
+                LoyaltyProgramEntity loyaltyProgram = product.getLoyaltyProgram();
+                if (loyaltyProgram != null) {
+                    SalesTransactionEntity transactionEntity = new SalesTransactionEntity();
+                    transactionEntity.setId(newTransactionIds.get(i));
+
+                    String template = "%.2f";
+                    double tc = product.getPrice() * mSelectedProducts.get(product.getId());
+                    double totalCost = Double.valueOf(String.format(Locale.UK, template, tc));
+
+                    transactionEntity.setAmount(totalCost);
+                    transactionEntity.setMerchantLoyaltyProgramId(loyaltyProgram.getId());
+
+                    if (loyaltyProgram.getProgramType().equals(getString(R.string.simple_points))) {
+                        transactionEntity.setPoints(Double.valueOf(totalCost).intValue());
+                        transactionEntity.setProgramType(getString(R.string.simple_points));
+                    } else if (loyaltyProgram.getProgramType().equals(getString(R.string.stamps_program))) {
+                        int stampsEarned = mSelectedProducts.get(product.getId());
+                        transactionEntity.setStamps(stampsEarned);
+                        transactionEntity.setProgramType(getString(R.string.stamps_program));
+                    }
+                    transactionEntity.setCreatedAt(new Timestamp(new DateTime().getMillis()));
+                    transactionEntity.setProductId(product.getId());
+                    if (mSelectedCustomer != null) {
+                        transactionEntity.setUserId(mSelectedCustomer.getUserId());
+                        transactionEntity.setCustomer(mSelectedCustomer);
+                    }
+
+                    transactionEntity.setSynced(false);
+                    transactionEntity.setSale(saleEntity);
+                    transactionEntity.setMerchant(merchantEntity);
+                    mDataStore.upsert(transactionEntity).subscribe(/*no-op*/);
+
+                    if (i + 1 == productEntities.size()) {
+                        SyncAdapter.performSync(context, mSessionManager.getEmail());
+
+                        Completable.complete()
+                                .delay(1, TimeUnit.SECONDS)
+//                                .compose(bindToLifecycle())
+                                .doOnComplete(() -> {
+                                    Bundle bundle = new Bundle();
+                                    if (mSelectedCustomer != null) {
+                                        bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
+                                    }
+
+                                    @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                                    for (int x = 0; x < mSelectedProducts.size(); x++) {
+                                        orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+                                    }
+                                    bundle.putSerializable(Constants.ORDER_SUMMARY_ITEMS, orderSummaryItems);
+
+                                    Intent intent = new Intent(context, SaleWithPosConfirmationActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtras(bundle);
+                                    startActivity(intent);
+                                })
+                                .subscribe();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        mProductAdapter.queryAsync();
+        orderSummaryAdapter.queryAsync();
+        Log.e("here", mSelectedProducts +"");
+
+
+        if (myAlertDialog == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                myAlertDialog = MyAlertDialog.newInstance(android.R.style.Theme_Material_Dialog_Alert);
+            } else {
+                myAlertDialog = new MyAlertDialog();
+            }
+        }
+        myAlertDialog.setShowNegativeButton(false);
+
+        List<ProductEntity> productEntities = mProductAdapter.performQuery().toList();
+        List<ProductEntity> productsWithoutLoyaltyProgram = new ArrayList<>();
+        for (ProductEntity productEntity: productEntities) {
+            if (productEntity.getLoyaltyProgram() == null) {
+                productsWithoutLoyaltyProgram.add(productEntity);
+            }
+        }
+        if (!productsWithoutLoyaltyProgram.isEmpty()) {
+            myAlertDialog.setTitle("Products Notice");
+            if (productEntities.size() == productsWithoutLoyaltyProgram.size()) {
+                myAlertDialog.setMessage("Your products or services don't have loyalty programs set. For each product, go to the products edit screen, select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
+                    Intent intent = new Intent(context, ProductListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                });
+            } else if (productsWithoutLoyaltyProgram.size() == 1){
+                myAlertDialog.setMessage("1 of your products or services don't have a loyalty program set. Click the button below, select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.update_product), (dialogInterface, i) -> {
+                    Intent intent = new Intent(context, ProductDetailActivity.class);
+                    intent.putExtra(ProductDetailActivity.ARG_ITEM_ID, productsWithoutLoyaltyProgram.get(0).getId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(intent);
+                });
+            } else {
+                myAlertDialog.setMessage(productsWithoutLoyaltyProgram.size() + " of your products or services " + "don't have loyalty programs set. For each product, go to the products edit screen. Select a loyalty program and save.");
+                myAlertDialog.setPositiveButton(getString(R.string.pref_my_products_title), (dialogInterface, i) -> {
+                    Intent intent = new Intent(context, ProductListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                });
+            }
+            myAlertDialog.setCancelable(false);
+            if (Foreground.get().isForeground()) {
+                myAlertDialog.show(getActivity().getSupportFragmentManager(), MyAlertDialog.TAG);
+            }
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+//        executor.shutdown();
+//        mProductAdapter.close();
+        orderSummaryAdapter.close();
+        super.onDestroy();
+    }
+
+    private void refreshCartCount() {
+        proceedToCheckoutBtn.setCartCount(String.valueOf(mSelectedProducts.size()));
+    }
+
+    private void setProductCountValue(int newValue, int productId) {
+        if (newValue > 0) {
+            mSelectedProducts.put(productId, newValue);
+            mProductAdapter.queryAsync();
+            orderSummaryAdapter.queryAsync();
+            refreshCartCount();
+            setCheckoutValue();
+        } else {
+            mSelectedProducts.delete(productId);
+            mProductAdapter.queryAsync();
+            orderSummaryAdapter.queryAsync();
+            refreshCartCount();
+            setCheckoutValue();
+        }
+    }
+
+    private void setCheckoutValue() {
+        ArrayList<Integer> ids = new ArrayList<>();
+        for (int i = 0; i < mSelectedProducts.size(); i++) {
+            ids.add(mSelectedProducts.keyAt(i));
+        }
+        Result<ProductEntity> result = mDataStore.select(ProductEntity.class)
+                .where(ProductEntity.ID.in(ids))
+                .orderBy(ProductEntity.UPDATED_AT.desc())
+                .get();
+
+        showCheckoutBtn(!result.toList().isEmpty());
+        showProceedToCheckoutBtn(!result.toList().isEmpty());
+
+        double tc = 0;
+        for (ProductEntity product: result.toList()) {
+            double totalCostOfItem = product.getPrice() * mSelectedProducts.get(product.getId());
+            tc += totalCostOfItem;
+        }
+        String template = "%.2f";
+        totalCharge = Double.valueOf(String.format(Locale.UK, template, tc));
+        String cText = String.format(Locale.UK, template, totalCharge);
+        orderSummaryCheckoutBtn.setText(getString(R.string.charge, merchantCurrencySymbol, cText));
+        proceedToCheckoutBtn.setCheckoutText(merchantCurrencySymbol, cText);
+    }
+
+    private void makeFlyAnimation(View targetView, View destinationView) {
+
+        new CircleAnimationUtil().attachActivity(getActivity())
+                .setTargetView(targetView)
+                .setMoveDuration(500)
+                .setDestView(destinationView)
+                .setAnimationListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        refreshCartCount();
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                }).startAnimation();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CustomerAutoCompleteDialog.ADD_NEW_CUSTOMER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                if (data.hasExtra(Constants.CUSTOMER_ID)) {
+                    mDataStore.findByKey(CustomerEntity.class, data.getIntExtra(Constants.CUSTOMER_ID, 0))
+                            .toObservable()
+//                            .compose(getbindToLifecycle())
+                            .subscribeOn(Schedulers.newThread())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(customerEntity -> {
+                                if (customerEntity == null) {
+                                    Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                } else {
+                                    mSelectedCustomer = customerEntity;
+                                    createSale();
+                                }
+                            });
+                }
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+            Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
+
+            /*restore RecyclerView state*/
+            if (productsListState != null) {
+                mProductsRecyclerView.getLayoutManager().onRestoreInstanceState(productsListState);
+            }
+            if (orderSummaryListState != null) {
+                mOrderSummaryRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
+            }
+
+            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+            if (orderSummaryItems != null) {
+                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
+                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
+                    setProductCountValue(orderItem.getValue(), orderItem.getKey());
+                }
+            }
+
+            if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
+                mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
+            }
+
+            showBottomSheet(false);
+            ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
+            treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    ViewTreeObserver obs = proceedToCheckoutBtn.getViewTreeObserver();
+                    obs.removeOnGlobalLayoutListener(this);
+                    proceedToCheckoutBtnHeight = proceedToCheckoutBtn.getMeasuredHeight();
+                    orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+                }
+            });
+        }
+    }
+
 
 }
