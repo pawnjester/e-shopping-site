@@ -4,38 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-<!--    <RelativeLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:id="@+id/toolBars"-->
-<!--        android:layout_height="wrap_content">-->
-
-<!--        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--            android:id="@+id/order_summary_collapsed_toolbar"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="?attr/actionBarSize"-->
-<!--            android:orientation="horizontal">-->
-
-<!--            <co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton-->
-<!--                android:id="@+id/proceed_to_check_out"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"/>-->
-
-<!--        </LinearLayout>-->
-
-<!--        <android.support.v7.widget.Toolbar-->
-<!--            android:visibility="gone"-->
-<!--            android:id="@+id/order_summary_expanded_toolbar"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:background="@color/colorPrimary"-->
-<!--            android:minHeight="?attr/actionBarSize"-->
-<!--            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"-->
-<!--            app:navigationIcon="?attr/homeAsUpIndicator"-->
-<!--            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
-<!--            app:title="@string/title_order_summary" />-->
-
-<!--    </RelativeLayout>-->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -49,6 +17,7 @@
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:paddingTop="?attr/actionBarSize"
+            android:paddingBottom="?attr/actionBarSize"
             android:scrollbars="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

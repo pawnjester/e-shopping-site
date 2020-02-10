@@ -185,9 +185,17 @@ public class SaleWithPosConfirmationActivity extends BaseActivity {
         }
 
         RxView.clicks(continueBtn).subscribe(o -> {
-            Intent intent = new Intent(mContext, SaleWithPosActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+            String fromTablet = getIntent().getStringExtra("isDual");
+            Intent intent;
+            if( fromTablet != null) {
+                intent = new Intent(mContext, MerchantBackOfficeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            } else {
+                intent = new Intent(mContext, SaleWithPosActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
         });
 
             RxView.clicks(printReceiptBtn).subscribe(o -> printViaBT());

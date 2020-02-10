@@ -175,7 +175,8 @@ public class AddProductActivity extends BaseActivity {
         }
 
         SpinnerButton productCategoriesSpinner = findViewById(R.id.productCategoriesSelectSpinner);
-        List<ProductCategoryEntity> productCategories = mDatabaseManager.getMerchantProductCategories(mSessionManager.getMerchantId());
+        List<ProductCategoryEntity> productCategories = mDatabaseManager
+                .getMerchantProductCategories(mSessionManager.getMerchantId());
         if (productCategories.isEmpty()) {
             SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -461,15 +462,6 @@ public class AddProductActivity extends BaseActivity {
 
 
     private void submitForm() {
-//        if (imageUri == null) {
-//            expandFabMenu();
-////            String twoLetters = getFirstTwoLetter(productNameView.getText().toString());
-//            // generate dummy bitmap
-//
-//
-//            Snackbar.make(mLayout, getString(R.string.error_picture_required), Snackbar.LENGTH_LONG).show();
-//            return;
-//        }
         if (productNameView.getText().toString().trim().isEmpty()) {
             productNameView.setError(getString(R.string.error_name_required));
             productNameView.requestFocus();
@@ -660,7 +652,6 @@ public class AddProductActivity extends BaseActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("sayyy", "never");
             showSnackbar(R.string.unknown_error);
             showProgress(false);
         }

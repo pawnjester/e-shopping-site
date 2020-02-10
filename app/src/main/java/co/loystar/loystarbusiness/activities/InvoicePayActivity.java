@@ -120,8 +120,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
-
 public class InvoicePayActivity extends BaseActivity implements
         CustomerAutoCompleteDialog.SelectedCustomerListener,
         SendOptionsDialog.SendOptionsDialogClickListener{
@@ -365,11 +363,11 @@ public class InvoicePayActivity extends BaseActivity implements
         builder.setView(R.layout.layout_loading_dialog);
         dialog = builder.create();
 
-        EmptyRecyclerView orderSummaryRecyclerView =
-                findViewById(R.id.order_list);
-        assert orderSummaryRecyclerView != null;
-        setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
-        setUpBottomSheetView();
+//        EmptyRecyclerView orderSummaryRecyclerView =
+//                findViewById(R.id.order_list);
+//        assert orderSummaryRecyclerView != null;
+//        setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
+//        setUpBottomSheetView();
 
     }
 

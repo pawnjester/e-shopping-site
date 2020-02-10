@@ -3,6 +3,7 @@ package co.loystar.loystarbusiness.fragments;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -16,7 +17,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -34,18 +37,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -58,15 +66,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import co.loystar.loystarbusiness.R;
+import co.loystar.loystarbusiness.activities.AddProductActivity;
 import co.loystar.loystarbusiness.activities.InvoicePayActivity;
 import co.loystar.loystarbusiness.activities.ProductDetailActivity;
 import co.loystar.loystarbusiness.activities.ProductListActivity;
 import co.loystar.loystarbusiness.activities.SaleWithPosConfirmationActivity;
 import co.loystar.loystarbusiness.auth.SessionManager;
+import co.loystar.loystarbusiness.auth.api.ApiClient;
 import co.loystar.loystarbusiness.auth.sync.SyncAdapter;
 import co.loystar.loystarbusiness.databinding.PosProductItemBinding;
 import co.loystar.loystarbusiness.databinding.OrderSummaryItemBinding;
 import co.loystar.loystarbusiness.models.DatabaseManager;
+import co.loystar.loystarbusiness.models.databinders.ProductCategory;
 import co.loystar.loystarbusiness.models.entities.CustomerEntity;
 import co.loystar.loystarbusiness.models.entities.LoyaltyProgramEntity;
 import co.loystar.loystarbusiness.models.entities.MerchantEntity;
@@ -88,6 +99,7 @@ import co.loystar.loystarbusiness.utils.ui.UserLockBottomSheetBehavior;
 import co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal;
 import co.loystar.loystarbusiness.utils.ui.buttons.CartCountButton;
 import co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton;
+import co.loystar.loystarbusiness.utils.ui.buttons.SpinnerButton;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CardPaymentDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CashPaymentDialog;
 import co.loystar.loystarbusiness.utils.ui.dialogs.CustomerAutoCompleteDialog;
@@ -102,8 +114,14 @@ import io.requery.query.Result;
 import io.requery.query.Selection;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveResult;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
+import static co.loystar.loystarbusiness.activities.ProductListActivity.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -112,10 +130,13 @@ public class ProductListFragment extends Fragment
         implements CustomerAutoCompleteDialog.SelectedCustomerListener,
         PayOptionsDialog.PayOptionsDialogClickListener,
         CashPaymentDialog.CashPaymentDialogOnCompleteListener,
-        CardPaymentDialog.CardPaymentDialogOnCompleteListener {
+        CardPaymentDialog.CardPaymentDialogOnCompleteListener,
+OnBackPressed,
+SearchView.OnQueryTextListener{
 
     private MerchantEntity merchantEntity;
     private SessionManager mSessionManager;
+    private ProgressDialog progressDialog;
     private OrderSummaryAdapter orderSummaryAdapter;
     private ReactiveEntityStore<Persistable> mDataStore;
     private Context context;
@@ -151,6 +172,10 @@ public class ProductListFragment extends Fragment
     private boolean isDual;
     private String searchFilterText;
     private SharedViewModel viewModel;
+    private View sortByCategoryButton;
+    private ProductCategoryEntity mSelectedProductCategory;
+    private DatabaseManager mDatabaseManager;
+    private ApiClient mApiClient;
 
     public ProductListFragment() {
         // Required empty public constructor
@@ -168,13 +193,25 @@ public class ProductListFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
         viewModel.getCustomer().observeForever(integer -> {
 
         });
         customerId = viewModel.getCustomer().getValue();
-        Log.e("customer", customerId+ "");
         viewModel.setSelectedProducts(mSelectedProducts);
+        viewModel.getDeleted().observeForever(integer -> {
+            if (integer != null) {
+                mSelectedProducts = new SparseIntArray();
+                mProductAdapter.queryAsync();
+            }
+        });
+        viewModel.getDamn().observeForever(array -> {
+            if (array != null){
+                mSelectedProducts = array;
+                mProductAdapter.queryAsync();
+            }
+        });
     }
 
 
@@ -185,7 +222,17 @@ public class ProductListFragment extends Fragment
 
         Bundle bundle = getArguments();
         isDual = bundle.getBoolean("isDual");
+        if (!isDual) {
+            Toolbar myToolbar = view.findViewById(R.id.toolbar);
+            ((AppCompatActivity)getActivity()).setSupportActionBar(myToolbar);
+            ActionBar actionbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+            actionbar.setDisplayHomeAsUpEnabled(true);
+            actionbar.setDisplayShowHomeEnabled(true);
+            setHasOptionsMenu(true);
+        }
         context = getActivity();
+        mDatabaseManager = DatabaseManager.getInstance(context);
+        mApiClient = new ApiClient(context);
         mDataStore = DatabaseManager.getDataStore(context);
         mSessionManager = new SessionManager(context);
         merchantEntity = mDataStore.findByKey(MerchantEntity.class,
@@ -195,6 +242,120 @@ public class ProductListFragment extends Fragment
                 .getCurrency(mSessionManager.getCurrency())
                 .getSymbol();
         mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
+        if (isDual) {
+            sortByCategoryButton = view.findViewById(R.id.sortByCategory);
+            sortByCategoryButton.setVisibility(View.VISIBLE);
+
+            SpinnerButton productCategoriesSpinner = view.findViewById(R.id.productCategoriesSelectSpinner);
+            List<ProductCategoryEntity> productCategories = mDatabaseManager
+                    .getMerchantProductCategories(mSessionManager.getMerchantId());
+            if (productCategories.isEmpty()) {
+                SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                    LayoutInflater li = LayoutInflater.from(alertDialogBuilder.getContext());
+                    @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
+                    EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
+                    TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
+
+                    RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
+                        CharSequence s = textViewTextChangeEvent.text();
+                        String char_temp = "%s %s / %s";
+                        String char_temp_unit = s.length() == 1 ? "Character" : "Characters";
+                        String char_counter_text = String.format(char_temp, s.length(), char_temp_unit, 30);
+                        charCounterView.setText(char_counter_text);
+                    });
+
+                    alertDialogBuilder.setView(createCategoryView);
+                    alertDialogBuilder.setTitle("Create new category");
+                    alertDialogBuilder.setPositiveButton("Create", (dialogInterface, i) -> {
+                        if (TextUtils.isEmpty(msgBox.getText().toString())) {
+                            msgBox.setError(getString(R.string.error_name_required));
+                            msgBox.requestFocus();
+                            return;
+                        }
+                        showProgressDialog();
+
+                        try {
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("name", msgBox.getText().toString());
+                            JSONObject requestData = new JSONObject();
+                            requestData.put("data", jsonObject);
+
+                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+                            mApiClient.getLoystarApi(false).addProductCategory(requestBody).enqueue(new Callback<ProductCategory>() {
+                                @Override
+                                public void onResponse(@NonNull Call<ProductCategory> call, @NonNull Response<ProductCategory> response) {
+                                    dismissProgressDialog();
+                                    if (response.isSuccessful()) {
+                                        ProductCategory productCategory = response.body();
+                                        if (productCategory == null) {
+                                            Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                        } else {
+                                            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+                                            productCategoryEntity.setId(productCategory.getId());
+                                            productCategoryEntity.setDeleted(false);
+                                            productCategoryEntity.setName(productCategory.getName());
+                                            productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
+                                            productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
+                                            productCategoryEntity.setOwner(merchantEntity);
+
+                                            mDatabaseManager.insertNewProductCategory(productCategoryEntity);
+
+                                            mSelectedProductCategory = merchantEntity.getProductCategories().get(0);
+                                            CharSequence[] spinnerItems = new CharSequence[1];
+                                            spinnerItems[0] = productCategory.getName();
+                                            productCategoriesSpinner.setEntries(spinnerItems);
+                                            productCategoriesSpinner.setSelection(0);
+
+                                            Toast.makeText(context, getString(R.string.product_category_create_success), Toast.LENGTH_LONG).show();
+                                        }
+                                    } else {
+                                        Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFailure(@NonNull Call<ProductCategory> call, @NonNull Throwable t) {
+                                    dismissProgressDialog();
+                                    Toast.makeText(context, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        } catch (JSONException e) {
+                            dismissProgressDialog();
+                            e.printStackTrace();
+                        }
+                    });
+                    alertDialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+                    alertDialogBuilder.setCancelable(false);
+
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+                };
+                productCategoriesSpinner.setCreateNewItemListener(createNewItemListener);
+                productCategoriesSpinner.setCreateNewItemDialogTitle("No Categories Found!");
+            } else {
+                CharSequence[] spinnerItems = new CharSequence[productCategories.size()];
+                for (int i = 0; i < productCategories.size(); i++) {
+                    spinnerItems[i] = productCategories.get(i).getName();
+                }
+                productCategoriesSpinner.setEntries(spinnerItems);
+
+                SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> {
+                    searchFilterText = productCategories.get(position).getName();
+                    mProductAdapter.queryAsync();
+                    ImageView resetProduct = view.findViewById(R.id.sortByCategoryImage);
+                    resetProduct.setVisibility(View.VISIBLE);
+                    resetProduct.setOnClickListener(v -> {
+                        searchFilterText = null;
+                        mProductAdapter.queryAsync();
+                        resetProduct.setVisibility(View.GONE);
+                        productCategoriesSpinner.setSelection(-1);
+                    });
+                };
+                productCategoriesSpinner.setListener(onItemSelectedListener);
+            }
+        }
 
         mProductAdapter = new ProductsAdapter();
         orderSummaryAdapter = new OrderSummaryAdapter();
@@ -203,8 +364,9 @@ public class ProductListFragment extends Fragment
         mProductAdapter.setExecutor(executor);
         setHasOptionsMenu(true);
 
-
-        view.findViewById(R.id.order_summary_bs_wrapper).bringToFront();
+        if (!isDual) {
+            view.findViewById(R.id.order_summary_bs_wrapper).bringToFront();
+        }
 
         mOrderSummaryBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -275,16 +437,58 @@ public class ProductListFragment extends Fragment
         assert productsRecyclerview != null;
         setupProductsRecyclerView(productsRecyclerview);
 
+        EmptyRecyclerView orderSummaryRecyclerView = view.findViewById(R.id.order_summary_recycler_view);
         if (!isDual) {
-            EmptyRecyclerView orderSummaryRecyclerView = view.findViewById(R.id.order_summary_recycler_view);
+            Log.e("12333", "here");
             assert orderSummaryRecyclerView != null;
             setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
             setUpBottomSheetView();
         }
     }
 
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage(getString(R.string.a_moment));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
 
     private void setupProductsRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
+        View emptyView = getActivity().findViewById(R.id.empty_items_container);
+        ImageView stateWelcomeImageView = emptyView.findViewById(R.id.stateImage);
+        TextView stateWelcomeTextView = emptyView.findViewById(R.id.stateIntroText);
+        TextView stateDescriptionTextView = emptyView.findViewById(R.id.stateDescriptionText);
+        BrandButtonNormal stateActionBtn = emptyView.findViewById(R.id.stateActionBtn);
+
+        String merchantBusinessType = mSessionManager.getBusinessType();
+        if (merchantBusinessType.equals(getString(R.string.hair_and_beauty))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_no_product_beauty));
+        } else if (merchantBusinessType.equals(getString(R.string.fashion_and_accessories))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_no_product_fashion));
+        } else if (merchantBusinessType.equals(getString(R.string.beverages_and_deserts)) || merchantBusinessType.equals(getString(R.string.bakery_and_pastry))) {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_no_product_food));
+        } else {
+            stateWelcomeImageView.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_no_product_others));
+        }
+
+        stateWelcomeTextView.setText(getString(R.string.hello_text, mSessionManager.getFirstName()));
+        stateDescriptionTextView.setText(getString(R.string.no_products_found));
+
+        stateActionBtn.setText(getString(R.string.start_adding_products_label));
+        stateActionBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(context, AddProductActivity.class);
+            intent.putExtra(Constants.ACTIVITY_INITIATOR, TAG);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        });
+
         mProductsRecyclerView = recyclerView;
         mProductsRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager;
@@ -300,6 +504,7 @@ public class ProductListFragment extends Fragment
         ));
         mProductsRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mProductsRecyclerView.setAdapter(mProductAdapter);
+        mProductsRecyclerView.setEmptyView(emptyView);
     }
 
     private void setUpOrderSummaryRecyclerView(@NonNull EmptyRecyclerView recyclerView) {
@@ -322,14 +527,6 @@ public class ProductListFragment extends Fragment
         mOrderSummaryRecyclerView.setEmptyView(emptyView);
     }
 
-    private ArrayList<ProductCategoryEntity> getCategory(){
-        Selection<ReactiveResult<ProductCategoryEntity>> productsSelection =
-                mDataStore.select(ProductCategoryEntity.class);
-        productsSelection.where(ProductCategoryEntity.OWNER.eq(merchantEntity));
-        productsSelection.where(ProductCategoryEntity.DELETED.notEqual(true));
-        return new ArrayList<>(productsSelection.orderBy(ProductCategoryEntity.NAME.asc()).get().toList());
-    }
-
     @Override
     public void onCustomerSelected(@NonNull CustomerEntity customerEntity) {
         mSelectedCustomer = customerEntity;
@@ -338,13 +535,12 @@ public class ProductListFragment extends Fragment
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.search, menu);
-
-        final MenuItem item = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) item.getActionView();
-//        searchView.setOnQueryTextListener(this);
-
+//        if (!isDual) {
+            inflater.inflate(R.menu.search, menu);
+            final MenuItem item = menu.findItem(R.id.action_search);
+            final SearchView searchView = (SearchView) item.getActionView();
+            searchView.setOnQueryTextListener(this);
+//        }
     }
 
     @Override
@@ -360,6 +556,7 @@ public class ProductListFragment extends Fragment
         cardPaymentDialog.setListener(this);
         cardPaymentDialog.show(getActivity().getSupportFragmentManager(), CardPaymentDialog.TAG);
     }
+
 
     @Override
     public void onPayWithInvoice() {
@@ -458,6 +655,7 @@ public class ProductListFragment extends Fragment
                     mProductAdapter.queryAsync();
                     refreshCartCount();
                     setCheckoutValue();
+                    viewModel.setSelectedProducts(mSelectedProducts);
                 })
                 .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel())
                 .setIcon(AppCompatResources.getDrawable(context, android.R.drawable.ic_dialog_alert))
@@ -488,15 +686,33 @@ public class ProductListFragment extends Fragment
         }
     }
 
-//    @Override
-//    public boolean onQueryTextSubmit(String s) {
-//        return false;
-//    }
-//
-//    @Override
-//    public boolean onQueryTextChange(String s) {
-//        return false;
-//    }
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            searchFilterText = null;
+            ((ProductsAdapter) mProductsRecyclerView.getAdapter()).getFilter().filter(null);
+        }
+        else {
+            ((ProductsAdapter) mProductsRecyclerView.getAdapter()).getFilter().filter(newText);
+        }
+        mProductsRecyclerView.scrollToPosition(0);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (orderSummaryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            showBottomSheet(false);
+        } else {
+            getActivity().getSupportFragmentManager().popBackStack();
+        }
+    }
+
 
     private class ProductsAdapter extends
             QueryRecyclerAdapter<ProductEntity,
@@ -506,18 +722,34 @@ public class ProductListFragment extends Fragment
 
         ProductsAdapter() {
             super(ProductEntity.$TYPE);
-            Log.e("here", "next");
         }
 
         @Override
         public Result<ProductEntity> performQuery() {
             if (merchantEntity == null) {
                 return null;
-            } else {
+            }
+            if (searchFilterText == null || TextUtils.isEmpty(searchFilterText)) {
                 Selection<ReactiveResult<ProductEntity>> productsSelection =
                         mDataStore.select(ProductEntity.class);
                 productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
                 productsSelection.where(ProductEntity.DELETED.notEqual(true));
+                return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
+            }
+            else {
+                String query = "%" + searchFilterText.toLowerCase() + "%";
+                ProductCategoryEntity categoryEntity = mDataStore.select(ProductCategoryEntity.class)
+                        .where(ProductCategoryEntity.NAME.like(query))
+                        .get()
+                        .firstOrNull();
+
+                Selection<ReactiveResult<ProductEntity>> productsSelection =
+                        mDataStore.select(ProductEntity.class);
+                productsSelection.where(ProductEntity.OWNER.eq(merchantEntity));
+                productsSelection.where(ProductEntity.NAME.like(query))
+                        .or(ProductEntity.CATEGORY.equal(categoryEntity));
+                productsSelection.where(ProductEntity.DELETED.notEqual(true));
+
                 return productsSelection.orderBy(ProductEntity.NAME.asc()).get();
             }
         }
@@ -551,7 +783,8 @@ public class ProductListFragment extends Fragment
                 holder.binding.productImageCopy.setImageDrawable(drawable);
             }
             holder.binding.productName.setText(item.getName());
-            if (mSelectedProducts.get(item.getId()) == 0) {
+            if (mSelectedProducts.get(item.getId()) == 0
+                    || viewModel.getSelectedProducts().getValue().get(item.getId()) == 0) {
                 holder.binding.productDecrementWrapper.setVisibility(View.GONE);
             } else {
                 holder.binding.productDecrementWrapper.setVisibility(View.VISIBLE);
@@ -568,6 +801,7 @@ public class ProductListFragment extends Fragment
                             R.drawable.ic_remove_circle_outline_white_24px));
         }
 
+
         @NonNull
         @Override
         public BindingHolder<PosProductItemBinding> onCreateViewHolder(
@@ -582,10 +816,11 @@ public class ProductListFragment extends Fragment
                         if (posProductItemBinding != null) {
                             Product product = posProductItemBinding.getProduct();
                             if (mSelectedProducts.get(product.getId()) == 0) {
+
                                 mSelectedProducts.put(product.getId(), 1);
                                 mProductAdapter.queryAsync();
-                                orderSummaryAdapter.queryAsync();
                                 if (!isDual) {
+                                    orderSummaryAdapter.queryAsync();
                                     setCheckoutValue();
                                 }
                                 viewModel.setSelectedProducts(mSelectedProducts);
@@ -593,8 +828,8 @@ public class ProductListFragment extends Fragment
                                 mSelectedProducts.put(product.getId(),
                                         (mSelectedProducts.get(product.getId()) + 1));
                                 mProductAdapter.queryAsync();
-                                orderSummaryAdapter.queryAsync();
                                 if (!isDual) {
+                                    orderSummaryAdapter.queryAsync();
                                     setCheckoutValue();
                                 }
                                 viewModel.setSelectedProducts(mSelectedProducts);
@@ -615,8 +850,9 @@ public class ProductListFragment extends Fragment
                     if (mSelectedProducts.get(product.getId()) != 0) {
                         int newValue = mSelectedProducts.get(product.getId()) - 1;
                         if (!isDual) {
-//                            setCheckoutValue();
                             setProductCountValue(newValue, product.getId());
+                        } else {
+                            setProductValue(newValue, product.getId());
                         }
                         if (newValue == 0) {
                             posProductItemBinding.productCount.setText("0");
@@ -661,9 +897,9 @@ public class ProductListFragment extends Fragment
                         result.values = productEntities;
                     }
                 } else {
-//                    searchFilterText = searchString;
-//                    result.count = 0;
-//                    result.values = new ArrayList<>();
+                    searchFilterText = searchString;
+                    result.count = 0;
+                    result.values = new ArrayList<>();
                 }
                 return result;
             }
@@ -695,20 +931,37 @@ public class ProductListFragment extends Fragment
 
         @SuppressLint("CheckResult")
         @Override
-        public void onBindViewHolder(ProductEntity item, BindingHolder<OrderSummaryItemBinding> holder, int position) {
+        public void onBindViewHolder(ProductEntity item,
+                                     BindingHolder<OrderSummaryItemBinding> holder, int position) {
             holder.binding.setProduct(item);
             RequestOptions options = new RequestOptions();
             options.fitCenter().centerCrop().apply(RequestOptions.placeholderOf(
                     AppCompatResources.getDrawable(context, R.drawable.ic_photo_black_24px)
             ));
-            Glide.with(context)
-                    .load(item.getPicture())
-                    .apply(options)
-                    .into(holder.binding.productImage);
+//            Glide.with(context)
+//                    .load(item.getPicture())
+//                    .apply(options)
+//                    .into(holder.binding.productImage);
+
+            if (item.getPicture() != null) {
+                Glide.with(context)
+                        .load(item.getPicture())
+                        .apply(options)
+                        .into(holder.binding.productImage);
+            } else {
+                TextDrawable drawable = TextDrawable.builder()
+                        .beginConfig().textColor(Color.GRAY)
+                        .useFont(Typeface.DEFAULT)
+                        .toUpperCase().endConfig()
+                        .buildRect(item.getName().substring(0,2), Color.WHITE);
+                holder.binding.productImage.setImageDrawable(drawable);
+            }
 
             holder.binding.productName.setText(item.getName());
-            holder.binding.deleteCartItem.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_close_white_24px));
-            holder.binding.orderItemIncDecBtn.setNumber(String.valueOf(mSelectedProducts.get(item.getId())));
+            holder.binding.deleteCartItem.setImageDrawable(
+                    AppCompatResources.getDrawable(context, R.drawable.ic_close_white_24px));
+            holder.binding.orderItemIncDecBtn.setNumber(
+                    String.valueOf(mSelectedProducts.get(item.getId())));
 
             String template = "%.2f";
             double totalCostOfItem = item.getPrice() * mSelectedProducts.get(item.getId());
@@ -717,7 +970,8 @@ public class ProductListFragment extends Fragment
         }
 
         @Override
-        public BindingHolder<OrderSummaryItemBinding> onCreateViewHolder(ViewGroup parent, int viewType) {
+        public BindingHolder<OrderSummaryItemBinding> onCreateViewHolder(
+                ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             final OrderSummaryItemBinding binding = OrderSummaryItemBinding.inflate(inflater);
             binding.getRoot().setTag(binding);
@@ -728,8 +982,10 @@ public class ProductListFragment extends Fragment
                     .setMessage("This item will be permanently removed from your cart!")
                     .setCancelable(false)
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        OrderSummaryItemBinding orderSummaryItemBinding = (OrderSummaryItemBinding) view.getTag();
-                        if (orderSummaryItemBinding != null && orderSummaryItemBinding.getProduct() != null) {
+                        OrderSummaryItemBinding orderSummaryItemBinding =
+                                (OrderSummaryItemBinding) view.getTag();
+                        if (orderSummaryItemBinding != null
+                                && orderSummaryItemBinding.getProduct() != null) {
                             mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
                             orderSummaryAdapter.queryAsync();
                             mProductAdapter.queryAsync();
@@ -825,14 +1081,14 @@ public class ProductListFragment extends Fragment
 
                         Completable.complete()
                                 .delay(1, TimeUnit.SECONDS)
-//                                .compose(bindToLifecycle())
                                 .doOnComplete(() -> {
                                     Bundle bundle = new Bundle();
                                     if (mSelectedCustomer != null) {
                                         bundle.putInt(Constants.CUSTOMER_ID, mSelectedCustomer.getId());
                                     }
 
-                                    @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = new HashMap<>(mSelectedProducts.size());
+                                    @SuppressLint("UseSparseArrays") HashMap<Integer, Integer>
+                                            orderSummaryItems = new HashMap<>(mSelectedProducts.size());
                                     for (int x = 0; x < mSelectedProducts.size(); x++) {
                                         orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
                                     }
@@ -854,8 +1110,6 @@ public class ProductListFragment extends Fragment
     public void onResume() {
         mProductAdapter.queryAsync();
         orderSummaryAdapter.queryAsync();
-        Log.e("here", mSelectedProducts +"");
-
 
         if (myAlertDialog == null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -908,8 +1162,8 @@ public class ProductListFragment extends Fragment
 
     @Override
     public void onDestroy() {
-//        executor.shutdown();
-//        mProductAdapter.close();
+        executor.shutdown();
+        mProductAdapter.close();
         orderSummaryAdapter.close();
         super.onDestroy();
     }
@@ -933,6 +1187,20 @@ public class ProductListFragment extends Fragment
             setCheckoutValue();
         }
     }
+
+    private void setProductValue(int newValue, int productId) {
+        if (newValue > 0) {
+            mSelectedProducts.put(productId, newValue);
+            mProductAdapter.queryAsync();
+            viewModel.setSelectedProducts(mSelectedProducts);
+        } else {
+            mSelectedProducts.delete(productId);
+            mProductAdapter.queryAsync();
+            viewModel.setSelectedProducts(mSelectedProducts);
+        }
+    }
+
+
 
     private void setCheckoutValue() {
         ArrayList<Integer> ids = new ArrayList<>();
@@ -995,7 +1263,6 @@ public class ProductListFragment extends Fragment
                 if (data.hasExtra(Constants.CUSTOMER_ID)) {
                     mDataStore.findByKey(CustomerEntity.class, data.getIntExtra(Constants.CUSTOMER_ID, 0))
                             .toObservable()
-//                            .compose(getbindToLifecycle())
                             .subscribeOn(Schedulers.newThread())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(customerEntity -> {
@@ -1015,9 +1282,62 @@ public class ProductListFragment extends Fragment
     }
 
     @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        Log.e("fireeeee", "LOOOOO");
+        if (savedInstanceState != null) {
+            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+            Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
+
+            Log.e("KKKKK>>>", productsListState + "  " + orderSummaryListState);
+
+            /*restore RecyclerView state*/
+            if (productsListState != null) {
+                mProductsRecyclerView.getLayoutManager().onRestoreInstanceState(productsListState);
+            }
+            if (orderSummaryListState != null) {
+                mOrderSummaryRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
+            }
+
+            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
+                    (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+            Log.e("dddd", orderSummaryItems + "");
+            if (orderSummaryItems != null) {
+                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
+                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
+                    setProductCountValue(orderItem.getValue(), orderItem.getKey());
+                    if (isDual) {
+                        setProductValue(orderItem.getValue(), orderItem.getKey());
+                    }
+                }
+            }
+
+            if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
+                mSelectedCustomer = mDataStore
+                        .findByKey(CustomerEntity.class,
+                                savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
+                Log.e("next", mSelectedCustomer +"");
+            }
+
+            showBottomSheet(false);
+            ViewTreeObserver treeObserver = proceedToCheckoutBtn.getViewTreeObserver();
+            treeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    ViewTreeObserver obs = proceedToCheckoutBtn.getViewTreeObserver();
+                    obs.removeOnGlobalLayoutListener(this);
+                    proceedToCheckoutBtnHeight = proceedToCheckoutBtn.getMeasuredHeight();
+                    orderSummaryBottomSheetBehavior.setPeekHeight(proceedToCheckoutBtnHeight);
+                }
+            });
+        }
+    }
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
+            Log.e("is", "not");
             Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
             Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
 
@@ -1053,6 +1373,31 @@ public class ProductListFragment extends Fragment
                 }
             });
         }
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.e("here", ">>>>>");
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
+                new HashMap<>(mSelectedProducts.size());
+        for (int x = 0; x < mSelectedProducts.size(); x++) {
+            orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+        }
+        outState.putSerializable(KEY_SELECTED_PRODUCTS_STATE, orderSummaryItems);
+
+        Parcelable productsListState = mProductsRecyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(KEY_PRODUCTS_RECYCLER_STATE, productsListState);
+//        if (!isDual) {
+            Parcelable orderSummaryListState = mOrderSummaryRecyclerView.getLayoutManager().onSaveInstanceState();
+            outState.putParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE, orderSummaryListState);
+//        }
+
+        if (mSelectedCustomer != null) {
+            outState.putInt(KEY_SAVED_CUSTOMER_ID, mSelectedCustomer.getId());
+        }
+
+        super.onSaveInstanceState(outState);
     }
 
 

@@ -18,7 +18,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -27,8 +26,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -125,7 +122,6 @@ public class CheckoutFragment extends Fragment
     private ArrayList<Integer> ids;
 
 
-
     public CheckoutFragment() {
     }
 
@@ -146,7 +142,6 @@ public class CheckoutFragment extends Fragment
 
         customerId = viewModel.getCustomer().getValue();
         viewModel.getSelectedProducts().observeForever(value -> {
-            Log.e("value", value + "");
             mSelectedProducts = value.clone();
             setCheckoutValue(mSelectedProducts);
         });
@@ -168,7 +163,6 @@ public class CheckoutFragment extends Fragment
                 .getCurrencies(context)
                 .getCurrency(mSessionManager.getCurrency())
                 .getSymbol();
-        Log.e(">>>LLL", customerId +" ");
         mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
 
         mOrderSummaryAdapter = new OrderSummaryAdapter();
@@ -210,6 +204,7 @@ public class CheckoutFragment extends Fragment
                     totalCharge = 0;
                     mOrderSummaryAdapter.queryAsync();
                     setCheckoutValue(entities);
+                    viewModel.setDeleted(1);
                 })
                 .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel())
                 .setIcon(AppCompatResources.getDrawable(context, android.R.drawable.ic_dialog_alert))
@@ -385,6 +380,8 @@ public class CheckoutFragment extends Fragment
                             mSelectedProducts.delete(orderSummaryItemBinding.getProduct().getId());
                             mOrderSummaryAdapter.queryAsync();
                             setCheckoutValue(entities);
+                            viewModel.setSelectedProducts(mSelectedProducts);
+                            viewModel.updateSelected(mSelectedProducts);
                         }
                     })
                     .setNegativeButton("Cancel", (dialogInterface, inst) -> dialogInterface.cancel())
@@ -491,6 +488,7 @@ public class CheckoutFragment extends Fragment
                                     Intent intent = new Intent(context, SaleWithPosConfirmationActivity.class);
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     intent.putExtras(bundle);
+                                    intent.putExtra("isDual", "tablet");
                                     startActivity(intent);
                                 })
                                 .subscribe();
@@ -518,10 +516,12 @@ public class CheckoutFragment extends Fragment
             mSelectedProducts.put(productId, newValue);
             mOrderSummaryAdapter.queryAsync();
             setCheckoutValue(array);
+            viewModel.updateSelected(mSelectedProducts);
         } else {
             mSelectedProducts.delete(productId);
             mOrderSummaryAdapter.queryAsync();
             setCheckoutValue(array);
+            viewModel.updateSelected(mSelectedProducts);
         }
     }
 
@@ -535,8 +535,6 @@ public class CheckoutFragment extends Fragment
                 .orderBy(ProductEntity.UPDATED_AT.desc())
                 .get();
 
-//        showCheckoutBtn(true);
-
         double tc = 0;
         for (ProductEntity product: result.toList()) {
             double totalCostOfItem = product.getPrice() * mSelectedProducts.get(product.getId());
@@ -546,14 +544,6 @@ public class CheckoutFragment extends Fragment
         totalCharge = Double.valueOf(String.format(Locale.UK, template, tc));
         String cText = String.format(Locale.UK, template, totalCharge);
         orderSummaryCheckoutBtn.setText(getString(R.string.charge, merchantCurrencySymbol, cText));
-    }
-
-    private void showCheckoutBtn(boolean show) {
-        if (show) {
-            orderSummaryCheckoutWrapper.setVisibility(View.VISIBLE);
-        } else {
-            orderSummaryCheckoutWrapper.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -571,7 +561,7 @@ public class CheckoutFragment extends Fragment
                                     Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
                                 } else {
                                     mSelectedCustomer = customerEntity;
-//                                    createSale();
+                                    createSale(entities);
                                 }
                             });
                 }
@@ -585,11 +575,58 @@ public class CheckoutFragment extends Fragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        viewModel.getSelectedProducts().observeForever(value -> {
-            mSelectedProducts = value;
-        });
+//        viewModel.getSelectedProducts().observeForever(value -> {
+//            mSelectedProducts = value;
+//        });
+//        if (savedInstanceState != null) {
+////            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+//            Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
+//
+//            /*restore RecyclerView state*/
+//            if (orderSummaryListState != null) {
+//                mOrdersRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
+//            }
+//
+//            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
+//                    (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+//            if (orderSummaryItems != null) {
+//                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
+//                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
+//                    setProductCountValue(orderItem.getValue(), orderItem.getKey(), entities);
+//                }
+//            }
+//
+//            if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
+//                mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class,
+//                        savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
+//            }
+//        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
+                new HashMap<>(mSelectedProducts.size());
+        for (int x = 0; x < mSelectedProducts.size(); x++) {
+            orderSummaryItems.put(mSelectedProducts.keyAt(x), mSelectedProducts.valueAt(x));
+        }
+        outState.putSerializable(KEY_SELECTED_PRODUCTS_STATE, orderSummaryItems);
+
+        Parcelable orderSummaryListState = mOrdersRecyclerView.getLayoutManager().onSaveInstanceState();
+//        outState.putParcelable(KEY_PRODUCTS_RECYCLER_STATE, productsListState);
+        outState.putParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE, orderSummaryListState);
+
+        if (mSelectedCustomer != null) {
+            outState.putInt(KEY_SAVED_CUSTOMER_ID, mSelectedCustomer.getId());
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+//            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
             Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
 
             /*restore RecyclerView state*/
@@ -597,8 +634,7 @@ public class CheckoutFragment extends Fragment
                 mOrdersRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
             }
 
-            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
-                    (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
             if (orderSummaryItems != null) {
                 for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
                     mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());

@@ -8,9 +8,11 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="co.loystar.loystarbusiness.activities.SaleWithPosActivity">
 
+
+
     <co.loystar.loystarbusiness.utils.ui.RecyclerViewOverrides.EmptyRecyclerView
         android:id="@+id/points_sale_order_items_rv"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
 
