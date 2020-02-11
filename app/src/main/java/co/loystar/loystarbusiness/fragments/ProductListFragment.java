@@ -243,118 +243,118 @@ SearchView.OnQueryTextListener{
                 .getSymbol();
         mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, customerId).blockingGet();
         if (isDual) {
-            sortByCategoryButton = view.findViewById(R.id.sortByCategory);
-            sortByCategoryButton.setVisibility(View.VISIBLE);
-
-            SpinnerButton productCategoriesSpinner = view.findViewById(R.id.productCategoriesSelectSpinner);
-            List<ProductCategoryEntity> productCategories = mDatabaseManager
-                    .getMerchantProductCategories(mSessionManager.getMerchantId());
-            if (productCategories.isEmpty()) {
-                SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-                    LayoutInflater li = LayoutInflater.from(alertDialogBuilder.getContext());
-                    @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
-                    EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
-                    TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
-
-                    RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
-                        CharSequence s = textViewTextChangeEvent.text();
-                        String char_temp = "%s %s / %s";
-                        String char_temp_unit = s.length() == 1 ? "Character" : "Characters";
-                        String char_counter_text = String.format(char_temp, s.length(), char_temp_unit, 30);
-                        charCounterView.setText(char_counter_text);
-                    });
-
-                    alertDialogBuilder.setView(createCategoryView);
-                    alertDialogBuilder.setTitle("Create new category");
-                    alertDialogBuilder.setPositiveButton("Create", (dialogInterface, i) -> {
-                        if (TextUtils.isEmpty(msgBox.getText().toString())) {
-                            msgBox.setError(getString(R.string.error_name_required));
-                            msgBox.requestFocus();
-                            return;
-                        }
-                        showProgressDialog();
-
-                        try {
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("name", msgBox.getText().toString());
-                            JSONObject requestData = new JSONObject();
-                            requestData.put("data", jsonObject);
-
-                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
-                            mApiClient.getLoystarApi(false).addProductCategory(requestBody).enqueue(new Callback<ProductCategory>() {
-                                @Override
-                                public void onResponse(@NonNull Call<ProductCategory> call, @NonNull Response<ProductCategory> response) {
-                                    dismissProgressDialog();
-                                    if (response.isSuccessful()) {
-                                        ProductCategory productCategory = response.body();
-                                        if (productCategory == null) {
-                                            Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
-                                        } else {
-                                            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
-                                            productCategoryEntity.setId(productCategory.getId());
-                                            productCategoryEntity.setDeleted(false);
-                                            productCategoryEntity.setName(productCategory.getName());
-                                            productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
-                                            productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
-                                            productCategoryEntity.setOwner(merchantEntity);
-
-                                            mDatabaseManager.insertNewProductCategory(productCategoryEntity);
-
-                                            mSelectedProductCategory = merchantEntity.getProductCategories().get(0);
-                                            CharSequence[] spinnerItems = new CharSequence[1];
-                                            spinnerItems[0] = productCategory.getName();
-                                            productCategoriesSpinner.setEntries(spinnerItems);
-                                            productCategoriesSpinner.setSelection(0);
-
-                                            Toast.makeText(context, getString(R.string.product_category_create_success), Toast.LENGTH_LONG).show();
-                                        }
-                                    } else {
-                                        Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
-                                    }
-
-                                }
-
-                                @Override
-                                public void onFailure(@NonNull Call<ProductCategory> call, @NonNull Throwable t) {
-                                    dismissProgressDialog();
-                                    Toast.makeText(context, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        } catch (JSONException e) {
-                            dismissProgressDialog();
-                            e.printStackTrace();
-                        }
-                    });
-                    alertDialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-                    alertDialogBuilder.setCancelable(false);
-
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
-                };
-                productCategoriesSpinner.setCreateNewItemListener(createNewItemListener);
-                productCategoriesSpinner.setCreateNewItemDialogTitle("No Categories Found!");
-            } else {
-                CharSequence[] spinnerItems = new CharSequence[productCategories.size()];
-                for (int i = 0; i < productCategories.size(); i++) {
-                    spinnerItems[i] = productCategories.get(i).getName();
-                }
-                productCategoriesSpinner.setEntries(spinnerItems);
-
-                SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> {
-                    searchFilterText = productCategories.get(position).getName();
-                    mProductAdapter.queryAsync();
-                    ImageView resetProduct = view.findViewById(R.id.sortByCategoryImage);
-                    resetProduct.setVisibility(View.VISIBLE);
-                    resetProduct.setOnClickListener(v -> {
-                        searchFilterText = null;
-                        mProductAdapter.queryAsync();
-                        resetProduct.setVisibility(View.GONE);
-                        productCategoriesSpinner.setSelection(-1);
-                    });
-                };
-                productCategoriesSpinner.setListener(onItemSelectedListener);
-            }
+//            sortByCategoryButton = view.findViewById(R.id.sortByCategory);
+//            sortByCategoryButton.setVisibility(View.VISIBLE);
+//
+//            SpinnerButton productCategoriesSpinner = view.findViewById(R.id.productCategoriesSelectSpinner);
+//            List<ProductCategoryEntity> productCategories = mDatabaseManager
+//                    .getMerchantProductCategories(mSessionManager.getMerchantId());
+//            if (productCategories.isEmpty()) {
+//                SpinnerButton.CreateNewItemListener createNewItemListener = () -> {
+//                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+//                    LayoutInflater li = LayoutInflater.from(alertDialogBuilder.getContext());
+//                    @SuppressLint("InflateParams") View createCategoryView = li.inflate(R.layout.add_product_category, null);
+//                    EditText msgBox = createCategoryView.findViewById(R.id.category_text_box);
+//                    TextView charCounterView = createCategoryView.findViewById(R.id.category_name_char_counter);
+//
+//                    RxTextView.textChangeEvents(msgBox).subscribe(textViewTextChangeEvent -> {
+//                        CharSequence s = textViewTextChangeEvent.text();
+//                        String char_temp = "%s %s / %s";
+//                        String char_temp_unit = s.length() == 1 ? "Character" : "Characters";
+//                        String char_counter_text = String.format(char_temp, s.length(), char_temp_unit, 30);
+//                        charCounterView.setText(char_counter_text);
+//                    });
+//
+//                    alertDialogBuilder.setView(createCategoryView);
+//                    alertDialogBuilder.setTitle("Create new category");
+//                    alertDialogBuilder.setPositiveButton("Create", (dialogInterface, i) -> {
+//                        if (TextUtils.isEmpty(msgBox.getText().toString())) {
+//                            msgBox.setError(getString(R.string.error_name_required));
+//                            msgBox.requestFocus();
+//                            return;
+//                        }
+//                        showProgressDialog();
+//
+//                        try {
+//                            JSONObject jsonObject = new JSONObject();
+//                            jsonObject.put("name", msgBox.getText().toString());
+//                            JSONObject requestData = new JSONObject();
+//                            requestData.put("data", jsonObject);
+//
+//                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), requestData.toString());
+//                            mApiClient.getLoystarApi(false).addProductCategory(requestBody).enqueue(new Callback<ProductCategory>() {
+//                                @Override
+//                                public void onResponse(@NonNull Call<ProductCategory> call, @NonNull Response<ProductCategory> response) {
+//                                    dismissProgressDialog();
+//                                    if (response.isSuccessful()) {
+//                                        ProductCategory productCategory = response.body();
+//                                        if (productCategory == null) {
+//                                            Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+//                                        } else {
+//                                            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+//                                            productCategoryEntity.setId(productCategory.getId());
+//                                            productCategoryEntity.setDeleted(false);
+//                                            productCategoryEntity.setName(productCategory.getName());
+//                                            productCategoryEntity.setCreatedAt(new Timestamp(productCategory.getCreated_at().getMillis()));
+//                                            productCategoryEntity.setUpdatedAt(new Timestamp(productCategory.getUpdated_at().getMillis()));
+//                                            productCategoryEntity.setOwner(merchantEntity);
+//
+//                                            mDatabaseManager.insertNewProductCategory(productCategoryEntity);
+//
+//                                            mSelectedProductCategory = merchantEntity.getProductCategories().get(0);
+//                                            CharSequence[] spinnerItems = new CharSequence[1];
+//                                            spinnerItems[0] = productCategory.getName();
+//                                            productCategoriesSpinner.setEntries(spinnerItems);
+//                                            productCategoriesSpinner.setSelection(0);
+//
+//                                            Toast.makeText(context, getString(R.string.product_category_create_success), Toast.LENGTH_LONG).show();
+//                                        }
+//                                    } else {
+//                                        Toast.makeText(context, getString(R.string.unknown_error), Toast.LENGTH_LONG).show();
+//                                    }
+//
+//                                }
+//
+//                                @Override
+//                                public void onFailure(@NonNull Call<ProductCategory> call, @NonNull Throwable t) {
+//                                    dismissProgressDialog();
+//                                    Toast.makeText(context, getString(R.string.error_internet_connection_timed_out), Toast.LENGTH_LONG).show();
+//                                }
+//                            });
+//                        } catch (JSONException e) {
+//                            dismissProgressDialog();
+//                            e.printStackTrace();
+//                        }
+//                    });
+//                    alertDialogBuilder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+//                    alertDialogBuilder.setCancelable(false);
+//
+//                    AlertDialog alertDialog = alertDialogBuilder.create();
+//                    alertDialog.show();
+//                };
+//                productCategoriesSpinner.setCreateNewItemListener(createNewItemListener);
+//                productCategoriesSpinner.setCreateNewItemDialogTitle("No Categories Found!");
+//            } else {
+//                CharSequence[] spinnerItems = new CharSequence[productCategories.size()];
+//                for (int i = 0; i < productCategories.size(); i++) {
+//                    spinnerItems[i] = productCategories.get(i).getName();
+//                }
+//                productCategoriesSpinner.setEntries(spinnerItems);
+//
+//                SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> {
+//                    searchFilterText = productCategories.get(position).getName();
+//                    mProductAdapter.queryAsync();
+//                    ImageView resetProduct = view.findViewById(R.id.sortByCategoryImage);
+//                    resetProduct.setVisibility(View.VISIBLE);
+//                    resetProduct.setOnClickListener(v -> {
+//                        searchFilterText = null;
+//                        mProductAdapter.queryAsync();
+//                        resetProduct.setVisibility(View.GONE);
+//                        productCategoriesSpinner.setSelection(-1);
+//                    });
+//                };
+//                productCategoriesSpinner.setListener(onItemSelectedListener);
+//            }
         }
 
         mProductAdapter = new ProductsAdapter();
@@ -364,9 +364,9 @@ SearchView.OnQueryTextListener{
         mProductAdapter.setExecutor(executor);
         setHasOptionsMenu(true);
 
-        if (!isDual) {
-            view.findViewById(R.id.order_summary_bs_wrapper).bringToFront();
-        }
+//        if (!isDual) {
+//            view.findViewById(R.id.order_summary_bs_wrapper).bringToFront();
+//        }
 
         mOrderSummaryBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
             @Override

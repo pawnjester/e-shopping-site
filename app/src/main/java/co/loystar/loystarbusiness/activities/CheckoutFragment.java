@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
@@ -136,24 +138,16 @@ public class CheckoutFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
-        viewModel.getCustomer().observeForever(integer -> {
-
-        });
 
         customerId = viewModel.getCustomer().getValue();
-        viewModel.getSelectedProducts().observeForever(value -> {
-            mSelectedProducts = value.clone();
-            setCheckoutValue(mSelectedProducts);
-        });
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel.getSelectedProducts().observeForever(value -> {
-            mSelectedProducts = value;
-            mOrderSummaryAdapter.updateProduct(value);
-        });
+        Toolbar mToolbar = view.findViewById(R.id.toolbar);
+//        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         context = getActivity();
         mDataStore = DatabaseManager.getDataStore(context);
         mSessionManager = new SessionManager(context);
@@ -179,6 +173,14 @@ public class CheckoutFragment extends Fragment
         assert orderSummaryRecyclerView != null;
         setUpOrdersRecyclerView(orderSummaryRecyclerView);
         displayCheckout();
+
+        viewModel.getSelectedProducts().observe(getViewLifecycleOwner(), array -> {
+            mSelectedProducts = array;
+            if (mSelectedProducts != null) {
+                setCheckoutValue(mSelectedProducts);
+            }
+            mOrderSummaryAdapter.updateProduct(array);
+        });
 
     }
 
@@ -553,7 +555,6 @@ public class CheckoutFragment extends Fragment
                 if (data.hasExtra(Constants.CUSTOMER_ID)) {
                     mDataStore.findByKey(CustomerEntity.class, data.getIntExtra(Constants.CUSTOMER_ID, 0))
                             .toObservable()
-//                            .compose(getbindToLifecycle())
                             .subscribeOn(Schedulers.newThread())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(customerEntity -> {
@@ -572,37 +573,37 @@ public class CheckoutFragment extends Fragment
         }
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-//        viewModel.getSelectedProducts().observeForever(value -> {
-//            mSelectedProducts = value;
-//        });
+//    @Override
+//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+//        super.onActivityCreated(savedInstanceState);
 //        if (savedInstanceState != null) {
-////            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
-//            Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
+//            Log.e(">>>save", "not");
+//            Parcelable orderSummaryListState =
+//                    savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
 //
 //            /*restore RecyclerView state*/
 //            if (orderSummaryListState != null) {
-//                mOrdersRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
+//                mOrdersRecyclerView
+//                        .getLayoutManager().onRestoreInstanceState(orderSummaryListState);
 //            }
-//
+////
 //            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
-//                    (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+//                    (HashMap<Integer, Integer>)
+//                            savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
 //            if (orderSummaryItems != null) {
 //                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
 //                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
 //                    setProductCountValue(orderItem.getValue(), orderItem.getKey(), entities);
 //                }
 //            }
-//
-//            if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
-//                mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class,
-//                        savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
-//            }
+////
+////            if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
+////                mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class,
+////                        savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();
+////            }
 //        }
-    }
-
+//    }
+//
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
@@ -613,7 +614,6 @@ public class CheckoutFragment extends Fragment
         outState.putSerializable(KEY_SELECTED_PRODUCTS_STATE, orderSummaryItems);
 
         Parcelable orderSummaryListState = mOrdersRecyclerView.getLayoutManager().onSaveInstanceState();
-//        outState.putParcelable(KEY_PRODUCTS_RECYCLER_STATE, productsListState);
         outState.putParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE, orderSummaryListState);
 
         if (mSelectedCustomer != null) {
@@ -621,26 +621,27 @@ public class CheckoutFragment extends Fragment
         }
         super.onSaveInstanceState(outState);
     }
-
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-//            Parcelable productsListState = savedInstanceState.getParcelable(KEY_PRODUCTS_RECYCLER_STATE);
+            Log.e("not", "saved");
             Parcelable orderSummaryListState = savedInstanceState.getParcelable(KEY_ORDER_SUMMARY_RECYCLER_STATE);
 
             /*restore RecyclerView state*/
             if (orderSummaryListState != null) {
                 mOrdersRecyclerView.getLayoutManager().onRestoreInstanceState(orderSummaryListState);
             }
-
-            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems = (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
-            if (orderSummaryItems != null) {
-                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
-                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
-                    setProductCountValue(orderItem.getValue(), orderItem.getKey(), entities);
-                }
-            }
+//            @SuppressLint("UseSparseArrays") HashMap<Integer, Integer> orderSummaryItems =
+//                    (HashMap<Integer, Integer>) savedInstanceState.getSerializable(KEY_SELECTED_PRODUCTS_STATE);
+//            Log.e("orddd", orderSummaryItems + "");
+//            if (orderSummaryItems != null) {
+//                for (Map.Entry<Integer, Integer> orderItem: orderSummaryItems.entrySet()) {
+//                    mSelectedProducts.put(orderItem.getKey(), orderItem.getValue());
+////                    if (i)
+////                    setProductCountValue(orderItem.getValue(), orderItem.getKey(), entities);
+//                }
+//            }
 
             if (savedInstanceState.containsKey(KEY_SAVED_CUSTOMER_ID)) {
                 mSelectedCustomer = mDataStore.findByKey(CustomerEntity.class, savedInstanceState.getInt(KEY_SAVED_CUSTOMER_ID)).blockingGet();

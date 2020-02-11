@@ -12,12 +12,12 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+<!--        <android.support.v7.widget.Toolbar-->
+<!--            android:id="@+id/toolbar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:background="?attr/colorPrimary"-->
+<!--            app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
     </android.support.design.widget.AppBarLayout>
 
@@ -30,6 +30,8 @@
         style="@style/Theme.ActionBar.HigherElevation"
         app:behavior_hideable="false"
         app:behavior_peekHeight="0dp"
-        android:fitsSystemWindows="true"/>
+        android:fitsSystemWindows="true">
+        <include layout="@layout/product_list_recycler"/>
+    </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>
