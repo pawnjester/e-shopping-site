@@ -51,7 +51,7 @@
 
     </LinearLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/order_summary_checkout_wrapper"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -63,14 +63,14 @@
             android:id="@+id/clear_cart"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.7"
+            android:layout_weight="0.8"
             android:text="@string/clear" />
 
         <co.loystar.loystarbusiness.utils.ui.buttons.FullRectangleButton
             android:id="@+id/order_summary_checkout_btn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1.3"
+            android:layout_weight="1.2"
             android:drawablePadding="-20dp"
             android:textSize="@dimen/text_size_medium"
             android:textStyle="bold"

@@ -104,6 +104,7 @@ public class BackgroundNotificationService extends IntentService {
     }
 
     private void onDownloadComplete(boolean downloadComplete) {
+        Log.e("never", "here");
         sendProgressUpdate(downloadComplete);
         notificationManager.cancel(0);
 
@@ -154,6 +155,7 @@ public class BackgroundNotificationService extends IntentService {
                                 .downloadInvoice(BuildConfig.FLAVOR.equals("production")
                                         ? downloadInvoice.getMessage().substring(22)
                                         : downloadInvoice.getMessage().substring(33)))
+                .doOnNext(this::saveToDiskRx)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .doOnError(error -> Toast.makeText(getApplicationContext(),
@@ -162,8 +164,7 @@ public class BackgroundNotificationService extends IntentService {
                     if (response.code() == 404) {
                         Toast.makeText(getApplicationContext(),
                                 "Invoice could not be downloaded", Toast.LENGTH_SHORT).show();
-                    } else {
-                        saveToDiskRx(response);
+
                     }
                 });
     }
@@ -181,11 +182,13 @@ public class BackgroundNotificationService extends IntentService {
             }
 
             invoiceFile = new File(filePath, strippedFile);
+            Log.e(">>>", invoiceFile +"");
             InputStream inputStream = null;
             OutputStream outputStream = null;
             boolean downloadComplete = false;
 
             try {
+                Log.e("MMMM", "dddd");
                 byte[] fileReader = new byte[4096];
                 int count;
 
@@ -202,7 +205,7 @@ public class BackgroundNotificationService extends IntentService {
                     outputStream.write(fileReader, 0, count);
                     downloadComplete = true;
                 }
-
+                Log.e(">>>", "ddd");
                 onDownloadComplete(downloadComplete);
                 outputStream.flush();
                 outputStream.close();
@@ -222,6 +225,7 @@ public class BackgroundNotificationService extends IntentService {
                 }
             }
         } catch (Exception e) {
+            Log.e(">>>", e +"");
             onDownloadFailure();
             return false;
         }

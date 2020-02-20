@@ -5,4 +5,5 @@
     <string name="payment_message">Payment Message</string>
     <string name="create_invoice_text">Create Invoice</string>
     <string name="expired_now_text">Your account has expired</string>
+    <string name="stock_unit_text">Stock Unit</string>
 </resources>

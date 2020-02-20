@@ -1096,8 +1096,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 ProductEntity productEntity = new ProductEntity();
                                 productEntity.setId(product.getId());
                                 productEntity.setName(product.getName());
+                                productEntity.setDescription(product.getDescription());
                                 productEntity.setPicture(product.getPicture());
                                 productEntity.setPrice(product.getPrice());
+                                productEntity.setQuantity(product.getQuantity());
+                                productEntity.setUnit(product.getUnit());
+                                productEntity.setTracked(product.getTrackInventory());
                                 productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
                                 productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
                                 productEntity.setDeleted(false);

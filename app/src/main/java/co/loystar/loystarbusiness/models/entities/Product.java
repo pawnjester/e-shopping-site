@@ -28,8 +28,11 @@ public interface Product extends Observable, Parcelable, Persistable {
     double getPrice();
     String getName();
     String getPicture();
-    String geDescription();
+    String getDescription();
     boolean isDeleted();
+    String getUnit();
+    String getQuantity();
+    boolean isTracked();
 
     @Bindable
     @ManyToOne

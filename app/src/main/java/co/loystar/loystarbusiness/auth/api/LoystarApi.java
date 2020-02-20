@@ -202,8 +202,12 @@ public interface LoystarApi {
             @Path("id") int id,
             @Part("data[name]") RequestBody name,
             @Part("data[price]") RequestBody price,
+            @Part("data[description]") RequestBody description,
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
             @Part("data[merchant_loyalty_program_id]") RequestBody merchant_loyalty_program_id,
+            @Part("data[stock_unit]") RequestBody stock_unit,
+            @Part("data[quantity]") RequestBody quantity,
+            @Part("data[track_inventory]") Boolean track_inventory,
             @Part MultipartBody.Part file
     );
 
@@ -212,9 +216,13 @@ public interface LoystarApi {
     Call<Product> addProduct(
             @Part("data[name]") RequestBody name,
             @Part("data[price]") RequestBody price,
+            @Part("data[description]") RequestBody description,
             @Part("data[merchant_product_category_id]") RequestBody merchant_product_category_id,
             @Part("data[merchant_loyalty_program_id]") RequestBody merchant_loyalty_program_id,
-            @Part MultipartBody.Part file
+            @Part MultipartBody.Part file,
+            @Part("data[unit]") RequestBody unit,
+            @Part("data[quantity]") RequestBody quantity,
+            @Part("data[track_inventory]") Boolean track_inventory
     );
 
     @POST("merchants/set_firebase_registration_token")

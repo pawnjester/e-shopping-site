@@ -22,6 +22,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
  * Created by ordgen on 11/1/17.
@@ -44,12 +45,9 @@ public class ApiClient {
     }
 
     private Retrofit getRetrofit(boolean hasRootValue) {
-        Log.e("account333", mSessionManager.getEmail()
-                +" " + mSessionManager.getClientKey() + " "
-                + mSessionManager.getAccessToken());
         if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-//            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
             OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
@@ -61,9 +59,6 @@ public class ApiClient {
                         if (mAccount == null) {
                             return chain.proceed(originalRequest);
                         }
-                        Log.e("accountwww", mSessionManager.getEmail()
-                                +" " + mSessionManager.getClientKey() + " "
-                                + mSessionManager.getAccessToken());
 
                         Request authorisedRequest = originalRequest.newBuilder()
                             .header("ACCESS-TOKEN", mSessionManager.getAccessToken())
@@ -77,7 +72,6 @@ public class ApiClient {
                             return null;
                         }
                         if (mAccount != null) {
-                            Log.e("here", "dundee");
                             String oldToken = mAccountManager.peekAuthToken(mAccount,
                                     AccountGeneral.AUTH_TOKEN_TYPE_FULL_ACCESS);
                             if (oldToken != null) {
@@ -106,6 +100,7 @@ public class ApiClient {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL + URL_PREFIX)
                     .client(okHttpClient)
+                    .addConverterFactory(ScalarsConverterFactory.create())
                     .addConverterFactory(JacksonConverterFactory.create(ApiUtils.getObjectMapper(hasRootValue)))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();

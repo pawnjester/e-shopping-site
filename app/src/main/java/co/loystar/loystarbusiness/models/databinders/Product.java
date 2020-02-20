@@ -21,7 +21,10 @@ import org.joda.time.DateTime;
         "picture",
         "description",
         "deleted",
-        "merchant_product_category_id"
+        "merchant_product_category_id",
+        "unit",
+        "quantity",
+        "track_inventory"
 })
 public class Product {
     private int id;
@@ -34,6 +37,9 @@ public class Product {
     private String description;
     private Boolean deleted;
     private int merchant_product_category_id;
+    private String quantity;
+    private String unit;
+    private boolean track_inventory;
 
     @JsonProperty("merchant_loyalty_program_id")
     private int merchant_loyalty_program_id;
@@ -51,7 +57,10 @@ public class Product {
             String picture,
             int merchant_product_category_id,
             String description,
-            int merchant_loyalty_programs_id
+            int merchant_loyalty_programs_id,
+            String quantity,
+            String unit,
+            boolean track_inventory
     ) {
         this.id  = id;
         this.merchant_id = merchant_id;
@@ -64,6 +73,9 @@ public class Product {
         this.description = description;
         this.merchant_product_category_id = merchant_product_category_id;
         this.merchant_loyalty_program_id = merchant_loyalty_program_id;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.track_inventory = track_inventory;
     }
 
 
@@ -96,6 +108,24 @@ public class Product {
     public void setName(String name) {
         this.name = name;
     }
+
+    @JsonProperty("unit")
+    public void setUnit(String unit) {this.unit = unit; }
+
+    @JsonProperty("unit")
+    public String getUnit() { return unit; }
+
+    @JsonProperty("quantity")
+    public void setQuantity(String quantity) {this.quantity = quantity; }
+
+    @JsonProperty("quantity")
+    public String getQuantity() { return quantity; }
+
+    @JsonProperty("track_inventory")
+    public void setTrackInventory(boolean track_inventory) { this.track_inventory = track_inventory;}
+
+    @JsonProperty("track_inventory")
+    public boolean getTrackInventory() { return track_inventory;}
 
     @JsonProperty("deleted")
     public Boolean isDeleted() {

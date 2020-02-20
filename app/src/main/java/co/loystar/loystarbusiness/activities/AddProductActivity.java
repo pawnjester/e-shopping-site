@@ -24,6 +24,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,16 +36,21 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
 import com.github.clans.fab.FloatingActionButton;
+import com.google.gson.Gson;
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.nostra13.universalimageloader.utils.L;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -53,6 +59,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import co.loystar.loystarbusiness.R;
@@ -103,12 +110,14 @@ public class AddProductActivity extends BaseActivity {
     private FloatingActionButton removePictureBtn;
     private View mLayout;
     private EditText productNameView;
+    private EditText productDescriptionView;
     private CurrencyEditText productPriceView;
     private View mProgressView;
     private ProgressBar mProgressBar;
     private View createProductFormView;
     private ProgressDialog progressDialog;
     SpinnerButton loyaltyProgramsSpinner;
+    private EditText quantityEditView;
 
     /*shared variables*/
     private boolean isFabMenuOpen = false;
@@ -123,6 +132,8 @@ public class AddProductActivity extends BaseActivity {
     private String getActivityInitiator = "";
     private LoyaltyProgramEntity mSelectedProgram;
     private SessionManager mSessionManager;
+    private String mSelectedUnit;
+    private boolean isTracked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +152,7 @@ public class AddProductActivity extends BaseActivity {
         mLayout = findViewById(R.id.activity_add_product_container);
         mProgressView = findViewById(R.id.productCreateProgressView);
         mProgressBar = findViewById(R.id.productCreateProgressBar);
+        quantityEditView = findViewById(R.id.productQuantity);
         createProductFormView = findViewById(R.id.productCreateFormWrapper);
         baseFloatBtn = findViewById(R.id.baseFloatingActionButton);
         addFromGalleryBtn = findViewById(R.id.addFromGallery);
@@ -151,6 +163,7 @@ public class AddProductActivity extends BaseActivity {
         thumbnailView = findViewById(R.id.thumbnail);
         takePictureLayout = findViewById(R.id.takePictureLayout);
         productNameView = findViewById(R.id.productName);
+        productDescriptionView  = findViewById(R.id.productDescription);
         productPriceView = findViewById(R.id.priceOfProduct);
         charCounterView = findViewById(R.id.program_name_char_counter);
         (findViewById(R.id.products_detail_fab_layout)).bringToFront();
@@ -293,6 +306,32 @@ public class AddProductActivity extends BaseActivity {
             loyaltyProgramsSpinner.setListener(onItemSelectedListener);
         }
 
+        SpinnerButton stockUnitSpinner = findViewById(R.id.stockUnitSpinner);
+        ArrayList<String> time = new ArrayList<>();
+        time.add("BAG");
+        time.add("BUNCH");
+        time.add("CARTON");
+        time.add("DOZEN");
+        time.add("GIGABYTE");
+        time.add("GRAM");
+        time.add("KILOGRAM");
+        time.add("LITRE");
+        time.add("PACK");
+        time.add("PAIR");
+        time.add("PCS");
+        time.add("UNIT");
+        time.add("YARD");
+        CharSequence[] spinnerItems = new CharSequence[time.size()];
+        for (int i = 0; i < time.size(); i++) {
+            spinnerItems[i] = time.get(i);
+        }
+        stockUnitSpinner.setEntries(spinnerItems);
+        SpinnerButton.OnItemSelectedListener onItemSelectedListener = position -> mSelectedUnit = time.get(position);
+        stockUnitSpinner.setListener(onItemSelectedListener);
+
+        SwitchCompat switchCompat = findViewById(R.id.trackSwitch);
+
+        switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> isTracked = isChecked);
         baseFloatBtn.setOnClickListener(view -> {
             if (isFabMenuOpen) {
                 collapseFabMenu();
@@ -483,6 +522,22 @@ public class AddProductActivity extends BaseActivity {
             return;
         }
 
+        if (isTracked) {
+            if (mSelectedUnit == null) {
+                Snackbar.make(mLayout, getString(R.string.error_stock_unit_required), Snackbar.LENGTH_LONG).show();
+                return;
+            }
+            if (quantityEditView.getText().toString().trim().isEmpty()) {
+                quantityEditView.setError("Please enter a quantity");
+                quantityEditView.requestFocus();
+                return;
+            }
+        } else {
+            quantityEditView.setText("");
+            isTracked= false;
+            mSelectedUnit = "";
+        }
+
         try {
             if (imageUri != null) {
                 showProgress(true);
@@ -500,6 +555,9 @@ public class AddProductActivity extends BaseActivity {
                 RequestBody name =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productNameView.getText().toString());
+                RequestBody description =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productDescriptionView.getText().toString());
                 RequestBody price =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
@@ -509,15 +567,25 @@ public class AddProductActivity extends BaseActivity {
                 RequestBody merchant_loyalty_program_id =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
+                RequestBody stock_unit =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, mSelectedUnit);
+                RequestBody quantity =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, quantityEditView.getText().toString());
 
 
                 mApiClient.getLoystarApi(false)
                         .addProduct(
                                 name,
                                 price,
+                                description,
                                 merchant_product_category_id,
                                 merchant_loyalty_program_id,
-                                body
+                                body,
+                                stock_unit,
+                                quantity,
+                                isTracked
                         ).enqueue(new Callback<Product>() {
                     @Override
                     public void onResponse(@NonNull Call<Product> call, @NonNull Response<Product> response) {
@@ -532,6 +600,10 @@ public class AddProductActivity extends BaseActivity {
                                 productEntity.setName(product.getName());
                                 productEntity.setPicture(product.getPicture());
                                 productEntity.setPrice(product.getPrice());
+                                productEntity.setDescription(product.getDescription());
+                                productEntity.setQuantity(product.getQuantity());
+                                productEntity.setUnit(product.getUnit());
+                                productEntity.setTracked(product.getTrackInventory());
                                 productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
                                 productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
                                 productEntity.setDeleted(false);
@@ -571,11 +643,15 @@ public class AddProductActivity extends BaseActivity {
                         showSnackbar(R.string.error_internet_connection_timed_out);
                     }
                 });
-            } else {
+            }
+            else {
                 showProgress(true);
                 RequestBody name =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productNameView.getText().toString());
+                RequestBody description =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productDescriptionView.getText().toString());
                 RequestBody price =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
@@ -586,14 +662,24 @@ public class AddProductActivity extends BaseActivity {
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
 
+                RequestBody stock_unit =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, mSelectedUnit);
+                RequestBody quantity =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, quantityEditView.getText().toString());
 
                 mApiClient.getLoystarApi(false)
                         .addProduct(
                                 name,
                                 price,
+                                description,
                                 merchant_product_category_id,
                                 merchant_loyalty_program_id,
-                                null
+                                null,
+                                stock_unit,
+                                quantity,
+                                isTracked
                         ).enqueue(new Callback<Product>() {
                     @Override
                     public void onResponse(@NonNull Call<Product> call, @NonNull Response<Product> response) {
@@ -608,6 +694,10 @@ public class AddProductActivity extends BaseActivity {
                                 productEntity.setName(product.getName());
                                 productEntity.setPicture(product.getPicture());
                                 productEntity.setPrice(product.getPrice());
+                                productEntity.setDescription(product.getDescription());
+                                productEntity.setQuantity(product.getQuantity());
+                                productEntity.setUnit(product.getUnit());
+                                productEntity.setTracked(product.getTrackInventory());
                                 productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
                                 productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
                                 productEntity.setDeleted(false);

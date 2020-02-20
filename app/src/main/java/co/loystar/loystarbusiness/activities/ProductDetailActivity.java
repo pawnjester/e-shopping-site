@@ -22,6 +22,8 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,6 +50,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -102,10 +105,12 @@ public class ProductDetailActivity extends BaseActivity {
     private FloatingActionButton removePictureBtn;
     private View mLayout;
     private EditText productNameView;
+    private EditText productDescriptionView;
     private CurrencyEditText productPriceView;
     private View mProgressView;
     private ProgressBar mProgressBar;
     private View editProductDetailFormView;
+    private EditText mProductQuantity;
 
 
     /*shared variables*/
@@ -123,6 +128,8 @@ public class ProductDetailActivity extends BaseActivity {
     private MyAlertDialog myAlertDialog;
     private SessionManager mSessionManager;
     private LoyaltyProgramEntity mSelectedProgram;
+    private String mSelectedUnit;
+    private boolean isTracked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,8 +154,10 @@ public class ProductDetailActivity extends BaseActivity {
         addFromGalleryLayout = findViewById(R.id.addFromGalleryLayout);
         removePictureLayout = findViewById(R.id.removePictureLayout);
         thumbnailView = findViewById(R.id.thumbnail);
+        mProductQuantity = findViewById(R.id.productQuantity);
         takePictureLayout = findViewById(R.id.takePictureLayout);
         productNameView = findViewById(R.id.productName);
+        productDescriptionView = findViewById(R.id.productDescription);
         productPriceView = findViewById(R.id.priceOfProduct);
         charCounterView = findViewById(R.id.program_name_char_counter);
         (findViewById(R.id.products_detail_fab_layout)).bringToFront();
@@ -172,12 +181,14 @@ public class ProductDetailActivity extends BaseActivity {
                     .into(thumbnailView);
 
             productNameView.setText(mProductItem.getName());
+            productDescriptionView.setText(mProductItem.getDescription());
 
             originalPrice = String.format(Locale.UK, "%.2f", new BigDecimal(mProductItem.getPrice()));
 
             productPriceView.setText(originalPrice);
             mSelectedProductCategory = mProductItem.getCategory();
             mSelectedProgram = mProductItem.getLoyaltyProgram();
+            mSelectedUnit = mProductItem.getUnit();
 
 
             Drawable cancelDrawable = AppCompatResources.getDrawable(mContext, R.drawable.ic_cancel_white_24px);
@@ -205,12 +216,47 @@ public class ProductDetailActivity extends BaseActivity {
                 charSequences[i] = programEntities.get(i).getName();
             }
             loyaltyProgramsSpinner.setEntries(charSequences);
-
-            SpinnerButton.OnItemSelectedListener selectedListener = position -> mSelectedProgram = programEntities.get(position);
+            if (mProductItem.getQuantity() != null) {
+                mProductQuantity.setText(mProductItem.getQuantity());
+            }
+            SpinnerButton.OnItemSelectedListener selectedListener =
+                    position -> mSelectedProgram = programEntities.get(position);
             loyaltyProgramsSpinner.setListener(selectedListener);
             if (mSelectedProgram != null) {
                 loyaltyProgramsSpinner.setSelection(programEntities.indexOf(mSelectedProgram));
             }
+
+            SpinnerButton stockUnitSpinner = findViewById(R.id.stockUnitSpinner);
+            ArrayList<String> time = new ArrayList<>();
+            time.add("BAG");
+            time.add("BUNCH");
+            time.add("CARTON");
+            time.add("DOZEN");
+            time.add("GIGABYTE");
+            time.add("GRAM");
+            time.add("KILOGRAM");
+            time.add("LITRE");
+            time.add("PACK");
+            time.add("PAIR");
+            time.add("PCS");
+            time.add("UNIT");
+            time.add("YARD");
+            CharSequence[] spinnerItem = new CharSequence[time.size()];
+            for (int i = 0; i < time.size(); i++) {
+                spinnerItem[i] = time.get(i);
+            }
+            stockUnitSpinner.setEntries(spinnerItem);
+            SpinnerButton.OnItemSelectedListener onItemSelected =
+                    position -> mSelectedUnit = time.get(position);
+            stockUnitSpinner.setListener(onItemSelected);
+            if (mSelectedUnit != null) {
+                stockUnitSpinner.setSelection(time.indexOf(mSelectedUnit));
+            }
+
+            SwitchCompat switchCompat = findViewById(R.id.trackSwitch);
+            isTracked = mProductItem.isTracked();
+            switchCompat.setChecked(isTracked);
+            switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> isTracked = isChecked);
 
             baseFloatBtn.setOnClickListener(view -> {
                 if (isFabMenuOpen) {
@@ -408,6 +454,21 @@ public class ProductDetailActivity extends BaseActivity {
             Snackbar.make(mLayout, getString(R.string.error_loyalty_program_required), Snackbar.LENGTH_LONG).show();
             return;
         }
+        if (isTracked) {
+            if (mSelectedUnit == null) {
+                Snackbar.make(mLayout, getString(R.string.error_stock_unit_required), Snackbar.LENGTH_LONG).show();
+                return;
+            }
+            if (mProductQuantity.getText().toString().trim().isEmpty()) {
+                mProductQuantity.setError("Please enter a quantity");
+                mProductQuantity.requestFocus();
+                return;
+            }
+        } else {
+            mProductQuantity.setText("");
+            isTracked= false;
+            mSelectedUnit = "";
+        }
 
         if (imageUri == null) {
             try {
@@ -417,7 +478,11 @@ public class ProductDetailActivity extends BaseActivity {
                 req.put("merchant_product_category_id", mSelectedProductCategory.getId());
                 req.put("merchant_loyalty_program_id", mSelectedProgram.getId());
                 req.put("name", productNameView.getText().toString());
-                req.put("price", productPriceView.getFormattedValue(productPriceView.getRawValue()));
+                req.put("description", productDescriptionView.getText().toString());
+                req.put("quantity", mProductQuantity.getText().toString());
+                req.put("unit", mSelectedUnit);
+                req.put("track_inventory", isTracked);
+
 
                 JSONObject requestData = new JSONObject();
                 requestData.put("data", req);
@@ -437,6 +502,10 @@ public class ProductDetailActivity extends BaseActivity {
                                 mProductItem.setName(product.getName());
                                 mProductItem.setPrice(product.getPrice());
                                 mProductItem.setPicture(product.getPicture());
+                                mProductItem.setDescription(product.getDescription());
+                                mProductItem.setQuantity(product.getQuantity());
+                                mProductItem.setUnit(product.getUnit());
+                                mProductItem.setTracked(product.getTrackInventory());
                                 ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
                                 if (productCategoryEntity != null) {
                                     mProductItem.setCategory(productCategoryEntity);
@@ -478,6 +547,9 @@ public class ProductDetailActivity extends BaseActivity {
                 RequestBody name =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productNameView.getText().toString());
+                RequestBody description =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, productDescriptionView.getText().toString());
                 RequestBody price =
                         RequestBody.create(
                                 okhttp3.MultipartBody.FORM, productPriceView.getFormattedValue(productPriceView.getRawValue()));
@@ -488,6 +560,13 @@ public class ProductDetailActivity extends BaseActivity {
                 RequestBody merchant_loyalty_program_id =
                     RequestBody.create(
                         okhttp3.MultipartBody.FORM, String.valueOf(mSelectedProgram.getId()));
+
+                RequestBody stock_unit =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, mSelectedUnit);
+                RequestBody quantity =
+                        RequestBody.create(
+                                okhttp3.MultipartBody.FORM, mProductQuantity.getText().toString());
 
                 String mimeType = contentResolver.getType(imageUri);
                 if (mimeType == null) {
@@ -504,8 +583,12 @@ public class ProductDetailActivity extends BaseActivity {
                             mProductItem.getId(),
                             name,
                             price,
+                            description,
                             merchant_product_category_id,
                             merchant_loyalty_program_id,
+                            stock_unit,
+                            quantity,
+                            isTracked,
                             body
                         ).enqueue(new Callback<Product>() {
                     @Override
@@ -518,7 +601,11 @@ public class ProductDetailActivity extends BaseActivity {
                            } else {
                                mProductItem.setName(product.getName());
                                mProductItem.setPrice(product.getPrice());
+                               mProductItem.setDescription(product.getDescription());
                                mProductItem.setPicture(product.getPicture());
+                               mProductItem.setQuantity(product.getQuantity());
+                               mProductItem.setUnit(product.getUnit());
+                               mProductItem.setTracked(product.getTrackInventory());
                                ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
                                if (productCategoryEntity != null) {
                                    mProductItem.setCategory(productCategoryEntity);
@@ -639,10 +726,25 @@ public class ProductDetailActivity extends BaseActivity {
                 }
             }
         }
+
+        boolean stockUnitHasChanged = false;
+        if (mSelectedUnit != null) {
+            if (mProductItem.getUnit() == null){
+                stockUnitHasChanged = true;
+            } else {
+                if (!mSelectedUnit.equals(mProductItem.getUnit())) {
+                    stockUnitHasChanged = true;
+                }
+            }
+        }
         return formIsDirty ||
                 !productNameView.getText().toString().equals(mProductItem.getName()) ||
+                !productDescriptionView.getText().toString().equals(mProductItem.getDescription()) ||
+                !mProductQuantity.getText().toString().equals(mProductItem.getQuantity()) ||
+                !isTracked == mProductItem.isTracked() ||
                 productCategoryHasChanged ||
                 loyaltyProgramHasChanged ||
+                stockUnitHasChanged ||
                 !(originalPrice.equals(productPriceView.getFormattedValue(productPriceView.getRawValue())));
 
     }
