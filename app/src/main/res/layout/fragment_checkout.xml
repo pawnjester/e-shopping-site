@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -19,7 +20,7 @@
             android:scrollbars="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <LinearLayout
+        <android.support.constraint.ConstraintLayout
             android:id="@+id/empty_cart"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -32,22 +33,25 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="212dp"
                 android:gravity="center"
-                android:text="@string/cart_is_empty"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:textAppearance="?android:textAppearanceMedium" />
+                android:padding="4dp"
+                android:text="The cart is empty. Tap an item on the left to add"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textSize="20sp"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="0dp" />
 
-            <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal
-                android:id="@+id/add_to_cart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:text="@string/add_to_cart"
-                android:visibility="gone"/>
+            <!--            <co.loystar.loystarbusiness.utils.ui.buttons.BrandButtonNormal-->
+<!--                android:id="@+id/add_to_cart"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center_horizontal"-->
+<!--                android:layout_marginTop="@dimen/activity_vertical_margin"-->
+<!--                android:text="@string/add_to_cart"-->
+<!--                android:visibility="gone"/>-->
 
-        </LinearLayout>
+        </android.support.constraint.ConstraintLayout>
 
     </LinearLayout>
 
