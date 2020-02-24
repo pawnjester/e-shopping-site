@@ -174,6 +174,7 @@ public class InvoicePayActivity extends BaseActivity implements
     AlertDialog dialog;
     Boolean hasSharedToWhatsapp = false;
     EmptyRecyclerView mOrderSummaryRecyclerView;
+    private boolean isPaid = false;
 
     HashMap<Integer, Integer> mSelectedProductHash = new HashMap<>();
 
@@ -188,6 +189,7 @@ public class InvoicePayActivity extends BaseActivity implements
 
         mWrapper = findViewById(R.id.bottom_sheet);
         mWrapper.bringToFront();
+        invalidateOptionsMenu();
 
 
         mOrderSummaryBottomSheetCallback = new
@@ -300,6 +302,7 @@ public class InvoicePayActivity extends BaseActivity implements
             }
             if (invoiceStatus != null
                     && invoiceStatus.equals("paid")) {
+                isPaid = true;
                 amount_due_value.setText(getResources().getString(R.string.paid_text));
                 amountText.setEnabled(false);
                 due_date_picker.setEnabled(false);
@@ -363,12 +366,6 @@ public class InvoicePayActivity extends BaseActivity implements
         builder.setView(R.layout.layout_loading_dialog);
         dialog = builder.create();
 
-//        EmptyRecyclerView orderSummaryRecyclerView =
-//                findViewById(R.id.order_list);
-//        assert orderSummaryRecyclerView != null;
-//        setUpOrderSummaryRecyclerView(orderSummaryRecyclerView);
-//        setUpBottomSheetView();
-
     }
 
     @Override
@@ -377,6 +374,42 @@ public class InvoicePayActivity extends BaseActivity implements
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    private void sendReceiptToCustomer(int invoiceId) {
+        dialog.setMessage("Sending Receipt to Customer Email");
+        dialog.show();
+        mApiClient.getLoystarApi(false)
+                .sendReceiptToCustomer(invoiceId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            dialog.dismiss();
+                            Toast.makeText(getApplicationContext(),
+                                    "Receipt sent to the email",
+                                    Toast.LENGTH_SHORT).show();
+                            Intent merchantIntent = new Intent(getApplicationContext(), MerchantBackOfficeActivity.class);
+                            merchantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(merchantIntent);
+                        } else {
+                            dialog.dismiss();
+                            try {
+                                JSONObject jObjError = new JSONObject(response.errorBody().string());
+                                String error = jObjError.getString("message");
+                                Snackbar.make(mLayout, error , Snackbar.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Timber.e(e.getLocalizedMessage());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        dialog.dismiss();
+                    }
+                });
+
     }
 
     private void goToViewProductsActivity() {
@@ -413,6 +446,7 @@ public class InvoicePayActivity extends BaseActivity implements
     private void startInvoiceDownload(int invoiceId) {
         Intent intent = new Intent(this, BackgroundNotificationService.class);
         intent.putExtra(Constants.INVOICE_ID, invoiceId);
+        intent.putExtra(Constants.RECEIPT_PAID, isPaid);
         intent.putExtra(Constants.INVOICE_NUMBER, invoiceNumber);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startService(intent);
@@ -515,7 +549,11 @@ public class InvoicePayActivity extends BaseActivity implements
                 return true;
             case R.id.action_share_invoice:
                 if (isOnline(this)) {
-                    sendInvoiceToCustomer(invoiceId);
+                    if (isPaid) {
+                        sendReceiptToCustomer(invoiceId);
+                    } else {
+                        sendInvoiceToCustomer(invoiceId);
+                    }
                 } else {
                     Snackbar.make(mLayout,
                             "Please connect to the internet", Snackbar.LENGTH_SHORT).show();
@@ -531,7 +569,11 @@ public class InvoicePayActivity extends BaseActivity implements
                 return true;
             case R.id.action_share_to_whatsapp:
                 if (isOnline(this)) {
-                    downloadPdf(invoiceId);
+                    if (isPaid) {
+                        downloadReceipt(invoiceId);
+                    } else {
+                        downloadPdf(invoiceId);
+                    }
                 } else {
                     Snackbar.make(mLayout,
                             "Please connect to the internet", Snackbar.LENGTH_SHORT).show();
@@ -555,6 +597,12 @@ public class InvoicePayActivity extends BaseActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        if (invoiceId > 0) {
+            MenuItem item = menu.findItem(R.id.action_share_invoice);
+            if (item.getTitle().equals("Share Invoice Via Email") && isPaid) {
+                item.setTitle("Share Receipt via Email");
+            }
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -1122,8 +1170,6 @@ public class InvoicePayActivity extends BaseActivity implements
                             Timber.e(t);
                         }
                     });
-
-//                }
             } catch (JSONException e) {
                 Timber.e(e);
             }
@@ -1142,6 +1188,17 @@ public class InvoicePayActivity extends BaseActivity implements
                 });
     }
 
+    private void downloadReceipt(int invoiceId) {
+        dialog.show();
+        mApiClient.getLoystarApi(false)
+                .getReceiptDownloadLink(invoiceId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(response -> {
+                    shareReceiptToWhatsapp(response.getMessage());
+                });
+    }
+
     private void shareToWhatsApp(String url) {
         if (url != null) {
             try{
@@ -1152,7 +1209,33 @@ public class InvoicePayActivity extends BaseActivity implements
                         + invoiceNumber + " from " + mSessionManager.getBusinessName()
                         + " Please download to view: ", "UTF-8");
                 String message = "http://api.whatsapp.com/send?phone=" + toNumber + "&text=" +
-                        encodedString + url;
+                        encodedString + "https://" + url;
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(message));
+                hasSharedToWhatsapp = true;
+
+                startActivityForResult(intent, 1000);
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void shareReceiptToWhatsapp(String url) {
+        if (url != null) {
+            try{
+                String toNumber = mSelectedCustomer.getPhoneNumber().substring(1);
+                String encodedString = URLEncoder.encode( "Hello " +
+                        mSelectedCustomer.getLastName().toUpperCase()
+                        + " " + mSelectedCustomer.getFirstName().toUpperCase()
+                        + ", thank you for your patronage at "
+                        + mSessionManager.getBusinessName()
+                        + ", Here is your payment receipt: ", "UTF-8");
+                String message = "http://api.whatsapp.com/send?phone=" + toNumber + "&text=" +
+                        encodedString + "https://" + url;
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(message));
                 hasSharedToWhatsapp = true;

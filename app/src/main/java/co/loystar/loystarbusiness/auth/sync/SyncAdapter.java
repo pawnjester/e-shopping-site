@@ -132,6 +132,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             syncProductCategories();
             syncLoyaltyPrograms();
             syncProducts();
+            syncAllProducts();
             syncMerchantSubscription();
             syncMerchantBirthdayOffer();
             syncMerchantBirthdayOfferPresetSms();
@@ -173,6 +174,80 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         @Override
+        public void syncAllProducts() {
+            try {
+                mApiClient.getLoystarApi(false)
+                        .getMerchantProducts().enqueue(new Callback<ArrayList<Product>>() {
+                    @Override
+                    public void onResponse(Call<ArrayList<Product>> call,
+                                           Response<ArrayList<Product>> response) {
+                        if (response.isSuccessful()) {
+                            ArrayList<Product> products = response.body();
+                            if (products != null) {
+                                for (Product product : products) {
+                                    if (product.isDeleted() != null && product.isDeleted()) {
+                                        ProductEntity existingProduct = mDatabaseManager.getProductById(product.getId());
+                                        if (existingProduct != null) {
+                                            mDatabaseManager.deleteProduct(existingProduct);
+                                        }
+                                    } else {
+                                        ProductEntity productEntity = new ProductEntity();
+                                        productEntity.setId(product.getId());
+                                        productEntity.setName(product.getName());
+                                        productEntity.setDescription(product.getDescription());
+                                        productEntity.setPicture(product.getPicture());
+                                        productEntity.setPrice(product.getPrice());
+                                        productEntity.setQuantity(product.getQuantity());
+                                        productEntity.setUnit(product.getUnit());
+                                        productEntity.setTracked(product.getTrackInventory());
+                                        productEntity.setCreatedAt(new Timestamp(product.getCreated_at().getMillis()));
+                                        productEntity.setUpdatedAt(new Timestamp(product.getUpdated_at().getMillis()));
+                                        productEntity.setDeleted(false);
+
+                                        ProductCategoryEntity productCategoryEntity = mDatabaseManager.getProductCategoryById(product.getMerchant_product_category_id());
+                                        if (productCategoryEntity != null) {
+                                            productEntity.setCategory(productCategoryEntity);
+                                        }
+                                        LoyaltyProgramEntity programEntity = mDatabaseManager.getLoyaltyProgramById(product.getMerchant_loyalty_program_id());
+                                        if (programEntity != null) {
+                                            productEntity.setLoyaltyProgram(programEntity);
+                                        }
+                                        productEntity.setOwner(merchantEntity);
+                                        mDatabaseManager.insertNewProduct(productEntity);
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ArrayList<Product>> call, Throwable t) {
+
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            List<ProductEntity> productsMarkedForDeletion = mDatabaseManager.getProductsMarkedForDeletion(merchantEntity);
+            for (final ProductEntity productEntity: productsMarkedForDeletion) {
+                mApiClient.getLoystarApi(false).setProductDeleteFlagToTrue(productEntity.getId()).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            mDatabaseManager.deleteProduct(productEntity);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                    }
+                });
+            }
+        }
+
+        @Override
         public void syncCustomers() {
             /*
             * Fetch total sales on server
@@ -181,7 +256,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .getCustomers(1, 1500)
                 .flatMapIterable(arrayListResponse -> {
                     ArrayList<Customer> customers = arrayListResponse.body();
-                    Log.e("total", arrayListResponse + "");
 
                     int getTotal = customers.size();
                         /*
@@ -1073,7 +1147,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 JSONObject jsonObjectData = new JSONObject();
                 if (timeStamp == null) {
                     jsonObjectData.put("time_stamp", 0);
-                } else {
+                }
+                else {
                     jsonObjectData.put("time_stamp", timeStamp);
                 }
                 JSONObject requestData = new JSONObject();

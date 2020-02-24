@@ -50,11 +50,13 @@ public class BackgroundNotificationService extends IntentService {
     private int invoiceId;
     private String invoiceNumber;
     private File invoiceFile;
+    private boolean isPaid;
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         invoiceId = intent.getIntExtra(Constants.INVOICE_ID, 0);
         invoiceNumber = intent.getStringExtra(Constants.INVOICE_NUMBER);
+        isPaid = intent.getBooleanExtra(Constants.RECEIPT_PAID, false);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -86,9 +88,11 @@ public class BackgroundNotificationService extends IntentService {
                 .setDefaults(0)
                 .setAutoCancel(true);
         notificationManager.notify(0, notificationBuilder.build());
-        downloadPdf(invoiceId);
-
-
+        if (isPaid) {
+            downloadReceipt(invoiceId);
+        } else {
+            downloadPdf(invoiceId);
+        }
     }
 
     private void updateNotification(int currentProgress) {
@@ -104,7 +108,6 @@ public class BackgroundNotificationService extends IntentService {
     }
 
     private void onDownloadComplete(boolean downloadComplete) {
-        Log.e("never", "here");
         sendProgressUpdate(downloadComplete);
         notificationManager.cancel(0);
 
@@ -131,7 +134,12 @@ public class BackgroundNotificationService extends IntentService {
         List<ResolveInfo> list =
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         notificationBuilder.setProgress(0, 0, false);
-        notificationBuilder.setContentText("Invoice Download Complete");
+        if (isPaid) {
+            notificationBuilder.setContentText("Receipt Download Complete");
+        } else {
+            notificationBuilder.setContentText("Invoice Download Complete");
+
+        }
         notificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done);
         if (list.size() > 0) {
             notificationBuilder.setContentIntent(resultPendingIntent);
@@ -169,6 +177,29 @@ public class BackgroundNotificationService extends IntentService {
                 });
     }
 
+    private void downloadReceipt(int invoiceId) {
+        mApiClient.getLoystarApi(false)
+                .getReceiptDownloadLink(invoiceId)
+                .flatMap((Function<DownloadInvoice,
+                        ObservableSource<Response<ResponseBody>>>) downloadInvoice ->
+                        mApiClient.getLoystarApi(false)
+                                .downloadInvoice(BuildConfig.FLAVOR.equals("production")
+                                        ? downloadInvoice.getMessage().substring(22)
+                                        : downloadInvoice.getMessage().substring(33)))
+                .doOnNext(this::saveToDiskRx)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .doOnError(error -> Toast.makeText(getApplicationContext(),
+                        "Receipt could not be downloaded", Toast.LENGTH_SHORT).show())
+                .subscribe(response -> {
+                    if (response.code() == 404) {
+                        Toast.makeText(getApplicationContext(),
+                                "Receipt could not be downloaded", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+    }
+
     private boolean saveToDiskRx(final Response<ResponseBody> response) {
         try {
             String header = response.headers().get("Content-Disposition");
@@ -182,13 +213,11 @@ public class BackgroundNotificationService extends IntentService {
             }
 
             invoiceFile = new File(filePath, strippedFile);
-            Log.e(">>>", invoiceFile +"");
             InputStream inputStream = null;
             OutputStream outputStream = null;
             boolean downloadComplete = false;
 
             try {
-                Log.e("MMMM", "dddd");
                 byte[] fileReader = new byte[4096];
                 int count;
 
@@ -205,7 +234,6 @@ public class BackgroundNotificationService extends IntentService {
                     outputStream.write(fileReader, 0, count);
                     downloadComplete = true;
                 }
-                Log.e(">>>", "ddd");
                 onDownloadComplete(downloadComplete);
                 outputStream.flush();
                 outputStream.close();

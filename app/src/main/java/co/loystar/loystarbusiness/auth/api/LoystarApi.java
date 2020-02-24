@@ -109,6 +109,9 @@ public interface LoystarApi {
     @POST("get_latest_merchant_products")
     Call<ArrayList<Product>> getLatestMerchantProducts(@Body RequestBody requestBody);
 
+    @GET("get_latest_merchant_products_get_version")
+    Call<ArrayList<Product>> getMerchantProducts();
+
     @POST("get_latest_merchant_customers")
     Call<ArrayList<Customer>> getLatestMerchantCustomers(@Body RequestBody requestBody);
 
@@ -243,12 +246,18 @@ public interface LoystarApi {
     @GET("invoices/{id}/get_invoice_download_link")
     Observable<DownloadInvoice> getInvoiceDownloadLink(@Path("id") int id);
 
+    @GET("invoices/{id}/get_receipt_download_link")
+    Observable<DownloadInvoice> getReceiptDownloadLink(@Path("id") int id);
+
     @GET
     @Streaming
     Observable<Response<ResponseBody>> downloadInvoice(@Url String fileUrl);
 
     @POST("invoices/{id}/send_invoice")
     Call<ResponseBody> sendInvoiceToCustomer(@Path("id") int id);
+
+    @POST("invoices/{id}/send_receipt")
+    Call<ResponseBody> sendReceiptToCustomer(@Path("id") int id);
 
     @Headers("Cache-Control: no-cache")
     @POST("sales")

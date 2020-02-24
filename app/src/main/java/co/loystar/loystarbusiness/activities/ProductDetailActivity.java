@@ -250,7 +250,7 @@ public class ProductDetailActivity extends BaseActivity {
                     position -> mSelectedUnit = time.get(position);
             stockUnitSpinner.setListener(onItemSelected);
             if (mSelectedUnit != null) {
-                stockUnitSpinner.setSelection(time.indexOf(mSelectedUnit));
+                stockUnitSpinner.setSelection(time.indexOf(mSelectedUnit.toUpperCase()));
             }
 
             SwitchCompat switchCompat = findViewById(R.id.trackSwitch);
